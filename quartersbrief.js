@@ -1,0 +1,1 @@
+require('./quartersbrief.conf.js');

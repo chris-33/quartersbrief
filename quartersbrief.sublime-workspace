@@ -1,0 +1,1365 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+			[
+				"PAAA",
+				"PAAA001"
+			],
+			[
+				"P",
+				"PAAA002_Test2"
+			],
+			[
+				"kn",
+				"knownShipsByCode"
+			],
+			[
+				"REFE",
+				"REFERENCE_NAME_REGEX"
+			],
+			[
+				"kno",
+				"knownShipsByCode"
+			],
+			[
+				"known",
+				"knownShipsByCode"
+			],
+			[
+				"flex",
+				"flex-direction"
+			],
+			[
+				"grid-tem",
+				"grid-template-columns"
+			],
+			[
+				"space",
+				"space-around"
+			],
+			[
+				"docum",
+				"documentPromise"
+			],
+			[
+				"sear",
+				"searchPinterest"
+			],
+			[
+				"inlin",
+				"inline-block"
+			],
+			[
+				"darkgr",
+				"darkgray"
+			],
+			[
+				"border",
+				"border-width"
+			],
+			[
+				"font-",
+				"font-family"
+			],
+			[
+				"border-",
+				"border-width"
+			],
+			[
+				"tof",
+				"\\listoffigures                                    \tlatex-document"
+			],
+			[
+				"subsub",
+				"\\subsubsection*{title}                            \tlatex-document"
+			],
+			[
+				"ro",
+				"role_path"
+			],
+			[
+				"ne",
+				"nextcloud"
+			],
+			[
+				"ansible",
+				"ansible_architecture"
+			],
+			[
+				"image",
+				"image_name"
+			],
+			[
+				"nextc",
+				"nextcloud"
+			],
+			[
+				"passwd",
+				"passwd_line"
+			],
+			[
+				"no",
+				"no-interaction"
+			],
+			[
+				"nextcl",
+				"nextcloud_admin_user"
+			],
+			[
+				"mysql",
+				"mysql_root_password"
+			],
+			[
+				"volu",
+				"volume_basedir"
+			],
+			[
+				"volum",
+				"volumes"
+			],
+			[
+				"volume",
+				"volume_basedir"
+			],
+			[
+				"f",
+				"f"
+			],
+			[
+				"cont",
+				"container-manage-devices"
+			],
+			[
+				"add",
+				"add"
+			],
+			[
+				"rm",
+				"rm_device"
+			],
+			[
+				"AD",
+				"ADMIN_PASSWORD"
+			],
+			[
+				"A",
+				"ADMIN_PASSWORD"
+			],
+			[
+				"MYS",
+				"MYSQL_ROOT_PASSWORD"
+			],
+			[
+				"entri",
+				"entries2"
+			],
+			[
+				"Entr",
+				"Entry"
+			],
+			[
+				"PRIMA",
+				"PRIMARY_URL_PARAMS"
+			],
+			[
+				"getm",
+				"getMonthId"
+			],
+			[
+				"mon",
+				"monthid"
+			],
+			[
+				"PIR",
+				"PRIMARY_URL_PARAMS"
+			],
+			[
+				"DEF",
+				"DEFAULT_KEYGEN"
+			],
+			[
+				"DEFA",
+				"DEFAULT_ASSOCIATE"
+			],
+			[
+				"month",
+				"months"
+			],
+			[
+				"resouc",
+				"resource2"
+			],
+			[
+				"r",
+				"resource2"
+			],
+			[
+				"resou",
+				"resource"
+			],
+			[
+				"Resource",
+				"Resource"
+			],
+			[
+				"resour",
+				"resource2"
+			],
+			[
+				"stori",
+				"storifiedFn"
+			],
+			[
+				"datet",
+				"datetimeHandler"
+			],
+			[
+				"prop",
+				"prop1"
+			],
+			[
+				"prto",
+				"prototype"
+			],
+			[
+				"st",
+				"store"
+			],
+			[
+				"URL",
+				"URL_TEMPLATE_ALT_PARAMS"
+			],
+			[
+				"U",
+				"URL_TEMPLATE_PARAMS"
+			],
+			[
+				"EntrY",
+				"ENTRY"
+			],
+			[
+				"E",
+				"ENTRY"
+			],
+			[
+				"key",
+				"keyFn"
+			],
+			[
+				"eel",
+				"elements"
+			],
+			[
+				"elemen",
+				"elementGetAction"
+			],
+			[
+				"eleme",
+				"elementGetAction"
+			],
+			[
+				"element",
+				"elementParams"
+			],
+			[
+				"delege",
+				"delegateFn"
+			],
+			[
+				"cach",
+				"cachifiedFn"
+			],
+			[
+				"cac",
+				"cachifiedFn"
+			],
+			[
+				"cachi",
+				"cachifyWrite"
+			],
+			[
+				"por",
+				"promise"
+			],
+			[
+				"delega",
+				"delegateFn"
+			],
+			[
+				"defa",
+				"paramDefaults"
+			],
+			[
+				"paa",
+				"parameters"
+			],
+			[
+				"objec",
+				"Object"
+			],
+			[
+				"intr",
+				"interceptor"
+			],
+			[
+				"rem",
+				"removeWriteActions"
+			],
+			[
+				"def",
+				"resourceProviderDefaultActions"
+			],
+			[
+				"res",
+				"resourceProviderDefaultActions"
+			],
+			[
+				"httpb",
+				"httpBackend"
+			],
+			[
+				"h",
+				"httpBackend_"
+			],
+			[
+				"mot",
+				"month"
+			],
+			[
+				"cat",
+				"categories"
+			],
+			[
+				"Categor",
+				"CategoryForMonth"
+			],
+			[
+				"Categr",
+				"CategoryForMonth"
+			],
+			[
+				"noe",
+				"nonexistent"
+			],
+			[
+				"c",
+				"category1"
+			],
+			[
+				"i",
+				"id"
+			],
+			[
+				"p",
+				"params"
+			],
+			[
+				"create",
+				"create_trigger"
+			]
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "test/model/shipfactory.spec.js",
+			"settings":
+			{
+				"buffer_size": 2953,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			},
+			"undo_stack":
+			[
+				[
+					8,
+					1,
+					"insert",
+					{
+						"characters": "src/"
+					},
+					"BAAAACEAAAAAAAAAIgAAAAAAAAAAAAAAIgAAAAAAAAAjAAAAAAAAAAAAAAAjAAAAAAAAACQAAAAAAAAAAAAAACQAAAAAAAAAJQAAAAAAAAAAAAAA",
+					"AQAAAAAAAAABAAAAIQAAAAAAAAAhAAAAAAAAAAAAAAAAAPC/"
+				]
+			]
+		}
+	],
+	"build_system": "Packages/LaTeXTools/LaTeX.sublime-build",
+	"build_system_choices":
+	[
+		[
+			[
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					""
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Traditional"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"PdfLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"XeLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"LuaLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - PdfLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - XeLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Basic Builder - LuaLaTeX"
+				],
+				[
+					"Packages/LaTeXTools/LaTeX.sublime-build",
+					"Script Builder"
+				]
+			],
+			[
+				"Packages/LaTeXTools/LaTeX.sublime-build",
+				""
+			]
+		]
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 236.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"set syntax jav",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"set syntax javasc",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"syntax j",
+				"Set Syntax: JavaScript"
+			],
+			[
+				"push",
+				"Git: Push"
+			],
+			[
+				"quic",
+				"Git: Quick Commit"
+			],
+			[
+				"q",
+				"Git: Quick Add"
+			],
+			[
+				"quick",
+				"Git: Quick Commit"
+			],
+			[
+				"add",
+				"Git: Quick Add"
+			],
+			[
+				"git q",
+				"Git: Quick Commit"
+			],
+			[
+				"qui",
+				"Git: Quick Commit"
+			],
+			[
+				"git a",
+				"Git: Quick Add"
+			],
+			[
+				"c",
+				"Git: Commit"
+			],
+			[
+				"ad",
+				"Git: Quick Add"
+			],
+			[
+				"git di",
+				"Git: Diff"
+			],
+			[
+				"git stat",
+				"Git: Status"
+			],
+			[
+				"git pul",
+				"Git: Pull"
+			],
+			[
+				"pull",
+				"Git: Pull"
+			],
+			[
+				"git pull",
+				"Git: Pull"
+			],
+			[
+				"qu",
+				"Git: Quick Commit"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"pus",
+				"Git: Push"
+			],
+			[
+				"remo",
+				"Git: Remote"
+			],
+			[
+				"git r",
+				"Git: Remote"
+			],
+			[
+				"add r",
+				"Git: Add Remote"
+			],
+			[
+				"git remo",
+				"Git: Remote"
+			],
+			[
+				"git ",
+				"Git: Switch Repo"
+			],
+			[
+				"git remote",
+				"Git: Remote"
+			],
+			[
+				"git p",
+				"Git: Push"
+			],
+			[
+				"comm",
+				"Git: Quick Commit"
+			],
+			[
+				"git add",
+				"Git: Quick Add"
+			],
+			[
+				"git fil",
+				"Git: Add Current File"
+			],
+			[
+				"git ini",
+				"Git: Init"
+			],
+			[
+				"ren",
+				"Rename File"
+			],
+			[
+				"enalb",
+				"Package Control: Enable Package"
+			],
+			[
+				"disa",
+				"Package Control: Disable Package"
+			],
+			[
+				"enab",
+				"Package Control: Enable Package"
+			],
+			[
+				"p",
+				"Package Control: Disable Package"
+			],
+			[
+				"pi",
+				"Package Control: Install Package"
+			],
+			[
+				"jade",
+				"Set Syntax: Jade"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Discover Packages"
+			],
+			[
+				"latex b",
+				"Build With: LaTeX"
+			],
+			[
+				"latex",
+				"Build With: LaTeX"
+			],
+			[
+				"latex sy",
+				"Set Syntax: LaTeX"
+			],
+			[
+				"late",
+				"LaTeXTools: Check system"
+			],
+			[
+				"in",
+				"Package Control: Install Package"
+			],
+			[
+				"d",
+				"Git: Diff Current File"
+			],
+			[
+				"quick a",
+				"Git: Quick Add"
+			],
+			[
+				"git",
+				"Git: Status"
+			],
+			[
+				"set ",
+				"Set Syntax: YAML"
+			],
+			[
+				"pac",
+				"Package Control: Install Package"
+			],
+			[
+				"install ",
+				"Package Control: Install Package"
+			],
+			[
+				"git c",
+				"Git: Checkout New Branch"
+			],
+			[
+				"git br",
+				"Git: Checkout New Branch"
+			],
+			[
+				"dif",
+				"Git: Diff Current File"
+			],
+			[
+				"exe",
+				"Make file executable"
+			],
+			[
+				"di",
+				"Git: Diff Current File"
+			],
+			[
+				"make",
+				"Make file executable"
+			],
+			[
+				"comc",
+				"Git: Quick Commit Current File"
+			],
+			[
+				"com",
+				"Git: Quick Commit"
+			],
+			[
+				"com cu",
+				"Git: Quick Commit Current File"
+			],
+			[
+				"psuh",
+				"Git: Push"
+			],
+			[
+				"mer",
+				"Git: Merge"
+			],
+			[
+				"pul",
+				"Git: Pull"
+			],
+			[
+				"che",
+				"Git: Checkout Current File"
+			],
+			[
+				"pu",
+				"Git: Push"
+			],
+			[
+				"ch",
+				"Git: Checkout"
+			],
+			[
+				"bran",
+				"Git: Push Current Branch"
+			],
+			[
+				"a",
+				"Git: Amend Commit"
+			],
+			[
+				"C",
+				"Git: Commit"
+			],
+			[
+				"bra",
+				"Git: Checkout New Branch"
+			],
+			[
+				"git bra",
+				"Git: Checkout New Branch"
+			],
+			[
+				"m",
+				"Git: Merge"
+			],
+			[
+				"branc",
+				"Git: Checkout New Branch"
+			],
+			[
+				"diff",
+				"Git: Diff Current File"
+			],
+			[
+				"pu\t",
+				"Git: Push"
+			],
+			[
+				"quci",
+				"Git: Quick Add"
+			],
+			[
+				"quc",
+				"Git: Quick Commit"
+			],
+			[
+				"g",
+				"Git: Quick Add"
+			],
+			[
+				"log",
+				"Git: Log"
+			],
+			[
+				"status",
+				"Git: Status"
+			],
+			[
+				"stat",
+				"Git: Quick Status"
+			],
+			[
+				"gitsta",
+				"Git: Status"
+			],
+			[
+				"merge",
+				"Git: Merge"
+			],
+			[
+				"chec",
+				"Git: Checkout"
+			],
+			[
+				"stas",
+				"Git: Stash"
+			],
+			[
+				"git mer",
+				"Git: Merge"
+			],
+			[
+				"cust",
+				"Git: Custom Command"
+			],
+			[
+				"df",
+				"Git: Diff"
+			],
+			[
+				"cu",
+				"Git: Custom Command"
+			],
+			[
+				"show",
+				"Git: Show"
+			],
+			[
+				"git cus",
+				"Git: Custom Command"
+			],
+			[
+				"cusom",
+				"Git: Custom Command"
+			],
+			[
+				"co",
+				"Git: Commit"
+			],
+			[
+				"pop",
+				"Git: Pop Stash"
+			],
+			[
+				"stash",
+				"Git: Stash Include Untracked"
+			],
+			[
+				"check",
+				"Git: Checkout"
+			],
+			[
+				"git dif",
+				"Git: Diff"
+			],
+			[
+				"rev",
+				"File: Revert"
+			],
+			[
+				"sta",
+				"Git: Pop Stash"
+			],
+			[
+				"quickad",
+				"Git: Quick Add"
+			],
+			[
+				"amed",
+				"Git: Amend Commit"
+			],
+			[
+				"quci c",
+				"Git: Quick Commit"
+			],
+			[
+				"git comm",
+				"Git: Quick Commit Current File"
+			],
+			[
+				"git push",
+				"Git: Push"
+			],
+			[
+				"git com",
+				"Git: Quick Commit"
+			],
+			[
+				"git pus",
+				"Git: Push"
+			],
+			[
+				"git: pus",
+				"Git: Push"
+			],
+			[
+				"git: com",
+				"Git: Quick Commit"
+			],
+			[
+				"git: add",
+				"Git: Quick Add"
+			],
+			[
+				"mar",
+				"Markdown Preview: Preview in Browser"
+			],
+			[
+				"Package Control: in",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: disc",
+				"Package Control: Discover Packages"
+			],
+			[
+				"Package Control: ins",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: list",
+				"Package Control: List Packages"
+			],
+			[
+				"Package Control: re",
+				"Package Control: Remove Package"
+			],
+			[
+				"Package Control: inst",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: insta",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 565.0
+	},
+	"console":
+	{
+		"height": 146.0,
+		"history":
+		[
+			"import urllib.request,os,hashlib; h = 'eb2297e1a458f27d836c04bb0cbaf282' + 'd0e7a3098092775ccb37ca9d6b2e4b7d'; pf = 'Package Control.sublime-package'; ipp = sublime.installed_packages_path(); urllib.request.install_opener( urllib.request.build_opener( urllib.request.ProxyHandler()) ); by = urllib.request.urlopen( 'http://packagecontrol.io/' + pf.replace(' ', '%20')).read(); dh = hashlib.sha256(by).hexdigest(); print('Error validating download (got %s instead of %s), please try manual install' % (dh, h)) if dh != h else open(os.path.join( ipp, pf), 'wb' ).write(by) "
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/home/chris/Programmieren/wowsparams/src",
+		"/home/chris/Programmieren/wowsparams/src/model",
+		"/home/chris/Programmieren/wowsparams/src/test",
+		"/home/chris/Programmieren/wowsparams/src/test/model"
+	],
+	"file_history":
+	[
+		"/home/chris/Programmieren/wowsparams/src/test/model/shipfactory.spec.js",
+		"/home/chris/Programmieren/wowsparams/src/package.json",
+		"/home/chris/Programmieren/wowsparams/src/app.js",
+		"/home/chris/Programmieren/wowsparams/src/model/shipfactory.js",
+		"/home/chris/Programmieren/wowsparams/src/app.conf.js",
+		"/home/chris/Programmieren/wowsparams/src/test/mocha.conf.js",
+		"/home/chris/Programmieren/wowsparams/src/Ship.js",
+		"/home/chris/Programmieren/wowsparams/src/ShipFactory.js",
+		"/home/chris/Programmieren/wowsparams/src/test/ShipFactory.spec.js",
+		"/home/chris/Programmieren/wowsparams/src/package-lock.json",
+		"/home/chris/Programmieren/wowsparams/Vagrantfile",
+		"/home/chris/Programmieren/Mealplanner/suggest.jade",
+		"/home/chris/Programmieren/Mealplanner/suggest.js",
+		"/home/chris/Programmieren/Mealplanner/suggest.css",
+		"/home/chris/Programmieren/workspace/Mealplanner/suggest.html",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Conclusions.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Russian_Threat_to_Sweden_Offensive_Intentions.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Introduction.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Balance_of_Threat_Theory.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Russian_Threat_to_Sweden_Aggregate_Power.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/abstract.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Masterarbeit.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Russian_Threat_to_Sweden_Offensive_Capability.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/titlepage.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Russian_Threat_to_Sweden_Proximity.tex",
+		"/home/chris/Downloads/conflicts/LGAN/MFIS/Masterarbeit/Latex/Russian_Threat_to_Sweden_Offensive_Capability.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/App_Armed_forces.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/armed_forces.csv",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/App_Defense_spending.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/App_Economic_data.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/economic_indicators.csv",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/economic_indicators.tmp.csv",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/defense_spending.csv",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/defense_spending.test.csv",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Masterarbeit.log",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/defense_spending.csv.tmp",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/resources/economy.csv",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/library.bib",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/Appendix_List_of_embassies_maintained_and_hosted.tex",
+		"/home/chris/Documents/Bundeswehr/LGAN/MFIS/Masterarbeit/Latex/section1.tex",
+		"/home/chris/.config/sublime-text-3/Packages/User/LaTeXTools.sublime-settings",
+		"/home/chris/.config/sublime-text-3/Settings/SideBarEnhancements.json",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/cups/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/cups.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/system/tasks/docker.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/mariadb/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/cups/files/Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/gateway/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/site.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/tvheadend.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/nextcloud.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/nextcloud/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/system/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/playground.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/Vagrantfile",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/system/tasks/users.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/tvheadend/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/tvheadend/vars/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/nextcloud/vars/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/mariadb/vars/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/20-install-mysql.sh",
+		"/home/chris/.config/sublime-text-3/Packages/SublimeGit/SublimeGit.sublime-settings",
+		"/home/chris/Programmieren/workspace/setup-pi/extraenv",
+		"/home/chris/Programmieren/workspace/setup-pi/README.md",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/nextcloud/templates/docker-compose.yml.j2",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/nextcloud/vars/x86_64.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/mariadb/vars/x86_64.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/mysql/tasks/main.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/group_vars/all.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/group_vars/armhf.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/group_vars/x86_64.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/group_vars/amd64.yml",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/gateway/files/nextcloud.site",
+		"/home/chris/Programmieren/workspace/setup-pi/roles/mysql/templates/mysql.yml.j2",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/00-setup-users.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/hosts",
+		"/home/chris/Programmieren/workspace/setup-pi/.gitignore",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/util/container-manage-devices",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/30-install-duplicati.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/30-install-tvheadend.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/util/chrissrv",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/util/fork-delay",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/30-install-cups.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/docs/utils.md",
+		"/home/chris/Programmieren/workspace/setup-pi/docs/gateway.md",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/cups/cups-Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/docs/cups.md",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/cups/99-docker-cups.rules",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/util/execute-delayed",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/10-install-util-scripts.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/util/docker-rm-exited",
+		"/home/chris/Programmieren/workspace/setup-pi/docs/duplicati.md",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/cups/container-manage-devices.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/docs/system-architecture.md",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/cups/50-docker-cups.rules",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/duplicati/run-backups.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/cups/add-printer.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/docs/tvheadend.md",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/duplicati/duplicati-Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/gateway/owncloud.site",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/duplicati/duplicati-cli",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud/owncloud.conf",
+		"/home/chris/Programmieren/workspace/setup-pi/setup.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud/owncloud-Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/20-install-gateway.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/gateway/gateway-Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/system-architecture.md",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/gateway/gateway.js",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/gateway/redbird.conf",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/gateway/package.json",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud/owncloud-ports.conf",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/20-install-owncloud.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud/owncloud-fix-permissions.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/certbot/certbot-Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/10-install-docker.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/20-install-redbird.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/certbot/certbot-start-server.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/30-install-print-server.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/print-server/print-server-Dockerfile",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud/owncloud-start-server.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/eth0.cfg",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/00-network.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/scripts/20-install-certbot.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/certbot/challenge-server.py",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/gateway/owncloud-proxy.conf",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/mysql/mysql-dump.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud-config.sh",
+		"/home/chris/Programmieren/workspace/setup-pi/resources/owncloud-fix-permissions.sh"
+	],
+	"find":
+	{
+		"height": 24.0
+	},
+	"find_in_files":
+	{
+		"height": 111.0,
+		"where_history":
+		[
+			"/home/chris/Programmieren/workspace/Checkbook-web/**/*",
+			"/home/chris/Programmieren/workspace/Checkbook-web/*",
+			"/home/chris/Programmieren/workspace/Checkbook-web/",
+			"/home/chris/Programmieren/workspace/Checkbook-web/js/data,/home/chris/Programmieren/workspace/Checkbook-web/js/model,/home/chris/Programmieren/workspace/Checkbook-web/js/util,/home/chris/Programmieren/workspace/Checkbook-web/test",
+			"/home/chris/Programmieren/workspace/Checkbook-web/js/data,/home/chris/Programmieren/workspace/Checkbook-web/js/model,/home/chris/Programmieren/workspace/Checkbook-web/js/util",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": true,
+		"find_history":
+		[
+			"subData",
+			"console",
+			"console.log",
+			"categories",
+			"$",
+			"body",
+			"I",
+			"i",
+			"organic",
+			"i",
+			"enjoy",
+			"i",
+			"letterman2018",
+			"letterman",
+			"heavy",
+			"transport",
+			"RUS",
+			";",
+			",",
+			";",
+			",",
+			"%",
+			"missing $",
+			"%",
+			";",
+			",",
+			";",
+			",",
+			"\",",
+			"\".",
+			"towards",
+			",  ",
+			",",
+			"nextcloud",
+			"askpass",
+			"\"",
+			"configpath",
+			"rootuser",
+			"htgroup",
+			"htuser",
+			"ocpath",
+			"HEAD",
+			"self.associate",
+			"isCollection",
+			"RESPONSE",
+			"RESOURCE",
+			"console",
+			"newoptions",
+			"keygen",
+			"cache",
+			"cachify",
+			"Cache",
+			"c2",
+			"c1",
+			"$cookies.put",
+			"\n\t\t",
+			"expandURL",
+			"URL",
+			"es6",
+			"es",
+			"require('bcrypt",
+			"_id",
+			"values",
+			"_id",
+			"find",
+			"_id",
+			"models",
+			"sequelize",
+			"term"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"body",
+			"SWE",
+			",",
+			".",
+			",",
+			".",
+			"",
+			",",
+			".",
+			",",
+			".",
+			", ",
+			"'",
+			"self.isCollection",
+			"DATA",
+			"expandUrl",
+			"Url"
+		],
+		"reverse": false,
+		"scrollbar_highlights": true,
+		"show_context": true,
+		"use_buffer2": true,
+		"use_gitignore": true,
+		"whole_word": true,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "test/model/shipfactory.spec.js",
+					"selected": true,
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 2953,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								37,
+								37
+							]
+						],
+						"settings":
+						{
+							"apply_syntax_touched": true,
+							"syntax": "Packages/JavaScript/JavaScript.sublime-syntax",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": false
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"stack_multiselect": false,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 24.0
+	},
+	"input":
+	{
+		"height": 48.4615384615
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 108.0
+	},
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.git-checkout":
+	{
+		"height": 148.0
+	},
+	"output.git-commit":
+	{
+		"height": 148.0
+	},
+	"output.git-gc":
+	{
+		"height": 0.0
+	},
+	"output.git-init":
+	{
+		"height": 148.0
+	},
+	"output.git-merge":
+	{
+		"height": 118.0
+	},
+	"output.git-pull":
+	{
+		"height": 130.0
+	},
+	"output.git-push":
+	{
+		"height": 148.0
+	},
+	"output.git-remote":
+	{
+		"height": 118.0
+	},
+	"output.latextools":
+	{
+		"height": 136.769226074
+	},
+	"pinned_build_system": "Packages/Jade Build/Jade.sublime-build",
+	"project": "quartersbrief.sublime-project",
+	"replace":
+	{
+		"height": 44.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 646.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 570.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 384.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

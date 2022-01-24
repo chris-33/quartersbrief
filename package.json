@@ -1,0 +1,13 @@
+{
+  "scripts": {
+    "start": "node app.js",
+    "test": "node_modules/mocha/bin/mocha --colors --require test/mocha.conf.js test/**/*.spec.js",
+    "debug": "node inspect app.js"
+  },
+  "dependencies": {
+    "chai": "^4.3.4",
+    "loglevel": "^1.8.0",
+    "loglevel-plugin-prefix": "^0.8.4",
+    "mocha": "^9.1.4"
+  }
+}

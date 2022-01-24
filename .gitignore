@@ -1,0 +1,4 @@
+/node-modules/
+/.vagrant/
+/.project/
+package-lock.json
