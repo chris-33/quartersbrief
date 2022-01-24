@@ -29,7 +29,8 @@ class GameObject {
 	 * - `go.get('nested.prop)` is the same as `go.nested.prop`
 	 * - `go.get('arr.0')` is the same as `go.arr[0]`
 	 * @param  {string} key The key to look up
-	 * @return {*}     The value for that key
+	 * @return {*}     The value for that key, or undefined if no property of
+	 * that key exists within the object.
 	 */
 	get(key) {
 		var self = this;
@@ -45,7 +46,16 @@ class GameObject {
 			// in the current obj.
 			// See Array.prototype.reduce on MDN
 			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce
-			.reduce((obj, key) => obj[key]);	
+			.reduce((obj, key) => obj ? obj[key] : undefined);	
+	}
+
+	/**
+	 * Returns this `GameObject`'s `typeinfo.type`. It is shorthand for
+	 * calling `get(typeinfo.type)`.
+	 * @return {String}
+	 */
+	type() {
+		return this.get('typeinfo.type');
 	}
 }
 

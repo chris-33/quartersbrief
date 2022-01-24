@@ -26,5 +26,11 @@ describe('GameObject', function() {
 		it('should get array entries with dot notation', function() {
 			expect(new GameObject(TEST_DATA).get('arr.0')).to.equal(TEST_DATA.arr[0]);
 		});
+
+		it('should return undefined if no such property exists', function() {
+			var go = new GameObject(TEST_DATA);
+			expect(go.get('doesnotexist')).to.be.undefined;
+			expect(go.get('doesnotexist.withdotnotation')).to.be.undefined;
+		})
 	});
 });
