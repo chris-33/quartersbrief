@@ -1,0 +1,145 @@
+{
+    "ShipUpgradeInfo": {
+        "PAUA821_B9_ART_STOCK": {
+            "canBuy": true,
+            "components": {
+                "artillery": [
+                    "AB1_Artillery"
+                ]
+            },
+            "nextShips": [],
+            "prev": "",
+            "ucType": "_Artillery"
+        },
+        "PAUE831_B9_ENG_TOP": {
+            "canBuy": true,
+            "components": {
+                "engine": [
+                    "AB2_Engine"
+                ]
+            },
+            "nextShips": [],
+            "prev": "PAUE832_B9_ENG_STOCK",
+            "ucType": "_Engine"
+        },
+        "PAUE832_B9_ENG_STOCK": {
+            "canBuy": true,
+            "components": {
+                "engine": [
+                    "AB1_Engine"
+                ]
+            },
+            "nextShips": [],
+            "prev": "",
+            "ucType": "_Engine"
+        },
+        "PAUH831_Iowa_1943": {
+            "canBuy": true,
+            "components": {
+                "airArmament": [
+                    "AB_AirArmament"
+                ],
+                "airDefense": [
+                    "A_AirDefense"
+                ],
+                "airSupport": [
+                    "ABC_AirSupport"
+                ],
+                "artillery": [
+                    "AB1_Artillery"
+                ],
+                "atba": [
+                    "AB_ATBA"
+                ],
+                "depthCharges": [],
+                "directors": [
+                    "AB_Directors"
+                ],
+                "finders": [
+                    "AB_Finders"
+                ],
+                "hull": [
+                    "A_Hull"
+                ],
+                "pinger": [],
+                "radars": [
+                    "AB_Radars"
+                ],
+                "torpedoes": []
+            },
+            "disabledAbilities": [],
+            "nextShips": [],
+            "prev": "",
+            "ucType": "_Hull"
+        },
+        "PAUH832_Iowa_1944": {
+            "canBuy": true,
+            "components": {
+                "airArmament": [
+                    "AB_AirArmament"
+                ],
+                "airDefense": [
+                    "B_AirDefense"
+                ],
+                "airSupport": [
+                    "ABC_AirSupport"
+                ],
+                "artillery": [
+                    "AB1_Artillery"
+                ],
+                "atba": [
+                    "AB_ATBA"
+                ],
+                "depthCharges": [],
+                "directors": [
+                    "AB_Directors"
+                ],
+                "finders": [
+                    "AB_Finders"
+                ],
+                "hull": [
+                    "B_Hull"
+                ],
+                "pinger": [],
+                "radars": [
+                    "AB_Radars"
+                ],
+                "torpedoes": []
+            },
+            "disabledAbilities": [],
+            "nextShips": [
+                "PASB017_Montana_1945"
+            ],
+            "prev": "PAUH831_Iowa_1943",
+            "ucType": "_Hull"
+        },
+        "PAUS821_Suo": {
+            "canBuy": true,
+            "components": {
+                "fireControl": [
+                    "AB1_FireControl"
+                ]
+            },
+            "nextShips": [],
+            "prev": "",
+            "ucType": "_Suo"
+        },
+        "PAUS822_Suo": {
+            "canBuy": true,
+            "components": {
+                "fireControl": [
+                    "AB2_FireControl"
+                ]
+            },
+            "nextShips": [],
+            "prev": "PAUS821_Suo",
+            "ucType": "_Suo"
+        },
+        "costCR": 15500000,
+        "costGold": 0,
+        "costSaleGold": 0,
+        "costXP": 175000,
+        "lockedConfig": [],
+        "value": 1
+    }
+}

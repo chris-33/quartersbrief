@@ -1,4 +1,8 @@
-var fs = require('fs/promises');
+var GameObject = require('$/src/model/gameobject');
+
+const KEYS = {
+	SHIP_UPGRADE_INFO: 'ShipUpgradeInfo'
+};
 
 /**
  * Contains the magic words that indicate a nested
@@ -72,56 +76,105 @@ const KEY_CLUES = {
  * The first two of these steps are assumed to be completed when instantiating
  * this class.
  */
-const Ship = class {
-	hull;
-	artillery;
-	atba;
-	torpedoes;
-	airDefense;
-	airSupport;
-	airArmament;
-	fireControl;
+class Ship extends GameObject {
 
-	engine;
+	researchPaths;
 
-	concealment;
-	
-	/**
-	 * Constructs a new ship object from the 
-	 * passed data object. It is assumed that all the 
-	 * references in that object have been resolved.
-	 * 
-	 * @param  {Object} obj The data object from which to 
-	 * construct the ship.
-	 */
-	constructor(obj) {
-		// Helper function that, given a clue,
-		// returns the key in obj that is the top 
-		// configuration for the provided clue.
-		// Returns undefined if there are no appropriate
-		// keys in obj (e.g. on a ship that has no torpedoes)
-		function getTopConfigurationKey(clue) {
-			return obj
-				// Get all keys of the object
-				.keys()
-				// Select only the ones that contain the "Hull" clue
-				// (See comment for KEY_CLUES about why we have to check
-				// for containment instead of equality)
-				.filter(k => k.includes(KEY_CLUES.HULL))
-				// Sort lexicographically
-				.sort()
-				// Select the last (i.e. highest) element
-			
-				.pop();
-		}
-		
-		hull = obj[getTopConfigurationKey(KEY_CLUES.HULL)]; 
-		artillery = obj[getTopConfigurationKey(KEY_CLUES.ARTILLERY)];
-		torpedoes = obj[getTopConfigurationKey(KEY_CLUES.TORPEDOES)];
-		fireControl = obj[getTopConfigurationKey(KEY_CLUES.FIRECONTROL)];
-		engine = obj[getTopConfigurationKey(KEY_CLUES.ENGINE)];
-		
+	constructor(data) {
+		super(data);
+
+		var self = this;
+		self.researchPaths = self.getResearchPaths();
 	}
 
+	/*
+		This algorithm works as follows:
+		It puts all the upgrade definitions from ShipUpgradeInfo into
+		an array. As long as this array is not empty, it removes the
+		first item from the START of the array and examines it.
+		If a research path with this item's ucType does not exist yet,
+		it creates one and puts this item into it. If it does exist,
+		and the item's prev property is an empty string, that means the
+		item is the starting point of that path, and it gets inserted
+		at the front of the research path. 
+		Otherwise (that is, if a research path does exist and prev is not
+		an empty string), it looks for an entry within the research path
+		that corresponds to the current item's prev property. If such an 
+		item is found, the current item is inserted behind it. 
+		If such an item is not found, that must mean it has to not have
+		been encountered yet in the upgrades array. The current item is
+		then appended again to the END of the upgrades array, to be 
+		looked at again later.
+	 */
+	getResearchPaths() {
+		var self = this;		
+
+		// Helper method that returns true if the argument is an 
+		// upgrade definition
+		function isUpgradeDefinition(o) {
+			return typeof o === 'object'
+				&& o.hasOwnProperty('components')
+				&& o.hasOwnProperty('prev')
+				&& o.hasOwnProperty('ucType');
+		}
+
+		// Get everything in ShipUpgradeInfo
+		var upgrades = self.get(KEYS.SHIP_UPGRADE_INFO);
+		upgrades = Object.entries(upgrades)
+			// Filter out only those that are objects. Now contains
+			// arrays of the form [keyname, object]
+			.filter(o => isUpgradeDefinition(o[1]))
+			// Keep only the objects, but save the keyname on the object
+			// first under the new name 'quartersbrief_name' to keep it 
+			// accessible.
+			// 
+			// This makes handling the data easier from now on, because
+			// we only have to deal with objects, not arrays denoting
+			// key-value pairs.
+			.map(function(o) { 
+				let key = o[0]; let val = o[1];
+				val['quartersbrief_name'] = key; 
+				return val;
+			});
+
+		var researchPaths = {};
+		// As long as there are still items in upgrades
+		while (upgrades.length > 0) {
+			// Take the first one out
+			let upgrade = upgrades.shift();
+			// This upgrade belongs to a research path that has not been 
+			// encountered before. Start a new research path for it.
+			if (!researchPaths[upgrade.ucType]) {
+				researchPaths[upgrade.ucType] = [upgrade];
+			} else {
+				let index;
+				// This upgrade is the beginning of the research path, make the insertion
+				// index 0.
+				if (upgrade.prev === '') 
+					index = 0;
+				else
+					// Take the appropriate research path from researchPaths (which we know,
+					// because we chose ucType as the key for it) and find the index of that 
+					// element in it that has prev as the value for 'quartersbrief_name' - 
+					// this used to be the object key in the original file before we threw that
+					// information away. The insertion point is the index after that.
+					index = researchPaths[upgrade.ucType]
+						.findIndex(u => u['quartersbrief_name'] === upgrade.prev) + 1;
+
+				if (index > -1)
+					// Such an index was found, insert the new upgrade at the
+					// next position.
+					researchPaths[upgrade.ucType].splice(index, 0, upgrade);
+				else
+					// Such an index was not found - the upgrade's predecessor
+					// has not been processed yet.
+					// Add it to the rear of the array to deal with later.
+					upgrades.push(upgrade);
+			}
+		}
+		return researchPaths;
+	}
 
 }
+
+module.exports = Ship;
