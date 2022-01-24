@@ -80,33 +80,41 @@ describe('GameObjectFactory', function() {
 		});
 
 		it('should expand references', function() {
-			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA002_Test2)).to.have.property('reference').that.equals(TEST_DATA.PAAA001_Test1);
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA002_Test2)).to
+				.have.property('reference')
+				.that.deep.equals(TEST_DATA.PAAA001_Test1);
+		});
+
+		it('should expand references into game objects', function() {
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA002_Test2)).to
+				.have.property('reference')
+				.that.is.an.instanceof(GameObject);
 		});
 
 		it('should not expand blacklisted references', function() {
 			expect(gameObjectFactory.constructor.IGNORED_KEYS).to.include('name'); // Just to make sure
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA001_Test1)).to
 				.have.property('name')
-				.that.equals(TEST_DATA.PAAA001_Test1.name);
+				.that.deep.equals(TEST_DATA.PAAA001_Test1.name);
 		});
 
 		it('should expand references in nested objects', function() {
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA003_Test3)).to
 				.have.nested.property('nested.reference')
-				.that.equals(TEST_DATA.PAAA001_Test1);
+				.that.deep.equals(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should expand references in arrays', function() {
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA004_Test4)).to
 				.have.property('arr')
 				.that.is.an('array')
-				.that.includes(TEST_DATA.PAAA001_Test1);
+				.that.deep.includes(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should fully expand complex objects', function() {
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA005_Test5)).to
 				.have.nested.property('nested.arr[0].reference')
-				.that.equals(TEST_DATA.PAAA001_Test1);
-		})
+				.that.deep.equals(TEST_DATA.PAAA001_Test1);
+		});
 	});
 });

@@ -9,7 +9,7 @@ var GameObject = require('$/src/model/gameobject');
  * Example: PASC206, PAD049
  * @type {String}
  */
-const REFERENCE_CODE_REGEX = '^P[A-Z]{2,3}[0-9]{3}';
+const REFERENCE_CODE_REGEX = new RegExp('^P[A-Z]{2,3}[0-9]{3}');
 /**
  * Regex to find reference names. A reference name is a
  * reference code, followed by an underscore and at least one 
@@ -18,7 +18,7 @@ const REFERENCE_CODE_REGEX = '^P[A-Z]{2,3}[0-9]{3}';
  * Example: PASC206_Dallas
  * @type {String}
  */
-const REFERENCE_NAME_REGEX = REFERENCE_CODE_REGEX + '_\w+';
+const REFERENCE_NAME_REGEX = new RegExp(REFERENCE_CODE_REGEX.source + '_\\w+');
 
 class GameObjectFactory {
 
@@ -57,6 +57,7 @@ class GameObjectFactory {
 
 	#knownObjectsByID = {};
 	#knownObjectsByCode = {};
+	#knownObjectsByName = {};
 
 	expandReferences(data) {
 		var self = this;
@@ -82,7 +83,8 @@ class GameObjectFactory {
 				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
 				// most other files use. This matches the regex, obviously, but
 				// no data of that refcode will be found in #everything.
-				let expanded = self.#everything[data[key]];
+				// let expanded = self.#everything[data[key]];
+				let expanded = self.createGameObject(data[key]);
 				if (expanded) {
 					log.debug(`Expanded reference ${data[key]}`);
 					data[key] = expanded;
@@ -127,7 +129,6 @@ class GameObjectFactory {
 		var self = this;
 
 		var t0 = Date.now();
-
 		log.debug('Create game object for designator ' + designator)
 		
 		if (!self.#everything)
@@ -135,36 +136,40 @@ class GameObjectFactory {
 
 		var gameObject;
 		
-		// Check if a ship of that designator is already known.
+		// Check if a game object of that designator is already known.
 		// If so, return it.
 		// If designator is a number, it is the ID of the requested game object
+		// Otherwise it can either be a reference code (e.g. PASC001) or a
+		// reference name (i.e, a reference code followed by an underscore and
+		// one or more alphanumeric characters)
 		if (typeof designator === 'number') {
 			gameObject = self.#knownObjectsByID[designator];
+		} else if (typeof designator === 'string' && designator.match(REFERENCE_NAME_REGEX)) {
+			gameObject = self.#knownObjectsByName[designator];
 		} else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) {
 			gameObject = self.#knownObjectsByCode[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID or a reference code.`);
 
-
 		if (!gameObject) {		
 			// Object is not yet known, construct it.
 			log.debug('Game object was not in cache, constructing');
 
-			// Get the right data from #everything
-			// To find that object, it must either have a property 'id' that equals
-			// the designator value if the designator was a number,
-			// or have a property 'index' that equals the designator value if the
-			// designator was a refcode.
-			let findFn;
-			if (typeof designator === 'number') 
-				findFn = (obj => obj.id && obj.id === designator);
-			else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) 
-				findFn = (obj => obj.index && obj.index === designator)
-			gameObject = Object.values(self.#everything).find(findFn);
+			if (typeof designator === 'number') { // designator is an ID
+				// Find an object that has an 'id' property the same as designator
+				gameObject = Object.values(self.#everything).find(obj => obj.id && obj.id === designator);
+			} else if (typeof designator === 'string' && REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
+				// Access self.#everything directly, as reference names are already its keys
+				gameObject = self.#everything[designator];
+			} else if (typeof designator === 'string' && REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
+				// Find an object that has an 'index' property the same as designator
+				gameObject = Object.values(self.#everything).find(obj => obj.index && obj.index === designator);
+			}
 
 			// Put game object in the caches
 			self.#knownObjectsByID[gameObject.id] = gameObject;
 			self.#knownObjectsByCode[gameObject.index] = gameObject;
+			self.#knownObjectsByCode[gameObject.name] = gameObject;
 
 		}
 
@@ -178,7 +183,8 @@ class GameObjectFactory {
 		// Reset caches:
 		self.#knownObjectsByID = {}; 
 		self.#knownObjectsByCode = {};
-
+		self.#knownObjectsByName = {};
+		
 		self.#everything = everything;
 	}
 }
