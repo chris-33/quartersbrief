@@ -1,8 +1,8 @@
 {
   "scripts": {
-    "start": "node app.js",
+    "start": "node quartersbrief.js",
     "test": "node_modules/mocha/bin/mocha --colors --require test/mocha.conf.js test/**/*.spec.js",
-    "debug": "node inspect app.js"
+    "debug": "node inspect quartersbrief.js"
   },
   "dependencies": {
     "chai": "^4.3.4",
