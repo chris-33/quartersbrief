@@ -1,4 +1,5 @@
 var log = require('loglevel');
+var GameObject = require('$/src/model/gameobject');
 
 /**
  * Regex to find game object reference codes.
@@ -168,7 +169,7 @@ class GameObjectFactory {
 		}
 
 		log.info(`Retrieved game object ${gameObject.name} in ${Date.now() - t0} ms`);
-		return gameObject; 
+		return new GameObject(gameObject); 
 	}
 
 	setEverything(everything) {

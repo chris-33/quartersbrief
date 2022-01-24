@@ -1,4 +1,5 @@
-var gameObjectFactory = require('../../src/model/gameobjectfactory');
+var gameObjectFactory = require('$/src/model/gameobjectfactory');
+var GameObject = require('$/src/model/gameobject');
 
 describe('GameObjectFactory', function() {
 	const TEST_DATA = {
@@ -61,12 +62,16 @@ describe('GameObjectFactory', function() {
 		});
 
 		it('should be able to retrieve a simple object by id', function() {			
-			expect(gameObjectFactory.createGameObject(1)).to.equal(TEST_DATA.PAAA001_Test1);
+			expect(gameObjectFactory.createGameObject(1)).to.deep.equal(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should be able to retrieve a simple object by reference code', function() {			
-			expect(gameObjectFactory.createGameObject('PAAA001')).to.equal(TEST_DATA.PAAA001_Test1);
+			expect(gameObjectFactory.createGameObject('PAAA001')).to.deep.equal(TEST_DATA.PAAA001_Test1);
 		});
+
+		it('should return a GameObject', function() {
+			expect(gameObjectFactory.createGameObject('PAAA001')).to.be.an.instanceof(GameObject);
+		})
 	});
 
 	describe('#expandReferences', function() {
