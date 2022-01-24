@@ -1,6 +1,6 @@
-var shipFactory = require('../../src/model/shipfactory');
+var gameObjectFactory = require('../../src/model/gameobjectfactory');
 
-describe('ShipFactory', function() {
+describe('GameObjectFactory', function() {
 	const TEST_DATA = {
 		PAAA001_Test1: {
 			id: 1,
@@ -38,15 +38,15 @@ describe('ShipFactory', function() {
 
 	};
 
-	describe('#createShip', function() {
+	describe('#createGameObject', function() {
 		beforeEach(function() {
-			shipFactory.setEverything(TEST_DATA);
+			gameObjectFactory.setEverything(TEST_DATA);
 		});
 
 		it('should throw an error if no data has been set', function() {
 			// Unset data from beforeEach
-			shipFactory.setEverything(undefined);
-			expect(function() { shipFactory.createShip('PAAA001'); }).to.throw(/No data/);
+			gameObjectFactory.setEverything(undefined);
+			expect(function() { gameObjectFactory.createGameObject('PAAA001'); }).to.throw(/No data/);
 
 		});
 
@@ -55,46 +55,46 @@ describe('ShipFactory', function() {
 			// expected as the parameter, not the function invocation's result
 			
 			// Check that a malformed designator causes an exception
-			expect(function() { shipFactory.createShip('malformed'); }).to.throw(/Invalid argument/);
+			expect(function() { gameObjectFactory.createGameObject('malformed'); }).to.throw(/Invalid argument/);
 
 			// Check that providing no designator at all causes an exception
-			expect(function() { shipFactory.createShip(); }).to.throw(/Invalid argument/);
+			expect(function() { gameObjectFactory.createGameObject(); }).to.throw(/Invalid argument/);
 		});
 
 		it('should be able to retrieve a simple object by id', function() {			
-			expect(shipFactory.createShip(1)).to.equal(TEST_DATA.PAAA001_Test1);
+			expect(gameObjectFactory.createGameObject(1)).to.equal(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should be able to retrieve a simple object by reference code', function() {			
-			expect(shipFactory.createShip('PAAA001')).to.equal(TEST_DATA.PAAA001_Test1);
+			expect(gameObjectFactory.createGameObject('PAAA001')).to.equal(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should resolve references', function() {
-			expect(shipFactory.createShip('PAAA002')).to.have.property('reference').that.equals(TEST_DATA.PAAA001_Test1);
+			expect(gameObjectFactory.createGameObject('PAAA002')).to.have.property('reference').that.equals(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should not resolve blacklisted references', function() {
-			expect(shipFactory.constructor.IGNORED_KEYS).to.include('name'); // Just to make sure
-			expect(shipFactory.createShip('PAAA001')).to
+			expect(gameObjectFactory.constructor.IGNORED_KEYS).to.include('name'); // Just to make sure
+			expect(gameObjectFactory.createGameObject('PAAA001')).to
 				.have.property('name')
 				.that.equals(TEST_DATA.PAAA001_Test1.name);
 		});
 
 		it('should resolve references in nested objects', function() {
-			expect(shipFactory.createShip('PAAA003')).to
+			expect(gameObjectFactory.createGameObject('PAAA003')).to
 				.have.nested.property('nested.reference')
 				.that.equals(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should resolve references in arrays', function() {
-			expect(shipFactory.createShip('PAAA004')).to
+			expect(gameObjectFactory.createGameObject('PAAA004')).to
 				.have.property('arr')
 				.that.is.an('array')
 				.that.includes(TEST_DATA.PAAA001_Test1);
 		});
 
 		it('should fully resolve complex objects', function() {
-			expect(shipFactory.createShip('PAAA005')).to
+			expect(gameObjectFactory.createGameObject('PAAA005')).to
 				.have.nested.property('nested.arr[0].reference')
 				.that.equals(TEST_DATA.PAAA001_Test1);
 		})

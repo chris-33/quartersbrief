@@ -1,7 +1,7 @@
 var log = require('loglevel');
 
 /**
- * Regex to find reference codes (including a ship's code).
+ * Regex to find game object reference codes.
  * References all start with the capital letter P, followed
  * by two or three more capital letters and three digits. 
  * 
@@ -19,7 +19,7 @@ const REFERENCE_CODE_REGEX = '^P[A-Z]{2,3}[0-9]{3}';
  */
 const REFERENCE_NAME_REGEX = REFERENCE_CODE_REGEX + '_\w+';
 
-class ShipFactory {
+class GameObjectFactory {
 
 	/**
 	 * A list of keys that will be ignored during reference resolution.
@@ -54,8 +54,8 @@ class ShipFactory {
 	 */
 	#everything;
 
-	#knownShipsByID = {};
-	#knownShipsByCode = {};
+	#knownObjectsByID = {};
+	#knownObjectsByCode = {};
 
 	build(designator) {
 		var self = this;
@@ -68,7 +68,7 @@ class ShipFactory {
 			for (let key of Object.keys(data)) {
 				// Therefore, omit certain keys from reference resolution. See
 				// JSDoc comment for IGNORED_KEYS.
-				if (ShipFactory.IGNORED_KEYS.includes(key)) {
+				if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
 					log.debug(`Ignored key ${key} because it is blacklisted`);	
 					continue;
 				}
@@ -131,65 +131,65 @@ class ShipFactory {
 		ship = resolveReferences(ship);
 
 		// Put ship in the caches
-		self.#knownShipsByID[ship.id] = ship;
-		self.#knownShipsByCode[ship.index] = ship;
+		self.#knownObjectsByID[ship.id] = ship;
+		self.#knownObjectsByCode[ship.index] = ship;
 
 		return ship;
 	}
 
 	/**
-	 * Creates a Ship object for the ship with the given designator. 
-	 * If the ship was requested before, it will be read from cache. 
+	 * Creates a game object for the object with the given designator. 
+	 * If the object was requested before, it will be read from cache. 
 	 * Otherwise, it will be constructed.
-	 * @param  {Number|String} designator The designator for the ship
+	 * @param  {Number|String} designator The designator for the object
 	 * to get. This can either be a number, in which case it will be assumed
-	 * to be the ship's ID. Or it can be a string, in which case it will
-	 * be assumed to be the ship's reference code.
-	 * @return {Ship} The ship for that designator.
-	 * @throws Will throw an error ("No data set") if the ShipFactory's data has not
+	 * to be the object's ID. Or it can be a string, in which case it will
+	 * be assumed to be the object's reference code.
+	 * @return {GameObject} The game object for that designator.
+	 * @throws Will throw an error ("No data set") if the GameObjectManager's data has not
 	 * been set using {@link setEverything}.
 	 * @throws Will throw an error ("Invalid argument") if a malformed
 	 * designator is passed.
 	 */
-	createShip(designator) {
+	createGameObject(designator) {
 		var self = this;
 
 		var t0 = Date.now();
 
-		log.debug('Create ship for designator ' + designator)
+		log.debug('Create game object for designator ' + designator)
 		
 		if (!self.#everything)
 			throw new Error('No data set. Make sure to set data using setEverything before requesting.');
 
-		var ship;
+		var gameObject;
 		
 		// Check if a ship of that designator is already known.
 		// If so, return it.
-		// If designator is a number, it is the ID of the requested ship
+		// If designator is a number, it is the ID of the requested game object
 		if (typeof designator === 'number') {
-			ship = self.#knownShipsByID[designator];
+			gameObject = self.#knownObjectsByID[designator];
 		} else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) {
-			ship = self.#knownShipsByCode[designator];
+			gameObject = self.#knownObjectsByCode[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID or a reference code.`);
 
 
-		if (!ship) {		
-			// Ship is not yet known, construct it.
-			log.debug('Ship was not in cache, constructing');
-			ship = self.build(designator);
+		if (!gameObject) {		
+			// Object is not yet known, construct it.
+			log.debug('Game object was not in cache, constructing');
+			gameObject = self.build(designator);
 		}
 
-		log.info('Retrieved ship ' + ship.name + ' in ' + (Date.now() - t0) + 'ms');
-		return ship; 
+		log.info(`Retrieved game object ${gameObject.name} in ${Date.now() - t0} ms`);
+		return gameObject; 
 	}
 
 	setEverything(everything) {
 		var self = this;
 
 		// Reset caches:
-		self.#knownShipsByID = {}; 
-		self.#knownShipsByCode = {};
+		self.#knownObjectsByID = {}; 
+		self.#knownObjectsByCode = {};
 
 		self.#everything = everything;
 	}
@@ -197,4 +197,4 @@ class ShipFactory {
 
 
 
-module.exports = new ShipFactory();
+module.exports = new GameObjectFactory();
