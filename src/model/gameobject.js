@@ -50,9 +50,9 @@ class GameObject {
 	}
 
 	/**
-	 * Returns this `GameObject`'s `typeinfo.type`. It is shorthand for
+	 * Returns this `GameObject`'s `typeinfo.type`, if such exists. It is shorthand for
 	 * calling `get(typeinfo.type)`.
-	 * @return {String}
+	 * @return {String} `typeinfo.type`, or `undefined` if not available.
 	 */
 	type() {
 		return this.get('typeinfo.type');
