@@ -35,7 +35,6 @@ describe('GameObjectFactory', function() {
 				arr: ['PAAA002_Test2']
 			}
 		}
-
 	};
 
 	describe('#createGameObject', function() {
@@ -68,33 +67,39 @@ describe('GameObjectFactory', function() {
 		it('should be able to retrieve a simple object by reference code', function() {			
 			expect(gameObjectFactory.createGameObject('PAAA001')).to.equal(TEST_DATA.PAAA001_Test1);
 		});
+	});
 
-		it('should resolve references', function() {
-			expect(gameObjectFactory.createGameObject('PAAA002')).to.have.property('reference').that.equals(TEST_DATA.PAAA001_Test1);
+	describe('#expandReferences', function() {
+		beforeEach(function() {
+			gameObjectFactory.setEverything(TEST_DATA);
 		});
 
-		it('should not resolve blacklisted references', function() {
+		it('should expand references', function() {
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA002_Test2)).to.have.property('reference').that.equals(TEST_DATA.PAAA001_Test1);
+		});
+
+		it('should not expand blacklisted references', function() {
 			expect(gameObjectFactory.constructor.IGNORED_KEYS).to.include('name'); // Just to make sure
-			expect(gameObjectFactory.createGameObject('PAAA001')).to
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA001_Test1)).to
 				.have.property('name')
 				.that.equals(TEST_DATA.PAAA001_Test1.name);
 		});
 
-		it('should resolve references in nested objects', function() {
-			expect(gameObjectFactory.createGameObject('PAAA003')).to
+		it('should expand references in nested objects', function() {
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA003_Test3)).to
 				.have.nested.property('nested.reference')
 				.that.equals(TEST_DATA.PAAA001_Test1);
 		});
 
-		it('should resolve references in arrays', function() {
-			expect(gameObjectFactory.createGameObject('PAAA004')).to
+		it('should expand references in arrays', function() {
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA004_Test4)).to
 				.have.property('arr')
 				.that.is.an('array')
 				.that.includes(TEST_DATA.PAAA001_Test1);
 		});
 
-		it('should fully resolve complex objects', function() {
-			expect(gameObjectFactory.createGameObject('PAAA005')).to
+		it('should fully expand complex objects', function() {
+			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA005_Test5)).to
 				.have.nested.property('nested.arr[0].reference')
 				.that.equals(TEST_DATA.PAAA001_Test1);
 		})

@@ -57,84 +57,55 @@ class GameObjectFactory {
 	#knownObjectsByID = {};
 	#knownObjectsByCode = {};
 
-	build(designator) {
+	expandReferences(data) {
 		var self = this;
 
-		// Helper function that resolves all the references (i.e., any of its properties
-		// that are a string value matching the REFERENCE_CODE_REGEX) with the data for
-		// that value as read from the #everything property.
-		function resolveReferences(data) {						
-			// Iterate over all keys in the current object
-			for (let key of Object.keys(data)) {
-				// Therefore, omit certain keys from reference resolution. See
-				// JSDoc comment for IGNORED_KEYS.
-				if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
-					log.debug(`Ignored key ${key} because it is blacklisted`);	
-					continue;
-				}
-
-				// If the current key's value is a reference code, replace the code with
-				// its actual content.
-				if (typeof data[key] === 'string' && data[key].match(REFERENCE_CODE_REGEX)) {				
-					// Only replace if the reference could actually be expanded
-					// If not, just keep the reference in there
-					// This can be the case with some unfortunately-named components
-					// in game files.
-					// See e.g. PASA010_Ranger_1944, where the planes are called
-					// PAUB002_Grumman_TBF, and then referenced as such in the
-					// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
-					// most other files use. This matches the regex, obviously, but
-					// no data of that refcode will be found in #everything.
-					let expanded = self.#everything[data[key]];
-					if (expanded) {
-						log.debug(`Expanded reference ${data[key]}`);
-						data[key] = expanded;
-					} else {
-						log.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
-					}	
-				}
-				// If the current key's value is an...
-				switch (typeof data[key]) {
-					// ...  object: resolve it recursively.
-					case 'object': 
-						// Because typeof null === 'object'
-						if (data[key] === null) break;
-						data[key] = resolveReferences(data[key]);
-						break;
-					// ... array: resolve each of its entries recursively.
-					case 'array': 
-						for (let i = 0; i< data[key].length; i++)
-							data[key][i] = resolveReferences(data[key][i]);
-					// Otherwise keep everything as is.						
-					default:
-				}
+		// Iterate over all keys in the current object
+		for (let key of Object.keys(data)) {
+			// Therefore, omit certain keys from reference resolution. See
+			// JSDoc comment for IGNORED_KEYS.
+			if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
+				log.debug(`Ignored key ${key} because it is blacklisted`);	
+				continue;
 			}
-			return data;
+
+			// If the current key's value is a reference code, replace the code with
+			// its actual content.
+			if (typeof data[key] === 'string' && data[key].match(REFERENCE_CODE_REGEX)) {				
+				// Only replace if the reference could actually be expanded
+				// If not, just keep the reference in there
+				// This can be the case with some unfortunately-named components
+				// in game files.
+				// See e.g. PASA010_Ranger_1944, where the planes are called
+				// PAUB002_Grumman_TBF, and then referenced as such in the
+				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
+				// most other files use. This matches the regex, obviously, but
+				// no data of that refcode will be found in #everything.
+				let expanded = self.#everything[data[key]];
+				if (expanded) {
+					log.debug(`Expanded reference ${data[key]}`);
+					data[key] = expanded;
+				} else {
+					log.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
+				}	
+			}
+			// If the current key's value is an...
+			switch (typeof data[key]) {
+				// ...  object: resolve it recursively.
+				case 'object': 
+					// Because typeof null === 'object'
+					if (data[key] === null) break;
+					data[key] = self.expandReferences(data[key]);
+					break;
+				// ... array: resolve each of its entries recursively.
+				case 'array': 
+					for (let i = 0; i< data[key].length; i++)
+						data[key][i] = self.expandReferences(data[key][i]);
+				// Otherwise keep everything as is.						
+				default:
+			}
 		}
-
-		var ship;
-
-		// Step 1: Get the right data object from #everything
-		// To find that object, it must either have a property 'id' that equals
-		// the designator value if the designator was a number,
-		// or have a property 'index' that equals the designator value if the
-		// designator was a refcode.
-		let findFn;
-		if (typeof designator === 'number') 
-			findFn = (obj => obj.id && obj.id === designator);
-		else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) 
-			findFn = (obj => obj.index && obj.index === designator)
-
-		ship = Object.values(self.#everything).find(findFn)
-
-		// Step 2: Resolve all references in the ship
-		ship = resolveReferences(ship);
-
-		// Put ship in the caches
-		self.#knownObjectsByID[ship.id] = ship;
-		self.#knownObjectsByCode[ship.index] = ship;
-
-		return ship;
+		return data;
 	}
 
 	/**
@@ -177,7 +148,23 @@ class GameObjectFactory {
 		if (!gameObject) {		
 			// Object is not yet known, construct it.
 			log.debug('Game object was not in cache, constructing');
-			gameObject = self.build(designator);
+
+			// Get the right data from #everything
+			// To find that object, it must either have a property 'id' that equals
+			// the designator value if the designator was a number,
+			// or have a property 'index' that equals the designator value if the
+			// designator was a refcode.
+			let findFn;
+			if (typeof designator === 'number') 
+				findFn = (obj => obj.id && obj.id === designator);
+			else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) 
+				findFn = (obj => obj.index && obj.index === designator)
+			gameObject = Object.values(self.#everything).find(findFn);
+
+			// Put game object in the caches
+			self.#knownObjectsByID[gameObject.id] = gameObject;
+			self.#knownObjectsByCode[gameObject.index] = gameObject;
+
 		}
 
 		log.info(`Retrieved game object ${gameObject.name} in ${Date.now() - t0} ms`);
