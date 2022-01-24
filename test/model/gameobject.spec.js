@@ -7,12 +7,11 @@ describe('GameObject', function() {
 		nested: { prop3: 'prop3' },
 		arr: [ 'prop4' ] 
 	};
-	describe('#constructor', function() {
-		it('should copy all properties from the source', function() {
-			expect(new GameObject(TEST_DATA)).to.deep.equal(TEST_DATA);
-		});
-	});
 
+	it('should copy all properties from the source', function() {
+		expect(new GameObject(TEST_DATA)).to.deep.equal(TEST_DATA);
+	});
+	
 	describe('#get', function() {		
 		it('should get top-level properties', function() {						
 			for (key of Object.keys(TEST_DATA))
