@@ -3,6 +3,7 @@
     "start": "node quartersbrief.js",
     "test": "node_modules/mocha/bin/mocha --colors --require test/mocha.conf.js test/**/*.spec.js",
     "debug": "node inspect quartersbrief.js",
+    "debug-test": "node_modules/mocha/bin/mocha inspect --colors --require test/mocha.conf.js test/**/*.spec.js",
     "postinstall": "npx basetag link"
   },
   "dependencies": {
