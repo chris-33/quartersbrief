@@ -128,6 +128,17 @@
             "canBuy": true,
             "components": {
                 "fireControl": [
+                    "AB3_FireControl"
+                ]
+            },
+            "nextShips": [],
+            "prev": "SUO_MIDDLE",
+            "ucType": "_Suo"
+        },
+        "SUO_MIDDLE": {
+            "canBuy": true,
+            "components": {
+                "fireControl": [
                     "AB2_FireControl"
                 ]
             },
