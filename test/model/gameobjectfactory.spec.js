@@ -6,13 +6,19 @@ describe('GameObjectFactory', function() {
 		PAAA001_Test1: {
 			id: 1,
 			index: 'PAAA001',
-			name: 'PAAA001_Test1'
+			name: 'PAAA001_Test1',
+			typeinfo: {
+				type: 'Type1'
+			}
 		},
 		PAAA002_Test2: {
 			id: 2,
 			index: 'PAAA002',
 			name: 'PAAA002_Test2',
-			reference: 'PAAA001_Test1'
+			reference: 'PAAA001_Test1',
+			typeinfo: {
+				type: 'Type1'
+			}
 		},
 		PAAA003_Test3: {
 			id: 3,
@@ -20,13 +26,19 @@ describe('GameObjectFactory', function() {
 			name: 'PAAA003_Test3',
 			nested: {
 				reference: 'PAAA001_Test1'
+			},
+			typeinfo: {
+				type: 'Type2'
 			}
 		},
 		PAAA004_Test4: {
 			id: 4,
 			index: 'PAAA004',
 			name: 'PAAA004_Test4',
-			arr: ['PAAA001_Test1']
+			arr: ['PAAA001_Test1'],
+			typeinfo: {
+				type: 'Type2'
+			}
 		},
 		PAAA005_Test5: {
 			id: 5,
@@ -34,6 +46,9 @@ describe('GameObjectFactory', function() {
 			name: 'PAAA005_Test5',
 			nested: {
 				arr: ['PAAA002_Test2']
+			},
+			typeinfo: {
+				type: 'Type2'
 			}
 		}
 	};
@@ -115,6 +130,20 @@ describe('GameObjectFactory', function() {
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA005_Test5)).to
 				.have.nested.property('nested.arr[0].reference')
 				.that.deep.equals(TEST_DATA.PAAA001_Test1);
+		});
+	});
+
+	describe('.listCodesForType', function() {
+		beforeEach(function() {
+			gameObjectFactory.setEverything(TEST_DATA);
+		});
+
+		it('should get the reference codes for all objects with a given type', function() {
+			expect(gameObjectFactory.listCodesForType('Type1')).to
+				.have.members([TEST_DATA.PAAA001_Test1.index, TEST_DATA.PAAA002_Test2.index]);
+
+			expect(gameObjectFactory.listCodesForType('Type2')).to
+				.have.members([TEST_DATA.PAAA003_Test3.index, TEST_DATA.PAAA004_Test4.index, TEST_DATA.PAAA005_Test5.index]);
 		});
 	});
 });

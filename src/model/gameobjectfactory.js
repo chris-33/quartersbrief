@@ -7,7 +7,7 @@ var GameObject = require('$/src/model/gameobject');
  * by two or three more capital letters and three digits. 
  * 
  * Example: PASC206, PAD049
- * @type {String}
+ * @type {RegExp}
  */
 const REFERENCE_CODE_REGEX = new RegExp('^P[A-Z]{2,3}[0-9]{3}');
 /**
@@ -16,10 +16,13 @@ const REFERENCE_CODE_REGEX = new RegExp('^P[A-Z]{2,3}[0-9]{3}');
  * character. 
  *
  * Example: PASC206_Dallas
- * @type {String}
+ * @type {RegExp}
  */
 const REFERENCE_NAME_REGEX = new RegExp(REFERENCE_CODE_REGEX.source + '_\\w+');
 
+/**
+ * @see GameObject
+ */
 class GameObjectFactory {
 
 	/**
@@ -131,8 +134,7 @@ class GameObjectFactory {
 		var t0 = Date.now();
 		log.debug('Create game object for designator ' + designator)
 		
-		if (!self.#everything)
-			throw new Error('No data set. Make sure to set data using setEverything before requesting.');
+		self.#checkEverything();
 
 		var gameObject;
 		
@@ -149,7 +151,7 @@ class GameObjectFactory {
 		} else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) {
 			gameObject = self.#knownObjectsByCode[designator];
 		} else
-			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID or a reference code.`);
+			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 
 		if (!gameObject) {		
 			// Object is not yet known, construct it.
@@ -177,6 +179,25 @@ class GameObjectFactory {
 		return new GameObject(gameObject); 
 	}
 
+	/**
+	 * Returns a list of ref codes of all the objects whose `typeinfo.type`
+	 * property matches the given `type`.
+	 * @param  {String} type The type to look for
+	 * @return {Array}      A list of ref codes for all the objects that
+	 * have that type.
+	 * @throws Throws an error if no data has been set. 
+	 */
+	listCodesForType(type) {
+		var self = this;
+
+		log.debug(`Getting all ref codes for type ${type}`);
+		self.#checkEverything();
+
+		return Object.values(self.#everything)
+			.filter(obj => obj.typeinfo && obj.typeinfo.type === type)
+			.map(obj => obj.index);
+	}
+
 	setEverything(everything) {
 		var self = this;
 
@@ -186,6 +207,16 @@ class GameObjectFactory {
 		self.#knownObjectsByName = {};
 		
 		self.#everything = everything;
+	}
+
+	/**
+	 * Checks that this#everything has been set, throws if it hasn't
+	 * @throws Throws an error if this.#everything is `null` or `undefined`.
+	 * @private
+	 */
+	#checkEverything() {
+		if (!this.#everything)
+			throw new Error('No data set. Make sure to set data using setEverything before requesting.');
 	}
 }
 
