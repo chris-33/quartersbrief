@@ -7,6 +7,7 @@ const KEYS = {
 	SHIPTYPES: 'shiptype',
 	BLACKLIST: 'excludes',
 	WHITELIST: 'ships',
+	SLOT: 'slot'
 };
 
 /**
@@ -35,6 +36,8 @@ class Modernization extends GameObject {
 			throw new TypeError('Modernizations can only be applied to ships');
 		var name = ship.getName();
 
+		// If slot is -1, that means the modernization has been removed from the game.
+		if (self.getSlot() === -1) return false;
 		// If the ship is whitelisted, return true no matter what
 		if (self.getWhitelist().includes(ship.getName())) return true;
 		// If the ship is blacklisted, return false no matter what
@@ -66,7 +69,7 @@ class Modernization extends GameObject {
 	getShipTypes() { return this.get(KEYS.SHIPTYPES); }
 	getBlacklist() { return this.get(KEYS.BLACKLIST); }
 	getWhitelist() { return this.get(KEYS.WHITELIST); }
-
+	getSlot() { return this.get(KEYS.SLOT); }
 }
 
 module.exports = Modernization;

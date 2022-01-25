@@ -11,27 +11,33 @@ describe('Modernization', function() {
 	});
 
 	describe('.eligible', function() {
+		var ship;
+
+		before(function() {
+			ship = new Ship(TEST_DATA.SHIPS.T8BB);	
+		});
+
+		it('should always find modernizations with slot -1 ineligible', function() {
+			expect(new Modernization(TEST_DATA.MODERNIZATIONS.DISABLED).eligible(ship)).to
+				.be.false;
+		});
+
 		it('should always find whitelisted ships eligible', function() {						
-			var ship = new Ship(TEST_DATA.SHIPS.T8BB);
 			expect(new Modernization(TEST_DATA.MODERNIZATIONS.WHITELISTED).eligible(ship)).to
 				.be.true;
 		});
 
 		it('should always find blacklisted ships ineligible', function() {
-			var ship = new Ship(TEST_DATA.SHIPS.T8BB);
 			expect(new Modernization(TEST_DATA.MODERNIZATIONS.BLACKLISTED).eligible(ship)).to
 				.be.false;
 		});
 
 		it('should find a ship whose tier, nation and type match eligible', function() {
-			var ship = new Ship(TEST_DATA.SHIPS.T8BB);
 			expect(new Modernization(TEST_DATA.MODERNIZATIONS.MATCH).eligible(ship)).to
 				.be.true;
 		});
 
 		it('should find a ship whose tier, nation, or type do not match ineligible', function() {
-			var ship = new Ship(TEST_DATA.SHIPS.T8BB);
-
 			expect(new Modernization(TEST_DATA.MODERNIZATIONS.MISMATCH_TIER).eligible(ship)).to
 				.be.false;
 			expect(new Modernization(TEST_DATA.MODERNIZATIONS.MISMATCH_NATION).eligible(ship)).to

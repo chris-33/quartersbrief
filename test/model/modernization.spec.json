@@ -22,6 +22,7 @@
 			"shiplevel": [9,10],
 			"nation": ["Germany"],
 			"shiptype": ["Cruiser"],
+			"slot": 1,
 			"ships": ["PAAA001_Battleship"]
 		},
 		"BLACKLISTED": {
@@ -32,6 +33,7 @@
 			"shiplevel": [8,9,10],
 			"nation": ["USA"],
 			"shiptype": ["Battleship"],
+			"slot": 1,
 			"ships": []
 		},
 		"MATCH": {
@@ -42,6 +44,7 @@
 			"shiplevel": [8,9,10],
 			"nation": [],
 			"shiptype": ["Destroyer","Battleship"],
+			"slot": 1,
 			"ships": []			
 		},
 		"MISMATCH_TIER": {
@@ -52,6 +55,7 @@
 			"shiplevel": [9,10],
 			"nation": [],
 			"shiptype": ["Destroyer","Battleship"],
+			"slot": 1,
 			"ships": []			
 		},
 		"MISMATCH_NATION": {
@@ -62,6 +66,7 @@
 			"shiplevel": [8,9,10],
 			"nation": ["Germany"],
 			"shiptype": ["Destroyer","Battleship"],
+			"slot": 1,
 			"ships": []			
 		},
 		"MISMATCH_TYPE": {
@@ -72,6 +77,18 @@
 			"shiplevel": [8,9,10],
 			"nation": [],
 			"shiptype": ["Destroyer"],
+			"slot": 1,
+			"ships": []			
+		},
+		"DISABLED": {
+			"excludes": [],
+			"modifiers": {},
+			"name": "PCM007_Match",
+			"index": "PCM007",
+			"shiplevel": [8,9,10],
+			"nation": [],
+			"shiptype": ["Destroyer","Battleship"],
+			"slot": -1,
 			"ships": []			
 		}
 	}
