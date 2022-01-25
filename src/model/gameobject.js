@@ -1,10 +1,19 @@
+const KEYS = {
+	NAME: 'name',
+	REFCODE: 'index',
+	ID: 'id',
+	TYPEINFO: 'typeinfo',
+	TYPE: 'typeinfo.type'
+}
 /**
  * This is a thin wrapper around game object definitions as they can be read from
- * GameParams.data. 
+ * `GameParams.data`. 
  *
- * GameObject provides easy access to even nested and array properties using dot
- * notation. 
- * 
+ * `GameObject` provides easy access to even nested and array properties using dot
+ * notation. {@link #get}
+ *
+ * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
+ * object.
  */
 class GameObject {
 	/**
@@ -16,7 +25,7 @@ class GameObject {
 		var self = this;
 
 		// Copy over everything from data
-		Object.assign(self, data);				
+		Object.assign(self, data);						
 	}
 
 	/**
@@ -49,14 +58,11 @@ class GameObject {
 			.reduce((obj, key) => obj ? obj[key] : undefined);	
 	}
 
-	/**
-	 * Returns this `GameObject`'s `typeinfo.type`, if such exists. It is shorthand for
-	 * calling `get(typeinfo.type)`.
-	 * @return {String} `typeinfo.type`, or `undefined` if not available.
-	 */
-	type() {
-		return this.get('typeinfo.type');
-	}
+	getType() { return this.get(KEYS.TYPE); }
+	getTypeInfo() { return this.get(KEYS.TYPEINFO); }
+	getName() { return this.get(KEYS.NAME); }
+	getRefcode() { return this.get(KEYS.REFCODE); }	getIndex() { return getRefcode(); }
+	getID() { return this.get(KEYS.ID); }
 }
 
 module.exports = GameObject;
