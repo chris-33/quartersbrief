@@ -8,7 +8,7 @@ describe('Ship', function() {
 		expect(new Ship(TEST_DATA)).to.be.an.instanceof(GameObject);
 	});
 
-	describe('#getResearchPaths', function() {
+	describe('.getResearchPaths', function() {
 		it('should start a new path for every component type', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			expect(new Ship(TEST_DATA).getResearchPaths()).to

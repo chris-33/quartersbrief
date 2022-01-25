@@ -38,7 +38,7 @@ describe('GameObjectFactory', function() {
 		}
 	};
 
-	describe('#createGameObject', function() {
+	describe('.createGameObject', function() {
 		beforeEach(function() {
 			gameObjectFactory.setEverything(TEST_DATA);
 		});
@@ -74,7 +74,7 @@ describe('GameObjectFactory', function() {
 		})
 	});
 
-	describe('#expandReferences', function() {
+	describe('.expandReferences', function() {
 		beforeEach(function() {
 			gameObjectFactory.setEverything(TEST_DATA);
 		});
