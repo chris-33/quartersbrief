@@ -13,19 +13,19 @@ describe('Ship', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			expect(new Ship(TEST_DATA).getResearchPaths()).to
 				.be.an('object')
-				.that.has.all.keys(expected.PAUA821_B9_ART_STOCK.ucType, 
-					expected.PAUE832_B9_ENG_STOCK.ucType,
-					expected.PAUH831_Iowa_1943.ucType,
-					expected.PAUS821_Suo.ucType);
+				.that.has.all.keys(expected.ART_STOCK.ucType, 
+					expected.ENG_STOCK.ucType,
+					expected.HULL_STOCK.ucType,
+					expected.SUO_STOCK.ucType);
 		});
 
 		it('should correctly assign upgrades to research paths', function() {
 			var result = new Ship(TEST_DATA).getResearchPaths();
 			var expected = TEST_DATA.ShipUpgradeInfo;
-			for (let ucType of [expected.PAUA821_B9_ART_STOCK.ucType, 
-							expected.PAUH831_Iowa_1943.ucType, 
-							expected.PAUE832_B9_ENG_STOCK.ucType, 
-							expected.PAUS821_Suo.ucType]) {
+			for (let ucType of [expected.ART_STOCK.ucType, 
+							expected.HULL_STOCK.ucType, 
+							expected.ENG_STOCK.ucType, 
+							expected.SUO_STOCK.ucType]) {
 				// Expect the ucTypes of all upgrades in the current research path
 				// to be the same as that of the research path itself
 				expect(result[ucType].every(o => o.ucType === ucType)).to.be.true;
@@ -36,14 +36,14 @@ describe('Ship', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			var result = new Ship(TEST_DATA).getResearchPaths();
 			
-			expect(result[expected.PAUA821_B9_ART_STOCK.ucType]).to
-				.have.ordered.members([expected.PAUA821_B9_ART_STOCK])
-			expect(result[expected.PAUH831_Iowa_1943.ucType]).to
-				.have.ordered.members([expected.PAUH831_Iowa_1943, expected.PAUH832_Iowa_1944]);
-			expect(result[expected.PAUE832_B9_ENG_STOCK.ucType]).to
-				.have.ordered.members([expected.PAUE832_B9_ENG_STOCK, expected.PAUE831_B9_ENG_TOP]);
-			expect(result[expected.PAUS821_Suo.ucType]).to
-				.have.ordered.members([expected.PAUS821_Suo, expected.PAUS822_Suo]);
+			expect(result[expected.ART_STOCK.ucType]).to
+				.have.ordered.members([expected.ART_STOCK])
+			expect(result[expected.HULL_STOCK.ucType]).to
+				.have.ordered.members([expected.HULL_STOCK, expected.HULL_TOP]);
+			expect(result[expected.ENG_STOCK.ucType]).to
+				.have.ordered.members([expected.ENG_STOCK, expected.ENG_TOP]);
+			expect(result[expected.SUO_STOCK.ucType]).to
+				.have.ordered.members([expected.SUO_STOCK, expected.SUO_TOP]);
 		});
 	});
 });

@@ -1,6 +1,6 @@
 {
     "ShipUpgradeInfo": {
-        "PAUA821_B9_ART_STOCK": {
+        "ART_STOCK": {
             "canBuy": true,
             "components": {
                 "artillery": [
@@ -11,7 +11,7 @@
             "prev": "",
             "ucType": "_Artillery"
         },
-        "PAUE831_B9_ENG_TOP": {
+        "ENG_TOP": {
             "canBuy": true,
             "components": {
                 "engine": [
@@ -19,10 +19,10 @@
                 ]
             },
             "nextShips": [],
-            "prev": "PAUE832_B9_ENG_STOCK",
+            "prev": "ENG_STOCK",
             "ucType": "_Engine"
         },
-        "PAUE832_B9_ENG_STOCK": {
+        "ENG_STOCK": {
             "canBuy": true,
             "components": {
                 "engine": [
@@ -33,7 +33,7 @@
             "prev": "",
             "ucType": "_Engine"
         },
-        "PAUH831_Iowa_1943": {
+        "HULL_STOCK": {
             "canBuy": true,
             "components": {
                 "airArmament": [
@@ -72,7 +72,7 @@
             "prev": "",
             "ucType": "_Hull"
         },
-        "PAUH832_Iowa_1944": {
+        "HULL_TOP": {
             "canBuy": true,
             "components": {
                 "airArmament": [
@@ -110,10 +110,10 @@
             "nextShips": [
                 "PASB017_Montana_1945"
             ],
-            "prev": "PAUH831_Iowa_1943",
+            "prev": "HULL_STOCK",
             "ucType": "_Hull"
         },
-        "PAUS821_Suo": {
+        "SUO_STOCK": {
             "canBuy": true,
             "components": {
                 "fireControl": [
@@ -124,7 +124,7 @@
             "prev": "",
             "ucType": "_Suo"
         },
-        "PAUS822_Suo": {
+        "SUO_TOP": {
             "canBuy": true,
             "components": {
                 "fireControl": [
@@ -132,7 +132,7 @@
                 ]
             },
             "nextShips": [],
-            "prev": "PAUS821_Suo",
+            "prev": "SUO_STOCK",
             "ucType": "_Suo"
         },
         "costCR": 15500000,
