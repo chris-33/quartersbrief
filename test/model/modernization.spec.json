@@ -1,0 +1,78 @@
+{
+	"SHIPS": {
+		"T8BB": {
+			"id": 1,
+			"name": "PAAA001_Battleship",
+			"index": "PAAA001",
+			"level": 8,
+			"ShipUpgradeInfo": {},
+			"typeinfo": { 
+				"nation": "USA",
+				"species": "Battleship",
+				"type": "Ship"
+			}
+		}
+	},
+	"MODERNIZATIONS": {
+		"WHITELISTED": {
+			"excludes": [],
+			"modifiers": {},
+			"name": "PCM001_Whitelist",
+			"index": "PCM001",
+			"shiplevel": [9,10],
+			"nation": ["Germany"],
+			"shiptype": ["Cruiser"],
+			"ships": ["PAAA001_Battleship"]
+		},
+		"BLACKLISTED": {
+			"excludes": ["PAAA001_Battleship"],
+			"modifiers": {},
+			"name": "PCM002_Blacklist",
+			"index": "PCM002",
+			"shiplevel": [8,9,10],
+			"nation": ["USA"],
+			"shiptype": ["Battleship"],
+			"ships": []
+		},
+		"MATCH": {
+			"excludes": [],
+			"modifiers": {},
+			"name": "PCM003_Match",
+			"index": "PCM003",
+			"shiplevel": [8,9,10],
+			"nation": [],
+			"shiptype": ["Destroyer","Battleship"],
+			"ships": []			
+		},
+		"MISMATCH_TIER": {
+			"excludes": [],
+			"modifiers": {},
+			"name": "PCM004_Mismatch_Tier",
+			"index": "PCM004",
+			"shiplevel": [9,10],
+			"nation": [],
+			"shiptype": ["Destroyer","Battleship"],
+			"ships": []			
+		},
+		"MISMATCH_NATION": {
+			"excludes": [],
+			"modifiers": {},
+			"name": "PCM005_Mismatch_Nation",
+			"index": "PCM005",
+			"shiplevel": [8,9,10],
+			"nation": ["Germany"],
+			"shiptype": ["Destroyer","Battleship"],
+			"ships": []			
+		},
+		"MISMATCH_TYPE": {
+			"excludes": [],
+			"modifiers": {},
+			"name": "PCM006_Mismatch_Type",
+			"index": "PCM006",
+			"shiplevel": [8,9,10],
+			"nation": [],
+			"shiptype": ["Destroyer"],
+			"ships": []			
+		}
+	}
+}
