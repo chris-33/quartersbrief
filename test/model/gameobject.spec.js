@@ -11,7 +11,46 @@ describe('GameObject', function() {
 	it('should copy all properties from the source', function() {
 		expect(new GameObject(TEST_DATA)).to.deep.equal(TEST_DATA);
 	});
-	
+
+	describe('.set', function() {
+		var obj;
+
+		beforeEach(function() {
+			obj = new GameObject(TEST_DATA);
+		});
+
+		it('should set existing top-level properties', function() {
+			obj.set('prop1', 'newvalue');
+			expect(obj.prop1).to.equal('newvalue');
+		});
+
+		it('should set new top-level properties', function() {
+			obj.set('prop3', 'string');
+			expect(obj).to
+				.have.property('prop3')
+				.that.equals('string');
+		});
+
+		it('should set nested properties with dot notation', function() {
+			obj.set('nested.prop3', 'newvalue');
+			expect(obj.nested.prop3).to.equal('newvalue');
+		});
+
+		it('should create missing intermediate level when setting nested properties', function(){
+			obj.set('nested.morenested.prop', 'newvalue');
+			expect(obj.nested).to
+				.have.property('morenested');
+			expect(obj.nested.morenested).to
+				.have.property('prop')
+				.that.equals('newvalue');
+		});
+
+		it('should set array array items with dot notation', function(){
+			obj.set('arr.0', 'newvalue');
+			expect(obj.arr).to.have.members(['newvalue']);
+		});
+	});
+
 	describe('.get', function() {		
 		it('should get top-level properties', function() {						
 			for (key of Object.keys(TEST_DATA))

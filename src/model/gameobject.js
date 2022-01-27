@@ -58,6 +58,32 @@ class GameObject {
 			.reduce((obj, key) => obj ? obj[key] : undefined);	
 	}
 
+	/**
+	 * Sets the given key name to the passed value. 
+	 *
+	 * The key supports dot notation. If any intermediate levels are missing,
+	 * they will be created. For example, `new GameObject({a: {}).set('a.b.c', 5)` 
+	 * will result in `{a: b: 5}}`.
+	 * @param {string} key   The key to set.
+	 * @param {*} value The value to set it to.
+	 */
+	set(key, value) {
+		var self = this;
+
+		var path = key.split('.');
+		var target = self;
+		// Traverse the path except for the last key. 
+		// The last one needs to be kept so we can assign
+		// a value to it 
+		while (path.length > 1) {
+			let currKey = path.shift(); // Remove first element			
+			if (!target[currKey]) 
+				target[currKey] = {}; // Create intermediate levels if they are missing
+			target = target[currKey];
+		}
+		target[path.shift()] = value;
+	}
+
 	getType() { return this.get(KEYS.TYPE); }
 	getTypeInfo() { return this.get(KEYS.TYPEINFO); }
 	getName() { return this.get(KEYS.NAME); }
