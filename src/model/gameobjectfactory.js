@@ -58,10 +58,6 @@ class GameObjectFactory {
 	 */
 	#everything;
 
-	#knownObjectsByID = {};
-	#knownObjectsByCode = {};
-	#knownObjectsByName = {};
-
 	expandReferences(data) {
 		var self = this;
 
@@ -138,45 +134,21 @@ class GameObjectFactory {
 
 		var gameObject;
 		
-		// Check if a game object of that designator is already known.
-		// If so, return it.
-		// If designator is a number, it is the ID of the requested game object
-		// Otherwise it can either be a reference code (e.g. PASC001) or a
-		// reference name (i.e, a reference code followed by an underscore and
-		// one or more alphanumeric characters)
-		if (typeof designator === 'number') {
-			gameObject = self.#knownObjectsByID[designator];
-		} else if (typeof designator === 'string' && designator.match(REFERENCE_NAME_REGEX)) {
-			gameObject = self.#knownObjectsByName[designator];
-		} else if (typeof designator === 'string' && designator.match(REFERENCE_CODE_REGEX)) {
-			gameObject = self.#knownObjectsByCode[designator];
+		if (typeof designator === 'number') { // designator is an ID
+			// Find an object that has an 'id' property the same as designator
+			gameObject = Object.values(self.#everything).find(obj => obj.id && obj.id === designator);
+		} else if (typeof designator === 'string' && REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
+			// Access self.#everything directly, as reference names are already its keys
+			gameObject = self.#everything[designator];
+		} else if (typeof designator === 'string' && REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
+			// Find an object that has an 'index' property the same as designator
+			gameObject = Object.values(self.#everything).find(obj => obj.index && obj.index === designator);
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
-
-		if (!gameObject) {		
-			// Object is not yet known, construct it.
-			log.debug('Game object was not in cache, constructing');
-
-			if (typeof designator === 'number') { // designator is an ID
-				// Find an object that has an 'id' property the same as designator
-				gameObject = Object.values(self.#everything).find(obj => obj.id && obj.id === designator);
-			} else if (typeof designator === 'string' && REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
-				// Access self.#everything directly, as reference names are already its keys
-				gameObject = self.#everything[designator];
-			} else if (typeof designator === 'string' && REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
-				// Find an object that has an 'index' property the same as designator
-				gameObject = Object.values(self.#everything).find(obj => obj.index && obj.index === designator);
-			}
-
-			// Put game object in the caches
-			self.#knownObjectsByID[gameObject.id] = gameObject;
-			self.#knownObjectsByCode[gameObject.index] = gameObject;
-			self.#knownObjectsByCode[gameObject.name] = gameObject;
-
-		}
-
+			
+		gameObject = new GameObject(gameObject);
 		log.info(`Retrieved game object ${gameObject.name} in ${Date.now() - t0} ms`);
-		return new GameObject(gameObject); 
+		return gameObject; 
 	}
 
 	/**
@@ -200,12 +172,6 @@ class GameObjectFactory {
 
 	setEverything(everything) {
 		var self = this;
-
-		// Reset caches:
-		self.#knownObjectsByID = {}; 
-		self.#knownObjectsByCode = {};
-		self.#knownObjectsByName = {};
-		
 		self.#everything = everything;
 	}
 
