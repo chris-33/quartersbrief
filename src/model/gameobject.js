@@ -39,7 +39,8 @@ class GameObject {
 	 * - `go.get('arr.0')` is the same as `go.arr[0]`
 	 * @param  {string} key The key to look up
 	 * @return {*}     The value for that key, or undefined if no property of
-	 * that key exists within the object.
+	 * that key exists within the object. Note that this will also be the case
+	 * if any intermediate levels are not defined when using dot notation.
 	 */
 	get(key) {
 		var self = this;
@@ -47,15 +48,14 @@ class GameObject {
 		// Split the key into its parts. These can be thought of as "path elements"
 		// to traverse along the data object
 		var path = key.split('.');
-		// Make an array that consists of the provided object as the first element
-		// and the path elements after that
-		return [self].concat(path)
-			// Perform the lookup by reducing the array
-			// This will perform a stepwise lookup of key
-			// in the current obj.
-			// See Array.prototype.reduce on MDN
-			// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/Reduce
-			.reduce((obj, key) => obj ? obj[key] : undefined);	
+		var target = self;
+		while(path.length > 0) {
+			let currKey = path.shift();
+			target = target[currKey];
+			if (!target) 
+				return target; // If current level missing, exit now
+		}
+		return target;
 	}
 
 	/**

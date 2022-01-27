@@ -12,6 +12,31 @@ describe('GameObject', function() {
 		expect(new GameObject(TEST_DATA)).to.deep.equal(TEST_DATA);
 	});
 
+	describe('.get', function() {		
+		it('should get top-level properties', function() {						
+			for (key of Object.keys(TEST_DATA))
+				expect(new GameObject(TEST_DATA).get(key)).to.equal(TEST_DATA[key]);
+		});
+
+		it('should get nested properties with dot notation', function() {
+			expect(new GameObject(TEST_DATA).get('nested.prop3')).to.equal(TEST_DATA.nested.prop3);
+		});
+
+		it('should get array entries with dot notation', function() {
+			expect(new GameObject(TEST_DATA).get('arr.0')).to.equal(TEST_DATA.arr[0]);
+		});
+
+		it('should return undefined if no such property exists', function() {
+			var go = new GameObject(TEST_DATA);
+			expect(go.get('doesnotexist')).to.be.undefined;
+		});
+
+		it('should return undefined if any intermediate levels are missing when using dot notation', function() {
+			var go = new GameObject(TEST_DATA);
+			expect(go.get('doesnotexist.withdotnotation')).to.be.undefined;			
+		});
+	});
+
 	describe('.set', function() {
 		var obj;
 
@@ -49,26 +74,5 @@ describe('GameObject', function() {
 			obj.set('arr.0', 'newvalue');
 			expect(obj.arr).to.have.members(['newvalue']);
 		});
-	});
-
-	describe('.get', function() {		
-		it('should get top-level properties', function() {						
-			for (key of Object.keys(TEST_DATA))
-				expect(new GameObject(TEST_DATA).get(key)).to.equal(TEST_DATA[key]);
-		});
-
-		it('should get nested properties with dot notation', function() {
-			expect(new GameObject(TEST_DATA).get('nested.prop3')).to.equal(TEST_DATA.nested.prop3);
-		});
-
-		it('should get array entries with dot notation', function() {
-			expect(new GameObject(TEST_DATA).get('arr.0')).to.equal(TEST_DATA.arr[0]);
-		});
-
-		it('should return undefined if no such property exists', function() {
-			var go = new GameObject(TEST_DATA);
-			expect(go.get('doesnotexist')).to.be.undefined;
-			expect(go.get('doesnotexist.withdotnotation')).to.be.undefined;
-		})
-	});
+	});	
 });
