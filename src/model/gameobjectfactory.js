@@ -2,25 +2,6 @@ var log = require('loglevel');
 var GameObject = require('$/src/model/gameobject');
 
 /**
- * Regex to find game object reference codes.
- * References all start with the capital letter P, followed
- * by two or three more capital letters and three digits. 
- * 
- * Example: PASC206, PAD049
- * @type {RegExp}
- */
-const REFERENCE_CODE_REGEX = new RegExp('^P[A-Z]{2,3}[0-9]{3}');
-/**
- * Regex to find reference names. A reference name is a
- * reference code, followed by an underscore and at least one 
- * character. 
- *
- * Example: PASC206_Dallas
- * @type {RegExp}
- */
-const REFERENCE_NAME_REGEX = new RegExp(REFERENCE_CODE_REGEX.source + '_\\w+');
-
-/**
  * @see GameObject
  */
 class GameObjectFactory {
@@ -70,9 +51,9 @@ class GameObjectFactory {
 				continue;
 			}
 
-			// If the current key's value is a reference code, replace the code with
+			// If the current key's value is a reference name, replace the code with
 			// its actual content.
-			if (typeof data[key] === 'string' && data[key].match(REFERENCE_CODE_REGEX)) {				
+			if (typeof data[key] === 'string' && data[key].match(GameObject.REFERENCE_NAME_REGEX)) {				
 				// Only replace if the reference could actually be expanded
 				// If not, just keep the reference in there
 				// This can be the case with some unfortunately-named components
@@ -137,12 +118,12 @@ class GameObjectFactory {
 		if (typeof designator === 'number') { // designator is an ID
 			// Find an object that has an 'id' property the same as designator
 			gameObject = Object.values(self.#everything).find(obj => obj.id && obj.id === designator);
-		} else if (typeof designator === 'string' && REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
-			// Access self.#everything directly, as reference names are already its keys
-			gameObject = self.#everything[designator];
-		} else if (typeof designator === 'string' && REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
+		} else if (typeof designator === 'string' && GameObject.REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
 			// Find an object that has an 'index' property the same as designator
 			gameObject = Object.values(self.#everything).find(obj => obj.index && obj.index === designator);
+		} else if (typeof designator === 'string' && GameObject.REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
+			// Access self.#everything directly, as reference names are already its keys
+			gameObject = self.#everything[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 			
