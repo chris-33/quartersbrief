@@ -3,14 +3,20 @@
     "start": "node quartersbrief.js",
     "test": "node_modules/mocha/bin/mocha --colors --require test/mocha.conf.js test/**/*.spec.js",
     "debug": "node inspect quartersbrief.js",
+    "makedocs": "node_modules/.bin/jsdoc --configure jsdoc.conf.json",
     "debug-test": "node_modules/mocha/bin/mocha inspect --colors --require test/mocha.conf.js test/**/*.spec.js",
     "postinstall": "npx basetag link"
   },
   "dependencies": {
     "basetag": "^2.0.1",
-    "chai": "^4.3.4",
+    "just-clone": "^5.0.1",
     "loglevel": "^1.8.0",
-    "loglevel-plugin-prefix": "^0.8.4",
-    "mocha": "^9.1.4"
+    "loglevel-plugin-prefix": "^0.8.4"
+  },
+  "devDependencies": {
+    "chai": "^4.3.4",
+    "jsdoc": "^3.6.10",
+    "mocha": "^9.1.4",
+    "sinon": "^12.0.1"
   }
 }
