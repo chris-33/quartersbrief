@@ -3,6 +3,7 @@ var log = require('loglevel');
 var clone = require('$/src/util/util').clone;
 var arrayIntersect = require('$/src/util/util').arrayIntersect;
 
+
 /**
  * This modules checks that some invariants that were found through reverse engineering are actually
  * true. The code of this program depends on these, but of course we cannot be entirely sure that
@@ -14,6 +15,7 @@ var arrayIntersect = require('$/src/util/util').arrayIntersect;
  * 
  * If one of the assertions fails, an InvariantError will be thrown.
  */
+
 
 /**
  * Main function. It will call all of its enumerable properties that are functions,
@@ -227,6 +229,5 @@ assertInvariants.assertUpgradeComponentsResolveUnambiguously = function(data) {
 	if (counterexamples.length > 0) 
 		throw new InvariantError('all upgrades\' components must be resolvable unambiguously', counterexamples);
 }
-
 
 module.exports = assertInvariants;
