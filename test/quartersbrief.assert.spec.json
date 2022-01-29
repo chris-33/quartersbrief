@@ -1,0 +1,88 @@
+{
+	"PAAA001_Battleship": {
+		"id": 1,
+		"index": "PAAA001",
+		"name": "PAAA001_Battleship",
+		"typeinfo": {
+			"type": "Ship",
+			"species": "Battleship",
+			"nation": "USA"
+		},
+		"ShipUpgradeInfo": {
+			"A_Hull": {
+				"canBuy": true,
+				"components": {
+					"airArmament": [],
+					"airDefense": [ "AA1" ],
+					"atba": [ "A_ATBA" ],
+					"depthCharges": [],
+					"directors": [],
+					"finders": [],
+					"hull": [ "A_Hull" ],
+					"pinger": [],
+					"radars": [],
+					"torpedoes": [ "AB1_Torpedoes"]
+				},
+				"disabledAbilities": [],
+				"nextShips": [],
+				"prev": "",
+				"ucType": "_Hull"
+			},
+			"B_Hull": {
+				"canBuy": true,
+				"components": {
+					"airArmament": [],
+					"airDefense": [ "AA2" ],
+					"atba": [ "B_ATBA" ],
+					"depthCharges": [],
+					"directors": [],
+					"finders": [],
+					"hull": [ "B_Hull" ],
+					"pinger": [],
+					"radars": [],
+					"torpedoes": [ "AB1_Torpedoes"]
+				},
+				"disabledAbilities": [],
+				"nextShips": [],
+				"prev": "A_Hull",
+				"ucType": "_Hull"
+			},
+			"AB1_Artillery": {
+				"canBuy": true,
+				"components": {
+					"artillery": [ "AB1_Artillery" ]
+				},
+				"disabledAbilities": [],
+				"nextShips": [],
+				"prev": "",
+				"ucType": "_Artillery"
+			},
+			"AB2_Artillery": {
+				"canBuy": true,
+				"components": {
+					"artillery": [ "AB2_Artillery" ]
+				},
+				"disabledAbilities": [],
+				"nextShips": [],
+				"prev": "AB1_Artillery",
+				"ucType": "_Artillery"
+			},
+			"SUO_STOCK": {
+				"canBuy": true,
+				"components": {
+					"fireControl": [ "SUO_STOCK" ]
+				},
+				"disabledAbilities": [],
+				"nextShips": [],
+				"prev": "",
+				"ucType": "_Suo"
+			},
+			"costCR": 254000,
+			"costGold": 0,
+			"costSaleGold": 0,
+			"costXP": 2150,
+			"lockedConfig": [],
+			"value": 1
+		}
+	}
+}

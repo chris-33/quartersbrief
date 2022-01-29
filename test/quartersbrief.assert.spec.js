@@ -1,7 +1,10 @@
 var assertInvariants = require('$/src/quartersbrief.assert');
 var sinon = require('sinon');
+var clone = require('just-clone');
 
-describe('assertInvariants', function() {
+const TEST_DATA = require('$/test/quartersbrief.assert.spec.json');
+
+describe('assertInvariants', function() {	
 	it('should expose InvariantError', function() {
 		expect(assertInvariants).to.have.property('InvariantError');
 		expect(new assertInvariants.InvariantError()).to.be.an.instanceof(Error);
@@ -28,7 +31,7 @@ describe('assertInvariants', function() {
 		}
 	});
 
-	it('should collect all InvariantErrors and throw them as an AggregateError at the end', sinon.test(function() {
+	it('should collect all InvariantErrors and throw them as an AggregateError at the end', function() {
 		let data = {};
 		let assertions = [
 			'assertHaveIDs',
@@ -40,9 +43,135 @@ describe('assertInvariants', function() {
 		// Need to explicitly do this because sinon-test seems to not be 
 		// picking up on our stubs
 		try {
-			expect( () => assertInvariants(data)).to.throw(AggregateError);
+			expect(assertInvariants.bind(null, data)).to.throw(AggregateError);
 		} finally {
 			assertions.forEach(assertion => assertion.restore());
 		}
-	}));
+	});
+
+	describe('.assertHaveIDs', function() {
+		var data;
+
+		beforeEach(function() {
+			data = clone(TEST_DATA);
+		});
+
+		it('should not error on data that has a numeric ID', function() {			
+			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.not.throw();
+		});
+
+		it('should throw an InvariantError if ID is not numeric', function() {
+			data.PAAA001_Battleship.id = 'string';
+			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.throw(assertInvariants.InvariantError);
+		});
+
+		it('should throw an InvariantError if ID is not present at all', function() {
+			delete data.PAAA001_Battleship.id;
+			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.throw(assertInvariants.InvariantError);
+		});
+	});
+
+	describe('.assertHaveIndices', function() {
+		let data;
+
+		beforeEach(function() {
+			data = clone(TEST_DATA);
+		});
+
+		it('should not error on data that has a well-formed index', function() {
+			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.not.throw();
+		});
+
+		it('should throw an InvariantError if index does not conform to the regex', function() {
+			data.PAAA001_Battleship.index = 'ABCDEFG';
+			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.throw(assertInvariants.InvariantError);
+		});
+
+		it('should throw an InvariantError if index is not present at all', function() {
+			delete data.PAAA001_Battleship.index;
+			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.throw(assertInvariants.InvariantError);
+		});
+	});
+
+	describe('.assertHaveNames', function() {
+		let data;
+
+		beforeEach(function() {
+			data = clone(TEST_DATA);
+		});
+
+		it('should not error on data that has a well-formed name', function() {
+			expect(assertInvariants.assertHaveNames.bind(null, data)).to.not.throw();
+		});
+
+		it('should throw an InvariantError if name does not conform to the regex', function() {
+			let data = clone(TEST_DATA);
+			data.PAAA001_Battleship.name = 'ABCDEFG';
+			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(assertInvariants.InvariantError);
+		});
+
+		it('should throw an InvariantError if name is not present at all', function() {
+			let data = clone(TEST_DATA);
+			delete data.PAAA001_Battleship.name;
+			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(assertInvariants.InvariantError);
+		});
+	});
+
+	describe('.assertUpgradeComponentsResolveUnambiguously', function() {
+		let data;
+
+		beforeEach(function() {
+			data = clone(TEST_DATA);
+		});
+
+
+		it('should not error if all upgrades\'s components have length 1', function() {
+			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+				.not.throw();
+		});
+
+		it('should throw an InvariantError if there is a component definition of length > 1 without another one to remedy it', function() {
+			data.PAAA001_Battleship.ShipUpgradeInfo.A_Hull.components['torpedoes'] = [ 'AB1_Torpedoes', 'AB2_Torpedoes' ];
+			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+				.throw(assertInvariants.InvariantError);
+		});
+
+		it('should not error when there is a component with length > 1 but it is remedied by another', function() {
+			// This will get remedied by the two Artillery upgrade definitions:
+			data.PAAA001_Battleship.ShipUpgradeInfo.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery' ];
+			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+				.not.throw();
+		});
+
+		it('should not error when there is a component with length > 1 but it is remedied by several others', function() {
+			let upgrades = data.PAAA001_Battleship.ShipUpgradeInfo
+			upgrades.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
+			upgrades.AB2_Artillery.components['artillery'] = ['AB2_Artillery', 'AB3_Artillery']
+			delete upgrades['AB1_Artillery'];
+			upgrades.SUO_STOCK.components['artillery'] = [ 'AB1_Artillery', 'AB3_Artillery' ];
+			// data now allows
+			// on A_Hull: AB1_Artillery, AB2_Artillery, AB3_Artillery
+			// on AB2_Artillery: AB2_Artillery, AB3_Artillery
+			// AB1_Artillery has been removed
+			// on SUO_STOCK: AB1_Artillery, AB3_Artillery
+			// This is resolvable to AB3_Artillery by combining all three
+			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+				.not.throw();
+		});
+
+		it('should throw an InvariantError when there is a component with length > 1, but the remedy requires two upgrades of the same type', function() {
+			let upgrades = data.PAAA001_Battleship.ShipUpgradeInfo;
+			upgrades.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
+			upgrades.AB1_Artillery.components['artillery'] = [ 'AB1_Artillery', 'AB3_Artillery' ];
+			upgrades.AB2_Artillery.components['artillery'] = [ 'AB2_Artillery', 'AB3_Artillery' ];
+			// data now allows
+			// on A_Hull: AB1_Artillery, AB2_Artillery, AB3_Artillery
+			// on AB1_Artillery: AB1_Artillery, AB3_Artillery
+			// on AB2_Artillery: AB2_Artillery, AB3_Artillery
+			// This is only resolvable by equipping AB1_Artillery and AB2_Artillery simultaneously,
+			// which the algorithm should not allow
+			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+				.throw(assertInvariants.InvariantError);
+		});
+	});
 });

@@ -27,7 +27,7 @@ function assertInvariants(data) {
 	let fns = Object.values(assertInvariants)
 		.filter(x => x instanceof Function && x !== InvariantError); // Exclude InvariantError, which was also exposed as a property of assertInvariants
 	let exceptions = [];
-	debugger;
+
 	for (fn of fns) {
 		try {
 			fn.call(null, data);
@@ -51,7 +51,7 @@ function assertInvariants(data) {
  */
 class InvariantError extends Error {
 	constructor(invariant, counterexamples) {		
-		super(`Checking invariant ${invariant} failed: violated by ${counterexamples}`);
+		super(`Checking invariant \'${invariant}\' failed: violated by ${counterexamples}`);
 	};
 }
 assertInvariants.InvariantError = InvariantError;
@@ -124,7 +124,6 @@ assertInvariants.assertHaveNames = function(data) {
 	  that contributed to resolving the ambiguity in the previous step.
  */
 assertInvariants.assertUpgradeComponentsResolveUnambiguously = function(data) {
-	debugger;
 	let counterexamples = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
 	for (ship of ships) {
