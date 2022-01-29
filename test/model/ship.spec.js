@@ -4,8 +4,9 @@ var TEST_DATA = require('$/test/model/ship.spec.json');
 
 describe('Ship', function() {
 
-	it('should be a GameObject', function() {
+	it('should be a GameObject', function() {		
 		expect(new Ship(TEST_DATA)).to.be.an.instanceof(GameObject);
+
 	});
 
 	describe('.getResearchPaths', function() {

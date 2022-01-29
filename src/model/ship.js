@@ -1,5 +1,5 @@
 var GameObject = require('$/src/model/gameobject');
-var hash = require('object-hash');
+var hash = require('object-hash').MD5; // Use MD5 because it is faster than the module's default SHA1
 
 const KEYS = {
 	SHIP_UPGRADE_INFO: 'ShipUpgradeInfo',
@@ -16,21 +16,21 @@ class Ship extends GameObject {
 		super(data);
 
 		var self = this;
-		self.researchPaths = self.getResearchPaths();
 	}
 
 	getConfiguration(name) {
 		var self = this;
+		var researchPaths = self.researchPaths || self.getResearchPaths();
 
 		var result = {};
 		switch (name) {
 			case 'stock': 
-				for (key in self.researchPaths)
-					result[key] = self.researchPaths[key][0];
+				for (key in researchPaths)
+					result[key] = researchPaths[key][0];
 				break;
 			case 'top':
-				for (key in self.researchPaths)
-					result[key] = self.researchPaths[key][self.researchPaths[key].length - 1];
+				for (key in researchPaths)
+					result[key] = researchPaths[key][researchPaths[key].length - 1];
 				break;
 		}
 		return result;
@@ -41,6 +41,18 @@ class Ship extends GameObject {
 		It puts all the upgrade definitions from ShipUpgradeInfo into
 		an array. As long as this array is not empty, it removes the
 		first item from the START of the array and examines it.
+
+		If this upgrade is the start of a research path (i.e., its prev 
+		property equals ''), a research path for it is created, the upgrade
+		is put into it, and its distance metadata is set to 0.
+
+		Otherwise, it checks if a research path for this upgrade exists yet.
+		If not, the upgrade gets appended again to the END of the upgrades
+		array to be looked at again later.
+
+		If a research path does already exist,
+
+		
 		If a research path with this item's ucType does not exist yet,
 		it creates one and puts this item into it. If it does exist,
 		and the item's prev property is an empty string, that means the
@@ -65,7 +77,7 @@ class Ship extends GameObject {
 				&& o.hasOwnProperty('components')
 				&& o.hasOwnProperty('prev')
 				&& o.hasOwnProperty('ucType');
-		}
+		}		
 
 		// Get everything in ShipUpgradeInfo
 		var upgrades = self.get(KEYS.SHIP_UPGRADE_INFO);
@@ -98,44 +110,56 @@ class Ship extends GameObject {
 			.filter(obj => isUpgradeDefinition(obj));
 
 		var researchPaths = {};
-		// As long as there are still items in upgrades
+
+		// As long as there are still unprocessed upgrades
 		while (upgrades.length > 0) {
 			// Take the first one out
 			let upgrade = upgrades.shift();	
-			if (!researchPaths[upgrade.ucType]) {
-				// This upgrade belongs to a research path that has not been 
-				// encountered before. Start a new research path for it.
-				researchPaths[upgrade.ucType] = [upgrade];
-			} else {
-				let index;
-				// This upgrade is the beginning of the research path, make the insertion
-				// index 0.
-				if (upgrade.prev === '') 
-					index = 0;
-				else {
-					// Take the appropriate research path from researchPaths (which we know,
-					// because we chose ucType as the key for it) and find the index of that 
-					// element in it that has prev as the value of the name property in the
-					// element's metadata - this used to be the object key in the original file 
-					// before we threw that information away. 
-					index = researchPaths[upgrade.ucType]
-						.findIndex(u => metadata[hash(u)].name === upgrade.prev);
 
-					// The insertion point is the index after that, but leave it untouched if
-					// no such item was found.
-					if (index > -1) index++;
-				}
+			if (upgrade.prev === '') {
+				// This upgrade is the beginning of the research path, start a new research
+				// path for it.
+				researchPaths[upgrade.ucType] = [upgrade];
+				// The upgrade is at the start of the research path, so its distance is 0
+				metadata[hash(upgrade)].distance = 0;
+			} else if (!researchPaths[upgrade.ucType]) {
+				// This upgrade belongs to a research path that has not been 
+				// encountered yet, but it is not the beginning of the research path. 
+				// Therefore we can't compute its distance metadata yet. Put it back
+				// to be examined later
+				upgrades.push(upgrade);				
+			} else {
+				// This upgrade belongs to a known research path.
 				
-				if (index > -1)
-					// Such an index was found, insert the new upgrade at the
-					// next position.
-					researchPaths[upgrade.ucType].splice(index, 0, upgrade);
-				else
-					// Such an index was not found - the upgrade's predecessor
-					// has not been processed yet.
-					// Add it to the rear of the array to deal with later.
+				// Take the appropriate research path from researchPaths (which we know,
+				// because we chose ucType as the key for it) and find the index of that 
+				// element in it that has prev as the value of the name property in the
+				// element's metadata - this used to be the object key in the original file 
+				// before we threw that information away. 
+				let predecessor;
+				for (let path of Object.values(researchPaths)) {
+					// Find the upgrade's predecessor. This might be in any research path.
+					predecessor = path.find(u => metadata[hash(u)].name === upgrade.prev);
+					if (predecessor) {
+						metadata[hash(upgrade)].distance = metadata[hash(predecessor)].distance + 1;
+						break;
+					}
+				}
+				if (!predecessor) {
 					upgrades.push(upgrade);
+					continue;
+				}
+				let path = researchPaths[upgrade.ucType];
+				for (let i = 0; i < path.length; i++) {
+					let distance = (u => metadata[hash(u)].distance);
+					if (distance(path[i]) < distance(upgrade) && 
+								(i === path.length - 1 ||
+								distance(path[i+1]) > distance(upgrade))) {
+						path.splice(i + 1, 0, upgrade);
+					}
+				}
 			}
+
 		}
 		return researchPaths;
 	}
