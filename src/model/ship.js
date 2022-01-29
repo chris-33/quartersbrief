@@ -43,29 +43,18 @@ class Ship extends GameObject {
 		first item from the START of the array and examines it.
 
 		If this upgrade is the start of a research path (i.e., its prev 
-		property equals ''), a research path for it is created, the upgrade
-		is put into it, and its distance metadata is set to 0.
+		property equals ''), upgrade is put at the start of the research
+		path, and its distance metadata is set to 0.
 
-		Otherwise, it checks if a research path for this upgrade exists yet.
-		If not, the upgrade gets appended again to the END of the upgrades
-		array to be looked at again later.
+		Otherwise, it tries to find the predecessor for the upgrade in any
+		research path. If none can be found, it must not have been processed yet.
+		The upgrade is appended again to the END of the list to be looked at
+		again later.
 
-		If a research path does already exist,
-
-		
-		If a research path with this item's ucType does not exist yet,
-		it creates one and puts this item into it. If it does exist,
-		and the item's prev property is an empty string, that means the
-		item is the starting point of that path, and it gets inserted
-		at the front of the research path. 
-		Otherwise (that is, if a research path does exist and prev is not
-		an empty string), it looks for an entry within the research path
-		that corresponds to the current item's prev property. If such an 
-		item is found, the current item is inserted behind it. 
-		If such an item is not found, that must mean it has to not have
-		been encountered yet in the upgrades array. The current item is
-		then appended again to the END of the upgrades array, to be 
-		looked at again later.
+		If a predecessor is found, the upgrade's distance metadata is the predecessor's
+		distance + 1. The upgrade is then inserted into its research path such that
+		the upgrade to its left has a lower distance value, the upgrade to its right
+		a higher distance value. (This can also mean inserting at the start or end).
 	 */
 	getResearchPaths() {
 		var self = this;		
@@ -95,7 +84,7 @@ class Ship extends GameObject {
 		// 
 		// Keys for the metadata will be hashes of their corresponding
 		// upgrade objects.
-		let metadata = {};
+		var metadata = {};
 		for (let upgradeKey in upgrades) {
 			let upgrade = upgrades[upgradeKey];
 			// Filter out primitives
@@ -117,49 +106,72 @@ class Ship extends GameObject {
 			let upgrade = upgrades.shift();	
 
 			if (upgrade.prev === '') {
-				// This upgrade is the beginning of the research path, start a new research
-				// path for it.
-				researchPaths[upgrade.ucType] = [upgrade];
+				// This upgrade is the beginning of the research path. Put it at the front.
+				// If the research path does not exist yet, create one.
+				if (!researchPaths[upgrade.ucType]) researchPaths[upgrade.ucType] = [];
+				
+				// Insert at the front
+				researchPaths[upgrade.ucType].splice(0, 0, upgrade);
 				// The upgrade is at the start of the research path, so its distance is 0
 				metadata[hash(upgrade)].distance = 0;
-			} else if (!researchPaths[upgrade.ucType]) {
-				// This upgrade belongs to a research path that has not been 
-				// encountered yet, but it is not the beginning of the research path. 
-				// Therefore we can't compute its distance metadata yet. Put it back
-				// to be examined later
-				upgrades.push(upgrade);				
 			} else {
-				// This upgrade belongs to a known research path.
-				
-				// Take the appropriate research path from researchPaths (which we know,
-				// because we chose ucType as the key for it) and find the index of that 
-				// element in it that has prev as the value of the name property in the
-				// element's metadata - this used to be the object key in the original file 
-				// before we threw that information away. 
-				let predecessor;
+				// Try to find the upgrade's predecessor. This might be in any research path.
+				// The predecessor is that upgrade whose metadata name property equals the prev
+				// property of the upgrade we're currently dealing with.
+				let predecessor = null;
 				for (let path of Object.values(researchPaths)) {
-					// Find the upgrade's predecessor. This might be in any research path.
 					predecessor = path.find(u => metadata[hash(u)].name === upgrade.prev);
-					if (predecessor) {
-						metadata[hash(upgrade)].distance = metadata[hash(predecessor)].distance + 1;
-						break;
-					}
+					if (predecessor) break;
 				}
+
 				if (!predecessor) {
+					// If no predecessor has been found in any research path, it must not have
+					// been processed yet. 
+					// Put the upgrade back into the list and continue with the next one.
 					upgrades.push(upgrade);
 					continue;
-				}
-				let path = researchPaths[upgrade.ucType];
-				for (let i = 0; i < path.length; i++) {
+				} else {
+					// If one has been found, our upgrade's distance metadata is the predecesor's
+					// distance plus one.
+					metadata[hash(upgrade)].distance = metadata[hash(predecessor)].distance + 1;
+					// Initialize the upgrade's research path if necessary
+					if (!researchPaths[upgrade.ucType]) researchPaths[upgrade.ucType] = [];
+					
+					// Two short-hands that make the following code a little more readable
+					let path = researchPaths[upgrade.ucType];
 					let distance = (u => metadata[hash(u)].distance);
-					if (distance(path[i]) < distance(upgrade) && 
-								(i === path.length - 1 ||
-								distance(path[i+1]) > distance(upgrade))) {
-						path.splice(i + 1, 0, upgrade);
+
+					// Look for the insertion index. This is the place where the previous upgrade
+					// in the path has a lower distance, and the subsequent one has a higher distance.
+					let index = -1;
+					for (let i = -1; i < path.length; i++) {
+						// The distances to the left and right
+						let lowerbound; let upperbound;
+						switch (i) {
+							case -1: 
+								lowerbound = Number.NEGATIVE_INFINITY; // If we are just starting out, the lowerbound -oo ...
+								upperbound = distance(path[0]); // ... and the upper bound is the distance of the first item
+								break;
+							case path.length - 1: 
+								lowerbound = distance(path[i]); // If we are at the end, the lower bound is the distance of the last item ...
+								upperbound = Number.POSITIVE_INFINITY; // ... and the upper bound is +oo
+								break;
+							default:
+								lowerbound = distance(path[i]); // In all other cases, the lower bound is the distance of the current item ...
+								upperbound = distance(path[i+1]); // ... and the upper bound is the distance of the next item
+						}
+						// If we are between the lower and the upper bound, we have found the right place
+						if (lowerbound < distance(upgrade) && distance(upgrade) < upperbound) {
+							// Insert at the next index
+							index = i + 1;
+							// If we have already found the right place, no need to continue
+							break;
+						}
 					}
+					if (index > -1)
+						path.splice(index, 0, upgrade);
 				}
 			}
-
 		}
 		return researchPaths;
 	}
