@@ -10,7 +10,7 @@ describe('Ship', function() {
 	});
 
 	describe('.getResearchPaths', function() {
-		it('should start a new path for every component type', function() {
+		it('should start a new path for every upgrade type', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			expect(new Ship(TEST_DATA).getResearchPaths()).to
 				.be.an('object')
@@ -20,7 +20,7 @@ describe('Ship', function() {
 					expected.SUO_STOCK.ucType);
 		});
 
-		it('should correctly assign upgrades to research paths', function() {
+		it('should assign upgrades to the correct research paths when every upgrade\'s type is the same as its predecessor (simple case)', function() {
 			var result = new Ship(TEST_DATA).getResearchPaths();
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			for (let ucType of [expected.ART_STOCK.ucType, 
@@ -33,7 +33,7 @@ describe('Ship', function() {
 			}			
 		});
 
-		it('should correctly order upgrades within a research path', function() {
+		it('should correctly order upgrades within the research paths  when every upgrade\'s type is the same as its predecessor (simple case)', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			var result = new Ship(TEST_DATA).getResearchPaths();
 			
@@ -49,32 +49,49 @@ describe('Ship', function() {
 	});
 
 	describe('.getConfiguration', function() {
-		it('should return the beginning of the research paths for the stock configuration', function() {
-			var expected = TEST_DATA.ShipUpgradeInfo;
-			var result = new Ship(TEST_DATA).getConfiguration('stock');
+		var ship;
 
-			expect(result[expected.ART_STOCK.ucType]).to
-				.deep.equal(expected.ART_STOCK);
-			expect(result[expected.HULL_STOCK.ucType]).to
-				.deep.equal(expected.HULL_STOCK);
-			expect(result[expected.ENG_STOCK.ucType]).to
-				.deep.equal(expected.ENG_STOCK);
-			expect(result[expected.SUO_STOCK.ucType]).to
-				.deep.equal(expected.SUO_STOCK);
+		beforeEach(function() {
+			ship = new Ship(TEST_DATA);
+		});
+		it('should have equipped the beginnings of the research paths after applying the stock configuration', function() {
+			var expected;
+			with (TEST_DATA)
+				expected = {
+					artillery: AB1_Artillery,
+					engine: AB1_Engine,
+					airDefense: A_AirDefense,
+					atba: AB_ATBA,
+					directors: AB_Directors,
+					finders: AB_Finders,
+					hull: A_Hull,
+					fireControl: AB1_FireControl
+				};
+			ship.applyConfiguration('stock');
+			var result = ship.getCurrentConfiguration();
+
+			for (key in expected) 
+				expect(result[key]).to.deep.equal(expected[key]);
 		});
 
-		it('should return the end of the research paths for the top configuration', function() {
-			var expected = TEST_DATA.ShipUpgradeInfo;
-			var result = new Ship(TEST_DATA).getConfiguration('top');
+		it('should have equipped the ends of the research paths after applying the top configuration', function() {
+			var expected;
+			with (TEST_DATA)
+				expected = {
+					artillery: AB1_Artillery,
+					engine: AB2_Engine,
+					airDefense: B_AirDefense,
+					atba: AB_ATBA,
+					directors: AB_Directors,
+					finders: AB_Finders,
+					hull: B_Hull,
+					fireControl: AB3_FireControl
+				};
+			ship.applyConfiguration('top');
+			var result = ship.getCurrentConfiguration();
 
-			expect(result[expected.ART_STOCK.ucType]).to // ART has only one
-				.deep.equal(expected.ART_STOCK);
-			expect(result[expected.HULL_STOCK.ucType]).to
-				.deep.equal(expected.HULL_TOP);
-			expect(result[expected.ENG_STOCK.ucType]).to
-				.deep.equal(expected.ENG_TOP);
-			expect(result[expected.SUO_STOCK.ucType]).to
-				.deep.equal(expected.SUO_TOP);
+			for (key in expected) 
+				expect(result[key]).to.deep.equal(expected[key]);
 		});
 	});
 });

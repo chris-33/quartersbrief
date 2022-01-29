@@ -1,5 +1,7 @@
 var GameObject = require('$/src/model/gameobject');
 var hash = require('object-hash').MD5; // Use MD5 because it is faster than the module's default SHA1
+var arrayIntersect = require('$/src/util/util').arrayIntersect;
+var clone = require('$/src/util/util').clone;
 
 const KEYS = {
 	SHIP_UPGRADE_INFO: 'ShipUpgradeInfo',
@@ -8,9 +10,29 @@ const KEYS = {
 	TIER: 'level',
 };
 
+/**
+ * This class represents a ship within the game. Ships are complex objects by themselves, made even more 
+ * complicated by the fact that they are the targets of many modifications by modernizations and captain
+ * skills.
+ *
+ * ## Upgrades
+ * 
+ * A ship can usually exist in several different configurations through the application of upgrades. In
+ * game, upgrades can be researched for XP and equipped for credits. Each subsequent upgrade becomes 
+ * unlocked only when its predecessor has been researched. Currently, upgrades of different types (e.g. 
+ * hull, torpedoes, etc.) cannot depend on each other: A hull upgrade will only need another hull upgrade
+ * to become unlocked, an artillery update only an artillery update, etc. However, this was not the case
+ * [prior to update 0.9.6](https://wiki.wargaming.net/en/Ship:Update_0.9.6#Changes_to_the_Port_Modules_tab).
+ *
+ * There are still legacy ship definitions in the game data (e.g. PJSD007_Fubuki_1944) that follow the old
+ * logic, and therefore this class allows for such cases as well. Regardless of their interdependency for
+ * research in the game, upgrades are always grouped by their type in this class. The series of upgrades for
+ * of a certain type is called a *research path*.
+ */
 class Ship extends GameObject {
 
-	researchPaths;
+	#researchPaths;
+	#configuration;
 
 	constructor(data) {
 		super(data);
@@ -18,46 +40,100 @@ class Ship extends GameObject {
 		var self = this;
 	}
 
-	getConfiguration(name) {
-		var self = this;
-		var researchPaths = self.researchPaths || self.getResearchPaths();
+	/**
+	 * Applies the configuration designated by `descriptor` to the ship.
+	 *
+	 * Descriptor can be one of the following:
+	 * - `'stock'`: The most basic upgrades (the start of each research path) are equipped
+	 * - `'top'`: The most advanced upgrades (the end of each research path) are equipped
+	 * @param  {string} descriptor The configuration to apply
+	 * @throws
+	 * - Throws if the descriptor is not one of the above.
+	 */
+	applyConfiguration(descriptor) {
+		let self = this;
 
-		var result = {};
-		switch (name) {
+		let researchPaths = self.getResearchPaths();
+
+		let toApply = {};
+		let configuration = {};
+		switch (descriptor) {
 			case 'stock': 
-				for (key in researchPaths)
-					result[key] = researchPaths[key][0];
+				toApply = Object.values(researchPaths).map(arr => arr[0]);
 				break;
-			case 'top':
-				for (key in researchPaths)
-					result[key] = researchPaths[key][researchPaths[key].length - 1];
+			case 'top': 
+				toApply = Object.values(researchPaths).map(arr => arr[arr.length - 1]);
 				break;
+			default:
+				throw new Error(`Unknown configuration descriptor ${name}`);
 		}
-		return result;
+
+		for (let upgrade of toApply) {
+			for (let componentKey in upgrade.components) {
+				let component = upgrade.components[componentKey];
+				if (!configuration[componentKey])
+					configuration[componentKey] = component;
+				else
+					configuration[componentKey] = arrayIntersect(configuration[componentKey], component);
+			}
+		}
+		// Now all components in configuration should be arrays of length <= 1
+		// Project each down to its only item and expand the reference
+		for (let componentKey in configuration) {
+			let temp = configuration[componentKey][0];
+			configuration[componentKey] = temp ? self.get(temp) : null;
+		}
+
+		// Make a deep copy, because otherwise if any values are modified in the configuration further on
+		// (e.g. by applying modernizations), it will change the original values, too.
+		// This would lead to unexpected behavior when switching configurations back and forth.
+		self.#configuration = clone(configuration);
 	}
 
-	/*
-		This algorithm works as follows:
-		It puts all the upgrade definitions from ShipUpgradeInfo into
-		an array. As long as this array is not empty, it removes the
-		first item from the START of the array and examines it.
-
-		If this upgrade is the start of a research path (i.e., its prev 
-		property equals ''), upgrade is put at the start of the research
-		path, and its distance metadata is set to 0.
-
-		Otherwise, it tries to find the predecessor for the upgrade in any
-		research path. If none can be found, it must not have been processed yet.
-		The upgrade is appended again to the END of the list to be looked at
-		again later.
-
-		If a predecessor is found, the upgrade's distance metadata is the predecessor's
-		distance + 1. The upgrade is then inserted into its research path such that
-		the upgrade to its left has a lower distance value, the upgrade to its right
-		a higher distance value. (This can also mean inserting at the start or end).
+	/**
+	 * Gets the ship's current configuration.
+	 * @return {Object} The ship's current configuration, or `null` if no configuration has been
+	 * set yet.
 	 */
-	getResearchPaths() {
+	getCurrentConfiguration() {
+		return this.#configuration || null;
+	}
+
+	/**
+	 * Get the research paths for this ship. Building the ship's research paths tends to be an 
+	 * expensive operation, so this method will return a cached result on subsequent calls. You
+	 * can override this by passing `forceRebuild = true`.
+	 * @param {boolean} forceRebuild Whether to build the research paths from scratch, regardless
+	 * of whether a cached version exists or not. Default is `false`.
+	 */
+	getResearchPaths(forceRebuild = false) {
+		/*
+			This algorithm works as follows:
+			It puts all the upgrade definitions from ShipUpgradeInfo into
+			an array. As long as this array is not empty, it removes the
+			first item from the START of the array and examines it.
+
+			If this upgrade is the start of a research path (i.e., its prev 
+			property equals ''), upgrade is put at the start of the research
+			path, and its distance metadata is set to 0.
+
+			Otherwise, it tries to find the predecessor for the upgrade in any
+			research path. If none can be found, it must not have been processed yet.
+			The upgrade is appended again to the END of the list to be looked at
+			again later.
+
+			If a predecessor is found, the upgrade's distance metadata is the predecessor's
+			distance + 1. The upgrade is then inserted into its research path such that
+			the upgrade to its left has a lower distance value, the upgrade to its right
+			a higher distance value. (This can also mean inserting at the start or end).
+		 */
 		var self = this;		
+
+		// Building research paths is a relatively expensive operation (~50-100ms).
+		// Therefore, only build once and then cache.
+		// On subsequent calls, read from cache if available and not forced to rebuild.
+		if (self.#researchPaths && !forceRebuild)
+			return self.#researchPaths;
 
 		// Helper function that returns true if the argument is an 
 		// upgrade definition
@@ -173,6 +249,8 @@ class Ship extends GameObject {
 				}
 			}
 		}
+		// Cache for later
+		self.#researchPaths = researchPaths;
 		return researchPaths;
 	}
 

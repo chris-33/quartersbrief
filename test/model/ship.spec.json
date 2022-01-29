@@ -1,4 +1,43 @@
 {
+    "AB1_Artillery": {
+        "name": "AB1_Artillery"
+    },
+    "AB1_Engine": {
+        "name": "AB1_Engine"
+    },
+    "AB2_Engine": {
+        "name": "AB2_Engine"
+    },
+    "A_AirDefense": {
+        "name": "A_AirDefense"
+    },
+    "AB_ATBA": {
+        "name": "AB_ATBA"
+    },
+    "AB_Directors": {
+        "name": "AB_Directors"
+    },
+    "AB_Finders": {
+        "name": "AB_Finders"
+    },
+    "A_Hull": {
+        "name": "A_Hull"
+    },
+    "B_AirDefense": {
+        "name": "B_AirDefense"
+    },
+    "B_Hull": {
+        "name": "B_Hull"
+    },
+    "AB1_FireControl": {
+        "name": "AB1_FireControl"
+    },
+    "AB2_FireControl": {
+        "name": "AB2_FireControl"
+    },
+    "AB3_FireControl": {
+        "name": "AB3_FireControl"
+    },
     "ShipUpgradeInfo": {
         "ART_STOCK": {
             "canBuy": true,
@@ -36,14 +75,8 @@
         "HULL_STOCK": {
             "canBuy": true,
             "components": {
-                "airArmament": [
-                    "AB_AirArmament"
-                ],
                 "airDefense": [
                     "A_AirDefense"
-                ],
-                "airSupport": [
-                    "ABC_AirSupport"
                 ],
                 "artillery": [
                     "AB1_Artillery"
@@ -62,9 +95,6 @@
                     "A_Hull"
                 ],
                 "pinger": [],
-                "radars": [
-                    "AB_Radars"
-                ],
                 "torpedoes": []
             },
             "disabledAbilities": [],
@@ -75,14 +105,8 @@
         "HULL_TOP": {
             "canBuy": true,
             "components": {
-                "airArmament": [
-                    "AB_AirArmament"
-                ],
                 "airDefense": [
                     "B_AirDefense"
-                ],
-                "airSupport": [
-                    "ABC_AirSupport"
                 ],
                 "artillery": [
                     "AB1_Artillery"
@@ -101,15 +125,10 @@
                     "B_Hull"
                 ],
                 "pinger": [],
-                "radars": [
-                    "AB_Radars"
-                ],
                 "torpedoes": []
             },
             "disabledAbilities": [],
-            "nextShips": [
-                "PASB017_Montana_1945"
-            ],
+            "nextShips": [],
             "prev": "HULL_STOCK",
             "ucType": "_Hull"
         },
