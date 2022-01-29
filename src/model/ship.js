@@ -1,4 +1,5 @@
 var GameObject = require('$/src/model/gameobject');
+var hash = require('object-hash');
 
 const KEYS = {
 	SHIP_UPGRADE_INFO: 'ShipUpgradeInfo',
@@ -68,32 +69,42 @@ class Ship extends GameObject {
 
 		// Get everything in ShipUpgradeInfo
 		var upgrades = self.get(KEYS.SHIP_UPGRADE_INFO);
-		upgrades = Object.entries(upgrades)
+		
+		// Initialize metadata to be kept for each upgrade.
+		// We need this for the algorithm to work: For one thing,
+		// we need to preserve the key names of the individual upgrade
+		// definitions, because the "prev" property references those. 
+		// Of course, we could just keep working with the ShipUpgradeInfo
+		// object, but that makes handling and iterating over the upgrade
+		// definitions much more convoluted: Lots of Object.keys(), Object.values()
+		// and Object.entries() calls. So instead, we will project down to 
+		// an array of upgrade definition objects soon, and keep key names
+		// as metadata.
+		// 
+		// Keys for the metadata will be hashes of their corresponding
+		// upgrade objects.
+		let metadata = {};
+		for (let upgradeKey in upgrades) {
+			let upgrade = upgrades[upgradeKey];
+			// Filter out primitives
+			if (!isUpgradeDefinition(upgrade)) continue;
+			// Save the upgrade's key name in metadata
+			metadata[hash(upgrades[upgradeKey])] = { name: upgradeKey };
+		}
+		// Now project down to upgrade definition objects
+		upgrades = Object.values(upgrades)
 			// Filter out only those that are objects. Now contains
 			// arrays of the form [keyname, object]
-			.filter(o => isUpgradeDefinition(o[1]))
-			// Keep only the objects, but save the keyname on the object
-			// first under the new name 'quartersbrief_name' to keep it 
-			// accessible.
-			// 
-			// This makes handling the data easier from now on, because
-			// we only have to deal with objects, not arrays denoting
-			// key-value pairs.
-			.map(function(o) { 
-				let key = o[0]; let val = o[1];
-				val['quartersbrief_name'] = key; 
-				return val;
-			});
+			.filter(obj => isUpgradeDefinition(obj));
 
 		var researchPaths = {};
 		// As long as there are still items in upgrades
 		while (upgrades.length > 0) {
 			// Take the first one out
-			let upgrade = upgrades.shift();
-				debugger;
-				// This upgrade belongs to a research path that has not been 
-			// encountered before. Start a new research path for it.
+			let upgrade = upgrades.shift();	
 			if (!researchPaths[upgrade.ucType]) {
+				// This upgrade belongs to a research path that has not been 
+				// encountered before. Start a new research path for it.
 				researchPaths[upgrade.ucType] = [upgrade];
 			} else {
 				let index;
@@ -104,11 +115,11 @@ class Ship extends GameObject {
 				else {
 					// Take the appropriate research path from researchPaths (which we know,
 					// because we chose ucType as the key for it) and find the index of that 
-					// element in it that has prev as the value for 'quartersbrief_name' - 
-					// this used to be the object key in the original file before we threw that
-					// information away. 
+					// element in it that has prev as the value of the name property in the
+					// element's metadata - this used to be the object key in the original file 
+					// before we threw that information away. 
 					index = researchPaths[upgrade.ucType]
-						.findIndex(u => u['quartersbrief_name'] === upgrade.prev);
+						.findIndex(u => metadata[hash(u)].name === upgrade.prev);
 
 					// The insertion point is the index after that, but leave it untouched if
 					// no such item was found.
