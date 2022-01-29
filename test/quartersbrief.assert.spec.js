@@ -1,6 +1,6 @@
 var assertInvariants = require('$/src/quartersbrief.assert');
 var sinon = require('sinon');
-var clone = require('just-clone');
+var clone = require('$/src/util/util').clone;
 
 const TEST_DATA = require('$/test/quartersbrief.assert.spec.json');
 

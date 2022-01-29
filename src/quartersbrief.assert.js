@@ -1,7 +1,7 @@
 var GameObject = require('$/src/model/gameobject');
 var log = require('loglevel');
-var clone = require('just-clone'); // Library to deep-copy objects
-
+var clone = require('$/src/util/util').clone;
+var arrayIntersect = require('$/src/util/util').arrayIntersect;
 
 /**
  * This modules checks that some invariants that were found through reverse engineering are actually
@@ -207,7 +207,7 @@ assertInvariants.assertUpgradeComponentsResolveUnambiguously = function(data) {
 				if (problematicComponentKey in upgrade.components) {
 					// Intersect problematicComponent with the entries for the problematic
 					// component in that upgrade
-					problematicComponent = problematicComponent.filter(x => upgrade.components[problematicComponentKey].includes(x));
+					problematicComponent = arrayIntersect(problematicComponent, upgrade.components[problematicComponentKey]);
 					// Add the upgrade's ucType to the list of contributors, because we
 					// have "equipped" it now.
 					contributors.push(upgrade.ucType);
