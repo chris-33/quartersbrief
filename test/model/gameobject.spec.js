@@ -15,7 +15,9 @@ describe('GameObject', function() {
 	describe('.get', function() {		
 		it('should get top-level properties', function() {						
 			for (key of Object.keys(TEST_DATA))
-				expect(new GameObject(TEST_DATA).get(key)).to.equal(TEST_DATA[key]);
+				// Need to use deep equality here because there are complex properties
+				// that will have been cloned, therefore the object references are different
+				expect(new GameObject(TEST_DATA).get(key)).to.deep.equal(TEST_DATA[key]);
 		});
 
 		it('should get nested properties with dot notation', function() {

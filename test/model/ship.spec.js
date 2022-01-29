@@ -37,13 +37,13 @@ describe('Ship', function() {
 			var result = new Ship(TEST_DATA).getResearchPaths();
 			
 			expect(result[expected.ART_STOCK.ucType]).to
-				.have.ordered.members([expected.ART_STOCK])
+				.have.ordered.deep.members([expected.ART_STOCK])
 			expect(result[expected.HULL_STOCK.ucType]).to
-				.have.ordered.members([expected.HULL_STOCK, expected.HULL_TOP]);
+				.have.ordered.deep.members([expected.HULL_STOCK, expected.HULL_TOP]);
 			expect(result[expected.ENG_STOCK.ucType]).to
-				.have.ordered.members([expected.ENG_STOCK, expected.ENG_TOP]);
+				.have.ordered.deep.members([expected.ENG_STOCK, expected.ENG_TOP]);
 			expect(result[expected.SUO_STOCK.ucType]).to
-				.have.ordered.members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
+				.have.ordered.deep.	members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
 		});
 	});
 
@@ -53,13 +53,13 @@ describe('Ship', function() {
 			var result = new Ship(TEST_DATA).getConfiguration('stock');
 
 			expect(result[expected.ART_STOCK.ucType]).to
-				.equal(expected.ART_STOCK);
+				.deep.equal(expected.ART_STOCK);
 			expect(result[expected.HULL_STOCK.ucType]).to
-				.equal(expected.HULL_STOCK);
+				.deep.equal(expected.HULL_STOCK);
 			expect(result[expected.ENG_STOCK.ucType]).to
-				.equal(expected.ENG_STOCK);
+				.deep.equal(expected.ENG_STOCK);
 			expect(result[expected.SUO_STOCK.ucType]).to
-				.equal(expected.SUO_STOCK);
+				.deep.equal(expected.SUO_STOCK);
 		});
 
 		it('should return the end of the research paths for the top configuration', function() {
@@ -67,13 +67,13 @@ describe('Ship', function() {
 			var result = new Ship(TEST_DATA).getConfiguration('top');
 
 			expect(result[expected.ART_STOCK.ucType]).to // ART has only one
-				.equal(expected.ART_STOCK);
+				.deep.equal(expected.ART_STOCK);
 			expect(result[expected.HULL_STOCK.ucType]).to
-				.equal(expected.HULL_TOP);
+				.deep.equal(expected.HULL_TOP);
 			expect(result[expected.ENG_STOCK.ucType]).to
-				.equal(expected.ENG_TOP);
+				.deep.equal(expected.ENG_TOP);
 			expect(result[expected.SUO_STOCK.ucType]).to
-				.equal(expected.SUO_TOP);
+				.deep.equal(expected.SUO_TOP);
 		});
 	});
 });

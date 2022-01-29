@@ -1,3 +1,5 @@
+var clone = require('just-clone');
+
 const KEYS = {
 	NAME: 'name',
 	REFCODE: 'index',
@@ -44,7 +46,7 @@ class GameObject {
 		var self = this;
 
 		// Copy over everything from data
-		Object.assign(self, data);						
+		Object.assign(self, clone(data));
 	}
 
 	/**
