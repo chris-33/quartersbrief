@@ -10,6 +10,11 @@ const KEYS = {
 	SLOT: 'slot'
 };
 
+// artillery.maxDist
+const MODERNIZATION_TARGET_KEYS = {
+	GMMaxDist: 'artillery.maxDist' // PCM015_FireControl_Mod_II
+}
+
 /**
  * This class describes _Modernizations_. In game, these are called "modules".
  */
@@ -30,11 +35,10 @@ class Modernization extends GameObject {
 	 * @throws Throws a `TypeError` if the argument is not a `Ship`.
 	 */
 	eligible(ship) {
-		var self = this;
+		var self = this; debugger
 
 		if (!(ship instanceof Ship))
-			throw new TypeError('Modernizations can only be applied to ships');
-		var name = ship.getName();
+			throw new TypeError('Modernizations can only be applied to ships');		
 
 		// If slot is -1, that means the modernization has been removed from the game.
 		if (self.getSlot() === -1) return false;
@@ -45,7 +49,7 @@ class Modernization extends GameObject {
 
 		// Otherwise apply the standard tier+type+nation logic
 		return (self.getTiers().length === 0 || self.getTiers().includes(ship.getTier()))
-			&& (self.getShipTypes().length === 0 || self.getShipTypes().includes(ship.getType()))
+			&& (self.getShipTypes().length === 0 || self.getShipTypes().includes(ship.getSpecies()))
 			&& (self.getNations().length === 0 || self.getNations().includes(ship.getNation()));
 	}
 
