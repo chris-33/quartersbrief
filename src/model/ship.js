@@ -3,13 +3,8 @@ var hash = require('object-hash').MD5; // Use MD5 because it is faster than the 
 var arrayIntersect = require('$/src/util/util').arrayIntersect;
 var arrayDifference = require('$/src/util/util').arrayDifference;
 var clone = require('$/src/util/util').clone;
+var autocreate = require('$/src/util/autocreate-getters');
 
-const KEYS = {
-	SHIP_UPGRADE_INFO: 'ShipUpgradeInfo',
-	NATION: 'typeinfo.nation',
-	TYPE: 'typeinfo.species',
-	TIER: 'level',
-};
 
 /**
  * This class represents a ship within the game. Ships are complex objects by themselves, made even more 
@@ -29,8 +24,18 @@ const KEYS = {
  * logic, and therefore this class allows for such cases as well. Regardless of their interdependency for
  * research in the game, upgrades are always grouped by their type in this class. The series of upgrades for
  * of a certain type is called a *research path*.
+ * 
  */
 class Ship extends GameObject {
+	/**
+	 * Definitions for autocreated getters
+	 */
+	static #LOOKUP_DEFINITIONS = {
+	 	Nation: 'typeinfo.nation',
+	 	Species: 'typeinfo.species',
+	 	Tier: 'level',
+	}
+
 
 	#researchPaths;
 	#configuration;
@@ -39,6 +44,7 @@ class Ship extends GameObject {
 		super(data);
 
 		var self = this;
+		autocreate(self, Ship.#LOOKUP_DEFINITIONS)
 	}
 
 	/**
@@ -186,7 +192,7 @@ class Ship extends GameObject {
 		// Make a deep copy, because otherwise if any values are modified in the configuration further on
 		// (e.g. by applying modernizations), it will change the original values, too.
 		// This would lead to unexpected behavior when switching configurations back and forth.
-		self.#configuration = clone(configuration);
+		self.#configuration = new Ship.Configuration(self, configuration);
 	}
 
 	/**
@@ -226,6 +232,7 @@ class Ship extends GameObject {
 			the upgrade to its left has a lower distance value, the upgrade to its right
 			a higher distance value. (This can also mean inserting at the start or end).
 		 */
+		const KEY_SHIP_UPGRADE_INFO = 'ShipUpgradeInfo';
 		var self = this;		
 
 		// Building research paths is a relatively expensive operation (~50-100ms).
@@ -244,7 +251,7 @@ class Ship extends GameObject {
 		}		
 
 		// Get everything in ShipUpgradeInfo
-		var upgrades = self.get(KEYS.SHIP_UPGRADE_INFO);
+		var upgrades = self.get(KEY_SHIP_UPGRADE_INFO);
 		
 		// Initialize metadata to be kept for each upgrade.
 		// We need this for the algorithm to work: For one thing,
@@ -353,9 +360,43 @@ class Ship extends GameObject {
 		return researchPaths;
 	}
 
-	getTier() { return this.get(KEYS.TIER); }
-	getNation() { return this.get(KEYS.NATION); }
-	getType() { return this.get(KEYS.TYPE); }
+}
+
+/**
+ * This class represents a configuration of a ship.
+ * @name Ship#Configuration
+ */
+Ship.Configuration = class {
+	static #LOOKUP_DEFINITIONS = {
+		Ruddershift: 'hull.rudderTime',
+		Health: 'hull.health',
+		TurningCircle: 'hull.turningRadius',
+	}
+
+	#ship;
+
+	/** 
+	 * Instantiate a configuration for the given `ship`,
+	 * using the values in `configuration` as the data.
+	 * `configuration` will be deep-copied to the new 
+	 * instance.
+	 * @param {Ship} ship The ship for which this configuration is.
+	 * @param {Object} configuration The configuration values.
+	 * @throws 
+	 * Throws a `TypeError` if `ship` is not provided or not a ship.
+	 */
+	constructor(ship, configuration) {
+		var self = this;
+		
+		if (!ship || !(ship instanceof Ship)) 
+			throw new TypeError(`Expected a ship but got ${ship}`);
+		self.#ship = ship;
+
+		Object.assign(self, clone(configuration));			
+		autocreate(self, Ship.Configuration.#LOOKUP_DEFINITIONS);
+
+		self.get = self.#ship.get; // "Borrow" the ships getter, but "this" will be bound to the configuration
+	}
 }
 
 module.exports = Ship;
