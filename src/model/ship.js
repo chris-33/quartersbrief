@@ -1,6 +1,7 @@
 var GameObject = require('$/src/model/gameobject');
 var hash = require('object-hash').MD5; // Use MD5 because it is faster than the module's default SHA1
 var arrayIntersect = require('$/src/util/util').arrayIntersect;
+var arrayDifference = require('$/src/util/util').arrayDifference;
 var clone = require('$/src/util/util').clone;
 
 const KEYS = {
@@ -43,45 +44,143 @@ class Ship extends GameObject {
 	/**
 	 * Applies the configuration designated by `descriptor` to the ship.
 	 *
-	 * Descriptor can be one of the following:
-	 * - `'stock'`: The most basic upgrades (the start of each research path) are equipped
-	 * - `'top'`: The most advanced upgrades (the end of each research path) are equipped
+	 * Descriptor can either be a _simple_ descriptor (the single word `'stock'` or `'top'`) or a _complex_ descriptor.
+	 * A complex descriptor is composed of several subdescriptors, each of which takes the form
+	 * `type: level`. (The whitespace is optional). `type` must denote the upgrade's type, which can either be
+	 * its `ucType` or a more human-readable form that omits the underscore and allows, but does not require the
+	 * capitalization of the first letter. Level must either be a number, in which case it is considered to be the
+	 * zero-based index of the upgrade within its research path, or one of the words `'stock'` or `'top'`, in which
+	 * case it will be the first or last upgrade within its research path, respectively. The special type `'others'` can
+	 * be used to collectively define all remaining types not explicitly defined in the descriptor. If a descriptor is
+	 * incomplete, i.e. it does not contain definitions for all research paths, this method will throw a `TypeError`.
+	 *
+	 * Examples for descriptors:
+	 * - `'stock'`: The most basic upgrades (the start of each research path) are equipped.
+	 * - `'top'`: The most advanced upgrades (the end of each research path) are equipped.
+	 * - `'engine: stock, hull: top`': The start of the '_Engine' research path and the end of the '_Hull' research
+	 * path will be equipped. (Note: This will throw an error if the ship has research paths beyond those two.)
+	 * - `'_Engine: stock, _Hull: top'`: Identical to the previous examples.
+	 * - `'engine: stock, hull: top, others: top'`: Identical to the previous example, but will also equip the top
+	 * upgrades for all other research paths.
+	 * - `'torpedoes: 1, others: top'`: The second '_Torpedoes' upgrade and the top upgrades of all other research
+	 * path will be equipped. (This is, for instance, a popular configuration for Shimakaze.)
 	 * @param  {string} descriptor The configuration to apply
 	 * @throws
-	 * - Throws if the descriptor is not one of the above.
+	 * - Throws `TypeError` if the descriptor does not conform to the above rules.
 	 */
 	applyConfiguration(descriptor) {
 		let self = this;
-
 		let researchPaths = self.getResearchPaths();
 
-		let toApply = {};
-		let configuration = {};
-		switch (descriptor) {
-			case 'stock': 
-				toApply = Object.values(researchPaths).map(arr => arr[0]);
-				break;
-			case 'top': 
-				toApply = Object.values(researchPaths).map(arr => arr[arr.length - 1]);
-				break;
-			default:
-				throw new Error(`Unknown configuration descriptor ${name}`);
+		// Expand shorthand notations such as descriptor === 'stock' and
+		// descriptor === 'top'
+		// Replace human-readable notations such as 'artillery' or 'engine' by
+		// proper ucTypes (i.e. '_Artillery' and '_Engine')
+		// Expand 'others' definition to all remaining types that have not been
+		// defined explictly.
+		// Throws a TypeError if the descriptor does not contain definitions for
+		// all types in researchPaths unless and there is no 'others' definition
+		function normalize(descriptor) {
+			// Expand shorthands
+			if (descriptor === 'stock')
+				descriptor = 'others: stock';
+			else if (descriptor === 'top')
+				descriptor = 'others: top';
+
+			// A descriptor should be a series of one or more subdescriptors
+			// A subdescriptor MUST be look like type: level
+			// A type MAY start with an underscore, but if it is, the next character MUST be a capital
+			// A type MAY start with a capital letter
+			// A type MUST contain at least one small letter
+			// A type MUST be followed by a colon
+			// A colon MAY be followed by a whitespace
+			// A level MUST be 'stock' or 'top' or a digit
+			// A subdescriptor MUST either be followed by the end of the string, or by
+			// either a comma, a whitespace, or a comma and a whitespace
+			// 
+			// Perform a global search (do not stop after fist match)
+			// Perform a sticky search (begin matching at beginning of string, and matches must be directly 
+			// adjacent to each other)
+			const DESCRIPTOR_REGEX = /((?:_(?=[A-Z]))?[A-Z]?[a-z]+\:[ ]?(?:top|stock|\d))(?:, |,| |$)/gy
+			descriptor = Array.from(descriptor.matchAll(DESCRIPTOR_REGEX));
+			// No matches means the descriptor didn't conform to the regex at all
+			if (descriptor.length === 0) throw new TypeError('Malformed descriptor');
+			// matchAll will return an array for each match, consisting of the matched text
+			// (including the separating commas/whitespaces) and any capturing groups
+			// (we have only one). 
+			// We need to project this to the captured group
+			descriptor = descriptor.map(match => match[1]);
+
+			// Turn all type into ucTypes
+			descriptor = descriptor.map(subdescriptor => 
+					subdescriptor.startsWith('_') ? subdescriptor : '_' + subdescriptor.charAt(0).toUpperCase() + subdescriptor.substring(1)
+			);
+
+			// Find an 'others' definition if one exists
+			let others = descriptor.find(subdescriptor => subdescriptor.startsWith('_Others'));
+			// Get the types that have not been explicitly defined
+			// This is all the types in research paths minus the ones in descriptor
+			let remainingTypes = arrayDifference(Object.keys(researchPaths), descriptor.map(subdescriptor => subdescriptor.split(':')[0].trim()));
+			// If an 'others' definition exists, expand it
+			if (others){
+				// Remember what level to set everything to
+				let level = others.split(':')[1].trim();
+				// Take out the 'others' definition, we will replace it now with explicit subdescriptors
+				// for all remaining types
+				descriptor = descriptor.filter(subdescriptor => !subdescriptor.startsWith('_Others')) 
+				// Construct subdescriptors for all remaining types
+				others = remainingTypes.map(type => type + ': ' + level);
+				// Append to the descriptor definition
+				descriptor = descriptor.concat(others);
+			} else if (remainingTypes.length > 0)
+				// If no 'others' definition was found, and there are still remaining types
+				// (i.e., types that were not explicitly defined), throw a TypeError
+				throw new TypeError('Descriptor did not contain definitions for all upgrades')
+
+			return descriptor;
 		}
 
+		// Helper function to retrieve the upgrade specified by the subdescriptor (type: level) 
+		// from researchPaths
+		function retrieve(subdescriptor) {
+			let type = subdescriptor.split(':')[0].trim();
+			let level = subdescriptor.split(':')[1].trim();
+
+			let path = researchPaths[type];			
+			if (level === 'stock') level = 0;
+			else if (level === 'top') level = path.length - 1;
+			else level = Number(level);
+
+			return path[level];
+		}
+
+		descriptor = normalize(descriptor); 
+		// Retrieve the upgrades as defined by the descriptor
+		let toApply = descriptor.map(retrieve);
+		
+		// Start building the configuration
+		let configuration = {};		
 		for (let upgrade of toApply) {
+			// For every component definition in every upgrade
 			for (let componentKey in upgrade.components) {
-				let component = upgrade.components[componentKey];
+				let component = upgrade.components[componentKey];				
 				if (!configuration[componentKey])
+					// If this component has not yet been set in the configuration, set it now
 					configuration[componentKey] = component;
 				else
+					// If it has already been set, there must be ambiguity
+					// Attempt to resolve by intersecting the existing definition with this
+					// upgrade's one
+					// (If upgrades have conflicting definitions, the result will be length 0 after this.)
 					configuration[componentKey] = arrayIntersect(configuration[componentKey], component);
 			}
 		}
 		// Now all components in configuration should be arrays of length <= 1
 		// Project each down to its only item and expand the reference
+		// (Any components that had length 0 will be 'undefined' after this.)
 		for (let componentKey in configuration) {
-			let temp = configuration[componentKey][0];
-			configuration[componentKey] = temp ? self.get(temp) : null;
+			let reference = configuration[componentKey][0];
+			configuration[componentKey] = reference ? self.get(reference) : null;
 		}
 
 		// Make a deep copy, because otherwise if any values are modified in the configuration further on

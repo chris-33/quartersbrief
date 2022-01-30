@@ -107,5 +107,30 @@ describe('Ship', function() {
 			for (key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
 		});
+
+		it('should throw a TypeEror if a complex configuration doesn\'t define all upgrades', function() {
+			expect(ship.applyConfiguration.bind(ship, 'engine: stock')).to.throw(TypeError);
+			expect(ship.applyConfiguration.bind(ship, '')).to.throw(TypeError);
+			expect(ship.applyConfiguration.bind(ship, 'malformed')).to.throw(TypeError);
+		});
+
+		it('should have equipped the specified combination of upgrades after applying a more specific configuration', function() {
+			var expected;
+			with (TEST_DATA)
+				expected = {
+					artillery: AB1_Artillery,
+					engine: AB1_Engine,
+					atba: AB_ATBA,
+					directors: AB_Directors,
+					finders: AB_Finders,
+					hull: B_Hull,
+					fireControl: AB2_FireControl
+				};
+			ship.applyConfiguration('engine: stock, suo: 1, others: top');
+			var result = ship.getCurrentConfiguration();
+
+			for (key in expected) 
+				expect(result[key]).to.deep.equal(expected[key]);
+		})
 	});
 });
