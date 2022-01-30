@@ -1,5 +1,7 @@
 var log = require('loglevel');
 var GameObject = require('$/src/model/gameobject');
+var Ship = require('$/src/model/ship');
+var Modernization = require('$/src/model/modernization');
 
 /**
  * @see GameObject
@@ -127,8 +129,14 @@ class GameObjectFactory {
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 			
-		gameObject = new GameObject(gameObject);
-		log.info(`Retrieved game object ${gameObject.name} in ${Date.now() - t0} ms`);
+		let Constructor = {
+			'Ship': Ship,
+			'Modernization': Modernization
+		}[gameObject.typeinfo.type];
+
+		if (!Constructor) Constructor = GameObject;
+		gameObject = new Constructor(gameObject);
+		log.info(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0} ms`);
 		return gameObject; 
 	}
 
