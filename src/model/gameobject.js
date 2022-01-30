@@ -66,9 +66,10 @@ class GameObject {
 	 * - `go.get('nested.prop)` is the same as `go.nested.prop`
 	 * - `go.get('arr.0')` is the same as `go.arr[0]`
 	 * @param  {string} key The key to look up
-	 * @return {*}     The value for that key, or undefined if no property of
-	 * that key exists within the object. Note that this will also be the case
-	 * if any intermediate levels are not defined when using dot notation.
+	 * @return {*}     The value for that key.
+	 * @throws
+	 * Throws an error if the property does not exist, or
+	 * any intermediate levels are missing when using dot notation.
 	 */
 	get(key) {
 		var self = this;
@@ -81,7 +82,7 @@ class GameObject {
 			let currKey = path.shift();
 			target = target[currKey];
 			if (!target) 
-				return target; // If current level missing, exit now
+				throw new Error(`Trying to read unknown property ${key} of ${self}`);
 		}
 		return target;
 	}

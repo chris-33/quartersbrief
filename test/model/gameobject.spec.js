@@ -30,12 +30,12 @@ describe('GameObject', function() {
 
 		it('should return undefined if no such property exists', function() {
 			var go = new GameObject(TEST_DATA);
-			expect(go.get('doesnotexist')).to.be.undefined;
+			expect(go.get.bind(go,'doesnotexist')).to.throw();
 		});
 
 		it('should return undefined if any intermediate levels are missing when using dot notation', function() {
 			var go = new GameObject(TEST_DATA);
-			expect(go.get('doesnotexist.withdotnotation')).to.be.undefined;			
+			expect(go.get.bind(go,'doesnotexist.withdotnotation')).to.throw();
 		});
 	});
 
