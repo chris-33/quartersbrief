@@ -48,7 +48,7 @@ describe('Ship', function() {
 				.have.ordered.deep.	members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
 		});
 
-		it('should assign upgrades to the correct research paths in the correct order even when upgrades\' predecessors have a different type', function() {
+		it('should assign upgrades to the correct research paths in the correct order even when upgrades\' predecessors have a different type (complex case)', function() {
 			var data = clone(TEST_DATA);
 			// Make SUO_MIDDLE depend on HULL_TOP
 			data.ShipUpgradeInfo.SUO_MIDDLE.prev = 'HULL_TOP';

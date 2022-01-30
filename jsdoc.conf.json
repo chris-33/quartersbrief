@@ -6,6 +6,7 @@
 	},
 	"opts": {
 		"destination": "docs/",
+		"verbose": true,
 		"recurse": true
 	}
 

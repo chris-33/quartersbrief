@@ -26,6 +26,8 @@ var arrayIntersect = require('$/src/util/util').arrayIntersect;
  * invariant assertions.
  */
 function assertInvariants(data) {
+	let t0 = Date.now();
+
 	let fns = Object.values(assertInvariants)
 		.filter(x => x instanceof Function && x !== InvariantError); // Exclude InvariantError, which was also exposed as a property of assertInvariants
 	let exceptions = [];
@@ -40,6 +42,7 @@ function assertInvariants(data) {
 		}
 	}
 
+	log.info(`Checked assertions in ${Date.now() - t0}ms`);
 	if (exceptions.length > 0)
 		throw new AggregateError(exceptions);
 }
