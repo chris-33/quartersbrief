@@ -1,6 +1,7 @@
 var Ship = require('$/src/model/ship');
 var GameObject = require('$/src/model/gameobject');
 var TEST_DATA = require('$/test/model/ship.spec.json');
+var clone = require('$/src/util/util').clone;
 
 describe('Ship', function() {
 
@@ -46,9 +47,22 @@ describe('Ship', function() {
 			expect(result[expected.SUO_STOCK.ucType]).to
 				.have.ordered.deep.	members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
 		});
+
+		it('should assign upgrades to the correct research paths in the correct order even when upgrades\' predecessors have a different type', function() {
+			var data = clone(TEST_DATA);
+			// Make SUO_MIDDLE depend on HULL_TOP
+			data.ShipUpgradeInfo.SUO_MIDDLE.prev = 'HULL_TOP';
+			ship = new Ship(data);
+
+			var expected = data.ShipUpgradeInfo;
+			var result = ship.getResearchPaths();
+
+			expect(result[data.ShipUpgradeInfo.SUO_STOCK.ucType]).to
+				.have.deep.ordered.members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
+		});
 	});
 
-	describe('.getConfiguration', function() {
+	describe('.applyConfiguration', function() {
 		var ship;
 
 		beforeEach(function() {
