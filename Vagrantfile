@@ -4,6 +4,8 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/impish64"
 
+  # Expose port 9229 to allow debuggin
+  config.vm.network :forwarded_port, guest: 9229, host: 9229
 
   config.vm.provider "virtualbox" do |vb|
     # Give the vm more memory than the standard 1024 because we will be handling

@@ -2,7 +2,15 @@
 	"folders":
 	[
 		{
-			"path": "."
+			"path": ".",
 		}
+	],
+	"debugger_configurations":
+	[
+		{
+			"name": "Debug",
+			"type": "node",
+			"request": "attach"
+		},
 	],
 }

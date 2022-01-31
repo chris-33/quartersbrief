@@ -2,9 +2,11 @@
   "scripts": {
     "start": "node quartersbrief.js",
     "test": "node_modules/mocha/bin/mocha --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
-    "debug": "node inspect quartersbrief.js",
+    "debug": "node --inspect-brk=0.0.0.0:9229 quartersbrief.js",
+    "debug-test": "node_modules/mocha/bin/mocha --inspect-brk=0.0.0.0:9229 --debug-brk --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
+    "debug-local": "node inspect quartersbrief.js",
+    "debug-local-test": "node_modules/mocha/bin/mocha inspect --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
     "makedocs": "node_modules/.bin/jsdoc --configure jsdoc.conf.json",
-    "debug-test": "node_modules/mocha/bin/mocha inspect --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
     "postinstall": "npx basetag link"
   },
   "dependencies": {
