@@ -106,71 +106,70 @@ assertInvariants.assertHaveNames = function(data) {
 }
 
 /**
- * If a ship's upgrade has a component definition that includes more than one possibility for
- * that component, there must be some other upgrades that will specifiy this component exactly.
+ * If a ship's module has a component definition that includes more than one possibility for
+ * that component, there must be some other modules that will specifiy this component exactly.
  */
 /*
 	This assertion's algorithm works as follows:
-	- For every ship, check if the component definitions of all its upgrades have length 1. In
+	- For every ship, check if the component definitions of all its modules have length 1. In
 	  that case, there cannot be any ambiguity, and we are done.
-	- If this is not the case, there is at least one upgrade with at least one component definition of 
-	  length more than 1. This is called a problematic upgrade, that component definition is called
+	- If this is not the case, there is at least one module with at least one component definition of 
+	  length more than 1. This is called a problematic module, that component definition is called
 	  a problematic component definition.
-	- If this upgrade has several problematic component definitions, split it into several new
-	  upgrades that have one problematic component definition each.
-	- Find any upgrades for this ship that have a different ucType (that means, can be equipped
-	  simultaneously with the problematic upgrade) and include a component definition for the
+	- If this module has several problematic component definitions, split it into several new
+	  modules that have one problematic component definition each.
+	- Find any modules for this ship that have a different ucType (that means, can be equipped
+	  simultaneously with the problematic module) and include a component definition for the
 	  same component (the problematic component). Intersect this component definition with the 
-	  problematic component definition from the problematic upgrade. 
-	- If the result has length 1, this upgrade resolved the ambiguity. We are done with this 
-	  problematic upgrade, repeat with any other problematic upgrades. 
-	- If the result does not have length 1, try to find another upgrade that remedies the remaining
-	  ambiguity, now excluding both the problematic upgrade's ucType and the ucType of the upgrade
+	  problematic component definition from the problematic module. 
+	- If the result has length 1, this module resolved the ambiguity. We are done with this 
+	  problematic module, repeat with any other problematic modules. 
+	- If the result does not have length 1, try to find another module that remedies the remaining
+	  ambiguity, now excluding both the problematic module's ucType and the ucType of the module
 	  that contributed to resolving the ambiguity in the previous step.
  */
-assertInvariants.assertUpgradeComponentsResolveUnambiguously = function(data) {
+assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 	let counterexamples = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
 	for (ship of ships) {
-		// Filter upgrades to objects, because ShipUpgradeInfo contains some
+		// Filter modules to objects, because ShipUpgradeInfo contains some
 		// other things, too. (Even some primitives)
-		let upgrades = Object.values(ship.ShipUpgradeInfo)
+		let modules = Object.values(ship.ShipUpgradeInfo)
 			.filter(obj => typeof obj === 'object' && !Array.isArray(obj));
 		
 		// Do a quick check first: If all arrays are length 1, there can't be any ambiguity
-		if (upgrades.every(upgrade => 
-						Object.values(upgrade.components).every(component => component.length <= 1))) {
+		if (modules.every(module => 
+						Object.values(module.components).every(component => component.length <= 1))) {
 			log.debug(`For ${ship.name} All components were at most length 1, continuing`);
 			continue;
 		}
 
 		// Not all arrays were length 1, there is some ambiguity here.
-		// We will have to construct the full research trees and check all possible
-		// configurations for the invariant		
+		// We will have to check if it gets resolved by the other modules.
 		// 
 		// Make a deep copy of the data first it won't matter when we change it	
-		upgrades = clone(ship.ShipUpgradeInfo);
+		modules = clone(ship.ShipUpgradeInfo);
 		// Augment the values with their key names
-		upgrades = Object.entries(upgrades)
+		modules = Object.entries(modules)
 			.filter(kv => typeof kv[1] === 'object' && !Array.isArray(kv[1]))
 			.map(kv => { kv[1]['quartersbrief_name'] = kv[0]; return kv[1]; });
 		
-		// Get a list of those upgrades that are problematic in that they have
+		// Get a list of those modules that are problematic in that they have
 		// a component definition that has more than one entry
-		let problematic = upgrades.filter(upgrade => Object.values(upgrade.components).some(component => component.length > 1));
-		log.debug(`Problematic upgrades are ${problematic.map(x => x.quartersbrief_name)}`);
+		let problematic = modules.filter(module => Object.values(module.components).some(component => component.length > 1));
+		log.debug(`Problematic modules are ${problematic.map(x => x.quartersbrief_name)}`);
 		
 
-		// Split any upgrades with more than one problem into several upgrades with one problem each
+		// Split any modules with more than one problem into several modules with one problem each
 		let toDelete = [];
 		let toAdd = [];
 		for (problem of problematic) {
 			// Get the keys of all component that have a length > 1
 			let problematicComponentKeys = Object.keys(problem.components).filter(componentKey => problem.components[componentKey].length > 1);
-			// If the array of key names is itself longer than 1, this problematic upgrade must be split
+			// If the array of key names is itself longer than 1, this problematic module must be split
 			if (problematicComponentKeys.length > 1) {
-				log.debug(`Upgrade ${problem.quartersbrief_name} has more than one problem: ${problematicComponentKeys}. Splitting.`);
-				// Mark the upgrade for deletion
+				log.debug(`Module ${problem.quartersbrief_name} has more than one problem: ${problematicComponentKeys}. Splitting.`);
+				// Mark the module for deletion
 				toDelete.push(problem);
 				// Construct new problems for each problematic component
 				for (problematicComponentKey of problematicComponentKeys) {
@@ -190,33 +189,33 @@ assertInvariants.assertUpgradeComponentsResolveUnambiguously = function(data) {
 		problematic = problematic.filter(problem => !toDelete.includes(problem));
 		problematic = problematic.concat(toAdd);
 
-		// Now try to find remedies for the problematic upgrades.
+		// Now try to find remedies for the problematic modules.
 		for (problem of problematic) {
 			let problematicComponentKey = Object.keys(problem.components).filter(key => problem.components[key].length > 1);
 			let problematicComponent = problem.components[problematicComponentKey];
 			log.debug(`For ${problem.quartersbrief_name} problem narrowed down to ${problematicComponentKey} which is ${problematicComponent}`);
 
-			// The ucTypes of all upgrades that have a definition for the problem field.
-			// This is so that we don't consider more than one upgrade of a specific
+			// The ucTypes of all modules that have a definition for the problem field.
+			// This is so that we don't consider more than one module of a specific
 			// ucType
-			// Initialize to the problematic upgrade's ucType, obviously we can't equip
+			// Initialize to the problematic module's ucType, obviously we can't equip
 			// any more of this type anyway.
 			let contributors = [ problem.ucType ];
-			// For every upgrade
-			for (upgrade of upgrades) {
-				// Only look at upgrades that have not contributed yet
-				if (contributors.includes(upgrade.ucType)) continue;
+			// For every module
+			for (module of modules) {
+				// Only look at modules that have not contributed yet
+				if (contributors.includes(module.ucType)) continue;
 
-				// If this upgrade contains a definition pertaining to the 
+				// If this module contains a definition pertaining to the 
 				// problematic component
-				if (problematicComponentKey in upgrade.components) {
+				if (problematicComponentKey in module.components) {
 					// Intersect problematicComponent with the entries for the problematic
-					// component in that upgrade
-					problematicComponent = arrayIntersect(problematicComponent, upgrade.components[problematicComponentKey]);
-					// Add the upgrade's ucType to the list of contributors, because we
+					// component in that module
+					problematicComponent = arrayIntersect(problematicComponent, module.components[problematicComponentKey]);
+					// Add the module's ucType to the list of contributors, because we
 					// have "equipped" it now.
-					contributors.push(upgrade.ucType);
-					log.debug(`Found upgrade ${upgrade.quartersbrief_name} that has a definition for ${problematicComponentKey}. Problematic component is now ${problematicComponent}`);
+					contributors.push(module.ucType);
+					log.debug(`Found module ${module.quartersbrief_name} that has a definition for ${problematicComponentKey}. Problematic component is now ${problematicComponent}`);
 				}
 				// If that narrowed it down to length 1, we're done with this problem
 				if (problematicComponent.length === 1) {
@@ -225,12 +224,12 @@ assertInvariants.assertUpgradeComponentsResolveUnambiguously = function(data) {
 				}
 			}
 			if (problematicComponent.length > 1) {
-				counterexamples.push(`${ship.name}.ShipUpgradeInfo.${upgrade.quartersbrief_name}.${problematicComponentKey}`);
+				counterexamples.push(`${ship.name}.ShipUpgradeInfo.${module.quartersbrief_name}.${problematicComponentKey}`);
 			}
 		}
 	}
 	if (counterexamples.length > 0) 
-		throw new InvariantError('all upgrades\' components must be resolvable unambiguously', counterexamples);
+		throw new InvariantError('all modules\' components must be resolvable unambiguously', counterexamples);
 }
 
 module.exports = assertInvariants;

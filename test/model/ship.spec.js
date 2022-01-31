@@ -10,10 +10,10 @@ describe('Ship', function() {
 
 	});
 
-	describe('.getResearchPaths', function() {
-		it('should start a new path for every upgrade type', function() {
+	describe('.getModuleLines', function() {
+		it('should start a new path for every module type', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
-			expect(new Ship(TEST_DATA).getResearchPaths()).to
+			expect(new Ship(TEST_DATA).getModuleLines()).to
 				.be.an('object')
 				.that.has.all.keys(expected.ART_STOCK.ucType, 
 					expected.ENG_STOCK.ucType,
@@ -21,22 +21,22 @@ describe('Ship', function() {
 					expected.SUO_STOCK.ucType);
 		});
 
-		it('should assign upgrades to the correct research paths when every upgrade\'s type is the same as its predecessor (simple case)', function() {
-			var result = new Ship(TEST_DATA).getResearchPaths();
+		it('should assign modules to the correct module lines when every module\'s type is the same as its predecessor (simple case)', function() {
+			var result = new Ship(TEST_DATA).getModuleLines();
 			var expected = TEST_DATA.ShipUpgradeInfo;
 			for (let ucType of [expected.ART_STOCK.ucType, 
 							expected.HULL_STOCK.ucType, 
 							expected.ENG_STOCK.ucType, 
 							expected.SUO_STOCK.ucType]) {
-				// Expect the ucTypes of all upgrades in the current research path
-				// to be the same as that of the research path itself
+				// Expect the ucTypes of all modules in the current module line
+				// to be the same as that of the module line itself
 				expect(result[ucType].every(o => o.ucType === ucType)).to.be.true;
 			}			
 		});
 
-		it('should correctly order upgrades within the research paths  when every upgrade\'s type is the same as its predecessor (simple case)', function() {
+		it('should correctly order modules within the module lines  when every module\'s type is the same as its predecessor (simple case)', function() {
 			var expected = TEST_DATA.ShipUpgradeInfo;
-			var result = new Ship(TEST_DATA).getResearchPaths();
+			var result = new Ship(TEST_DATA).getModuleLines();
 			
 			expect(result[expected.ART_STOCK.ucType]).to
 				.have.ordered.deep.members([expected.ART_STOCK])
@@ -48,14 +48,14 @@ describe('Ship', function() {
 				.have.ordered.deep.	members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
 		});
 
-		it('should assign upgrades to the correct research paths in the correct order even when upgrades\' predecessors have a different type (complex case)', function() {
+		it('should assign modules to the correct module lines in the correct order even when modules\' predecessors have a different type (complex case)', function() {
 			var data = clone(TEST_DATA);
 			// Make SUO_MIDDLE depend on HULL_TOP
 			data.ShipUpgradeInfo.SUO_MIDDLE.prev = 'HULL_TOP';
 			ship = new Ship(data);
 
 			var expected = data.ShipUpgradeInfo;
-			var result = ship.getResearchPaths();
+			var result = ship.getModuleLines();
 
 			expect(result[data.ShipUpgradeInfo.SUO_STOCK.ucType]).to
 				.have.deep.ordered.members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
@@ -68,7 +68,7 @@ describe('Ship', function() {
 		beforeEach(function() {
 			ship = new Ship(TEST_DATA);
 		});
-		it('should have equipped the beginnings of the research paths after applying the stock configuration', function() {
+		it('should have equipped the beginnings of the module lines after applying the stock configuration', function() {
 			var expected;
 			with (TEST_DATA)
 				expected = {
@@ -88,7 +88,7 @@ describe('Ship', function() {
 				expect(result[key]).to.deep.equal(expected[key]);
 		});
 
-		it('should have equipped the ends of the research paths after applying the top configuration', function() {
+		it('should have equipped the ends of the module lines after applying the top configuration', function() {
 			var expected;
 			with (TEST_DATA)
 				expected = {
@@ -108,13 +108,13 @@ describe('Ship', function() {
 				expect(result[key]).to.deep.equal(expected[key]);
 		});
 
-		it('should throw a TypeEror if a complex configuration doesn\'t define all upgrades', function() {
+		it('should throw a TypeEror if a complex configuration doesn\'t define all modules', function() {
 			expect(ship.applyConfiguration.bind(ship, 'engine: stock')).to.throw(TypeError);
 			expect(ship.applyConfiguration.bind(ship, '')).to.throw(TypeError);
 			expect(ship.applyConfiguration.bind(ship, 'malformed')).to.throw(TypeError);
 		});
 
-		it('should have equipped the specified combination of upgrades after applying a more specific configuration', function() {
+		it('should have equipped the specified combination of modules after applying a more specific configuration', function() {
 			var expected;
 			with (TEST_DATA)
 				expected = {

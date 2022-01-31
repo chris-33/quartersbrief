@@ -16,7 +16,7 @@ describe('assertInvariants', function() {
 			'assertHaveIDs',
 			'assertHaveIndices',
 			'assertHaveNames',
-			'assertUpgradeComponentsResolveUnambiguously'
+			'assertModuleComponentsResolveUnambiguously'
 		].map(name => sinon.stub(assertInvariants, name));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -37,7 +37,7 @@ describe('assertInvariants', function() {
 			'assertHaveIDs',
 			'assertHaveIndices',
 			'assertHaveNames',
-			'assertUpgradeComponentsResolveUnambiguously'
+			'assertModuleComponentsResolveUnambiguously'
 		].map(name => sinon.stub(assertInvariants, name).throws(new assertInvariants.InvariantError()));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -117,7 +117,7 @@ describe('assertInvariants', function() {
 		});
 	});
 
-	describe('.assertUpgradeComponentsResolveUnambiguously', function() {
+	describe('.assertModuleComponentsResolveUnambiguously', function() {
 		let data;
 
 		beforeEach(function() {
@@ -125,52 +125,52 @@ describe('assertInvariants', function() {
 		});
 
 
-		it('should not error if all upgrades\'s components have length 1', function() {
-			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+		it('should not error if all modules\'s components have length 1', function() {
+			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.not.throw();
 		});
 
 		it('should throw an InvariantError if there is a component definition of length > 1 without another one to remedy it', function() {
 			data.PAAA001_Battleship.ShipUpgradeInfo.A_Hull.components['torpedoes'] = [ 'AB1_Torpedoes', 'AB2_Torpedoes' ];
-			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.throw(assertInvariants.InvariantError);
 		});
 
 		it('should not error when there is a component with length > 1 but it is remedied by another', function() {
-			// This will get remedied by the two Artillery upgrade definitions:
+			// This will get remedied by the two Artillery module definitions:
 			data.PAAA001_Battleship.ShipUpgradeInfo.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery' ];
-			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.not.throw();
 		});
 
 		it('should not error when there is a component with length > 1 but it is remedied by several others', function() {
-			let upgrades = data.PAAA001_Battleship.ShipUpgradeInfo
-			upgrades.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
-			upgrades.AB2_Artillery.components['artillery'] = ['AB2_Artillery', 'AB3_Artillery']
-			delete upgrades['AB1_Artillery'];
-			upgrades.SUO_STOCK.components['artillery'] = [ 'AB1_Artillery', 'AB3_Artillery' ];
+			let modules = data.PAAA001_Battleship.ShipUpgradeInfo
+			modules.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
+			modules.AB2_Artillery.components['artillery'] = ['AB2_Artillery', 'AB3_Artillery']
+			delete modules['AB1_Artillery'];
+			modules.SUO_STOCK.components['artillery'] = [ 'AB1_Artillery', 'AB3_Artillery' ];
 			// data now allows
 			// on A_Hull: AB1_Artillery, AB2_Artillery, AB3_Artillery
 			// on AB2_Artillery: AB2_Artillery, AB3_Artillery
 			// AB1_Artillery has been removed
 			// on SUO_STOCK: AB1_Artillery, AB3_Artillery
 			// This is resolvable to AB3_Artillery by combining all three
-			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.not.throw();
 		});
 
-		it('should throw an InvariantError when there is a component with length > 1, but the remedy requires two upgrades of the same type', function() {
-			let upgrades = data.PAAA001_Battleship.ShipUpgradeInfo;
-			upgrades.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
-			upgrades.AB1_Artillery.components['artillery'] = [ 'AB1_Artillery', 'AB3_Artillery' ];
-			upgrades.AB2_Artillery.components['artillery'] = [ 'AB2_Artillery', 'AB3_Artillery' ];
+		it('should throw an InvariantError when there is a component with length > 1, but the remedy requires two modules of the same type', function() {
+			let modules = data.PAAA001_Battleship.ShipUpgradeInfo;
+			modules.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
+			modules.AB1_Artillery.components['artillery'] = [ 'AB1_Artillery', 'AB3_Artillery' ];
+			modules.AB2_Artillery.components['artillery'] = [ 'AB2_Artillery', 'AB3_Artillery' ];
 			// data now allows
 			// on A_Hull: AB1_Artillery, AB2_Artillery, AB3_Artillery
 			// on AB1_Artillery: AB1_Artillery, AB3_Artillery
 			// on AB2_Artillery: AB2_Artillery, AB3_Artillery
 			// This is only resolvable by equipping AB1_Artillery and AB2_Artillery simultaneously,
 			// which the algorithm should not allow
-			expect(assertInvariants.assertUpgradeComponentsResolveUnambiguously.bind(null, data)).to
+			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.throw(assertInvariants.InvariantError);
 		});
 	});
