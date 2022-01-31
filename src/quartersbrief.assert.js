@@ -1,7 +1,7 @@
-var GameObject = require('$/src/model/gameobject');
-var log = require('loglevel');
-var clone = require('$/src/util/util').clone;
-var arrayIntersect = require('$/src/util/util').arrayIntersect;
+const GameObject = require('$/src/model/gameobject');
+const log = require('loglevel');
+const clone = require('$/src/util/util').clone;
+const arrayIntersect = require('$/src/util/util').arrayIntersect;
 
 
 /**
@@ -32,7 +32,7 @@ function assertInvariants(data) {
 		.filter(x => x instanceof Function && x !== InvariantError); // Exclude InvariantError, which was also exposed as a property of assertInvariants
 	let exceptions = [];
 
-	for (fn of fns) {
+	for (let fn of fns) {
 		try {
 			fn.call(null, data);
 		} catch (error) {			
@@ -56,8 +56,8 @@ function assertInvariants(data) {
  */
 class InvariantError extends Error {
 	constructor(invariant, counterexamples) {		
-		super(`Checking invariant \'${invariant}\' failed: violated by ${counterexamples}`);
-	};
+		super(`Checking invariant '${invariant}' failed: violated by ${counterexamples}`);
+	}
 }
 assertInvariants.InvariantError = InvariantError;
 
@@ -69,7 +69,7 @@ assertInvariants.InvariantError = InvariantError;
  *  This function is not exposed on module.exports.
  */
 function violates(data, fn) {	
-	var counterexamples = [];
+	let counterexamples = [];
 	for (let key in data) {
 		if (!fn(data[key])) 
 			counterexamples.push(key);
@@ -131,7 +131,7 @@ assertInvariants.assertHaveNames = function(data) {
 assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 	let counterexamples = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
-	for (ship of ships) {
+	for (let ship of ships) {
 		// Filter modules to objects, because ShipUpgradeInfo contains some
 		// other things, too. (Even some primitives)
 		let modules = Object.values(ship.ShipUpgradeInfo)
@@ -163,7 +163,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		// Split any modules with more than one problem into several modules with one problem each
 		let toDelete = [];
 		let toAdd = [];
-		for (problem of problematic) {
+		for (let problem of problematic) {
 			// Get the keys of all component that have a length > 1
 			let problematicComponentKeys = Object.keys(problem.components).filter(componentKey => problem.components[componentKey].length > 1);
 			// If the array of key names is itself longer than 1, this problematic module must be split
@@ -172,11 +172,11 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 				// Mark the module for deletion
 				toDelete.push(problem);
 				// Construct new problems for each problematic component
-				for (problematicComponentKey of problematicComponentKeys) {
+				for (let problematicComponentKey of problematicComponentKeys) {
 					// Make a deep copy
 					let newProblem = clone(problem);
 					// Then delete all problematic components except one
-					for (otherKey of problematicComponentKeys.filter(component => component !== problematicComponentKey)) {
+					for (let otherKey of problematicComponentKeys.filter(component => component !== problematicComponentKey)) {
 						log.debug(`Deleting ${otherKey} which is ${JSON.stringify(newProblem.components[otherKey])}`)
 						delete newProblem.components[otherKey];
 					}
@@ -190,7 +190,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		problematic = problematic.concat(toAdd);
 
 		// Now try to find remedies for the problematic modules.
-		for (problem of problematic) {
+		for (let problem of problematic) {
 			let problematicComponentKey = Object.keys(problem.components).filter(key => problem.components[key].length > 1);
 			let problematicComponent = problem.components[problematicComponentKey];
 			log.debug(`For ${problem.quartersbrief_name} problem narrowed down to ${problematicComponentKey} which is ${problematicComponent}`);
@@ -201,8 +201,8 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 			// Initialize to the problematic module's ucType, obviously we can't equip
 			// any more of this type anyway.
 			let contributors = [ problem.ucType ];
-			// For every module
-			for (module of modules) {
+			// For every module			
+			for (let module of modules) { // eslint-disable-line no-global-assign
 				// Only look at modules that have not contributed yet
 				if (contributors.includes(module.ucType)) continue;
 

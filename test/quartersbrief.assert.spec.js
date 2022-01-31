@@ -1,6 +1,6 @@
-var assertInvariants = require('$/src/quartersbrief.assert');
-var sinon = require('sinon');
-var clone = require('$/src/util/util').clone;
+const assertInvariants = require('$/src/quartersbrief.assert');
+const sinon = require('sinon');
+const clone = require('$/src/util/util').clone;
 
 const TEST_DATA = require('$/test/quartersbrief.assert.spec.json');
 
@@ -23,10 +23,9 @@ describe('assertInvariants', function() {
 		// picking up on our stubs
 		try {
 			assertInvariants(data);
-			for (assertion of assertions)
+			for (let assertion of assertions)
 				expect(assertion).to.have.been.calledWith(data);
 		} finally {
-			for (assertion of assertions)
 			assertions.forEach(assertion => assertion.restore());
 		}
 	});
@@ -50,7 +49,7 @@ describe('assertInvariants', function() {
 	});
 
 	describe('.assertHaveIDs', function() {
-		var data;
+		let data;
 
 		beforeEach(function() {
 			data = clone(TEST_DATA);

@@ -1,26 +1,30 @@
-var GameObject = require('$/src/model/gameobject');
-var Ship = require('$/src/model/ship');
+const GameObject = require('$/src/model/gameobject');
+const Ship = require('$/src/model/ship');
+const autocreate = require('$/src/util/autocreate-getters');
 
-const KEYS = {
-	TIERS: 'shiplevel',
-	NATIONS: 'nation',
-	SHIPTYPES: 'shiptype',
-	BLACKLIST: 'excludes',
-	WHITELIST: 'ships',
-	SLOT: 'slot'
-};
-
-// artillery.maxDist
-const MODERNIZATION_TARGET_KEYS = {
-	GMMaxDist: 'artillery.maxDist' // PCM015_FireControl_Mod_II
-}
 
 /**
  * This class describes _Modernizations_. In game, these are called "modules".
  */
 class Modernization extends GameObject {
+	
+	static #LOOKUP_DEFINITIONS = {
+		Tiers: 'shiplevel',
+		Nations: 'nation',
+		Species: 'shiptype',
+		Blacklist: 'excludes',
+		Whitelist: 'ships',
+		Slot: 'slot'
+	}
+
+	static #MODERNIZATION_TARGETS = {
+		GMMaxDist: 'artillery.maxDist' // PCM015_FireControl_Mod_II
+	}
+
 	constructor(data) {
 		super(data);
+
+		autocreate(this, Modernization.#LOOKUP_DEFINITIONS);
 	}
 
 
@@ -35,7 +39,7 @@ class Modernization extends GameObject {
 	 * @throws Throws a `TypeError` if the argument is not a `Ship`.
 	 */
 	eligible(ship) {
-		var self = this; debugger
+		let self = this;
 
 		if (!(ship instanceof Ship))
 			throw new TypeError('Modernizations can only be applied to ships');		
@@ -49,31 +53,44 @@ class Modernization extends GameObject {
 
 		// Otherwise apply the standard tier+type+nation logic
 		return (self.getTiers().length === 0 || self.getTiers().includes(ship.getTier()))
-			&& (self.getShipTypes().length === 0 || self.getShipTypes().includes(ship.getSpecies()))
+			&& (self.getSpecies().length === 0 || self.getSpecies().includes(ship.getSpecies()))
 			&& (self.getNations().length === 0 || self.getNations().includes(ship.getNation()));
 	}
 
-	/**
-	 * Get the tiers that are eligible for this modernization.
-	 * An empty result means all tiers are eligible.
-	 * @return {Array} An array of the tiers that are eligible.
-	 */
-	getTiers() { return this.get(KEYS.TIERS); }
-	/**
-	 * Get the nations that are eligible for this modernization.
-	 * An empty result means all nations are eligible.
-	 * @return {Array} An array of the nations that are eligible.
-	 */
-	getNations() { return this.get(KEYS.NATIONS); }
-	/**
-	 * Get the ship types that are eligible for this modernization.
-	 * An empty result means all ship types are eligible.
-	 * @return {Array} An array of the ship types that are eligible.
-	 */
-	getShipTypes() { return this.get(KEYS.SHIPTYPES); }
-	getBlacklist() { return this.get(KEYS.BLACKLIST); }
-	getWhitelist() { return this.get(KEYS.WHITELIST); }
-	getSlot() { return this.get(KEYS.SLOT); }
+	applyTo(ship) {
+		if (!(ship instanceof Ship))
+			throw new TypeError(`Expected a ship but got ${ship}`);
+
+		
+	}
 }
+
+/**
+ * @name Modernization#getTiers
+ * @function
+ * @memberof Modernization
+ * @description Get the tiers that are eligible for this modernization.
+ * An empty result means all tiers are eligible.
+ * @return {Array} An array of the tiers that are eligible.
+ */
+
+/**
+ * @name Modernization#getNations
+ * @function
+ * @memberof Modernization
+ * Get the nations that are eligible for this modernization.
+ * An empty result means all nations are eligible.
+ * @return {Array} An array of the nations that are eligible.
+ */
+
+/**
+ * @name Modernization#getSpecies
+ * @function
+ * @memberof Modernization
+ * Get the ship species (BB, DD, ...) that are eligible for this modernization.
+ * An empty result means all ship species are eligible.
+ * @return {Array} An array of the ship species that are eligible.
+ */
+
 
 module.exports = Modernization;

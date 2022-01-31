@@ -1,4 +1,4 @@
-var GameObject = require('$/src/model/gameobject');
+const GameObject = require('$/src/model/gameobject');
 
 describe('GameObject', function() {
 	const TEST_DATA = { 
@@ -14,7 +14,7 @@ describe('GameObject', function() {
 
 	describe('.get', function() {		
 		it('should get top-level properties', function() {						
-			for (key of Object.keys(TEST_DATA))
+			for (let key of Object.keys(TEST_DATA))
 				// Need to use deep equality here because there are complex properties
 				// that will have been cloned, therefore the object references are different
 				expect(new GameObject(TEST_DATA).get(key)).to.deep.equal(TEST_DATA[key]);
@@ -29,18 +29,18 @@ describe('GameObject', function() {
 		});
 
 		it('should return undefined if no such property exists', function() {
-			var go = new GameObject(TEST_DATA);
+			let go = new GameObject(TEST_DATA);
 			expect(go.get.bind(go,'doesnotexist')).to.throw();
 		});
 
 		it('should return undefined if any intermediate levels are missing when using dot notation', function() {
-			var go = new GameObject(TEST_DATA);
+			let go = new GameObject(TEST_DATA);
 			expect(go.get.bind(go,'doesnotexist.withdotnotation')).to.throw();
 		});
 	});
 
 	describe('.set', function() {
-		var obj;
+		let obj;
 
 		beforeEach(function() {
 			obj = new GameObject(TEST_DATA);

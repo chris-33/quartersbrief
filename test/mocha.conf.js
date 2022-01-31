@@ -1,5 +1,5 @@
-var chai = require('chai');
-var sinon = require('sinon');
+const chai = require('chai');
+const sinon = require('sinon');
 
 sinon.test = require('sinon-test')(sinon);
 

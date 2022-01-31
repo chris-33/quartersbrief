@@ -1,7 +1,7 @@
-var fs = require('fs');
-var path = require('path');
+const fs = require('fs');
+const path = require('path');
 
-var config = {};
+const config = {};
 
 fs
 	.readdirSync(__dirname)
@@ -9,7 +9,7 @@ fs
 		return file.indexOf('.grunt.js') !== -1;
 	})
 	.forEach(function(file) {
-		var modulename = path.basename(file, '.grunt.js');
+		const modulename = path.basename(file, '.grunt.js');
 		console.log('Loading task ' + modulename + ' from ' + file);
 		
 		config[modulename] = require('./' + file);

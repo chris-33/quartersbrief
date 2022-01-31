@@ -1,7 +1,7 @@
-var Ship = require('$/src/model/ship');
-var GameObject = require('$/src/model/gameobject');
-var TEST_DATA = require('$/test/model/ship.spec.json');
-var clone = require('$/src/util/util').clone;
+const Ship = require('$/src/model/ship');
+const GameObject = require('$/src/model/gameobject');
+const TEST_DATA = require('$/test/model/ship.spec.json');
+const clone = require('$/src/util/util').clone;
 
 describe('Ship', function() {
 
@@ -12,7 +12,7 @@ describe('Ship', function() {
 
 	describe('.getModuleLines', function() {
 		it('should start a new path for every module type', function() {
-			var expected = TEST_DATA.ShipUpgradeInfo;
+			let expected = TEST_DATA.ShipUpgradeInfo;
 			expect(new Ship(TEST_DATA).getModuleLines()).to
 				.be.an('object')
 				.that.has.all.keys(expected.ART_STOCK.ucType, 
@@ -22,8 +22,8 @@ describe('Ship', function() {
 		});
 
 		it('should assign modules to the correct module lines when every module\'s type is the same as its predecessor (simple case)', function() {
-			var result = new Ship(TEST_DATA).getModuleLines();
-			var expected = TEST_DATA.ShipUpgradeInfo;
+			let result = new Ship(TEST_DATA).getModuleLines();
+			let expected = TEST_DATA.ShipUpgradeInfo;
 			for (let ucType of [expected.ART_STOCK.ucType, 
 							expected.HULL_STOCK.ucType, 
 							expected.ENG_STOCK.ucType, 
@@ -35,8 +35,8 @@ describe('Ship', function() {
 		});
 
 		it('should correctly order modules within the module lines  when every module\'s type is the same as its predecessor (simple case)', function() {
-			var expected = TEST_DATA.ShipUpgradeInfo;
-			var result = new Ship(TEST_DATA).getModuleLines();
+			let expected = TEST_DATA.ShipUpgradeInfo;
+			let result = new Ship(TEST_DATA).getModuleLines();
 			
 			expect(result[expected.ART_STOCK.ucType]).to
 				.have.ordered.deep.members([expected.ART_STOCK])
@@ -49,13 +49,13 @@ describe('Ship', function() {
 		});
 
 		it('should assign modules to the correct module lines in the correct order even when modules\' predecessors have a different type (complex case)', function() {
-			var data = clone(TEST_DATA);
+			let data = clone(TEST_DATA);
 			// Make SUO_MIDDLE depend on HULL_TOP
 			data.ShipUpgradeInfo.SUO_MIDDLE.prev = 'HULL_TOP';
-			ship = new Ship(data);
+			let ship = new Ship(data);
 
-			var expected = data.ShipUpgradeInfo;
-			var result = ship.getModuleLines();
+			let expected = data.ShipUpgradeInfo;
+			let result = ship.getModuleLines();
 
 			expect(result[data.ShipUpgradeInfo.SUO_STOCK.ucType]).to
 				.have.deep.ordered.members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
@@ -63,48 +63,44 @@ describe('Ship', function() {
 	});
 
 	describe('.applyConfiguration', function() {
-		var ship;
+		let ship;
 
 		beforeEach(function() {
 			ship = new Ship(TEST_DATA);
 		});
 		it('should have equipped the beginnings of the module lines after applying the stock configuration', function() {
-			var expected;
-			with (TEST_DATA)
-				expected = {
-					artillery: AB1_Artillery,
-					engine: AB1_Engine,
-					airDefense: A_AirDefense,
-					atba: AB_ATBA,
-					directors: AB_Directors,
-					finders: AB_Finders,
-					hull: A_Hull,
-					fireControl: AB1_FireControl
-				};
+			let expected = {
+				artillery: TEST_DATA.AB1_Artillery,
+				engine: TEST_DATA.AB1_Engine,
+				airDefense: TEST_DATA.A_AirDefense,
+				atba: TEST_DATA.AB_ATBA,
+				directors: TEST_DATA.AB_Directors,
+				finders: TEST_DATA.AB_Finders,
+				hull: TEST_DATA.A_Hull,
+				fireControl: TEST_DATA.AB1_FireControl
+			};
 			ship.applyConfiguration('stock');
-			var result = ship.getCurrentConfiguration();
+			let result = ship.getCurrentConfiguration();
 
-			for (key in expected) 
+			for (let key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
 		});
 
 		it('should have equipped the ends of the module lines after applying the top configuration', function() {
-			var expected;
-			with (TEST_DATA)
-				expected = {
-					artillery: AB1_Artillery,
-					engine: AB2_Engine,
-					airDefense: B_AirDefense,
-					atba: AB_ATBA,
-					directors: AB_Directors,
-					finders: AB_Finders,
-					hull: B_Hull,
-					fireControl: AB3_FireControl
-				};
+			let expected = {
+				artillery: TEST_DATA.AB1_Artillery,
+				engine: TEST_DATA.AB2_Engine,
+				airDefense: TEST_DATA.B_AirDefense,
+				atba: TEST_DATA.AB_ATBA,
+				directors: TEST_DATA.AB_Directors,
+				finders: TEST_DATA.AB_Finders,
+				hull: TEST_DATA.B_Hull,
+				fireControl: TEST_DATA.AB3_FireControl
+			};
 			ship.applyConfiguration('top');
-			var result = ship.getCurrentConfiguration();
+			let result = ship.getCurrentConfiguration();
 
-			for (key in expected) 
+			for (let key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
 		});
 
@@ -115,21 +111,19 @@ describe('Ship', function() {
 		});
 
 		it('should have equipped the specified combination of modules after applying a more specific configuration', function() {
-			var expected;
-			with (TEST_DATA)
-				expected = {
-					artillery: AB1_Artillery,
-					engine: AB1_Engine,
-					atba: AB_ATBA,
-					directors: AB_Directors,
-					finders: AB_Finders,
-					hull: B_Hull,
-					fireControl: AB2_FireControl
-				};
+			let expected = {
+				artillery: TEST_DATA.AB1_Artillery,
+				engine: TEST_DATA.AB1_Engine,
+				atba: TEST_DATA.AB_ATBA,
+				directors: TEST_DATA.AB_Directors,
+				finders: TEST_DATA.AB_Finders,
+				hull: TEST_DATA.B_Hull,
+				fireControl: TEST_DATA.AB2_FireControl
+			};
 			ship.applyConfiguration('engine: stock, suo: 1, others: top');
-			var result = ship.getCurrentConfiguration();
+			let result = ship.getCurrentConfiguration();
 
-			for (key in expected) 
+			for (let key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
 		})
 	});

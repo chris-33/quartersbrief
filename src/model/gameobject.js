@@ -1,4 +1,4 @@
-var clone = require('just-clone');
+const clone = require('just-clone');
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from
@@ -48,7 +48,7 @@ class GameObject {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		var self = this;
+		let self = this;
 
 		// Copy over everything from data
 		Object.assign(self, clone(data));
@@ -72,12 +72,12 @@ class GameObject {
 	 * any intermediate levels are missing when using dot notation.
 	 */
 	get(key) {
-		var self = this;
+		let self = this;
 
 		// Split the key into its parts. These can be thought of as "path elements"
 		// to traverse along the data object
-		var path = key.split('.');
-		var target = self;
+		let path = key.split('.');
+		let target = self;
 		while(path.length > 0) {
 			let currKey = path.shift();
 			target = target[currKey];
@@ -97,10 +97,10 @@ class GameObject {
 	 * @param {*} value The value to set it to.
 	 */
 	set(key, value) {
-		var self = this;
+		let self = this;
 
-		var path = key.split('.');
-		var target = self;
+		let path = key.split('.');
+		let target = self;
 		// Traverse the path except for the last key. 
 		// The last one needs to be kept so we can assign
 		// a value to it 

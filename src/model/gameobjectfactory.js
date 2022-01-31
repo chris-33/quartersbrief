@@ -1,7 +1,7 @@
-var log = require('loglevel');
-var GameObject = require('$/src/model/gameobject');
-var Ship = require('$/src/model/ship');
-var Modernization = require('$/src/model/modernization');
+const log = require('loglevel');
+const GameObject = require('$/src/model/gameobject');
+const Ship = require('$/src/model/ship');
+const Modernization = require('$/src/model/modernization');
 
 /**
  * @see GameObject
@@ -42,7 +42,7 @@ class GameObjectFactory {
 	#everything;
 
 	expandReferences(data) {
-		var self = this;
+		let self = this;
 
 		// Iterate over all keys in the current object
 		for (let key of Object.keys(data)) {
@@ -86,6 +86,7 @@ class GameObjectFactory {
 				case 'array': 
 					for (let i = 0; i< data[key].length; i++)
 						data[key][i] = self.expandReferences(data[key][i]);
+					break;
 				// Otherwise keep everything as is.						
 				default:
 			}
@@ -108,14 +109,14 @@ class GameObjectFactory {
 	 * designator is passed.
 	 */
 	createGameObject(designator) {
-		var self = this;
+		let self = this;
 
-		var t0 = Date.now();
+		let t0 = Date.now();
 		log.debug('Create game object for designator ' + designator)
 		
 		self.#checkEverything();
 
-		var gameObject;
+		let gameObject;
 		
 		if (typeof designator === 'number') { // designator is an ID
 			// Find an object that has an 'id' property the same as designator
@@ -149,7 +150,7 @@ class GameObjectFactory {
 	 * @throws Throws an error if no data has been set. 
 	 */
 	listCodesForType(type) {
-		var self = this;
+		let self = this;
 
 		log.debug(`Getting all ref codes for type ${type}`);
 		self.#checkEverything();
@@ -160,7 +161,7 @@ class GameObjectFactory {
 	}
 
 	setEverything(everything) {
-		var self = this;
+		let self = this;
 		self.#everything = everything;
 	}
 

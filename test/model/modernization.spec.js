@@ -1,8 +1,7 @@
-var sinon = require('sinon');
-var Modernization = require('$/src/model/modernization');
-var Ship = require('$/src/model/ship');
-var GameObject = require('$/src/model/gameobject');
-var TEST_DATA = require('$/test/model/modernization.spec.json');
+const Modernization = require('$/src/model/modernization');
+const Ship = require('$/src/model/ship');
+const GameObject = require('$/src/model/gameobject');
+const TEST_DATA = require('$/test/model/modernization.spec.json');
 
 describe('Modernization', function() {
 	it('should be a GameObject', function() {
@@ -11,7 +10,7 @@ describe('Modernization', function() {
 	});
 
 	describe('.eligible', function() {
-		var ship;
+		let ship;
 
 		before(function() {
 			ship = new Ship(TEST_DATA.SHIPS.T8BB);	

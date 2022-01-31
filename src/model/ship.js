@@ -1,9 +1,9 @@
-var GameObject = require('$/src/model/gameobject');
-var hash = require('object-hash').MD5; // Use MD5 because it is faster than the module's default SHA1
-var arrayIntersect = require('$/src/util/util').arrayIntersect;
-var arrayDifference = require('$/src/util/util').arrayDifference;
-var clone = require('$/src/util/util').clone;
-var autocreate = require('$/src/util/autocreate-getters');
+const GameObject = require('$/src/model/gameobject');
+const hash = require('object-hash').MD5; // Use MD5 because it is faster than the module's default SHA1
+const arrayIntersect = require('$/src/util/util').arrayIntersect;
+const arrayDifference = require('$/src/util/util').arrayDifference;
+const clone = require('$/src/util/util').clone;
+const autocreate = require('$/src/util/autocreate-getters');
 
 
 /**
@@ -31,9 +31,9 @@ class Ship extends GameObject {
 	 * Definitions for autocreated getters
 	 */
 	static #LOOKUP_DEFINITIONS = {
-	 	Nation: 'typeinfo.nation',
-	 	Species: 'typeinfo.species',
-	 	Tier: 'level',
+		Nation: 'typeinfo.nation',
+		Species: 'typeinfo.species',
+		Tier: 'level',
 	}
 
 
@@ -43,7 +43,7 @@ class Ship extends GameObject {
 	constructor(data) {
 		super(data);
 
-		var self = this;
+		let self = this;
 		autocreate(self, Ship.#LOOKUP_DEFINITIONS)
 	}
 
@@ -107,7 +107,7 @@ class Ship extends GameObject {
 			// Perform a global search (do not stop after fist match)
 			// Perform a sticky search (begin matching at beginning of string, and matches must be directly 
 			// adjacent to each other)
-			const DESCRIPTOR_REGEX = /((?:_(?=[A-Z]))?[A-Z]?[a-z]+\:[ ]?(?:top|stock|\d))(?:, |,| |$)/gy
+			const DESCRIPTOR_REGEX = /((?:_(?=[A-Z]))?[A-Z]?[a-z]+:[ ]?(?:top|stock|\d))(?:, |,| |$)/gy
 			descriptor = Array.from(descriptor.matchAll(DESCRIPTOR_REGEX));
 			// No matches means the descriptor didn't conform to the regex at all
 			if (descriptor.length === 0) throw new TypeError('Malformed descriptor');
@@ -233,7 +233,7 @@ class Ship extends GameObject {
 			a higher distance value. (This can also mean inserting at the start or end).
 		 */
 		const KEY_SHIP_UPGRADE_INFO = 'ShipUpgradeInfo';
-		var self = this;		
+		let self = this;		
 
 		// Building module lines is a relatively expensive operation (~50-100ms).
 		// Therefore, only build once and then cache.
@@ -251,7 +251,7 @@ class Ship extends GameObject {
 		}		
 
 		// Get everything in ShipUpgradeInfo
-		var modules = self.get(KEY_SHIP_UPGRADE_INFO);
+		let modules = self.get(KEY_SHIP_UPGRADE_INFO);
 		
 		// Initialize metadata to be kept for each module.
 		// We need this for the algorithm to work: For one thing,
@@ -266,7 +266,7 @@ class Ship extends GameObject {
 		// 
 		// Keys for the metadata will be hashes of their corresponding
 		// module objects.
-		var metadata = {};
+		let metadata = {};
 		for (let moduleKey in modules) {
 			let module = modules[moduleKey];
 			// Filter out primitives
@@ -280,7 +280,7 @@ class Ship extends GameObject {
 			// arrays of the form [keyname, object]
 			.filter(obj => isModuleDefinition(obj));
 
-		var moduleLines = {};
+		let moduleLines = {};
 
 		// As long as there are still unprocessed modules
 		while (modules.length > 0) {
@@ -386,7 +386,7 @@ Ship.Configuration = class {
 	 * Throws a `TypeError` if `ship` is not provided or not a ship.
 	 */
 	constructor(ship, configuration) {
-		var self = this;
+		let self = this;
 		
 		if (!ship || !(ship instanceof Ship)) 
 			throw new TypeError(`Expected a ship but got ${ship}`);
