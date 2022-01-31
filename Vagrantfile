@@ -18,6 +18,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
     sudo apt-get install -y nodejs
+    sudo npm install -g grunt-cli
   SHELL
 
   # cd to the /vagrant directory upon login
