@@ -6,10 +6,10 @@ const config = {};
 fs
 	.readdirSync(__dirname)
 	.filter(function(file) {
-		return file.indexOf('.grunt.js') !== -1;
+		return file.indexOf('.grunt.cjs') !== -1;
 	})
 	.forEach(function(file) {
-		const modulename = path.basename(file, '.grunt.js');
+		const modulename = path.basename(file, '.grunt.cjs');
 		console.log('Loading task ' + modulename + ' from ' + file);
 		
 		config[modulename] = require('./' + file);
