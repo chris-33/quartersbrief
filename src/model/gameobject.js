@@ -1,6 +1,5 @@
 import clone from 'just-clone';
 import { AccessorMixin } from '../util/accessors.js';
-import { autocreate } from '../util/autocreate-getters.js';
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from
@@ -56,7 +55,7 @@ class GameObject extends AccessorMixin(null) {
 		// Copy over everything from data
 		Object.assign(self, clone(data));
 
-		autocreate(self, GameObject.#LOOKUP_DEFINITIONS);
+		AccessorMixin.createGetters(self, GameObject.#LOOKUP_DEFINITIONS);
 	}
 }
 

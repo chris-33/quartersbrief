@@ -1,7 +1,6 @@
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
-import { autocreate } from '../util/autocreate-getters.js';
-
+import { AccessorMixin } from '../util/accessors.js';
 
 /**
  * This class describes _Modernizations_. In game, these are called "modules".
@@ -24,7 +23,7 @@ class Modernization extends GameObject {
 	constructor(data) {
 		super(data);
 
-		autocreate(this, Modernization.#LOOKUP_DEFINITIONS);
+		AccessorMixin.createGetters(this, Modernization.#LOOKUP_DEFINITIONS);
 	}
 
 

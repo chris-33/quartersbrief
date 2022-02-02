@@ -2,7 +2,6 @@ import { GameObject } from './gameobject.js';
 import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'just-clone';
-import { autocreate } from '../util/autocreate-getters.js';
 import { AccessorMixin } from '../util/accessors.js';
 
 /**
@@ -43,7 +42,7 @@ class Ship extends GameObject {
 		super(data);
 
 		let self = this;
-		autocreate(self, Ship.#LOOKUP_DEFINITIONS)
+		AccessorMixin.createGetters(self, Ship.#LOOKUP_DEFINITIONS)
 	}
 
 	/**
@@ -382,7 +381,7 @@ Ship.Configuration = class extends AccessorMixin(null) {
 		self.#ship = ship;
 
 		Object.assign(self, clone(configuration));			
-		autocreate(self, Ship.Configuration.#LOOKUP_DEFINITIONS);
+		AccessorMixin.createGetters(self, Ship.Configuration.#LOOKUP_DEFINITIONS);
 	}
 }
 
