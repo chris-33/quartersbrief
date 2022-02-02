@@ -9,8 +9,9 @@ describe('AccessorMixin', function() {
 		Accessors = class extends AccessorMixin(null) {
 			prop1 = 'string';
 			prop2 = 0;
-			nested = { prop3: 'prop3' };
-			arr = [ 'prop4' ];
+			nested = { prop3: 'prop3', prop4: 0, prop5: 0 };
+			nested2 = { prop3: 'prop3', prop4: 1 };
+			arr = [ 'prop4' ];			
 		};
 	});
 
@@ -70,6 +71,10 @@ describe('AccessorMixin', function() {
 				expect(obj.get(key)).to.deep.equal(obj[key]);
 		});
 
+		it('should throw if no such property exists', function() {
+			expect(obj.get.bind(obj,'doesnotexist')).to.throw();
+		});
+
 		it('should get nested properties with dot notation', function() {
 			expect(obj.get('nested.prop3')).to.equal(obj.nested.prop3);
 		});
@@ -78,13 +83,44 @@ describe('AccessorMixin', function() {
 			expect(obj.get('arr.0')).to.equal(obj.arr[0]);
 		});
 
-		it('should return undefined if no such property exists', function() {
-			expect(obj.get.bind(obj,'doesnotexist')).to.throw();
-		});
-
-		it('should return undefined if any intermediate levels are missing when using dot notation', function() {
+		it('should throw if any intermediate levels are missing when using dot notation', function() {
 			expect(obj.get.bind(obj,'doesnotexist.withdotnotation')).to.throw();
 		});
+
+		it('should return an array if collate option is set to false', function() {
+			expect(obj.get('prop1', { collate: false })).to.be.an('array');
+		});
+
+		it('should get values for all matching properties when using wildcards', function() {
+			expect(obj.get('nested*.prop3', { collate: false })).to
+				.be.an('array').with.members(['prop3','prop3']);
+		});
+
+		it('should throw if no values match when using wildcards', function() {
+			expect(obj.get.bind(obj,'doesnotexist*')).to.throw();
+		});
+
+		it('should throw if collating and properties are not equal when using wildcards', function() {
+			expect(obj.get.bind(obj, 'nested*.prop4')).to.throw();
+		});
+
+		it('should throw if not all matching properties have the requested subproperties when using wildcards', function() {
+			expect(obj.get.bind(obj, 'nested*.prop5')).to.throw();
+		});
+
+		it('should handle multiple wildcards correctly', function() {
+			const complex = new Accessors();
+			complex.nested = {
+					prop: { innernested1: { prop: 'prop' }, innernested2: { prop: 'prop' }}
+			};
+			complex.nested2 = {
+					prop: { innernested1: { prop: 'prop' }, innernested2: { prop: 'prop' }}
+			}
+			
+			expect(complex.get('nested*.prop.innernested*.prop', { collate: false })).to
+				.be.an('array').with.members(['prop', 'prop', 'prop', 'prop']);
+		});
+
 	});
 
 	describe('.set', function() {
