@@ -93,28 +93,17 @@ class Ship extends GameObject {
 				descriptor = 'others: top';
 
 			// A descriptor should be a series of one or more subdescriptors
-			// A subdescriptor MUST be look like type: level
+			descriptor = descriptor.split(',').map(subdescriptor => subdescriptor.trim());
+			// A subdescriptor MUST be of the form type: level
 			// A type MAY start with an underscore, but if it is, the next character MUST be a capital
 			// A type MAY start with a capital letter
 			// A type MUST contain at least one small letter
 			// A type MUST be followed by a colon
-			// A colon MAY be followed by a whitespace
-			// A level MUST be 'stock' or 'top' or a digit
-			// A subdescriptor MUST either be followed by the end of the string, or by
-			// either a comma, a whitespace, or a comma and a whitespace
-			// 
-			// Perform a global search (do not stop after fist match)
-			// Perform a sticky search (begin matching at beginning of string, and matches must be directly 
-			// adjacent to each other)
-			const DESCRIPTOR_REGEX = /((?:_(?=[A-Z]))?[A-Z]?[a-z]+:[ ]?(?:top|stock|\d))(?:, |,| |$)/gy
-			descriptor = Array.from(descriptor.matchAll(DESCRIPTOR_REGEX));
-			// No matches means the descriptor didn't conform to the regex at all
-			if (descriptor.length === 0) throw new TypeError('Malformed descriptor');
-			// matchAll will return an array for each match, consisting of the matched text
-			// (including the separating commas/whitespaces) and any capturing groups
-			// (we have only one). 
-			// We need to project this to the captured group
-			descriptor = descriptor.map(match => match[1]);
+			// A colon MAY be followed by any number of whitespaces
+			// A level MUST be 'stock' or 'top' or a number
+			const SUBDESCRIPTOR_REGEX = /^(?:_(?=[A-Z]))?[A-Z]?[a-z]+:[ ]*(?:top|stock|\d+)$/;
+			if (!descriptor.every(subdescriptor => SUBDESCRIPTOR_REGEX.test(subdescriptor)))
+				throw new TypeError('Malformed descriptor');		
 
 			// Turn all type into ucTypes
 			descriptor = descriptor.map(subdescriptor => 
