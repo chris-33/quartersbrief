@@ -3,7 +3,7 @@ import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'just-clone';
 import { autocreate } from '../util/autocreate-getters.js';
-
+import { AccessorMixin } from '../util/accessors.js';
 
 /**
  * This class represents a ship within the game. Ships are complex objects by themselves, made even more 
@@ -365,7 +365,7 @@ class Ship extends GameObject {
  * This class represents a configuration of a ship.
  * @name Ship#Configuration
  */
-Ship.Configuration = class {
+Ship.Configuration = class extends AccessorMixin(null) {
 	static #LOOKUP_DEFINITIONS = {
 		Ruddershift: 'hull.rudderTime',
 		Health: 'hull.health',
@@ -385,6 +385,7 @@ Ship.Configuration = class {
 	 * Throws a `TypeError` if `ship` is not provided or not a ship.
 	 */
 	constructor(ship, configuration) {
+		super();
 		let self = this;
 		
 		if (!ship || !(ship instanceof Ship)) 
@@ -393,11 +394,6 @@ Ship.Configuration = class {
 
 		Object.assign(self, clone(configuration));			
 		autocreate(self, Ship.Configuration.#LOOKUP_DEFINITIONS);
-
-		// "Borrow" the ship's generic getter, but "this" will be bound to the configuration
-		// Why this works, I am actually not 100% sure, but it does...
-		self.get = self.#ship.get.bind(self); 
-		self.set = self.#ship.set.bind(self);
 	}
 }
 
