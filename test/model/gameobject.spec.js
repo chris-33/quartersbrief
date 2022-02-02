@@ -1,4 +1,4 @@
-import { GameObject } from '$/src/model/gameobject.js';
+import { GameObject } from '../../src/model/gameobject.js';
 
 describe('GameObject', function() {
 	const TEST_DATA = { 

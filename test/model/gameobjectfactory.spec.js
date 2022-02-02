@@ -1,5 +1,5 @@
-import { gameObjectFactory } from '$/src/model/gameobjectfactory.js';
-import { GameObject } from '$/src/model/gameobject.js';
+import { gameObjectFactory } from '../../src/model/gameobjectfactory.js';
+import { GameObject } from '../../src/model/gameobject.js';
 
 describe('GameObjectFactory', function() {
 	const TEST_DATA = {

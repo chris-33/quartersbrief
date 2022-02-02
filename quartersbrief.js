@@ -1,9 +1,9 @@
-import { init } from '$/quartersbrief.conf.js';
+import { init } from './quartersbrief.conf.js';
 import { readFileSync } from 'fs';
-import { gameObjectFactory } from '$/src/model/gameobjectfactory.js';
-import { Ship } from '$/src/model/ship.js';
-import { Modernization } from '$/src/model/modernization.js';
-import { assertInvariants } from '$/src/quartersbrief.assert.js';
+import { gameObjectFactory } from './src/model/gameobjectfactory.js';
+import { Ship } from './src/model/ship.js';
+import { Modernization } from './src/model/modernization.js';
+import { assertInvariants } from './src/quartersbrief.assert.js';
 import process from 'process';
 import node_readline from 'readline';
 

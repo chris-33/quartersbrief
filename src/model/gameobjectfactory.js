@@ -1,7 +1,7 @@
 import log from 'loglevel';
-import { GameObject } from '$/src/model/gameobject.js';
-import { Ship } from '$/src/model/ship.js';
-import { Modernization } from '$/src/model/modernization.js';
+import { GameObject } from './gameobject.js';
+import { Ship } from './ship.js';
+import { Modernization } from './modernization.js';
 
 /**
  * @see GameObject

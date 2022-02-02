@@ -1,8 +1,8 @@
-import { GameObject } from '$/src/model/gameobject.js';
+import { GameObject } from './gameobject.js';
 import objecthash from 'object-hash'; let hash = objecthash.MD5;
-import { arrayIntersect, arrayDifference } from '$/src/util/util.js';
+import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'just-clone';
-import { autocreate } from '$/src/util/autocreate-getters.js';
+import { autocreate } from '../util/autocreate-getters.js';
 
 
 /**

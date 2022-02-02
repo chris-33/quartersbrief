@@ -1,5 +1,5 @@
-import { Ship } from '$/src/model/ship.js';
-import { GameObject } from '$/src/model/gameobject.js';
+import { Ship } from '../../src/model/ship.js';
+import { GameObject } from '../../src/model/gameobject.js';
 import clone from 'just-clone';
 import { readFileSync } from 'fs';
 

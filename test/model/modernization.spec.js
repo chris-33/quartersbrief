@@ -1,6 +1,6 @@
-import { Modernization } from '$/src/model/modernization.js';
-import { Ship } from '$/src/model/ship.js';
-import { GameObject } from '$/src/model/gameobject.js';
+import { Modernization } from '../../src/model/modernization.js';
+import { Ship } from '../../src/model/ship.js';
+import { GameObject } from '../../src/model/gameobject.js';
 import { readFileSync } from 'fs';
 
 describe('Modernization', function() {

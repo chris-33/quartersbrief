@@ -1,6 +1,6 @@
-import { GameObject } from '$/src/model/gameobject.js';
-import { Ship } from '$/src/model/ship.js';
-import { autocreate } from '$/src/util/autocreate-getters.js';
+import { GameObject } from './gameobject.js';
+import { Ship } from './ship.js';
+import { autocreate } from '../util/autocreate-getters.js';
 
 
 /**

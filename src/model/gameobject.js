@@ -1,5 +1,5 @@
 import clone from 'just-clone';
-import { autocreate } from '$/src/util/autocreate-getters.js';
+import { autocreate } from '../util/autocreate-getters.js';
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from

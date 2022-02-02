@@ -1,7 +1,7 @@
-import { GameObject } from '$/src/model/gameobject.js';
+import { GameObject } from './model/gameobject.js';
 import log from 'loglevel';
 import clone from 'just-clone';
-import { arrayIntersect } from '$/src/util/util.js';
+import { arrayIntersect } from './util/util.js';
 
 
 /**
