@@ -1,19 +1,21 @@
-require('./quartersbrief.conf.js');
-var fs = require('fs');
-var gameObjectFactory = require('$/src/model/gameobjectfactory')
-var Ship = require('$/src/model/ship');
-var Modernization = require('$/src/model/modernization');
+import { init } from '$/quartersbrief.conf.js';
+import { readFileSync } from 'fs';
+import { gameObjectFactory } from '$/src/model/gameobjectfactory.js';
+import { Ship } from '$/src/model/ship.js';
+import { Modernization } from '$/src/model/modernization.js';
+import { assertInvariants } from '$/src/quartersbrief.assert.js';
+import process from 'process';
+import node_readline from 'readline';
 
 
 
-var data = JSON.parse(fs.readFileSync('data/GameParams.json'));
-require('$/src/quartersbrief.assert')(data);
+
+var data = JSON.parse(readFileSync('data/GameParams.json'));
+assertInvariants(data);
 
 gameObjectFactory.setEverything(data);
 
-
-const process = require('process');
-const readline = require('readline').createInterface({ input: process.stdin, output: process.stdout, prompt: 'Quarters Brief>' });
+const readline = node_readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'Quarters Brief>' });
 readline.prompt();
 readline.on('line', function(input) {
 	if (input.startsWith('stats ')) {

@@ -1,7 +1,7 @@
-const log = require('loglevel');
-const GameObject = require('$/src/model/gameobject');
-const Ship = require('$/src/model/ship');
-const Modernization = require('$/src/model/modernization');
+import log from 'loglevel';
+import { GameObject } from '$/src/model/gameobject.js';
+import { Ship } from '$/src/model/ship.js';
+import { Modernization } from '$/src/model/modernization.js';
 
 /**
  * @see GameObject
@@ -176,6 +176,6 @@ class GameObjectFactory {
 	}
 }
 
+let gameObjectFactory = new GameObjectFactory();
 
-
-module.exports = new GameObjectFactory();
+export { gameObjectFactory }

@@ -1,7 +1,7 @@
-const GameObject = require('$/src/model/gameobject');
-const log = require('loglevel');
-const clone = require('$/src/util/util').clone;
-const arrayIntersect = require('$/src/util/util').arrayIntersect;
+import { GameObject } from '$/src/model/gameobject.js';
+import log from 'loglevel';
+import clone from 'just-clone';
+import { arrayIntersect } from '$/src/util/util.js';
 
 
 /**
@@ -59,7 +59,6 @@ class InvariantError extends Error {
 		super(`Checking invariant '${invariant}' failed: violated by ${counterexamples}`);
 	}
 }
-assertInvariants.InvariantError = InvariantError;
 
 /**
  * 	Helper function that checks every object in data. 
@@ -224,7 +223,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 				}
 			}
 			if (problematicComponent.length > 1) {
-				counterexamples.push(`${ship.name}.ShipUpgradeInfo.${module.quartersbrief_name}.${problematicComponentKey}`);
+				counterexamples.push(`${ship.name}.ShipUpgradeInfo.${problem.quartersbrief_name}.${problematicComponentKey}`);
 			}
 		}
 	}
@@ -232,4 +231,4 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		throw new InvariantError('all modules\' components must be resolvable unambiguously', counterexamples);
 }
 
-module.exports = assertInvariants;
+export { assertInvariants, InvariantError }

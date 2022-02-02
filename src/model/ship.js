@@ -1,9 +1,8 @@
-const GameObject = require('$/src/model/gameobject');
-const hash = require('object-hash').MD5; // Use MD5 because it is faster than the module's default SHA1
-const arrayIntersect = require('$/src/util/util').arrayIntersect;
-const arrayDifference = require('$/src/util/util').arrayDifference;
-const clone = require('$/src/util/util').clone;
-const autocreate = require('$/src/util/autocreate-getters');
+import { GameObject } from '$/src/model/gameobject.js';
+import objecthash from 'object-hash'; let hash = objecthash.MD5;
+import { arrayIntersect, arrayDifference } from '$/src/util/util.js';
+import clone from 'just-clone';
+import { autocreate } from '$/src/util/autocreate-getters.js';
 
 
 /**
@@ -402,4 +401,4 @@ Ship.Configuration = class {
 	}
 }
 
-module.exports = Ship;
+export { Ship }

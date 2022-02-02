@@ -9,7 +9,7 @@
  * `get(name)`. Most commonly this will be a `GameObject`.
  * @param  {Object} definitions An object of key-value pairs for the properties to create getters for. 
  */
-module.exports = function(obj, definitions) {
+function autocreate(obj, definitions) {
 	for (let property in definitions) {
 		let getter;
 		switch (typeof definitions[property]) {
@@ -31,3 +31,5 @@ module.exports = function(obj, definitions) {
 		});
 	}	
 }
+
+export { autocreate }

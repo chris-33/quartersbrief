@@ -1,4 +1,5 @@
-const clone = require('just-clone');
+import clone from 'just-clone';
+import { autocreate } from '$/src/util/autocreate-getters.js';
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from
@@ -53,7 +54,7 @@ class GameObject {
 		// Copy over everything from data
 		Object.assign(self, clone(data));
 
-		require('$/src/util/autocreate-getters')(self, GameObject.#LOOKUP_DEFINITIONS);
+		autocreate(self, GameObject.#LOOKUP_DEFINITIONS);
 	}
 
 	/**
@@ -114,4 +115,4 @@ class GameObject {
 	}
 }
 
-module.exports = GameObject;
+export { GameObject }

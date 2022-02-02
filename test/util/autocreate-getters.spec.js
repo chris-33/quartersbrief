@@ -1,5 +1,5 @@
-const autocreate = require('$/src/util/autocreate-getters');
-const sinon = require('sinon');
+import { autocreate } from '$/src/util/autocreate-getters.js';
+import sinon from 'sinon';
 
 describe('getter-autocreate', function() {
 

@@ -1,5 +1,5 @@
-const gameObjectFactory = require('$/src/model/gameobjectfactory');
-const GameObject = require('$/src/model/gameobject');
+import { gameObjectFactory } from '$/src/model/gameobjectfactory.js';
+import { GameObject } from '$/src/model/gameobject.js';
 
 describe('GameObjectFactory', function() {
 	const TEST_DATA = {

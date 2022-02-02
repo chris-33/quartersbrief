@@ -1,6 +1,6 @@
-const GameObject = require('$/src/model/gameobject');
-const Ship = require('$/src/model/ship');
-const autocreate = require('$/src/util/autocreate-getters');
+import { GameObject } from '$/src/model/gameobject.js';
+import { Ship } from '$/src/model/ship.js';
+import { autocreate } from '$/src/util/autocreate-getters.js';
 
 
 /**
@@ -93,4 +93,4 @@ class Modernization extends GameObject {
  */
 
 
-module.exports = Modernization;
+export { Modernization }

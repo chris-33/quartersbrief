@@ -1,9 +1,14 @@
-const Ship = require('$/src/model/ship');
-const GameObject = require('$/src/model/gameobject');
-const TEST_DATA = require('$/test/model/ship.spec.json');
-const clone = require('$/src/util/util').clone;
+import { Ship } from '$/src/model/ship.js';
+import { GameObject } from '$/src/model/gameobject.js';
+import clone from 'just-clone';
+import { readFileSync } from 'fs';
 
 describe('Ship', function() {
+	let TEST_DATA;
+
+	before(function() {
+		TEST_DATA = JSON.parse(readFileSync('test/model/ship.spec.json'));		
+	});
 
 	it('should be a GameObject', function() {		
 		expect(new Ship(TEST_DATA)).to.be.an.instanceof(GameObject);

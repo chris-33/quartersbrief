@@ -1,8 +1,10 @@
-const chai = require('chai');
-const sinon = require('sinon');
+import chai from 'chai';
+import sinon from 'sinon';
+import sinontest from 'sinon-test';
+import sinonchai from 'sinon-chai';
 
-sinon.test = require('sinon-test')(sinon);
+sinon.test = sinontest(sinon);
 
-chai.use(require('sinon-chai'));
+chai.use(sinonchai);
 
 global.expect = chai.expect;

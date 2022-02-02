@@ -1,7 +1,7 @@
-const Modernization = require('$/src/model/modernization');
-const Ship = require('$/src/model/ship');
-const GameObject = require('$/src/model/gameobject');
-const TEST_DATA = require('$/test/model/modernization.spec.json');
+import { Modernization } from '$/src/model/modernization.js';
+import { Ship } from '$/src/model/ship.js';
+import { GameObject } from '$/src/model/gameobject.js';
+import { readFileSync } from 'fs';
 
 describe('Modernization', function() {
 	it('should be a GameObject', function() {
@@ -11,8 +11,10 @@ describe('Modernization', function() {
 
 	describe('.eligible', function() {
 		let ship;
+		let TEST_DATA;
 
 		before(function() {
+			TEST_DATA = JSON.parse(readFileSync('test/model/modernization.spec.json'));
 			ship = new Ship(TEST_DATA.SHIPS.T8BB);	
 		});
 

@@ -1,4 +1,4 @@
-const GameObject = require('$/src/model/gameobject');
+import { GameObject } from '$/src/model/gameobject.js';
 
 describe('GameObject', function() {
 	const TEST_DATA = { 

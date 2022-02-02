@@ -1,13 +1,14 @@
-const assertInvariants = require('$/src/quartersbrief.assert');
-const sinon = require('sinon');
-const clone = require('$/src/util/util').clone;
+import { assertInvariants, InvariantError } from '$/src/quartersbrief.assert.js';
+import sinon from 'sinon';
+import clone from 'just-clone';
+import { readFileSync } from 'fs';
 
-const TEST_DATA = require('$/test/quartersbrief.assert.spec.json');
 
 describe('assertInvariants', function() {	
-	it('should expose InvariantError', function() {
-		expect(assertInvariants).to.have.property('InvariantError');
-		expect(new assertInvariants.InvariantError()).to.be.an.instanceof(Error);
+	let TEST_DATA;
+
+	before(function() {
+		TEST_DATA = JSON.parse(readFileSync('test/quartersbrief.assert.spec.json'));
 	});
 
 	it('should call all its assertion functions with its data', function() {
@@ -37,7 +38,7 @@ describe('assertInvariants', function() {
 			'assertHaveIndices',
 			'assertHaveNames',
 			'assertModuleComponentsResolveUnambiguously'
-		].map(name => sinon.stub(assertInvariants, name).throws(new assertInvariants.InvariantError()));
+		].map(name => sinon.stub(assertInvariants, name).throws(new InvariantError()));
 
 		// Need to explicitly do this because sinon-test seems to not be 
 		// picking up on our stubs
@@ -61,12 +62,12 @@ describe('assertInvariants', function() {
 
 		it('should throw an InvariantError if ID is not numeric', function() {
 			data.PAAA001_Battleship.id = 'string';
-			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.throw(assertInvariants.InvariantError);
+			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.throw(InvariantError);
 		});
 
 		it('should throw an InvariantError if ID is not present at all', function() {
 			delete data.PAAA001_Battleship.id;
-			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.throw(assertInvariants.InvariantError);
+			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.throw(InvariantError);
 		});
 	});
 
@@ -83,12 +84,12 @@ describe('assertInvariants', function() {
 
 		it('should throw an InvariantError if index does not conform to the regex', function() {
 			data.PAAA001_Battleship.index = 'ABCDEFG';
-			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.throw(assertInvariants.InvariantError);
+			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.throw(InvariantError);
 		});
 
 		it('should throw an InvariantError if index is not present at all', function() {
 			delete data.PAAA001_Battleship.index;
-			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.throw(assertInvariants.InvariantError);
+			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.throw(InvariantError);
 		});
 	});
 
@@ -106,13 +107,13 @@ describe('assertInvariants', function() {
 		it('should throw an InvariantError if name does not conform to the regex', function() {
 			let data = clone(TEST_DATA);
 			data.PAAA001_Battleship.name = 'ABCDEFG';
-			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(assertInvariants.InvariantError);
+			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(InvariantError);
 		});
 
 		it('should throw an InvariantError if name is not present at all', function() {
 			let data = clone(TEST_DATA);
 			delete data.PAAA001_Battleship.name;
-			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(assertInvariants.InvariantError);
+			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(InvariantError);
 		});
 	});
 
@@ -132,7 +133,7 @@ describe('assertInvariants', function() {
 		it('should throw an InvariantError if there is a component definition of length > 1 without another one to remedy it', function() {
 			data.PAAA001_Battleship.ShipUpgradeInfo.A_Hull.components['torpedoes'] = [ 'AB1_Torpedoes', 'AB2_Torpedoes' ];
 			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
-				.throw(assertInvariants.InvariantError);
+				.throw(InvariantError);
 		});
 
 		it('should not error when there is a component with length > 1 but it is remedied by another', function() {
@@ -170,7 +171,7 @@ describe('assertInvariants', function() {
 			// This is only resolvable by equipping AB1_Artillery and AB2_Artillery simultaneously,
 			// which the algorithm should not allow
 			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
-				.throw(assertInvariants.InvariantError);
+				.throw(InvariantError);
 		});
 	});
 });
