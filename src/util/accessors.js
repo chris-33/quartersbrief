@@ -63,9 +63,9 @@ const AccessorMixin = (superclass) => {
 			let path = key.split('.');
 			let targets = [self];
 			
-			while(path.length > 0) {
+			while(path.length > 0) { 
 				let currKey = path.shift();
-				if (currKey.includes('*')) {
+				if (currKey.includes('*')) { // @todo Implement ? wildcard which matches exactly one letter/_/digit
 					// Turn the current key into a regular expression by replacing the asterisk with its regex equivalent
 					currKey = new RegExp(`^${currKey.replace('*', '\\w*')}$`);					
 					// For every target in targets, get its keys, filter them to those that match the regex, 
@@ -76,14 +76,12 @@ const AccessorMixin = (superclass) => {
 					targets = targets.flatMap(target => Object.keys(target) 
 											.filter(key => currKey.test(key))
 											.map(key => target[key]));
-					if (targets.some(target => target.length === 0))
-						throw new Error(`Trying to read unknown property ${key} of ${self}`);
 				} else {
 					targets = targets.map(target => target[currKey]);
-					// All targets were required to have the accessed property
-					if (targets.includes(undefined))
-						throw new Error(`Trying to read unknown property ${key} of ${self}`);
 				}
+				// All targets were required to have the accessed property
+				if (targets.includes(undefined) || targets.length === 0)
+					throw new Error(`Trying to read unknown property ${key} of ${self}`);
 
 			}
 			if (options.collate) {
