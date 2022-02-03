@@ -4,5 +4,6 @@ module.exports = function(grunt) {
 	grunt.initConfig(config);
 	
 	grunt.loadNpmTasks('grunt-jsdoc');
-	grunt.loadNpmTasks('grunt-eslint')
+	grunt.loadNpmTasks('grunt-eslint');
+	grunt.loadNpmTasks('grunt-todo');
 }
