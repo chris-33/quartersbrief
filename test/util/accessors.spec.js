@@ -135,8 +135,9 @@ describe('AccessorMixin', function() {
 			expect(obj.prop1).to.equal('newvalue');
 		});
 
-		it('should set new top-level properties', function() {
-			obj.set('prop3', 'string');
+		it('should set new top-level properties when the create option is true and throw an error if it is not', function() {
+			expect(obj.set.bind(obj, 'prop3', 'string')).to.throw();
+			obj.set('prop3', 'string', { create: true });
 			expect(obj).to
 				.have.property('prop3')
 				.that.equals('string');
@@ -147,8 +148,9 @@ describe('AccessorMixin', function() {
 			expect(obj.nested.prop3).to.equal('newvalue');
 		});
 
-		it('should create missing intermediate level when setting nested properties', function(){
-			obj.set('nested.morenested.prop', 'newvalue');
+		it('should create missing intermediate level when setting nested properties and the create option is true, throw if it is not', function(){
+			expect(obj.set.bind(obj, 'nested.morenested.prop', 'newValue')).to.throw();
+			obj.set('nested.morenested.prop', 'newvalue', { create: true });
 			expect(obj.nested).to
 				.have.property('morenested');
 			expect(obj.nested.morenested).to

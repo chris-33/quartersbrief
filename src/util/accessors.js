@@ -31,14 +31,14 @@ const AccessorMixin = (superclass) => {
 		 * key did not contain any wildcards at all. In that case, an array with a 
 		 * single value is returned.
 		 * 
-		 * Examples, where `go` is a `GameObject`:
-		 * - `go.get('prop')`` is the same as `go.prop`
-		 * - `go.get('nested.prop)` is the same as `go.nested.prop`
-		 * - `go.get('arr.0')` is the same as `go.arr[0]`
-		 * - `go.get('nested*.prop')` gets the value of the subproperty `prop` from
-		 * all objects within `go` whose name starts with `nested`. The values of all the
+		 * Examples, where `obj` is an `AccessorMixin`:
+		 * - `obj.get('prop')`` is the same as `obj.prop`
+		 * - `obj.get('nested.prop)` is the same as `obj.nested.prop`
+		 * - `obj.get('arr.0')` is the same as `obj.arr[0]`
+		 * - `obj.get('nested*.prop')` gets the value of the subproperty `prop` from
+		 * all objects within `obj` whose name starts with `nested`. The values of all the
 		 * individual `prop` properties must be the same, otherwise an error will be thrown.
-		 * - `go.get('nested*.prop`, { collate: false }) does the same thing, but does
+		 * - `obj.get('nested*.prop`, { collate: false }) does the same thing, but does
 		 * not expect the values to be equal. Instead, it returns an array containing
 		 * the individual values.
 		 * @param  {string} key The key to look up
@@ -61,7 +61,7 @@ const AccessorMixin = (superclass) => {
 			// Split the key into its parts. These can be thought of as "path elements"
 			// to traverse along the data object
 			let path = key.split('.');
-			let targets = [self];
+			let targets = [ self ];
 			
 			while(path.length > 0) { 
 				let currKey = path.shift();
@@ -97,30 +97,76 @@ const AccessorMixin = (superclass) => {
 		/**
 		 * Sets the given key name to the passed value. 
 		 *
-		 * The key supports dot notation. If any intermediate levels are missing,
-		 * they will be created. For example, for a class `C` that is an `AccessorMixin`
-		 * `new C({a: {}).set('a.b.c', 5)` 
-		 * will result in `{a: b: 5}}`.
-		 * @param {string} key   The key to set.
+		 * The key supports dot notation and wildcards. For details, about the notation, see {@link AccessorMixin#get}.
+		 * 
+		 * If any properties of the key are missing in the object, this method will throw an error. 
+		 * Instead, if `options.create` is true, missing properties will be created and no error 
+		 * will be thrown. `create` does not pertain to wildcard keys: missing properties on a wildcard
+		 * element will always error.
+		 *
+		 * Examples, where `obj` is an `AccessorMixin`:
+		 * - `obj.set('prop', 5)` will set `obj.prop` to the value 5, but error if `obj.prop` was
+		 * undefined before.
+		 * - `obj.set('prop', 5, { create: true })` is the same as the above, but will not error.
+		 * - `obj.set('nested.prop', 0)` will set `obj.nested.prop` to 0, but error if either `obj.nested`
+		 * or `obj.nested.prop` did not exist.
+		 * - `obj.set('nested.prop', 0, { create: true }` is the same, but will not error. Instead,
+		 * it will create missing properties. Afterwards, `obj` is guaranteed to have a property `nested`
+		 * of type `object` that in turn has a property `prop` with value 0.
+		 * - `obj.set('nested*', 'value')` will set the value of _any_ property whose name starts with
+		 * 'nested' to `'value'`. If none exist, an error will be thrown. Note that even if `{ create: true }`
+		 * were passed as a third parameter, it would still error, because property creation only happens
+		 * for non-wildcard keys.
+		 * - `obj.set('nested.*`, 'value' { create: true })` will set the value of _all_ properties of `obj.nested` to
+		 * `'value'`. There is a subtle catch hidden in this with regard to the `create` option: If `obj.nested`
+		 * does not exist, it will be created. However, since it is then an empty object, and the wildcard
+		 * expression following it thus does not match anything, the call would still result in an error.
+		 * 
+		 * @param {string} key   The key to set. 
 		 * @param {*} value The value to set it to.
+		 * @param {Object} [options={create: false}] An optional options object.
+		 * @parap {boolean} [options.create=false] Whether to create missing properties or throw an error instead. 
+		 * The default is to error.
 		 * @memberof AccessorMixin
 		 * @instance
 		 */
-		set(key, value) {
+		set(key, value, options = { create: false }) {
 			let self = this;
 
 			let path = key.split('.');
-			let target = self;
+			let targets = [ self ];
 			// Traverse the path except for the last key. 
 			// The last one needs to be kept so we can assign
 			// a value to it 
-			while (path.length > 1) {
-				let currKey = path.shift(); // Remove first element			
-				if (!target[currKey]) 
-					target[currKey] = {}; // Create intermediate levels if they are missing
-				target = target[currKey];
+			while (path.length > 0) {debugger
+				let currKey = path.shift(); // Remove first element							
+				// Turn the current key into a regular expression by replacing the asterisk with its regex equivalent
+				let currKeyRegex = new RegExp(`^${currKey.replace('*', '\\w*')}$`);
+
+				// For every target ...
+				targets = targets.flatMap(target => {
+					// ... get a list of its keys that match the currKey. This will be an array of
+					// just one (or zero) key(s) if currKey does not contain wildcards.
+					let matches = Object.keys(target).filter(key => currKeyRegex.test(key));
+					// If that key doesn't exist in the object ...
+					if (matches.length === 0) {
+						// and the create option is set AND the currKey is not a wildcard expression
+						if (options.create && !currKey.includes('*'))
+							// Create the key and set it to an empty object if this is an intermediate
+							// level, set it to the value if this is the last key
+							// We can return that, because in Javascript assignments are expressions.
+							return target[currKey] = path.length > 0 ? {} : value;
+						else
+							// If create option is not set, OR currKey has wildcards, error.
+							// (We can't create a key if currKey is a wildcard, because it's unclear
+							// what the key name would need to be.)
+							throw new Error(`Trying to set unknown property ${key} of ${self} and options.create was false`);
+					} else
+						// If there were matches, either traverse if this is an intermediate level,
+						// or set the new value if we are at the end
+						return matches.map(match => path.length > 0 ? target[match] : target[match] = value);
+				});
 			}
-			target[path.shift()] = value;
 		}
 	}
 }
