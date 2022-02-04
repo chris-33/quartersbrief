@@ -231,4 +231,30 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		throw new InvariantError('all modules\' components must be resolvable unambiguously', counterexamples);
 }
 
-export { assertInvariants, InvariantError }
+/**
+ * Assert weapon names (guns, torpedo launchers, secondaries, AA) always start with 'HP_'
+ */
+assertInvariants.assertWeaponNamesStartWithHP = function(data) {
+	let counterexamples = [];
+	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
+	for (let ship of ships) {
+		let weapons = [
+			'artillery', 'torpedoes', 'atba', 'airDefense'
+		].flatMap(component => Object.values(ship.ShipUpgradeInfo)
+						.filter(module => typeof module === 'object' && 'components' in module && component in module.components)
+						.flatMap(module => module.components[component]))
+
+		weapons = new Set(weapons);
+
+		for (let componentName of weapons) {
+			let componentDefinition = ship[componentName];
+			if (!Object.keys(componentDefinition).some(key => key.startsWith('HP_')))
+				counterexamples.push(`${ship.name}.${componentName}`);
+		}
+	}
+	if (counterexamples.length > 0)
+		throw new InvariantError('weapon objects in weaponry component definitions start with \'HP_\'', counterexamples);
+}
+
+
+export { assertInvariants, InvariantError } 

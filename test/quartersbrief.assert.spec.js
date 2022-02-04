@@ -17,7 +17,8 @@ describe('assertInvariants', function() {
 			'assertHaveIDs',
 			'assertHaveIndices',
 			'assertHaveNames',
-			'assertModuleComponentsResolveUnambiguously'
+			'assertModuleComponentsResolveUnambiguously',
+			'assertWeaponNamesStartWithHP'
 		].map(name => sinon.stub(assertInvariants, name));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -37,7 +38,8 @@ describe('assertInvariants', function() {
 			'assertHaveIDs',
 			'assertHaveIndices',
 			'assertHaveNames',
-			'assertModuleComponentsResolveUnambiguously'
+			'assertModuleComponentsResolveUnambiguously',
+			'assertWeaponNamesStartWithHP'
 		].map(name => sinon.stub(assertInvariants, name).throws(new InvariantError()));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -172,6 +174,23 @@ describe('assertInvariants', function() {
 			// which the algorithm should not allow
 			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.throw(InvariantError);
+		});
+	});
+
+	describe('.assertWeaponNamesStartWithHP', function() {
+		let data;
+
+		beforeEach(function() {
+			data = clone(TEST_DATA);
+		});
+
+		it('should not error when all weaponry components have at least one object that starts with \'HP_\'', function() {
+			expect(assertInvariants.assertWeaponNamesStartWithHP.bind(null, data)).to.not.throw();
+		});
+
+		it('should throw if there is a weaponry component that does not have any object that starts with \'HP_\'', function() {
+			delete data.PAAA001_Battleship.AB1_Artillery.HP_AGM_1;
+			expect(assertInvariants.assertWeaponNamesStartWithHP.bind(null, data)).to.throw(InvariantError);
 		});
 	});
 });

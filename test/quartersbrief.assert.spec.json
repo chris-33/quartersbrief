@@ -8,6 +8,27 @@
 			"species": "Battleship",
 			"nation": "USA"
 		},
+		"AB1_Artillery": {
+			"HP_AGM_1": {}
+		},
+		"AB2_Artillery": {
+			"HP_AGM_1": {}
+		},		
+		"AA1": {
+			"HP_AGA_1": {}
+		},
+		"AA2": {
+			"HP_AGA_1": {}
+		},
+		"A_ATBA": {
+			"HP_AGS_1": {}
+		},
+		"B_ATBA": {
+			"HP_AGS_1": {}
+		},
+		"AB1_Torpedoes": {
+			"HP_AGT_1": {}
+		},
 		"ShipUpgradeInfo": {
 			"A_Hull": {
 				"canBuy": true,
