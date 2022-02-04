@@ -176,21 +176,4 @@ describe('assertInvariants', function() {
 				.throw(InvariantError);
 		});
 	});
-
-	describe('.assertWeaponNamesStartWithHP', function() {
-		let data;
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-		});
-
-		it('should not error when all weaponry components have at least one object that starts with \'HP_\'', function() {
-			expect(assertInvariants.assertWeaponNamesStartWithHP.bind(null, data)).to.not.throw();
-		});
-
-		it('should throw if there is a weaponry component that does not have any object that starts with \'HP_\'', function() {
-			delete data.PAAA001_Battleship.AB1_Artillery.HP_AGM_1;
-			expect(assertInvariants.assertWeaponNamesStartWithHP.bind(null, data)).to.throw(InvariantError);
-		});
-	});
 });
