@@ -32,6 +32,14 @@ class GameObjectFactory {
 			// Actual WoWS name for what we call a reference code. 
 			// Blacklisted for the same reason as "name" (see above)
 			'index', 
+			// Previous module in ShipUpgradeInfo modules. Some modules have names that
+			// would fit the naming convention for game objects.
+			'prev',
+			// Whitelist and blacklist for modernizations
+			'ships', 'excluded',
+			// These seem to refer to UI localization resources that are not available
+			// in GameParams.data
+			'titleIDs', 'descIDs', 'iconIDs'
 		];
 
 	/**
@@ -104,7 +112,7 @@ class GameObjectFactory {
 	 * be assumed to be the object's reference code.
 	 * @return {GameObject} The game object for that designator.
 	 * @throws Will throw an error ("No data set") if the GameObjectManager's data has not
-	 * been set using {@link setEverything}.
+	 * been set using {@link GameObjectFactory#setEverything}.
 	 * @throws Will throw an error ("Invalid argument") if a malformed
 	 * designator is passed.
 	 */
@@ -129,13 +137,15 @@ class GameObjectFactory {
 			gameObject = self.#everything[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
-			
+
 		let Constructor = {
 			'Ship': Ship,
 			'Modernization': Modernization
 		}[gameObject.typeinfo.type];
 
 		if (!Constructor) Constructor = GameObject;
+		if (Constructor === Ship) gameObject = self.expandReferences(gameObject);
+
 		gameObject = new Constructor(gameObject);
 		log.info(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0} ms`);
 		return gameObject; 
