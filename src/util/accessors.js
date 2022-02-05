@@ -56,42 +56,8 @@ const AccessorMixin = (superclass) => {
 		 * @memberof AccessorMixin
 		 * @instance
 		 */
-		get(key, options = { collate: true }) {
-			let self = this;
-			// Split the key into its parts. These can be thought of as "path elements"
-			// to traverse along the data object
-			let path = key.split('.');
-			let targets = [ self ];
-			
-			while(path.length > 0) { 
-				let currKey = path.shift();
-				if (currKey.includes('*')) { // @todo Implement ? wildcard which matches exactly one letter/_/digit
-					// Turn the current key into a regular expression by replacing the asterisk with its regex equivalent
-					currKey = new RegExp(`^${currKey.replace('*', '\\w*')}$`);					
-					// For every target in targets, get its keys, filter them to those that match the regex, 
-					// replace the keys by their values, and and project the result from an array of values
-					// to just the values (this is what flatMap does).
-					// Consider an object { matches: 1, matchestoo: 2}. If we used map instead of flatMap,
-					// we would end up with [[1,2]] instead of the desired [1,2].
-					targets = targets.flatMap(target => Object.keys(target) 
-											.filter(key => currKey.test(key))
-											.map(key => target[key]));
-				} else {
-					targets = targets.map(target => target[currKey]);
-				}
-				// All targets were required to have the accessed property
-				if (targets.includes(undefined) || targets.length === 0)
-					throw new Error(`Trying to read unknown property ${key} of ${self}`);
-
-			}
-			if (options.collate) {
-				if (!targets.every(target => deepequal(target, targets[0])))
-					throw new Error(`Expected all gotten values to be equal while collating but they were not: ${targets}`);
-				// We can just project to the first item, since we just checked that they're
-				// all equal anyway
-				targets = targets[0];
-			}
-			return targets;
+		get(key,options) {
+			return this.apply(key, function identity(x) { return x; }, options);
 		}
 
 		/**
@@ -130,15 +96,25 @@ const AccessorMixin = (superclass) => {
 		 * @memberof AccessorMixin
 		 * @instance
 		 */
-		set(key, value, options = { create: false }) {
+		set(key, value, options) {
+			return this.apply(key, function assign() { return value; }, options);
+		}
+
+		apply(key, fn, options = { collate: true, create: false }) {			
 			let self = this;
 
+			// Set default values, if necessary
+			// (Even though a default is provided for the options object, if one has been passed in 
+			// it might not have all properties set.)			
+			if (!options.collate) options.collate = true;
+			if (!options.create) options.create = false;			
+
+			// Split the key into its parts. These can be thought of as "path elements"
+			// to traverse along the data object
 			let path = key.split('.');
 			let targets = [ self ];
-			// Traverse the path except for the last key. 
-			// The last one needs to be kept so we can assign
-			// a value to it 
-			while (path.length > 0) {debugger
+			
+			while(path.length > 0) { 
 				let currKey = path.shift(); // Remove first element							
 				// Turn the current key into a regular expression by replacing the asterisk with its regex equivalent
 				let currKeyRegex = new RegExp(`^${currKey.replace('*', '\\w*')}$`);
@@ -153,9 +129,9 @@ const AccessorMixin = (superclass) => {
 						// and the create option is set AND the currKey is not a wildcard expression
 						if (options.create && !currKey.includes('*'))
 							// Create the key and set it to an empty object if this is an intermediate
-							// level, set it to the value if this is the last key
+							// level, apply the function to undefined if this is the last key
 							// We can return that, because in Javascript assignments are expressions.
-							return target[currKey] = path.length > 0 ? {} : value;
+							return target[currKey] = path.length > 0 ? {} : fn(undefined);
 						else
 							// If create option is not set, OR currKey has wildcards, error.
 							// (We can't create a key if currKey is a wildcard, because it's unclear
@@ -163,10 +139,18 @@ const AccessorMixin = (superclass) => {
 							throw new Error(`Trying to set unknown property ${key} of ${self} and options.create was false`);
 					} else
 						// If there were matches, either traverse if this is an intermediate level,
-						// or set the new value if we are at the end
-						return matches.map(match => path.length > 0 ? target[match] : target[match] = value);
+						// or apply the function to its value if we are at the end
+						return matches.map(match => path.length > 0 ? target[match] : target[match] = fn(target[match]));
 				});
 			}
+			if (options.collate) {
+				if (!targets.every(target => deepequal(target, targets[0])))
+					throw new Error(`Expected all values to be equal while collating but they were not: ${targets}`);
+				// We can just project to the first item, since we just checked that they're
+				// all equal anyway
+				targets = targets[0];
+			}
+			return targets;			
 		}
 	}
 }
