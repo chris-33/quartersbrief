@@ -8,106 +8,134 @@ const AccessorMixin = (superclass) => {
 
 	return class extends superclass {
 		/**
-		 * Gets the value that is stored under the provided key name, if any.
+		 * Gets the value that is stored under the provided key name, if any. This method
+		 * supports the same options and key notation rules as {@link AccessorMixin#apply}.
 		 *
-		 * The key supports dot notation to gain access to nested properties and
-		 * array entries. To retrieve from an array, array indices need to be 
-		 * expressed in dot notation as well.
+		 * It is a shorthand for `apply(key, (x) => x, options)`.
 		 *
-		 * Furthermore, the key supports wildcards. Thus, an asterisk in any part
-		 * of a key name will match an arbitrary number of characters, underscores,
-		 * or digits. Note that when accessing nested properties after a wildcard,
-		 * **all** objects that were retrieved for the wildcard are expected to have
-		 * the nested properties. If this is not the case, an error will be thrown.
-		 *
-		 * If you are expecting the results of a wildcard match to all be the same,
-		 * `get` can return a scalar value. This is done by setting the `collate` 
-		 * property of `options` to `true`. This method will then check that all 
-		 * values were indeed equal (more specifically, deeply equal), and then
-		 * return a single value. If they are not in fact equal, an error will be
-		 * thrown. By default, `collate` is set to `true`.
-		 *
-		 * Setting it to `false` will **always** return an array - even if the 
-		 * key did not contain any wildcards at all. In that case, an array with a 
-		 * single value is returned.
-		 * 
-		 * Examples, where `obj` is an `AccessorMixin`:
-		 * - `obj.get('prop')`` is the same as `obj.prop`
-		 * - `obj.get('nested.prop)` is the same as `obj.nested.prop`
-		 * - `obj.get('arr.0')` is the same as `obj.arr[0]`
-		 * - `obj.get('nested*.prop')` gets the value of the subproperty `prop` from
-		 * all objects within `obj` whose name starts with `nested`. The values of all the
-		 * individual `prop` properties must be the same, otherwise an error will be thrown.
-		 * - `obj.get('nested*.prop`, { collate: false }) does the same thing, but does
-		 * not expect the values to be equal. Instead, it returns an array containing
-		 * the individual values.
-		 * @param  {string} key The key to look up
-		 * @param  {Object} [options={collate:true}] An optional object to set options for the
-		 * retrieval.
-		 * @param {boolean} options.collate=true	Whether to return the results of a wildcard
-		 * match as a single value or as an array.
-		 * @return {*}     The value for that key.
-		 * @throws
-		 * Throws an error 
-		 * - if the requested property or any intermediate properties do
-		 * not exist.
-		 * - if `collate` is set to true in the `options` object, but the values of the
-		 * retrieved property after a wildcard match are different.
+		 * Note that this method is not guaranteed to be side-effect free if calling it
+		 * with the `create` option set. This is highly unusual for a getter, and thus, 
+		 * calling it in that fashion is highly discouraged.
 		 * @memberof AccessorMixin
 		 * @instance
+		 * @see AccessorMixin#apply
 		 */
 		get(key,options) {
 			return this.apply(key, function identity(x) { return x; }, options);
 		}
 
 		/**
-		 * Sets the given key name to the passed value. 
+		 * Sets the value that is stored under the provided key name, if any, to the supplied
+		 * value. This method supports the same options and key notation rules as {@link AccessorMixin#apply}.
 		 *
-		 * The key supports dot notation and wildcards. For details, about the notation, see {@link AccessorMixin#get}.
-		 * 
-		 * If any properties of the key are missing in the object, this method will throw an error. 
-		 * Instead, if `options.create` is true, missing properties will be created and no error 
-		 * will be thrown. `create` does not pertain to wildcard keys: missing properties on a wildcard
-		 * element will always error.
+		 * It is a shorthand for `apply(key, (x) => value, options)`.
 		 *
-		 * Examples, where `obj` is an `AccessorMixin`:
-		 * - `obj.set('prop', 5)` will set `obj.prop` to the value 5, but error if `obj.prop` was
-		 * undefined before.
-		 * - `obj.set('prop', 5, { create: true })` is the same as the above, but will not error.
-		 * - `obj.set('nested.prop', 0)` will set `obj.nested.prop` to 0, but error if either `obj.nested`
-		 * or `obj.nested.prop` did not exist.
-		 * - `obj.set('nested.prop', 0, { create: true }` is the same, but will not error. Instead,
-		 * it will create missing properties. Afterwards, `obj` is guaranteed to have a property `nested`
-		 * of type `object` that in turn has a property `prop` with value 0.
-		 * - `obj.set('nested*', 'value')` will set the value of _any_ property whose name starts with
-		 * 'nested' to `'value'`. If none exist, an error will be thrown. Note that even if `{ create: true }`
-		 * were passed as a third parameter, it would still error, because property creation only happens
-		 * for non-wildcard keys.
-		 * - `obj.set('nested.*`, 'value' { create: true })` will set the value of _all_ properties of `obj.nested` to
-		 * `'value'`. There is a subtle catch hidden in this with regard to the `create` option: If `obj.nested`
-		 * does not exist, it will be created. However, since it is then an empty object, and the wildcard
-		 * expression following it thus does not match anything, the call would still result in an error.
-		 * 
-		 * @param {string} key   The key to set. 
-		 * @param {*} value The value to set it to.
-		 * @param {Object} [options={create: false}] An optional options object.
-		 * @parap {boolean} [options.create=false] Whether to create missing properties or throw an error instead. 
-		 * The default is to error.
 		 * @memberof AccessorMixin
 		 * @instance
+		 * @see AccessorMixin#apply
 		 */
 		set(key, value, options) {
 			return this.apply(key, function assign() { return value; }, options);
 		}
 
+		/**
+		 * Applies the passed function to any (possibly deeply nested) property of the object, 
+		 * and returns the result. This provides a simple but powerful tool to make manipulating 
+		 * values that are possibly deeply embedded in a data object easy. Getting and setting values
+		 * are then just special cases of this, by providing the identity function (that always returns
+		 * its argument) or a constant function (that always returns a constant regardless of its
+		 * argument), respectively. This method supports dot notation, wildcards, result
+		 * collation and property creation.
+		 *
+		 * **Dot notation**
+		 * The key supports dot notation to gain access to nested properties and
+		 * array entries. To manipulate array elements, array indices need to be 
+		 * expressed in dot notation as well.
+		 *
+		 * Examples, where `obj` is an `AccessorMixin`:
+		 * - `prop` refers to the property named "prop" of `obj` (`obj.prop`).
+		 * - `nested.prop` refers to the property named "prop" of a property named
+		 * "nested" of `obj` (`obj.nested.prop`).
+		 * - `arr.0` refers to the element at index 0 of an array property named "arr"
+		 * of `obj` (`obj.arr[0]`).
+		 * - Similarly, `arr.0.prop` refers to a property named prop of the element
+		 * at index 0 of an array property "arr" of `obj` (`obj.arr[0].prop`).
+		 *
+		 * **Wildcards**
+		 * Furthermore, the key supports wildcards. Thus, an asterisk in any part
+		 * of a key name will match an arbitrary number of characters, underscores,
+		 * or digits. Note that when accessing nested properties after a wildcard,
+		 * **all** properties that matched for the wildcard are expected to have 
+		 * subsequent properties. If this is not the case, an error will be thrown.
+		 *
+		 * Examples, where `obj` is an `AccessorMixin`:
+		 * - `prop` matches only the property named "prop" of `obj`
+		 * - `prop*` matches _any_ property whose name starts with "prop". For example,
+		 * `prop1`, `prop2`, `propA`, `propB` all match.
+		 * - `prop*suffix` matches any property whose name starts with "prop" and ends
+		 * with "suffix", with an arbitrary number of letters, digits and underscore in
+		 * between. 
+		 * `nested*.prop` matches the property "prop" of _any_ property of `obj` whose
+		 * name starts with "nested". All of these are expected to have such a property,
+		 * otherwise an error will be thrown. 
+		 *
+		 * **Result collation**
+		 * If you are expecting the results to all be the same, `apply` can return that
+		 * value as a scalar. This will frequently be the case when the values that `fn`
+		 * was applied to were all equal to begin with, assuming `fn` is a 
+		 * [pure function](https://en.wikipedia.org/wiki/Pure_function). **This is therefore
+		 * the default behavior.** `apply` will then perform a final check that all
+		 * values were indeed equal (more specifically, deeply equal), and throw an error
+		 * if they were not. Note that `fn` will still be applied to all properties
+		 * that matched `key` regardless.
+		 * 
+		 * Scalar return of expected equal results can be be turned off by passing an
+		 * `options` object that has `options.collate` set to `false`. In this case,
+		 * `apply` will return an array with the results of the function applications,
+		 * even if only a single property matched.
+		 *
+		 * Setting it to `false` will _always_ return an array - even if the 
+		 * key did not contain any wildcards at all. In that case, an array with a 
+		 * single value is returned.
+		 *
+		 * **Property creation**
+		 * `apply` can create missing properties instead of throwing an error. Set 
+		 * `options.create` to true for this behavior. (The default is `false`). In this case,
+		 * missing intermediate levels will be created as empty objects. If the final property
+		 * is missing, it will be created and set to `fn(undefined)`. (It is allowed for this
+		 * to also be `undefined`.) 
+		 *
+		 * Note that missing properties are _not_ created for those parts of `key` that contain
+		 * wildcards. In these cases, `apply` will still throw an error.
+		 * 
+		 * @param {string} key   The key of the property to apply `fn` to. By using wildcards, 
+		 * multiple properties can be selected.
+		 * @param {Function} fn The function to apply to the property's (or properties') value(s). 
+		 * This must be a function that accepts a single argument and returns a value. Note that if you
+		 * are setting the `options.create` option to `true`, the function should be prepared to handle
+		 * an input value of `undefined`.
+		 * @param {Object} [options={create: false}] An optional options object.
+		 * @param {boolean} options.collate=true	Whether to return the results of the 
+		 * function application as a single value or as an array.
+		 * @parap {boolean} [options.create=false] Whether to create missing properties or throw an error instead. 
+		 * The default is to error.
+		 * @throws
+		 * Throws an error if the requested property or any intermediate properties do
+		 * not exist, and `options.create` is `false`.
+		 * @throws
+		 * Throws an error if `options.collate` is `true` but the results of the function application
+		 * to all matched properties are not equal (deeply equal).
+		 * @memberof AccessorMixin
+		 * @instance
+		 */
 		apply(key, fn, options = { collate: true, create: false }) {			
 			let self = this;
 
 			// Set default values, if necessary
 			// (Even though a default is provided for the options object, if one has been passed in 
 			// it might not have all properties set.)			
-			if (!options.collate) options.collate = true;
-			if (!options.create) options.create = false;			
+			if (options.collate === undefined) options.collate = true;
+			if (options.create === undefined) options.create = false;			
 
 			// Split the key into its parts. These can be thought of as "path elements"
 			// to traverse along the data object
@@ -136,10 +164,11 @@ const AccessorMixin = (superclass) => {
 							// If create option is not set, OR currKey has wildcards, error.
 							// (We can't create a key if currKey is a wildcard, because it's unclear
 							// what the key name would need to be.)
-							throw new Error(`Trying to set unknown property ${key} of ${self} and options.create was false`);
+							throw new Error(`Trying to apply fn to unknown property ${key} of ${self} and options.create was false`);
 					} else
 						// If there were matches, either traverse if this is an intermediate level,
 						// or apply the function to its value if we are at the end
+						debugger
 						return matches.map(match => path.length > 0 ? target[match] : target[match] = fn(target[match]));
 				});
 			}
