@@ -18,7 +18,6 @@ describe('assertInvariants', function() {
 			'assertHaveIndices',
 			'assertHaveNames',
 			'assertModuleComponentsResolveUnambiguously',
-			'assertWeaponNamesStartWithHP'
 		].map(name => sinon.stub(assertInvariants, name));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -39,7 +38,6 @@ describe('assertInvariants', function() {
 			'assertHaveIndices',
 			'assertHaveNames',
 			'assertModuleComponentsResolveUnambiguously',
-			'assertWeaponNamesStartWithHP'
 		].map(name => sinon.stub(assertInvariants, name).throws(new InvariantError()));
 
 		// Need to explicitly do this because sinon-test seems to not be 

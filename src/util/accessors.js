@@ -168,7 +168,6 @@ const AccessorMixin = (superclass) => {
 					} else
 						// If there were matches, either traverse if this is an intermediate level,
 						// or apply the function to its value if we are at the end
-						debugger
 						return matches.map(match => path.length > 0 ? target[match] : target[match] = fn(target[match]));
 				});
 			}
