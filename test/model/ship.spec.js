@@ -1,7 +1,9 @@
 import { Ship } from '../../src/model/ship.js';
+import sinon from 'sinon';
 import { GameObject } from '../../src/model/gameobject.js';
 import clone from 'just-clone';
 import { readFileSync } from 'fs';
+import { Modernization } from '../../src/model/modernization.js';
 
 describe('Ship', function() {
 	let TEST_DATA;
@@ -12,7 +14,6 @@ describe('Ship', function() {
 
 	it('should be a GameObject', function() {		
 		expect(new Ship(TEST_DATA)).to.be.an.instanceof(GameObject);
-
 	});
 
 	describe('.getModuleLines', function() {
@@ -39,7 +40,7 @@ describe('Ship', function() {
 			}			
 		});
 
-		it('should correctly order modules within the module lines  when every module\'s type is the same as its predecessor (simple case)', function() {
+		it('should correctly order modules within the module lines when every module\'s type is the same as its predecessor (simple case)', function() {
 			let expected = TEST_DATA.ShipUpgradeInfo;
 			let result = new Ship(TEST_DATA).getModuleLines();
 			
@@ -67,7 +68,7 @@ describe('Ship', function() {
 		});
 	});
 
-	describe('.applyConfiguration', function() {
+	describe('.equipModules', function() {
 		let ship;
 
 		beforeEach(function() {
@@ -84,7 +85,7 @@ describe('Ship', function() {
 				hull: TEST_DATA.A_Hull,
 				fireControl: TEST_DATA.AB1_FireControl
 			};
-			ship.applyConfiguration('stock');
+			ship.equipModules('stock');
 			let result = ship.getCurrentConfiguration();
 
 			for (let key in expected) 
@@ -102,7 +103,7 @@ describe('Ship', function() {
 				hull: TEST_DATA.B_Hull,
 				fireControl: TEST_DATA.AB3_FireControl
 			};
-			ship.applyConfiguration('top');
+			ship.equipModules('top');
 			let result = ship.getCurrentConfiguration();
 
 			for (let key in expected) 
@@ -110,9 +111,9 @@ describe('Ship', function() {
 		});
 
 		it('should throw a TypeEror if a complex configuration doesn\'t define all modules', function() {
-			expect(ship.applyConfiguration.bind(ship, 'engine: stock')).to.throw(TypeError);
-			expect(ship.applyConfiguration.bind(ship, '')).to.throw(TypeError);
-			expect(ship.applyConfiguration.bind(ship, 'malformed')).to.throw(TypeError);
+			expect(ship.equipModules.bind(ship, 'engine: stock')).to.throw(TypeError);
+			expect(ship.equipModules.bind(ship, '')).to.throw(TypeError);
+			expect(ship.equipModules.bind(ship, 'malformed')).to.throw(TypeError);
 		});
 
 		it('should have equipped the specified combination of modules after applying a more specific configuration', function() {
@@ -125,11 +126,50 @@ describe('Ship', function() {
 				hull: TEST_DATA.B_Hull,
 				fireControl: TEST_DATA.AB2_FireControl
 			};
-			ship.applyConfiguration('engine: stock, suo: 1, others: top');
+			ship.equipModules('engine: stock, suo: 1, others: top');
 			let result = ship.getCurrentConfiguration();
 
 			for (let key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
 		})
+	});
+
+	describe('.equipModernization', function() {
+		const MODERNIZATION_DATA = {
+			modifiers: {
+				ArtilleryValue: 2
+			},
+			name: 'PCM001_Modernization'
+		}
+		let modernizationTargets;
+		let modernization;
+		let ship;
+	
+		before(function() {
+			modernizationTargets = Modernization.MODERNIZATION_TARGETS;
+			Modernization.MODERNIZATION_TARGETS = {
+				'ArtilleryValue': { target: 'artillery.value', retriever: Modernization.DEFAULT_RETRIEVER }
+			};
+		});
+
+		beforeEach(function() {
+			ship = new Ship(TEST_DATA);
+			modernization = new Modernization(MODERNIZATION_DATA);
+			sinon.stub(modernization, 'eligible').returns(true);
+		});
+
+		it('should apply the modifier value', function() {
+			ship.equipModernization(modernization);
+			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
+			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * MODERNIZATION_DATA.modifiers.ArtilleryValue);
+		});
+
+		afterEach(function() {
+			modernization.eligible.restore();
+		});
+
+		after(function() {
+			Modernization.MODERNIZATION_TARGETS = modernizationTargets;
+		});
 	});
 });

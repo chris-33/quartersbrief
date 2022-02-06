@@ -1,6 +1,7 @@
 {
     "AB1_Artillery": {
-        "name": "AB1_Artillery"
+        "name": "AB1_Artillery",
+        "value": 1
     },
     "AB1_Engine": {
         "name": "AB1_Engine"

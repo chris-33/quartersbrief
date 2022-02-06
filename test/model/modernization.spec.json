@@ -13,83 +13,19 @@
 			}
 		}
 	},
-	"MODERNIZATIONS": {
-		"WHITELISTED": {
-			"excludes": [],
-			"modifiers": {},
-			"name": "PCM001_Whitelist",
-			"index": "PCM001",
-			"shiplevel": [9,10],
-			"nation": ["Germany"],
-			"shiptype": ["Cruiser"],
-			"slot": 1,
-			"ships": ["PAAA001_Battleship"]
+	"MODERNIZATION": {
+		"excludes": [],
+		"modifiers": {
+			"known1": 2,
+			"known2": 3,
+			"unknown": 0
 		},
-		"BLACKLISTED": {
-			"excludes": ["PAAA001_Battleship"],
-			"modifiers": {},
-			"name": "PCM002_Blacklist",
-			"index": "PCM002",
-			"shiplevel": [8,9,10],
-			"nation": ["USA"],
-			"shiptype": ["Battleship"],
-			"slot": 1,
-			"ships": []
-		},
-		"MATCH": {
-			"excludes": [],
-			"modifiers": {},
-			"name": "PCM003_Match",
-			"index": "PCM003",
-			"shiplevel": [8,9,10],
-			"nation": [],
-			"shiptype": ["Destroyer","Battleship"],
-			"slot": 1,
-			"ships": []			
-		},
-		"MISMATCH_TIER": {
-			"excludes": [],
-			"modifiers": {},
-			"name": "PCM004_Mismatch_Tier",
-			"index": "PCM004",
-			"shiplevel": [9,10],
-			"nation": [],
-			"shiptype": ["Destroyer","Battleship"],
-			"slot": 1,
-			"ships": []			
-		},
-		"MISMATCH_NATION": {
-			"excludes": [],
-			"modifiers": {},
-			"name": "PCM005_Mismatch_Nation",
-			"index": "PCM005",
-			"shiplevel": [8,9,10],
-			"nation": ["Germany"],
-			"shiptype": ["Destroyer","Battleship"],
-			"slot": 1,
-			"ships": []			
-		},
-		"MISMATCH_TYPE": {
-			"excludes": [],
-			"modifiers": {},
-			"name": "PCM006_Mismatch_Type",
-			"index": "PCM006",
-			"shiplevel": [8,9,10],
-			"nation": [],
-			"shiptype": ["Destroyer"],
-			"slot": 1,
-			"ships": []			
-		},
-		"DISABLED": {
-			"excludes": [],
-			"modifiers": {},
-			"name": "PCM007_Match",
-			"index": "PCM007",
-			"shiplevel": [8,9,10],
-			"nation": [],
-			"shiptype": ["Destroyer","Battleship"],
-			"slot": -1,
-			"ships": []			
-		}
+		"name": "PCM001_Modernization",
+		"index": "PCM001",
+		"shiplevel": [8,9,10],
+		"nation": [],
+		"shiptype": ["Destroyer","Battleship"],
+		"slot": 1,
+		"ships": []			
 	}
 }

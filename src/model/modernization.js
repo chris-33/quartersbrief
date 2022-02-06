@@ -1,13 +1,14 @@
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
 import { AccessorMixin } from '../util/accessors.js';
+import { arrayIntersect } from '../util/util.js';
 
 /**
- * This class describes _Modernizations_. In game, these are called "modules".
+ * This class describes _Modernizations_. In game, these are called "upgrades".
  */
 class Modernization extends GameObject {
 	
-	static #LOOKUP_DEFINITIONS = {
+	static #GETTER_DEFINITIONS = {
 		Tiers: 'shiplevel',
 		Nations: 'nation',
 		Species: 'shiptype',
@@ -16,14 +17,39 @@ class Modernization extends GameObject {
 		Slot: 'slot'
 	}
 
-	static #MODERNIZATION_TARGETS = {
-		GMMaxDist: 'artillery.maxDist' // PCM015_FireControl_Mod_II
+	/**
+	 * A dictionary translating modifier keys (the names found in the upgrade's game data) to
+	 * their corresponding keys in the ship to be modified. Each entry consists of a **target**, 
+	 * and a **retriever** function to retrieve it's value.
+	 * The retriever function will be called when equipping this modernization with `this` being
+	 * the modernization with the value from the game file and the ship the modernization is being
+	 * equipped on as arguments.
+	 */
+	static MODERNIZATION_TARGETS = {
+		// @todo GMRotationSpeed:  // PCM006_MainGun_Mod_II, PCM013_MainGun_Mod_III, PCM034_Guidance_Mod_0
+		// @todo AAAuraDamage // PCM011_AirDefense_Mod_II
+		// @todo AABubbleDamage // PCM011_AirDefense_Mod_II
+		GSMaxDist: { target: 'atba.maxDist', retriever: Modernization.DEFAULT_RETRIEVER }, // PCM012_SecondaryGun_Mod_II, PCM028_FireControl_Mod_I_US
+		GMShotDelay: { target: 'artillery.qb_mounts.shotDelay', retriever: Modernization.DEFAULT_RETRIEVER }, // PCM013_MainGun_Mod_III
+		GMMaxDist: { target: 'artillery.maxDist', retriever: Modernization.DEFAULT_RETRIEVER }, // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
+		GSShotDelay: { target: 'atba.qb_mounts.shotDelay', retriever: Modernization.DEFAULT_RETRIEVER }, // PCM019_SecondaryGun_Mod_III
+		planeVisibilityFactor: { target: 'hull.visibilityFactorByPlane', retriever: Modernization.DEFAULT_RETRIEVER }, // PCM027_ConcealmentMeasures_Mod_I
+		visibilityDistCoef: { target: 'hull.visibilityFactor', retriever: function(value, ship) { // PCM027_ConcealmentMeasures_Mod_I
+			return value[ship.getSpecies()];
+		}}
+	
+		// Everything up to PCM035_SteeringGear_Mod_III
 	}
+	/** 
+	 * The default retriever function is the identity function - it just returns its argument. 
+	 * (Which will be the value from the game file.)
+	 */
+	static DEFAULT_RETRIEVER = (x) => x;
 
 	constructor(data) {
 		super(data);
 
-		AccessorMixin.createGetters(this, Modernization.#LOOKUP_DEFINITIONS);
+		AccessorMixin.createGetters(this, Modernization.#GETTER_DEFINITIONS);
 	}
 
 
@@ -54,6 +80,25 @@ class Modernization extends GameObject {
 		return (self.getTiers().length === 0 || self.getTiers().includes(ship.getTier()))
 			&& (self.getSpecies().length === 0 || self.getSpecies().includes(ship.getSpecies()))
 			&& (self.getNations().length === 0 || self.getNations().includes(ship.getNation()));
+	}
+
+	/**
+	 * Gets descriptors for the modifications that this upgrade makes. A descriptor is object
+	 * consisting of a `target` and a `value`.
+	 *
+	 * The `target` is a key within the ship to be modified that this upgrade will change.
+	 * The `value` is the amount by which it is to be changed. 
+	 * @return {[type]} [description]
+	 */
+	getModifiers() {
+		let self = this;
+		// Reduce this modernization's modifiers to the ones we know how to handle
+		let result = arrayIntersect(Object.keys(self.modifiers), Object.keys(Modernization.MODERNIZATION_TARGETS));
+		result = result.map(modifier => ({ 
+			target: Modernization.MODERNIZATION_TARGETS[modifier].target,
+			retriever: Modernization.MODERNIZATION_TARGETS[modifier].retriever.bind(self, self.modifiers[modifier])
+		}));
+		return result;
 	}
 
 	applyTo(ship) {

@@ -3,10 +3,18 @@ import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'just-clone';
 import { AccessorMixin } from '../util/accessors.js';
+import { conversions } from '../util/conversions.js';
+import { Artillery, Torpedoes } from './armament.js';
+import { Modernization } from './modernization.js';
+
+function readthrough(property) {
+	return function() { return this.getCurrentConfiguration()['get' + property].call(this.getCurrentConfiguration()) }
+}
+
 
 /**
  * This class represents a ship within the game. Ships are complex objects by themselves, made even more 
- * complicated by the fact that they are the targets of many modifications by modernizations and captain
+ * complicated by the fact that they are the targets of many modifications by upgrades and captain
  * skills.
  *
  * ## Modules
@@ -27,26 +35,84 @@ import { AccessorMixin } from '../util/accessors.js';
 class Ship extends GameObject {
 	/**
 	 * Definitions for autocreated getters
+	 * @todo Remove the need to explicitly state readthroughs
 	 */
-	static #LOOKUP_DEFINITIONS = {
+	static #GETTER_DEFINITIONS = {
 		Nation: 'typeinfo.nation',
 		Species: 'typeinfo.species',
 		Tier: 'level',
+		Speed: readthrough('Speed'),
+		Ruddershift: readthrough('Ruddershift'),
+		Health: readthrough('Health'),
+		Concealment: readthrough('Concealment'),		
+		ArtilleryRange: readthrough('ArtilleryRange'),		
+		ArtilleryCaliber: readthrough('ArtilleryCaliber'),		
+		ArtilleryRotationSpeed: readthrough('ArtilleryRotationSpeed'),
+		TorpedoRange: readthrough('TorpedoRange'),
+		TorpedoSpeed: readthrough('TorpedoSpeed'),
+		TorpedoDamage: readthrough('TorpedoDamage'),
+		TorpedoFloodChance: readthrough('TorpedoFloodChance'),
 	}
+	// static #SETTER_DEFINITIONS = Ship.ModuleConfiguration.#SETTER_DEFINITIONS;
 
 
+	/**
+	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
+	 */
 	#moduleLines;
+	/**
+	 * The currently equipped module configuration.
+	 */
 	#configuration;
+	/**
+	 * The already equipped upgrades
+	 */
+	#modernizations;
 
-	constructor(data) {
+	/**
+	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
+	 * in `descriptor`. 
+	 * @param  {Object} data       The ship's data.
+	 * @param  {String} [descriptor='stock'] The initial module configuration for the new ship. Defaults to `stock`.
+	 */
+	constructor(data, descriptor = 'stock') {
 		super(data);
 
 		let self = this;
-		AccessorMixin.createGetters(self, Ship.#LOOKUP_DEFINITIONS)
+		AccessorMixin.createGetters(self, Ship.#GETTER_DEFINITIONS)
+
+		self.#modernizations = [];
+		self.equipModules(descriptor);
+	}
+
+	equipModernization(modernization) {
+		let self = this;
+		const multiply = (a,b) => a * b;
+		
+		if (!(modernization instanceof Modernization))
+			throw new TypeError(`Tried to equip ${modernization} but it is not a modernization`);
+		
+		// Don't equip if already equipped or not eligible
+		if (self.#modernizations.includes(modernization.getName()) || !modernization.eligible(self))
+			return;
+
+		let modifiers = modernization.getModifiers();
+		for (let modifier of modifiers) {debugger
+			// For every modifier, get the target
+			let target = modifier.target;
+			// If the target is a function, invoke it with the upgrade and the ship as parameters
+			if (typeof target === 'function') target = target.call(null, modernization, self);
+			// Multiply the current value for the property denoted by target with the modifier value
+			let value = modifier.retriever(self);
+			// Multiply the target properties with the value
+			self.#configuration.apply(target, multiply.bind(null, value));
+		}
+		// Remember that it is already equipped now
+		self.#modernizations.push(modernization.getName());
 	}
 
 	/**
-	 * Applies the configuration designated by `descriptor` to the ship.
+	 * Applies the module configuration designated by `descriptor` to the ship.
 	 *
 	 * Descriptor can either be a _simple_ descriptor (the single word `'stock'` or `'top'`) or a _complex_ descriptor.
 	 * A complex descriptor is composed of several subdescriptors, each of which takes the form
@@ -72,7 +138,7 @@ class Ship extends GameObject {
 	 * @throws
 	 * - Throws `TypeError` if the descriptor does not conform to the above rules.
 	 */
-	applyConfiguration(descriptor) {
+	equipModules(descriptor) {
 		let self = this;
 		let moduleLines = self.getModuleLines();
 
@@ -179,13 +245,14 @@ class Ship extends GameObject {
 		// Make a deep copy, because otherwise if any values are modified in the configuration further on
 		// (e.g. by applying modernizations), it will change the original values, too.
 		// This would lead to unexpected behavior when switching configurations back and forth.
-		self.#configuration = new Ship.Configuration(self, configuration);
+		self.#configuration = new Ship.ModuleConfiguration(self, configuration);
 	}
 
 	/**
 	 * Gets the ship's current configuration.
 	 * @return {Object} The ship's current configuration, or `null` if no configuration has been
 	 * set yet.
+	 * @todo Remove when better solution for readthrough is implemented
 	 */
 	getCurrentConfiguration() {
 		return this.#configuration || null;
@@ -351,13 +418,26 @@ class Ship extends GameObject {
 
 /**
  * This class represents a configuration of a ship.
- * @name Ship#Configuration
+ * @name Ship#ModuleConfiguration
  */
-Ship.Configuration = class extends AccessorMixin(null) {
-	static #LOOKUP_DEFINITIONS = {
+Ship.ModuleConfiguration = class extends AccessorMixin(null) {
+	static #GETTER_DEFINITIONS = {
 		Ruddershift: 'hull.rudderTime',
 		Health: 'hull.health',
 		TurningCircle: 'hull.turningRadius',
+		Concealment: 'hull.visibilityFactor',
+		Speed: function() { return this.get('hull.maxSpeed') * (1 - this.get('engine.speedCoef')) },
+		ArtilleryRange: function() { return this.get('artillery.maxDist') * this.get('fireControl.maxDistCoef') },
+		ArtilleryCaliber: function() { return 'artillery.qb_mounts.*.barrelDiameter' },
+		ArtilleryRotationSpeed: 'artillery.qb_mounts.*.rotationSpeed.0',
+		TorpedoRange: function() { return conversions.BWToMeters(this.get('torpedoes.qb_mounts.*.ammoList.*.maxDist')) },
+		TorpedoSpeed: 'torpedoes.qb_mounts.*.ammoList.*.speed',
+		TorpedoDamage: 'torpedoes.qb_mounts.*.ammoList.*.alphaDamage',
+		TorpodoFloodChance: 'torpedoes.qb_mounts.*.ammoList.*.uwCritical',
+		ATBARange: 'atba.maxDist',
+	}
+	static #SETTER_DEFINITIONS = {
+
 	}
 
 	#ship;
@@ -381,8 +461,19 @@ Ship.Configuration = class extends AccessorMixin(null) {
 		self.#ship = ship;
 
 		Object.assign(self, clone(configuration));			
-		AccessorMixin.createGetters(self, Ship.Configuration.#LOOKUP_DEFINITIONS);
+		AccessorMixin.createGetters(self, Ship.ModuleConfiguration.#GETTER_DEFINITIONS);
+
+		// Turn armaments from pure data objects into instances of Armament
+		for (let armament of ['artillery', 'torpedoes'])
+			if (self[armament]) {
+				let constructor = {
+					'artillery': Artillery,
+					'torpedoes': Torpedoes,
+				}[armament];
+				self[armament] = new constructor(self[armament]);
+			}
 	}
 }
+
 
 export { Ship }
