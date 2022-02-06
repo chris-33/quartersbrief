@@ -88,20 +88,14 @@ describe('AccessorMixin', function() {
 			expect(spy).to.have.been.calledWith(val);
 		});
 
-		it('should throw if no such property exists and create is set to true, create it otherwise', function() {			
-			expect(obj.apply.bind(obj,'doesnotexist', fn, { create: false })).to.throw();
-			let spy = sinon.spy(fn);
-			expect(obj.apply('doesnotexist', spy, { create: true })).to.equal(fn(undefined));
-			expect(obj).to.have.property('doesnotexist').that.equals(fn(undefined));
-			expect(spy).to.have.been.calledWith(undefined);
+		it('should throw if no such property exists and strict is set to true, ignore otherwise', function() {			
+			expect(obj.apply.bind(obj,'doesnotexist', fn, { strict: true })).to.throw();
+			expect(obj.apply('doesnotexist', fn, { strict: false })).to.be.undefined;
 		});
 
-		it('should throw if any intermediate levels are missing when using dot notation and create is false, create them otherwise', function() {
-			expect(obj.get.bind(obj,'doesnotexist.withdotnotation')).to.throw();
-			let spy = sinon.spy(fn);
-			expect(obj.apply('doesnotexist.withdotnotation', spy, { create: true })).to.equal(fn(undefined));
-			expect(obj).to.have.property('doesnotexist').that.has.property('withdotnotation').that.equals(fn(undefined));
-			expect(spy).to.have.been.calledWith(undefined);
+		it('should throw if any intermediate levels are missing when using dot notation in strict mode, ignore otherwise', function() {
+			expect(obj.get.bind(obj,'doesnotexist.withdotnotation'), { strict: true }).to.throw();			
+			expect(obj.apply('doesnotexist.withdotnotation', fn, { strict: false })).to.be.undefined;
 		});
 
 		it('should return an array if collate option is set to false', function() {

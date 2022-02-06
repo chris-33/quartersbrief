@@ -12,10 +12,6 @@ const AccessorMixin = (superclass) => {
 		 * supports the same options and key notation rules as {@link AccessorMixin#apply}.
 		 *
 		 * It is a shorthand for `apply(key, (x) => x, options)`.
-		 *
-		 * Note that this method is not guaranteed to be side-effect free if calling it
-		 * with the `create` option set. This is highly unusual for a getter, and thus, 
-		 * calling it in that fashion is highly discouraged.
 		 * @memberof AccessorMixin
 		 * @instance
 		 * @see AccessorMixin#apply
@@ -44,8 +40,8 @@ const AccessorMixin = (superclass) => {
 		 * values that are possibly deeply embedded in a data object easy. Getting and setting values
 		 * are then just special cases of this, by providing the identity function (that always returns
 		 * its argument) or a constant function (that always returns a constant regardless of its
-		 * argument), respectively. This method supports dot notation, wildcards, result
-		 * collation and property creation.
+		 * argument), respectively. This method supports dot notation, wildcards, and result
+		 * collation.
 		 *
 		 * **Dot notation**
 		 * The key supports dot notation to gain access to nested properties and
@@ -76,8 +72,8 @@ const AccessorMixin = (superclass) => {
 		 * with "suffix", with an arbitrary number of letters, digits and underscore in
 		 * between. 
 		 * `nested*.prop` matches the property "prop" of _any_ property of `obj` whose
-		 * name starts with "nested". All of these are expected to have such a property,
-		 * otherwise an error will be thrown. 
+		 * name starts with "nested". In strict mode, all of these are expected to have such 
+		 * a property, otherwise an error will be thrown. 
 		 *
 		 * **Result collation**
 		 * If you are expecting the results to all be the same, `apply` can return that
@@ -97,45 +93,30 @@ const AccessorMixin = (superclass) => {
 		 * Setting it to `false` will _always_ return an array - even if the 
 		 * key did not contain any wildcards at all. In that case, an array with a 
 		 * single value is returned.
-		 *
-		 * **Property creation**
-		 * `apply` can create missing properties instead of throwing an error. Set 
-		 * `options.create` to true for this behavior. (The default is `false`). In this case,
-		 * missing intermediate levels will be created as empty objects. If the final property
-		 * is missing, it will be created and set to `fn(undefined)`. (It is allowed for this
-		 * to also be `undefined`.) 
-		 *
-		 * Note that missing properties are _not_ created for those parts of `key` that contain
-		 * wildcards. In these cases, `apply` will still throw an error.
 		 * 
 		 * @param {string} key   The key of the property to apply `fn` to. By using wildcards, 
 		 * multiple properties can be selected.
 		 * @param {Function} fn The function to apply to the property's (or properties') value(s). 
-		 * This must be a function that accepts a single argument and returns a value. Note that if you
-		 * are setting the `options.create` option to `true`, the function should be prepared to handle
-		 * an input value of `undefined`.
-		 * @param {Object} [options={create: false}] An optional options object.
+		 * This must be a function that accepts a single argument and returns a value. 
+		 * @param {Object} [options={collate: true, strict: true}] An optional options object.
 		 * @param {boolean} options.collate=true	Whether to return the results of the 
 		 * function application as a single value or as an array.
-		 * @parap {boolean} [options.create=false] Whether to create missing properties or throw an error instead. 
-		 * The default is to error.
+		 * @param {boolean} [options.strict=true] Whether to error if nothing matches or just ignore. The default is false. 
 		 * @throws
 		 * Throws an error if the requested property or any intermediate properties do
-		 * not exist, and `options.create` is `false`.
+		 * not exist, and `options.strict` is `true`.
 		 * @throws
 		 * Throws an error if `options.collate` is `true` but the results of the function application
 		 * to all matched properties are not equal (deeply equal).
 		 * @memberof AccessorMixin
 		 * @instance
 		 */
-		apply(key, fn, options = { collate: true, create: false }) {			
+		apply(key, fn, options = { /* defaults will be set in method */ }) {			
 			let self = this;
 
-			// Set default values, if necessary
-			// (Even though a default is provided for the options object, if one has been passed in 
-			// it might not have all properties set.)			
-			if (options.collate === undefined) options.collate = true;
-			if (options.create === undefined) options.create = false;			
+			// Set default values, if they are not set
+			options.collate ??= true;
+			options.strict ??= true;
 
 			// Split the key into its parts. These can be thought of as "path elements"
 			// to traverse along the data object
@@ -152,22 +133,14 @@ const AccessorMixin = (superclass) => {
 					// ... get a list of its keys that match the currKey. This will be an array of
 					// just one (or zero) key(s) if currKey does not contain wildcards.
 					let matches = Object.keys(target).filter(key => currKeyRegex.test(key));
-					// If that key doesn't exist in the object ...
-					if (matches.length === 0) {
-						// and the create option is set AND the currKey is not a wildcard expression
-						if (options.create && !currKey.includes('*'))
-							// Create the key and set it to an empty object if this is an intermediate
-							// level, apply the function to undefined if this is the last key
-							// We can return that, because in Javascript assignments are expressions.
-							return target[currKey] = path.length > 0 ? {} : fn(undefined);
-						else
-							// If create option is not set, OR currKey has wildcards, error.
-							// (We can't create a key if currKey is a wildcard, because it's unclear
-							// what the key name would need to be.)
-							throw new Error(`Trying to apply fn to unknown property ${key} of ${self} and options.create was false`);
+					// If that key doesn't exist in the object and we are in strict mode, throw an error
+					if (matches.length === 0 && options.strict) {
+						throw new Error(`Trying to apply fn to unknown property ${key} of ${self} in strict mode`);
 					} else
 						// If there were matches, either traverse if this is an intermediate level,
 						// or apply the function to its value if we are at the end
+						// If there were no matches, this will just return an empty array which will be
+						// nuked by flatMap()
 						return matches.map(match => path.length > 0 ? target[match] : target[match] = fn(target[match]));
 				});
 			}
