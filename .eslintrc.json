@@ -1,4 +1,4 @@
-module.exports = {
+{
     "env": {
         "browser": true,
         "node": true,
@@ -20,7 +20,6 @@ module.exports = {
     },
     "rules": {
         "no-prototype-builtins": 0,
-        "no-var": 1,
-        // "prefer-const": 1
+        "no-var": 1
     }
 }
