@@ -131,6 +131,24 @@ describe('Ship', function() {
 
 			for (let key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
+		});
+
+		it('should re-equip modernizations after changing module configuration', function() {
+			ship.equipModules('stock');
+			const MODERNIZATION_TARGETS = Modernization.MODERNIZATION_TARGETS;
+			let modernization = new Modernization({ modifiers: { EngineValue: 2	}, name: 'PCM001_Modernization' });
+			try {
+				Modernization.MODERNIZATION_TARGETS = { EngineValue: { target: 'engine.value', retriever: Modernization.DEFAULT_RETRIEVER }};
+				sinon.stub(modernization, 'eligible').returns(true);
+
+				ship.equipModernization(modernization);
+				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(modernization.modifiers.EngineValue * TEST_DATA.AB1_Engine.value);
+				ship.equipModules('top');
+				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(modernization.modifiers.EngineValue * TEST_DATA.AB2_Engine.value);
+			} finally {
+				Modernization.MODERNIZATION_TARGETS = MODERNIZATION_TARGETS;
+				modernization.eligible.restore();
+			}
 		})
 	});
 
@@ -139,6 +157,7 @@ describe('Ship', function() {
 			modifiers: {
 				ArtilleryValue: 2
 			},
+			slot: 0,
 			name: 'PCM001_Modernization'
 		}
 		let modernizationTargets;

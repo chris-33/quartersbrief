@@ -4,9 +4,10 @@ import clone from 'just-clone';
 import { ComplexDataObject } from '../util/cdo.js';
 import { conversions } from '../util/conversions.js';
 import { GameObject } from './gameobject.js';
-import { Artillery, Torpedoes } from './armament.js';
+import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
+import { gameObjectFactory } from './gameobjectfactory.js';
 
 function readthrough(property) {
 	return function() { return this.getCurrentConfiguration()['get' + property].call(this.getCurrentConfiguration()) }
@@ -95,15 +96,24 @@ class Ship extends GameObject {
 		}, { collate: false, strict: false });
 	}
 
+	/**
+	 * Equips a modernization (called upgrade in-game) by applying all its modifiers to the current
+	 * configuration. If this ship is not eligible for the modernization, nothing will happen.
+	 *
+	 * The already equipped upgrades are tracked. If the modernization is already equipped, nothing
+	 * will happen.
+	 * @param  {Modernization} modernization The modernization to equip
+	 * @throws 
+	 * Throws a `TypeError` if `modernization` is not a `Modernization`.
+	 */
 	equipModernization(modernization) {
-		let self = this;
-		const multiply = (a,b) => a * b;
+		let self = this;		
 		
 		if (!(modernization instanceof Modernization))
-			throw new TypeError(`Tried to equip ${modernization} but it is not a modernization`);
+			throw new TypeError(`Tried to equip ${modernization} but it is not a Modernization`);
 		
 		// Don't equip if already equipped or not eligible
-		if (self.#modernizations.includes(modernization.getName()) || !modernization.eligible(self))
+		if (self.#modernizations.some(equipped => equipped.getName() === modernization.getName()) || !modernization.eligible(self))
 			return;
 
 		let modifiers = modernization.getModifiers();
@@ -112,13 +122,13 @@ class Ship extends GameObject {
 			let target = modifier.target;
 			// If the target is a function, invoke it with the upgrade and the ship as parameters
 			if (typeof target === 'function') target = target.call(null, modernization, self);
-			// Multiply the current value for the property denoted by target with the modifier value
+			// Retrieve the value for the modifier by calling its retriever function
 			let value = modifier.retriever(self);
 			// Multiply the target properties with the value
-			self.#configuration.apply(target, multiply.bind(null, value));
+			self.#configuration.multiply(target, value, { collate: false });
 		}
 		// Remember that it is already equipped now
-		self.#modernizations.push(modernization.getName());
+		self.#modernizations.push(modernization);
 	}
 
 	/**
@@ -144,6 +154,9 @@ class Ship extends GameObject {
 	 * modules for all other module lines.
 	 * - `'torpedoes: 1, others: top'`: The second '_Torpedoes' module and the top modules of all other module
 	 * line will be equipped. (This is, for instance, a popular configuration for Shimakaze.)
+	 *
+	 * Any modernizations that were equipped will be re-equipped.
+	 * 
 	 * @param  {string} descriptor The configuration to apply
 	 * @throws
 	 * - Throws `TypeError` if the descriptor does not conform to the above rules.
@@ -256,6 +269,12 @@ class Ship extends GameObject {
 		// (e.g. by applying modernizations), it will change the original values, too.
 		// This would lead to unexpected behavior when switching configurations back and forth.
 		self.#configuration = new Ship.ModuleConfiguration(self, configuration);
+		
+		// Remember the equipped modernizations, re-initialize to no equipped,
+		// and re-apply them all
+		let modernizations = self.#modernizations;
+		self.#modernizations = [];
+		modernizations.forEach(modernization => self.equipModernization(modernization));
 	}
 
 	/**
@@ -477,7 +496,7 @@ Ship.ModuleConfiguration =  class extends ComplexDataObject {
 				let constructor = {
 					'artillery': Artillery,
 					'torpedoes': Torpedoes,
-				}[armament];
+				}[armament] ?? Armament;
 				self[armament] = new constructor(self[armament]);
 			}
 	}

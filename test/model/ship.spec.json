@@ -4,10 +4,12 @@
         "value": 1
     },
     "AB1_Engine": {
-        "name": "AB1_Engine"
+        "name": "AB1_Engine",
+        "value": 1
     },
     "AB2_Engine": {
-        "name": "AB2_Engine"
+        "name": "AB2_Engine",
+        "value": 2
     },
     "A_AirDefense": {
         "name": "A_AirDefense"
