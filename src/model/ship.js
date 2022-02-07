@@ -131,6 +131,8 @@ class Ship extends GameObject {
 		self.#modernizations.push(modernization);
 	}
 
+	// @todo: unequipModernization(modernization)
+
 	/**
 	 * Applies the module configuration designated by `descriptor` to the ship.
 	 *

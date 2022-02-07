@@ -177,10 +177,21 @@ describe('Ship', function() {
 			sinon.stub(modernization, 'eligible').returns(true);
 		});
 
+		it('should throw if trying to equip something that is not a Modernization', function() {
+			expect(ship.equipModernization.bind(ship,{})).to.throw();
+		});
+
 		it('should apply the modifier value', function() {
 			ship.equipModernization(modernization);
 			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * MODERNIZATION_DATA.modifiers.ArtilleryValue);
+		});
+
+		it('should not apply the same modernization more than once', function() {
+			ship.equipModernization(modernization);
+			let val = ship.getCurrentConfiguration().get('artillery.value');
+			ship.equipModernization(modernization);
+			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(val);
 		});
 
 		afterEach(function() {
