@@ -1,5 +1,5 @@
 import clone from 'just-clone';
-import { AccessorMixin } from '../util/accessors.js';
+import { ComplexDataObject } from '../util/cdo.js';
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from
@@ -11,7 +11,7 @@ import { AccessorMixin } from '../util/accessors.js';
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
  * object. (This is checked at application startup through invariant assertion checking.)
  */
-class GameObject extends AccessorMixin(null) {
+class GameObject extends ComplexDataObject {
 	/**
 	 * Definitions for autocreated getters
 	 */
@@ -49,13 +49,10 @@ class GameObject extends AccessorMixin(null) {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		super();		
+		super(clone(data));
 		let self = this;
 
-		// Copy over everything from data
-		Object.assign(self, clone(data));
-
-		AccessorMixin.createGetters(self, GameObject.#LOOKUP_DEFINITIONS);
+		ComplexDataObject.createGetters(self, GameObject.#LOOKUP_DEFINITIONS);
 	}
 }
 
