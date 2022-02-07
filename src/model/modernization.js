@@ -1,6 +1,6 @@
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
-import { AccessorMixin } from '../util/accessors.js';
+import { ComplexDataObject } from '../util/cdo.js';
 import { arrayIntersect } from '../util/util.js';
 
 /**
@@ -49,7 +49,7 @@ class Modernization extends GameObject {
 	constructor(data) {
 		super(data);
 
-		AccessorMixin.createGetters(this, Modernization.#GETTER_DEFINITIONS);
+		ComplexDataObject.createGetters(this, Modernization.#GETTER_DEFINITIONS);
 	}
 
 
