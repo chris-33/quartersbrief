@@ -39,6 +39,12 @@
     "AB3_FireControl": {
         "name": "AB3_FireControl"
     },
+    "ShipAbilities": {
+        "AbilitySlot0": {
+            "abils": [],
+            "slot": 0
+        }
+    },
     "ShipUpgradeInfo": {
         "ART_STOCK": {
             "canBuy": true,

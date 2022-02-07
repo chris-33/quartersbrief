@@ -1,11 +1,12 @@
-import { GameObject } from './gameobject.js';
 import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'just-clone';
-import { AccessorMixin } from '../util/accessors.js';
+import { ComplexDataObject } from '../util/cdo.js';
 import { conversions } from '../util/conversions.js';
+import { GameObject } from './gameobject.js';
 import { Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
+import { Consumable } from './consumable.js';
 
 function readthrough(property) {
 	return function() { return this.getCurrentConfiguration()['get' + property].call(this.getCurrentConfiguration()) }
@@ -53,8 +54,7 @@ class Ship extends GameObject {
 		TorpedoDamage: readthrough('TorpedoDamage'),
 		TorpedoFloodChance: readthrough('TorpedoFloodChance'),
 	}
-	// static #SETTER_DEFINITIONS = Ship.ModuleConfiguration.#SETTER_DEFINITIONS;
-
+	
 
 	/**
 	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
@@ -79,10 +79,20 @@ class Ship extends GameObject {
 		super(data);
 
 		let self = this;
-		AccessorMixin.createGetters(self, Ship.#GETTER_DEFINITIONS)
+		ComplexDataObject.createGetters(self, Ship.#GETTER_DEFINITIONS)
 
 		self.#modernizations = [];
 		self.equipModules(descriptor);
+
+		// Set the flavors of all consumables this ship has
+		// This is necessary because within the game data, consumable definitions are arrays of length 2
+		// consisting of the consumable reference name (already expanded by GameObjectFactory) and the name
+		// of the flavor
+		self.apply('ShipAbilities.AbilitySlot*.abils.*', function flavor(ability) {
+			let result = new Consumable(ability[0]);
+			result.setFlavor(ability[1]);
+			return result;
+		}, { collate: false, strict: false });
 	}
 
 	equipModernization(modernization) {
@@ -97,7 +107,7 @@ class Ship extends GameObject {
 			return;
 
 		let modifiers = modernization.getModifiers();
-		for (let modifier of modifiers) {debugger
+		for (let modifier of modifiers) {
 			// For every modifier, get the target
 			let target = modifier.target;
 			// If the target is a function, invoke it with the upgrade and the ship as parameters
@@ -286,7 +296,6 @@ class Ship extends GameObject {
 			the module to its left has a lower distance value, the module to its right
 			a higher distance value. (This can also mean inserting at the start or end).
 		 */
-		const KEY_SHIP_UPGRADE_INFO = 'ShipUpgradeInfo';
 		let self = this;		
 
 		// Building module lines is a relatively expensive operation (~50-100ms).
@@ -305,7 +314,7 @@ class Ship extends GameObject {
 		}		
 
 		// Get everything in ShipUpgradeInfo
-		let modules = self.get(KEY_SHIP_UPGRADE_INFO);
+		let modules = self.get('ShipUpgradeInfo');
 		
 		// Initialize metadata to be kept for each module.
 		// We need this for the algorithm to work: For one thing,
@@ -420,7 +429,7 @@ class Ship extends GameObject {
  * This class represents a configuration of a ship.
  * @name Ship#ModuleConfiguration
  */
-Ship.ModuleConfiguration = class extends AccessorMixin(null) {
+Ship.ModuleConfiguration =  class extends ComplexDataObject {
 	static #GETTER_DEFINITIONS = {
 		Ruddershift: 'hull.rudderTime',
 		Health: 'hull.health',
@@ -436,9 +445,8 @@ Ship.ModuleConfiguration = class extends AccessorMixin(null) {
 		TorpodoFloodChance: 'torpedoes.qb_mounts.*.ammoList.*.uwCritical',
 		ATBARange: 'atba.maxDist',
 	}
-	static #SETTER_DEFINITIONS = {
+	// static #SETTER_DEFINITIONS = Ship.#GETTER_DEFINITIONS;
 
-	}
 
 	#ship;
 
@@ -453,17 +461,17 @@ Ship.ModuleConfiguration = class extends AccessorMixin(null) {
 	 * Throws a `TypeError` if `ship` is not provided or not a ship.
 	 */
 	constructor(ship, configuration) {
-		super();
+		super(clone(configuration));
 		let self = this;
 		
 		if (!ship || !(ship instanceof Ship)) 
 			throw new TypeError(`Expected a ship but got ${ship}`);
 		self.#ship = ship;
 
-		Object.assign(self, clone(configuration));			
-		AccessorMixin.createGetters(self, Ship.ModuleConfiguration.#GETTER_DEFINITIONS);
+		ComplexDataObject.createGetters(self, Ship.ModuleConfiguration.#GETTER_DEFINITIONS);
 
 		// Turn armaments from pure data objects into instances of Armament
+		// @todo Add atbas and aa guns
 		for (let armament of ['artillery', 'torpedoes'])
 			if (self[armament]) {
 				let constructor = {
@@ -474,6 +482,7 @@ Ship.ModuleConfiguration = class extends AccessorMixin(null) {
 			}
 	}
 }
+
 
 
 export { Ship }
