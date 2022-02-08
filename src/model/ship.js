@@ -7,7 +7,6 @@ import { GameObject } from './gameobject.js';
 import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
-import { gameObjectFactory } from './gameobjectfactory.js';
 
 function readthrough(property) {
 	return function() { return this.getCurrentConfiguration()['get' + property].call(this.getCurrentConfiguration()) }
@@ -118,14 +117,7 @@ class Ship extends GameObject {
 
 		let modifiers = modernization.getModifiers();
 		for (let modifier of modifiers) {
-			// For every modifier, get the target
-			let target = modifier.target;
-			// If the target is a function, invoke it with the upgrade and the ship as parameters
-			if (typeof target === 'function') target = target.call(null, modernization, self);
-			// Retrieve the value for the modifier by calling its retriever function
-			let value = modifier.retriever(self);
-			// Multiply the target properties with the value
-			self.#configuration.multiply(target, value, { collate: false });
+			modifier.applyTo(self);
 		}
 		// Remember that it is already equipped now
 		self.#modernizations.push(modernization);

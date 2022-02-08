@@ -1,6 +1,8 @@
 import { Modernization } from '../../src/model/modernization.js';
 import { Ship } from '../../src/model/ship.js';
 import { GameObject } from '../../src/model/gameobject.js';
+import { Modifier } from '../../src/util/modifier.js';
+
 import { readFileSync } from 'fs';
 import clone from 'just-clone';
 import sinon from 'sinon';
@@ -72,15 +74,15 @@ describe('Modernization', function() {
 	});
 
 	describe('.getModifiers', function() {
-		let definitions;
-		const MODERNIZATION_TARGETS = {
-			ArtilleryValue: { target: 'artillery.value', retriever: () => null },
-			EngineValue: { target: 'engine.value', retriever: () => null }
-		};
+		let knownTargets;
 
 		before(function() {
-			definitions = Modernization.MODERNIZATION_TARGETS;			
-			Modernization.MODERNIZATION_TARGETS = MODERNIZATION_TARGETS;
+			knownTargets = Modifier.KNOWN_TARGETS;
+			Modifier.KNOWN_TARGETS = { EngineValue: 'engine.value', ArtilleryValue: 'artillery.value' };
+		});
+
+		after(function() {
+			Modifier.KNOWN_TARGETS = knownTargets;
 		});
 
 		it('should return modifier objects only for those modifiers where it is known how to deal with them', function() {
@@ -88,41 +90,6 @@ describe('Modernization', function() {
 			expect(modernization.getModifiers()).to
 				.be.an('array')
 				.with.lengthOf(2);
-
-		});
-
-		it('should return correct targets', function() {
-			let modernization = new Modernization(TEST_DATA);
-			let targets = modernization.getModifiers().map(modifier => modifier.target);
-			expect(targets).to
-				.be.an('array')
-				.with.members([MODERNIZATION_TARGETS.ArtilleryValue.target, MODERNIZATION_TARGETS.EngineValue.target]);
-		});
-
-		it('should return correct retrievers', sinon.test(function() {
-			let spy1 = sinon.spy(MODERNIZATION_TARGETS.EngineValue, 'retriever');
-			let spy2 = sinon.spy(MODERNIZATION_TARGETS.ArtilleryValue, 'retriever');
-
-			let modernization = new Modernization(TEST_DATA);
-			let ship = {};
-
-			let retrievers = modernization.getModifiers().map(modernization => modernization.retriever);
-			expect(retrievers).to
-				.be.an('array')
-				.and.satisfy((arr) => arr.every(el => typeof el === 'function'), `expected retrievers to be an array of functions but it was an array of ${typeof retrievers[0]}s`);
-			
-			retrievers.forEach(retriever => retriever(ship));
-
-			expect(spy1).to
-				.have.been.calledOn(modernization)
-				.and.been.calledWith(TEST_DATA.modifiers.EngineValue, ship);
-			expect(spy2).to
-				.have.been.calledOn(modernization)
-				.and.been.calledWith(TEST_DATA.modifiers.ArtilleryValue, ship);
-
-		}));
-		after(function() {
-			Modernization.MODERNIZATION_TARGETS = definitions;
 		});
 	});
 });

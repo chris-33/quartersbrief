@@ -4,12 +4,20 @@ import { GameObject } from '../../src/model/gameobject.js';
 import clone from 'just-clone';
 import { readFileSync } from 'fs';
 import { Modernization } from '../../src/model/modernization.js';
+import { Modifier } from '../../src/util/modifier.js';
 
 describe('Ship', function() {
 	let TEST_DATA;
+	let knownTargets;
 
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
+		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
+		knownTargets = Modifier.KNOWN_TARGETS;
+		Modifier.KNOWN_TARGETS = { EngineValue: 'engine.value', ArtilleryValue: 'artillery.value' }
+	});
+
+	after(function() {
+		Modifier.KNOWN_TARGETS = knownTargets;
 	});
 
 	it('should be a GameObject', function() {		
@@ -135,10 +143,8 @@ describe('Ship', function() {
 
 		it('should re-equip modernizations after changing module configuration', function() {
 			ship.equipModules('stock');
-			const MODERNIZATION_TARGETS = Modernization.MODERNIZATION_TARGETS;
-			let modernization = new Modernization({ modifiers: { EngineValue: 2	}, name: 'PCM001_Modernization' });
+			let modernization = new Modernization(JSON.parse(readFileSync('test/model/testdata/modernization.json')));
 			try {
-				Modernization.MODERNIZATION_TARGETS = { EngineValue: { target: 'engine.value', retriever: Modernization.DEFAULT_RETRIEVER }};
 				sinon.stub(modernization, 'eligible').returns(true);
 
 				ship.equipModernization(modernization);
@@ -146,35 +152,23 @@ describe('Ship', function() {
 				ship.equipModules('top');
 				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(modernization.modifiers.EngineValue * TEST_DATA.AB2_Engine.value);
 			} finally {
-				Modernization.MODERNIZATION_TARGETS = MODERNIZATION_TARGETS;
 				modernization.eligible.restore();
 			}
 		})
 	});
 
 	describe('.equipModernization', function() {
-		const MODERNIZATION_DATA = {
-			modifiers: {
-				ArtilleryValue: 2
-			},
-			slot: 0,
-			name: 'PCM001_Modernization'
-		}
-		let modernizationTargets;
 		let modernization;
 		let ship;
 	
-		before(function() {
-			modernizationTargets = Modernization.MODERNIZATION_TARGETS;
-			Modernization.MODERNIZATION_TARGETS = {
-				'ArtilleryValue': { target: 'artillery.value', retriever: Modernization.DEFAULT_RETRIEVER }
-			};
-		});
-
 		beforeEach(function() {
 			ship = new Ship(TEST_DATA);
-			modernization = new Modernization(MODERNIZATION_DATA);
+			modernization = new Modernization(JSON.parse(readFileSync('test/model/testdata/modernization.json')));
 			sinon.stub(modernization, 'eligible').returns(true);
+		});
+
+		afterEach(function() {
+			modernization.eligible.restore();
 		});
 
 		it('should throw if trying to equip something that is not a Modernization', function() {
@@ -184,7 +178,7 @@ describe('Ship', function() {
 		it('should apply the modifier value', function() {
 			ship.equipModernization(modernization);
 			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
-			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * MODERNIZATION_DATA.modifiers.ArtilleryValue);
+			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * modernization.modifiers.ArtilleryValue);
 		});
 
 		it('should not apply the same modernization more than once', function() {
@@ -194,12 +188,5 @@ describe('Ship', function() {
 			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(val);
 		});
 
-		afterEach(function() {
-			modernization.eligible.restore();
-		});
-
-		after(function() {
-			Modernization.MODERNIZATION_TARGETS = modernizationTargets;
-		});
 	});
 });
