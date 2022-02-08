@@ -1,0 +1,30 @@
+{
+	"Skills": {
+		"BattleshipSkill1": {
+			"modifiers": {
+				"EngineValue": 2
+			},
+			"skillType": 1
+		},
+		"BattleshipSkill2": {
+			"modifiers": {
+				"ArtilleryValue": 3
+			},
+			"skillType": 2
+		},
+		"CruiserSkill": {
+			"modifiers": {
+				"EngineValue": 3
+			},
+			"skillType": 3
+		}
+	},
+	"id": 3,
+	"name": "PAW001_Captain",
+	"index": "PAW001",
+	"typeinfo": {
+		"nation": "USA",
+		"species": null,
+		"type": "Crew"
+	}
+}
