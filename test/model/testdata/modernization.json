@@ -5,11 +5,12 @@
 		"ArtilleryValue": 3,
 		"unknown": 0
 	},
-	"name": "PCM001_Modernization",
-	"index": "PCM001",
 	"shiplevel": [8,9,10],
 	"nation": [],
 	"shiptype": ["Destroyer","Battleship"],
 	"slot": 0,
-	"ships": []			
+	"ships": [],
+	"name": "PCM001_Modernization",
+	"index": "PCM001",
+	"id": 2
 }
