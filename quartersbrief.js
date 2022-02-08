@@ -8,13 +8,19 @@ import { assertInvariants } from './src/quartersbrief.assert.js';
 import process from 'process';
 import node_readline from 'readline';
 
+init();
 
 const HELPTEXT = 'Known commands:\n' +
 '		list <type>\t\t\tPrint all known reference codes that have that type\n' +
 '		ship <ship>\t\t\tSet the current ship to <ship>. <ship> can be a numeric ID, a reference code, or a reference name' + 
 '		modules <descriptor>\t\tSet the current ship\'s module configuration to <descriptor>\n' +
 '		upgrade <upgrade>\t\tEquip an upgrade on the current ship. <upgrade> can be a numeric ID, a reference code, or a reference name\n' +
-'		stat <property>\t\t\tPrint the value for the current ship\'s property, considering all equipped modules and upgrades';
+'		captain <captain>\t\t\tSet the current captain to <captain>\n'+
+'		learn <skill>\t\t\tLearn skill <skill> on the current captain. <skill> must be the number (skillType)\n' +
+'		command \t\t\t Set the current captain to take command of the current ship\n';
+'		stat <property>\t\t\tPrint the value for the current ship\'s property, considering all equipped modules, upgrades and captain skills\n' + 
+'		help \t\t\t Print this text\n' + 
+'		exit \t\t\t Exit this program';
 
 let data = JSON.parse(readFileSync('data/GameParams.json'));
 try {
@@ -29,6 +35,7 @@ gameObjectFactory.setEverything(data);
 const readline = node_readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'Quarters Brief>' });
 readline.prompt();
 let ship;
+let captain;
 readline.on('line', function(input) {
 	let command = input.split(' ')[0].trim().toLowerCase();
 	let param = input.split(' ').splice(1).join(' '); 
@@ -50,6 +57,18 @@ readline.on('line', function(input) {
 			if (ship.equipModernization(upgrade))
 				console.log(`Equipped upgrade ${upgrade.getName()} on ${ship.name}`);
 			else console.log(`Ship ${ship.name} is not eligible for upgrade ${upgrade.getName()}`)
+			break;
+		case 'captain':
+			captain = gameObjectFactory.createGameObject(param);
+			console.log(`Set current captain to ${captain.name}`);
+			break;
+		case 'learn':
+			captain.learn(Number(param));
+			console.log(`Learned skill ${param}`);
+			break;
+		case 'command':
+			ship.setCaptain(captain);
+			console.log(`Captain ${captain.name} set to command ship ${ship.name}`);
 			break;
 		case 'stat': 
 			console.log(`Value is ${ship['get' + param].call(ship)}`);
