@@ -2,6 +2,8 @@ import log from 'loglevel';
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
 import { Modernization } from './modernization.js';
+import { Consumable } from './consumable.js';
+import { Captain } from './captain.js';
 
 /**
  * @see GameObject
@@ -140,7 +142,9 @@ class GameObjectFactory {
 
 		let Constructor = {
 			'Ship': Ship,
-			'Modernization': Modernization
+			'Modernization': Modernization,
+			'Ability': Consumable,
+			'Crew': Captain
 		}[gameObject.typeinfo.type];
 
 		if (!Constructor) Constructor = GameObject;
