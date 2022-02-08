@@ -10,15 +10,20 @@ import { readFileSync } from 'fs';
 describe('Ship', function() {
 	let TEST_DATA;
 	let knownTargets;
+	let classSkills;
 
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 		knownTargets = Modifier.KNOWN_TARGETS;
 		Modifier.KNOWN_TARGETS = { EngineValue: 'engine.value', ArtilleryValue: 'artillery.value' }
+		classSkills = Captain.CLASS_SKILLS;
+		Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
+
+		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
 	});
 
 	after(function() {
 		Modifier.KNOWN_TARGETS = knownTargets;
+		Captain.CLASS_SKILLS = classSkills;
 	});
 
 	it('should be a GameObject', function() {		
@@ -158,20 +163,13 @@ describe('Ship', function() {
 		});
 
 		it('should re-apply captain skills after changing module configuration', function() {
-			const classSkills = Captain.CLASS_SKILLS;
-			Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
-
-			try {
-				ship.equipModules('stock');
-				let captain = new Captain(JSON.parse(readFileSync('test/model/testdata/captain.json')));
-				captain.learn(captain.get('Skills.BattleshipSkill1.skillType'));
-				ship.setCaptain(captain);
-				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB1_Engine.value);
-				ship.equipModules('top');
-				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);
-			} finally {
-				Captain.CLASS_SKILLS = classSkills;
-			}
+			ship.equipModules('stock');
+			let captain = new Captain(JSON.parse(readFileSync('test/model/testdata/captain.json')));
+			captain.learn(captain.get('Skills.BattleshipSkill1.skillType'));
+			ship.setCaptain(captain);
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB1_Engine.value);
+			ship.equipModules('top');
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);
 		})
 	});
 
@@ -209,24 +207,11 @@ describe('Ship', function() {
 
 	describe('.setCaptain', function() {
 		let captain;
-		let classSkills;
 		let ship;
 	
-		before(function() {
-			classSkills = Captain.CLASS_SKILLS;
-			Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
-		});
-
-		after(function() {
-			Captain.CLASS_SKILLS = classSkills;
-		});
-
 		beforeEach(function() {
 			ship = new Ship(TEST_DATA);
 			captain = new Captain(JSON.parse(readFileSync('test/model/testdata/captain.json')));
-		});
-
-		afterEach(function() {
 		});
 
 		it('should throw if trying to set something that is not a Captain', function() {

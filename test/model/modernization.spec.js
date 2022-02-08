@@ -5,7 +5,6 @@ import { Modifier } from '../../src/util/modifier.js';
 
 import { readFileSync } from 'fs';
 import clone from 'just-clone';
-import sinon from 'sinon';
 
 describe('Modernization', function() {
 	let TEST_DATA;
