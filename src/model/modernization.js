@@ -37,8 +37,7 @@ class Modernization extends GameObject {
 	eligible(ship) {
 		let self = this;
 
-		if (!(ship instanceof Ship))
-			throw new TypeError('Modernizations can only be applied to ships');		
+		Ship.errorIfNotShip(ship);
 
 		// If slot is -1, that means the modernization has been removed from the game.
 		if (self.getSlot() === -1) return false;
@@ -57,18 +56,18 @@ class Modernization extends GameObject {
 	 * Gets `Modifier` objects for the changes this modernization makes.
 	 *
 	 * @return {Modifier[]} Modifiers for the modifications this modernization makes. 
+	 * @see Modifier
 	 */
 	getModifiers() {
 		let self = this;
-
-		return Object.keys(self.modifiers)
+		let modifiers = self.get('modifiers');
+		return Object.keys(modifiers)
 					.map(key => Modifier.from(key, self.modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}
 
 	equipOn(ship) {
-		if (!(ship instanceof Ship))
-			throw new TypeError(`Expected a ship but got ${ship}`);
+		Ship.errorIfNotShip(ship);
 		
 		ship.equipModernization(this);
 	}

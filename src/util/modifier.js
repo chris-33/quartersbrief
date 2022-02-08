@@ -61,7 +61,7 @@ class Modifier {
 	applyTo(ship, options) {
 		if (!this.target) return;
 
-		if (!(ship instanceof Ship)) throw new TypeError(`Expected a ship but got a ${ship.constructor}`);
+		Ship.errorIfNotShip(ship);
 
 		let value = this.value;
 		if (typeof value === 'object' && value.hasOwnProperty(ship.getSpecies()))
