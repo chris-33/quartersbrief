@@ -1,4 +1,5 @@
 {
+    "comment": "This is a basic ship. The ShipUpgradeDefinitions for ENG_TOP  and SUO_MIDDLE are deliberately out of order to check that the algorithm doesn't rely on them being in order to work",
     "AB1_Artillery": {
         "name": "AB1_Artillery",
         "value": 1
@@ -12,34 +13,44 @@
         "value": 2
     },
     "A_AirDefense": {
-        "name": "A_AirDefense"
+        "name": "A_AirDefense",
+        "value": 1
     },
     "AB_ATBA": {
-        "name": "AB_ATBA"
-    },
+        "name": "AB_ATBA",
+        "value": 1
+        },
     "AB_Directors": {
-        "name": "AB_Directors"
+        "name": "AB_Directors",
+        "value": 1
     },
     "AB_Finders": {
-        "name": "AB_Finders"
+        "name": "AB_Finders",
+        "value": 1
     },
     "A_Hull": {
-        "name": "A_Hull"
+        "name": "A_Hull",
+        "value": 1        
     },
     "B_AirDefense": {
-        "name": "B_AirDefense"
+        "name": "B_AirDefense",
+        "value": 2        
     },
     "B_Hull": {
-        "name": "B_Hull"
+        "name": "B_Hull",
+        "value": 2        
     },
     "AB1_FireControl": {
-        "name": "AB1_FireControl"
+        "name": "AB1_FireControl",
+        "value": 1
     },
     "AB2_FireControl": {
-        "name": "AB2_FireControl"
+        "name": "AB2_FireControl",
+        "value": 2        
     },
     "AB3_FireControl": {
-        "name": "AB3_FireControl"
+        "name": "AB3_FireControl",
+        "value": 3        
     },
     "ShipAbilities": {
         "AbilitySlot0": {
@@ -180,5 +191,14 @@
         "costXP": 175000,
         "lockedConfig": [],
         "value": 1
+    },
+    "name": "PAAA001_Battleship",
+    "index": "PAAA001",
+    "id": 1,
+    "level": 8,
+    "typeinfo": { 
+        "nation": "USA",
+        "species": "Battleship",
+        "type": "Ship"
     }
 }

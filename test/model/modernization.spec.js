@@ -7,9 +7,11 @@ import sinon from 'sinon';
 
 describe('Modernization', function() {
 	let TEST_DATA;
+	let SHIP;
 
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/modernization.spec.json'));
+		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/modernization.json'));
+		SHIP = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 	});
 
 	it('should be a GameObject', function() {
@@ -22,11 +24,11 @@ describe('Modernization', function() {
 		let data;
 
 		before(function() {
-			ship = new Ship(TEST_DATA.SHIPS.T8BB);	
+			ship = new Ship(SHIP);	
 		});
 
 		beforeEach(function() {
-			data = clone(TEST_DATA.MODERNIZATION);
+			data = clone(TEST_DATA);
 		});
 
 		it('should always find modernizations with slot -1 ineligible', function() {
@@ -72,8 +74,8 @@ describe('Modernization', function() {
 	describe('.getModifiers', function() {
 		let definitions;
 		const MODERNIZATION_TARGETS = {
-			known1: { target: 'artillery.known1', retriever: () => null },
-			known2: { target: 'hull.known2', retriever: () => null }
+			ArtilleryValue: { target: 'artillery.value', retriever: () => null },
+			EngineValue: { target: 'engine.value', retriever: () => null }
 		};
 
 		before(function() {
@@ -82,7 +84,7 @@ describe('Modernization', function() {
 		});
 
 		it('should return modifier objects only for those modifiers where it is known how to deal with them', function() {
-			let modernization = new Modernization(TEST_DATA.MODERNIZATION);
+			let modernization = new Modernization(TEST_DATA);
 			expect(modernization.getModifiers()).to
 				.be.an('array')
 				.with.lengthOf(2);
@@ -90,18 +92,18 @@ describe('Modernization', function() {
 		});
 
 		it('should return correct targets', function() {
-			let modernization = new Modernization(TEST_DATA.MODERNIZATION);
+			let modernization = new Modernization(TEST_DATA);
 			let targets = modernization.getModifiers().map(modifier => modifier.target);
 			expect(targets).to
 				.be.an('array')
-				.with.members([MODERNIZATION_TARGETS.known1.target, MODERNIZATION_TARGETS.known2.target]);
+				.with.members([MODERNIZATION_TARGETS.ArtilleryValue.target, MODERNIZATION_TARGETS.EngineValue.target]);
 		});
 
 		it('should return correct retrievers', sinon.test(function() {
-			let spy1 = sinon.spy(MODERNIZATION_TARGETS.known1, 'retriever');
-			let spy2 = sinon.spy(MODERNIZATION_TARGETS.known2, 'retriever');
+			let spy1 = sinon.spy(MODERNIZATION_TARGETS.EngineValue, 'retriever');
+			let spy2 = sinon.spy(MODERNIZATION_TARGETS.ArtilleryValue, 'retriever');
 
-			let modernization = new Modernization(TEST_DATA.MODERNIZATION);
+			let modernization = new Modernization(TEST_DATA);
 			let ship = {};
 
 			let retrievers = modernization.getModifiers().map(modernization => modernization.retriever);
@@ -113,10 +115,10 @@ describe('Modernization', function() {
 
 			expect(spy1).to
 				.have.been.calledOn(modernization)
-				.and.been.calledWith(TEST_DATA.MODERNIZATION.modifiers.known1, ship);
+				.and.been.calledWith(TEST_DATA.modifiers.EngineValue, ship);
 			expect(spy2).to
 				.have.been.calledOn(modernization)
-				.and.been.calledWith(TEST_DATA.MODERNIZATION.modifiers.known2, ship);
+				.and.been.calledWith(TEST_DATA.modifiers.ArtilleryValue, ship);
 
 		}));
 		after(function() {

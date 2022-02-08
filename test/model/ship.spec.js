@@ -9,7 +9,7 @@ describe('Ship', function() {
 	let TEST_DATA;
 
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/ship.spec.json'));		
+		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
 	});
 
 	it('should be a GameObject', function() {		
