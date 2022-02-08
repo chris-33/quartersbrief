@@ -1,12 +1,13 @@
-import objecthash from 'object-hash'; let hash = objecthash.MD5;
-import { arrayIntersect, arrayDifference } from '../util/util.js';
-import clone from 'just-clone';
-import { ComplexDataObject } from '../util/cdo.js';
-import { conversions } from '../util/conversions.js';
 import { GameObject } from './gameobject.js';
 import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
+import { Captain } from './captain.js';
+import { ComplexDataObject } from '../util/cdo.js';
+import objecthash from 'object-hash'; let hash = objecthash.MD5;
+import { arrayIntersect, arrayDifference } from '../util/util.js';
+import clone from 'just-clone';
+import { conversions } from '../util/conversions.js';
 
 function readthrough(property) {
 	return function() { return this.getCurrentConfiguration()['get' + property].call(this.getCurrentConfiguration()) }
@@ -68,6 +69,10 @@ class Ship extends GameObject {
 	 * The already equipped upgrades
 	 */
 	#modernizations;
+	/**
+	 * The captain that is commanding this ship
+	 */
+	#captain;
 
 	/**
 	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
@@ -94,6 +99,26 @@ class Ship extends GameObject {
 			return result;
 		}, { collate: false, strict: false });
 	}
+
+	/**
+	 * @todo Support removing captains by setting them to null or undefined
+	 * @param {[type]} captain [description]
+	 */
+	setCaptain(captain) {
+		if (!captain) throw new Error('Removing captains is not yet supported');
+
+		if (!(captain instanceof Captain)) throw new TypeError(`Expected a Captain, but got a ${captain}`);
+
+		// @todo Remove old captain's effects if ship was already under command
+		// @todo Apply skills even if learned after setting the captain. (-> Observer pattern)
+
+		let skills = captain.getLearnedForShip(this);
+		for (let skill of skills) {
+			let modifiers = skill.getModifiers();
+			for (let modifier of modifiers) modifier.applyTo(this);
+		}
+		this.#captain = captain;
+	}	
 
 	/**
 	 * Equips a modernization (called upgrade in-game) by applying all its modifiers to the current
@@ -123,7 +148,7 @@ class Ship extends GameObject {
 		self.#modernizations.push(modernization);
 	}
 
-	// @todo: unequipModernization(modernization)
+	// @todo unequipModernization(modernization)
 
 	/**
 	 * Applies the module configuration designated by `descriptor` to the ship.
@@ -269,6 +294,12 @@ class Ship extends GameObject {
 		let modernizations = self.#modernizations;
 		self.#modernizations = [];
 		modernizations.forEach(modernization => self.equipModernization(modernization));
+		// Re-apply the effects of the captain
+		if (self.#captain) {
+			let captain = self.#captain;
+			self.#captain = null;
+			self.setCaptain(captain);
+		}
 	}
 
 	/**
@@ -436,6 +467,10 @@ class Ship extends GameObject {
 		return moduleLines;
 	}
 
+	/**
+	 * Checks that the provided argument is an instance of `Ship` and throws a `TypeError` otherwise.
+	 */
+	static errorIfNotShip(ship) { if (!(ship instanceof Ship)) throw new TypeError(`Expected a Ship but got ${ship}`); }
 }
 
 /**

@@ -1,10 +1,11 @@
 import { Ship } from '../../src/model/ship.js';
-import sinon from 'sinon';
+import { Modernization } from '../../src/model/modernization.js';
+import { Captain } from '../../src/model/captain.js';
 import { GameObject } from '../../src/model/gameobject.js';
+import { Modifier } from '../../src/util/modifier.js';
+import sinon from 'sinon';
 import clone from 'just-clone';
 import { readFileSync } from 'fs';
-import { Modernization } from '../../src/model/modernization.js';
-import { Modifier } from '../../src/util/modifier.js';
 
 describe('Ship', function() {
 	let TEST_DATA;
@@ -154,6 +155,23 @@ describe('Ship', function() {
 			} finally {
 				modernization.eligible.restore();
 			}
+		});
+
+		it('should re-apply captain skills after changing module configuration', function() {
+			const classSkills = Captain.CLASS_SKILLS;
+			Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
+
+			try {
+				ship.equipModules('stock');
+				let captain = new Captain(JSON.parse(readFileSync('test/model/testdata/captain.json')));
+				captain.learn(captain.get('Skills.BattleshipSkill1.skillType'));
+				ship.setCaptain(captain);
+				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB1_Engine.value);
+				ship.equipModules('top');
+				expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);
+			} finally {
+				Captain.CLASS_SKILLS = classSkills;
+			}
 		})
 	});
 
@@ -172,10 +190,10 @@ describe('Ship', function() {
 		});
 
 		it('should throw if trying to equip something that is not a Modernization', function() {
-			expect(ship.equipModernization.bind(ship,{})).to.throw();
+			expect(ship.equipModernization.bind(ship, {})).to.throw();
 		});
 
-		it('should apply the modifier value', function() {
+		it('should apply the modernization effects', function() {
 			ship.equipModernization(modernization);
 			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * modernization.modifiers.ArtilleryValue);
@@ -187,6 +205,44 @@ describe('Ship', function() {
 			ship.equipModernization(modernization);
 			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(val);
 		});
+	});
 
+	describe('.setCaptain', function() {
+		let captain;
+		let classSkills;
+		let ship;
+	
+		before(function() {
+			classSkills = Captain.CLASS_SKILLS;
+			Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
+		});
+
+		after(function() {
+			Captain.CLASS_SKILLS = classSkills;
+		});
+
+		beforeEach(function() {
+			ship = new Ship(TEST_DATA);
+			captain = new Captain(JSON.parse(readFileSync('test/model/testdata/captain.json')));
+		});
+
+		afterEach(function() {
+		});
+
+		it('should throw if trying to set something that is not a Captain', function() {
+			expect(ship.setCaptain.bind(ship, {})).to.throw();
+			expect(ship.setCaptain.bind(ship, captain)).to.not.throw();
+		});
+
+		it('should apply the effects of the captain\'s learned skills', function() {
+			let skills = captain.getLearnableForShip(ship);
+			captain.learn(skills);
+
+			ship.equipModules('stock');
+			ship.setCaptain(captain);
+			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * captain.get('Skills.BattleshipSkill1.modifiers.EngineValue'));
+			// expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * captain.get('Skills.BattleshipSkill2.modifiers.ArtilleryValue'));
+		});
 	});
 });
