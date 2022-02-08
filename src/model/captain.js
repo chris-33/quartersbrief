@@ -53,7 +53,7 @@ class Captain extends GameObject {
 	 * @throws Throws a TypeError if `ship` is not a `Ship` or if `ship.getSpecies()` returns a value
 	 * other than `destroyer`, `cruiser`, `battleship`, `aircarrier`, `submarine` or `auxiliary`.
 	 */
-	getTrainableSkills(ship) {
+	getLearnableForShip(ship) {
 		Ship.errorIfNotShip(ship);
 
 		let species = ship.getSpecies();
@@ -82,15 +82,20 @@ class Captain extends GameObject {
 	 * This is independent of a specific ship. A captain can have a variety of skills, pertaining
 	 * to different ship types. What skills to bring to effect is determined when actually 
 	 * taking command of a ship.
-	 * @param  {Captain.Skill|number} skill The skill to learn. Can either be a `Captain.Skill` or
-	 * a number, in which case the skill with that number will be retrieved and learned.
+	 * @param  {Captain.Skill|number|Array<Captain.Skill|number>} skill The skill to learn. Can be a `Captain.Skill` or
+	 * a number, in which case the skill with that number will be retrieved and learned. Can also be a (possibly mixed)
+	 * array of the above, in which all of the skills in the array will be learned.
 	 */
 	learn(skill) {
-		if (typeof skill === 'number')
-			skill = this.qb_skills.find(s => s.getSkillnumber() === skill);
+		if (!Array.isArray(skill)) skill = [skill];
 
-		if (!this.qb_learned.includes(skill))
-			this.qb_learned.push(skill);
+		for (let s of skill) {
+			if (typeof s === 'number')
+				s = this.qb_skills.find(x => x.getSkillnumber() === s);
+
+			if (!this.qb_learned.includes(s))
+				this.qb_learned.push(s);			
+		}
 	}
 
 	constructor(data) {

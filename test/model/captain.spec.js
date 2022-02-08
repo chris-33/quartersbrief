@@ -33,9 +33,9 @@ describe('Captain', function() {
 		captain = new Captain(clone(TEST_DATA));
 	});
 
-	describe('.getTrainableSkills', function() {
+	describe('.getLearnableForShip', function() {
 		it('should return only skills that are in the skill list for the ship\'s species', function() {
-			expect(captain.getTrainableSkills(ship)).to
+			expect(captain.getLearnableForShip(ship)).to
 				.be.an('array')
 				.with.deep.members([captain.get('Skills.BattleshipSkill1'), captain.get('Skills.BattleshipSkill2')]);	
 		});		
@@ -64,6 +64,13 @@ describe('Captain', function() {
 			expect(captain.qb_learned).to.have.lengthOf(1);
 		});
 
+		it('should learn all skills when passed an array of skills or numbers', function() {
+			let s1 = captain.qb_skills[0];
+			let s2 = captain.qb_skills[1];
+			expect(captain.qb_learned).to.be.empty;
+			captain.learn([s1, s2.getSkillnumber()]);
+			expect(captain.qb_learned).to.be.an('array').with.deep.members([s1, s2]);
+		});
 	});
 
 	describe('.getLearnedForShip', function() {
