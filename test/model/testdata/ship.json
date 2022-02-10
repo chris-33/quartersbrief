@@ -192,6 +192,7 @@
         "lockedConfig": [],
         "value": 1
     },
+    "permoflages": [ "PAEP001_Camouflage" ],
     "name": "PAAA001_Battleship",
     "index": "PAAA001",
     "id": 1,

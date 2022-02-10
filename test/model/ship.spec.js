@@ -2,6 +2,7 @@ import { Ship } from '../../src/model/ship.js';
 import { Modernization } from '../../src/model/modernization.js';
 import { Captain } from '../../src/model/captain.js';
 import { GameObject } from '../../src/model/gameobject.js';
+import { Camouflage } from '../../src/model/camouflage.js';
 import { Modifier } from '../../src/util/modifier.js';
 import sinon from 'sinon';
 import clone from 'just-clone';
@@ -170,7 +171,16 @@ describe('Ship', function() {
 			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB1_Engine.value);
 			ship.equipModules('top');
 			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(captain.get('Skills.BattleshipSkill1.modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);
-		})
+		});
+
+		it('should re-apply camouflage effects after changing module configuration', function() {
+			ship.equipModules('stock');
+			let camouflage = new Camouflage(JSON.parse(readFileSync('test/model/testdata/camouflage.json')));
+			ship.setCamouflage(camouflage);
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(camouflage.get('modifiers.EngineValue') * TEST_DATA.AB1_Engine.value);
+			ship.equipModules('top');
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(camouflage.get('modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);
+		});
 	});
 
 	describe('.equipModernization', function() {
@@ -227,7 +237,30 @@ describe('Ship', function() {
 			ship.setCaptain(captain);
 			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * captain.get('Skills.BattleshipSkill1.modifiers.EngineValue'));
-			// expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * captain.get('Skills.BattleshipSkill2.modifiers.ArtilleryValue'));
+			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * captain.get('Skills.BattleshipSkill2.modifiers.ArtilleryValue'));
+		});
+	});
+
+	describe('.setCamouflage', function() {
+		let camouflage;
+		let ship;
+	
+		beforeEach(function() {
+			ship = new Ship(TEST_DATA);
+			camouflage = new Camouflage(JSON.parse(readFileSync('test/model/testdata/camouflage.json')));
+		});
+
+		it('should throw if trying to set something that is not a Camouflage', function() {
+			expect(ship.setCamouflage.bind(ship, {})).to.throw();
+			expect(ship.setCamouflage.bind(ship, camouflage)).to.not.throw();
+		});
+
+		it('should apply the effects of the captain\'s learned skills', function() {
+			ship.equipModules('stock');
+			ship.setCamouflage(camouflage);
+			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * camouflage.get('modifiers.EngineValue'));
+			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * camouflage.get('modifiers.ArtilleryValue'));
 		});
 	});
 });

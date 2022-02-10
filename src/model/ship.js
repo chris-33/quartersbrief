@@ -3,6 +3,7 @@ import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
+import { Camouflage } from './camouflage.js';
 import { ComplexDataObject } from '../util/cdo.js';
 import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
@@ -43,6 +44,7 @@ class Ship extends GameObject {
 		Nation: 'typeinfo.nation',
 		Species: 'typeinfo.species',
 		Tier: 'level',
+		Permoflages: 'permoflages',
 		Speed: readthrough('Speed'),
 		Ruddershift: readthrough('Ruddershift'),
 		Health: readthrough('Health'),
@@ -73,6 +75,10 @@ class Ship extends GameObject {
 	 * The captain that is commanding this ship
 	 */
 	#captain;
+	/**
+	 * The camouflage that is set on this ship
+	 */
+	#camouflage;
 
 	/**
 	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
@@ -101,11 +107,13 @@ class Ship extends GameObject {
 	}
 
 	/**
-	 * @todo Support removing captains by setting them to null or undefined
-	 * @param {[type]} captain [description]
+	 * Sets the captain that is to command this ship, bringing all his learned eligible skills for this ship 
+	 * to bear.
+	 * @param {Captain} captain The captain that is to command the ship.
+	 * @throws Throws a `TypeError` if `captain` is not an instance of `Captain`.
 	 */
 	setCaptain(captain) {
-		if (!captain) throw new Error('Removing captains is not yet supported');
+		if (!captain) throw new Error('Removing captains is not yet supported'); // @todo Support removing captains by setting them to null or undefined
 
 		if (!(captain instanceof Captain)) throw new TypeError(`Expected a Captain, but got a ${captain}`);
 
@@ -119,6 +127,27 @@ class Ship extends GameObject {
 		}
 		this.#captain = captain;
 	}	
+
+	/**
+	 * Sets the camouflage for this ship and applies its effects.
+	 * @param {Camouflage} camouflage The camouflage to set. If the camouflage is not eligible,
+	 * nothing will be done.
+	 * @throws Throws a `TypeError` if `camouflage` is not an instance of `Camouflage`.
+	 */
+	setCamouflage(camouflage) {
+		if (!camouflage) throw new Error('Removing camouflages is not yet supported'); // @todo Support removing camouflages by setting them to null or undefined
+
+		if (!(camouflage instanceof Camouflage)) throw new TypeError(`Expected a Camouflage but got a ${camouflage}`);
+
+		// Don't equip if not eligible
+		if (!camouflage.eligible(this)) return;
+
+		// @todo Remove old camouflage's effects if ship was already under command
+		for (let modifier of camouflage.getModifiers())
+			modifier.applyTo(this);
+
+		this.#camouflage = camouflage;
+	}
 
 	/**
 	 * Equips a modernization (called upgrade in-game) by applying all its modifiers to the current
@@ -299,6 +328,12 @@ class Ship extends GameObject {
 			let captain = self.#captain;
 			self.#captain = null;
 			self.setCaptain(captain);
+		}
+		// Re-apply the effects of the camouflage
+		if (self.#camouflage) {
+			let camouflage = self.#camouflage;
+			self.#camouflage = null;
+			self.setCamouflage(camouflage);
 		}
 	}
 
@@ -530,6 +565,14 @@ Ship.ModuleConfiguration =  class extends ComplexDataObject {
 			}
 	}
 }
+
+/**
+ * @name Ship#getPermoflages
+ * @function
+ * @memberof Ship
+ * Get a list of permanent camouflages that are mountable on this ship.
+ * @return {Array} An array of permanent camouflages.
+ */
 
 
 
