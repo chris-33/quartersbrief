@@ -1,6 +1,6 @@
 module.exports = {
 	dist : {
-		src: ['src/**/*.js'],
+		src: ['src/**/*.js','obj_formats/**/*'],
 		dest: 'docs',
 		options: {
 			verbose: true,

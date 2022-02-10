@@ -1,0 +1,267 @@
+/**
+ * @namespace Ship.gamedata
+ * @name Ship.gamedata
+ * @description
+ * 
+ * Ships consist of some general data and a number of top-level objects that contain module definitions.
+ * Their general data is as follows:
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * level | number | Tier
+ * permoflages | Array | The permament camouflages this ship can mount.
+ * typeinfo.type | string | Always "Ship".
+ * typeinfo.species | string | The type of ship. One of "Battleship", "Cruiser", "Destroyer", "AirCarrier" or "Submarine"
+ * typeinfo.nation | string | The nation this ship belongs to.
+ *
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name ShipAbilities
+ * @instance
+ * @description 
+ * The top-level object `ShipAbilities` defines the ship's consumable choices. Under keys of the form "AbilitySlot0"..."AbilitySlot_N_"
+ * are objects that are composed as follows:
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * abils|Array       | Array of consumable definitions
+ * &emsp; abils[_n_][0]|string| The name of the consumable
+ * &emsp; abils[_n_][1]|string| The flavor (variety) of the consumable.
+ * slot | number | The slot the consumables defined in this object occupy
+ * 
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name ShipUpgradeInfo
+ * @instance
+ * @description
+ * The top-level object `ShipUpgradeInfo` defines the ship's resesarch progression through equippable modules. These modules are arranged
+ * into a forest by virtue of their `prev` attribute (see table). Module definitions are objects of the following form:
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * canBuy|boolean|Presumably, whether this upgrade is presented to the player or not. It might be a way to switch modules off without having to actually remove them from the game files.
+ * components|Object|A set of key-value pairs defining how the upgrade changes the ship. <br/>The **key** identifies the component that is being changed, e.g. `artillery`, `engine`, etc.<br/>The `value` is an array of component definition names defining which definitions this ship can have with this module equipped.
+ * disabledAbilities|Array|An array of consumables that are disabled with this module equipped. (Fletcher, for example, does not have the Defensive AA Fire consumable on the stock hull.)
+ * nextShips|Array|The reference names of ships that become researchable upon unlocking this module.
+ * prev|String|The name of the module that must be researched in order for this module to become researchable. A value of `''` means that this module is researched upon acquisition of the ship.
+ * ucType|String|The nature or "type" of this upgrade.
+ *
+ * A module may change more than one component - in fact, especially for hull upgrades it is common to do so. In most cases, the array defining a component change 
+ * in a module contains only one item - equipping the module directly results in using that item. The definition 
+ * ```
+ * components: {
+ *     artillery: [ "AB1_Artillery" ]
+ * }
+ * ```
+ * means that whenever this module is equipped, the artillery will be "AB1_Artillery". However, there are cases where a component definition has more than one item. In this case,
+ * there must be a combination of other modules of a different `ucType` that narrows this down to one. Consider the example of PRSC103_Bogatyr. Bogatyr has the following module definitions
+ * (excerpted and pseudo-coded):
+ * ```
+ * Hull_A: components: artillery: [ "A1_Artillery", "A2_Artillery" ]
+ * Hull_B: components: artillery: [ "B1_Artillery", "B2_Artillery" ]
+ * Art_Stock: components: artillery: [ "A1_Artillery", "B1_Artillery" ]
+ * Art_Top: components: artillery: [ "B1_Artillery", "B2_Artillery" ]
+ * ```
+ * Which artillery component to use gets decided by the combination of hull and artillery module. That component arrays can always be intersected to length one
+ * is checked at application startup invariant checking.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Hull component
+ * @instance
+ * @description
+ * Contains a definition for the ship's hull.
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * armor|Object|A mapping of (presumably) indices of parts of the ship's 3D model to armor thicknesses in millimeters. Some of these values are usually 0.
+ * health|number|The HP pool of the ship.
+ * maxSpeed|number (knots)|The maximum speed the ship can achieve with this hull. Is subject to modification by the engine component.
+ * rudderTime|number (seconds?)|Unknown. At any rate, it is _not_ the rudder shift time in seconds, as values appearing here are consistently too high. @reveng
+ * turningRadius|number (meters)|Size of the ship's turning circle.
+ * visibilityFactor|number (kilometers)|Concealment by sea
+ * visibilityFactorByPlan|number (kilometers)|Concealment by air
+ * visibilityfactorsBySubmarine|number (kilometers)|Presumably the concealment against submarines at different depths. @reveng
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Artillery component
+ * @instance
+ * @description
+ * Contains a definition for the ship's main guns. 
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * maxDist|number (meters)|The maximum base range of the guns. This is modified by the fireControl component.
+ * sigmaCount|number|The ship's sigma value.
+ *
+ * The individual turrets are defined as objects within the component, usually following the naming convention `HP_` followed by a letter 
+ * denoting the nation, a `G` for "Gun", and an `M` for "Main", then another underscore and a number denoting the turret.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * ammoList|Array|The names of the different shell types this ship can fire.
+ * barrelDiameter|number (meters)|The caliber of the guns, given in meters. Thus, a caliber of 40.6cm is given as 0.406.
+ * horizSector|Array|The firing arc of the turret, given in degrees to port (negative) and starboard (positive) of dead ahead.
+ * numBarrels|number|The number of barrels of the turret.
+ * rotationSpeed|Array|First array element is turret traverse speed in degrees per second. Unknown why this is an array, and what the second value is.
+ * shotDelay|number (seconds)|The reload time of this turret.
+ * typeinfo.type|string|Always 'Gun'.
+ * typeinfo.species|string|Always 'Main'.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Torpedo component
+ * @instance
+ * @description
+ * Contains a definition for the ship's torpedo armament. Launchers are in objects within the component, usually following the naming convention `HP_`
+ * followed by a letter denoting the nation, a `G` for "Gun" and a `T` for "Torpedo", then another underscore and a number denoting the launcher.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * barrelDiameter|number (meters)|The caliber of the launcher in meters. Thus, a 533mm torpedo launcher will have a value of 0.533.
+ * deadZone|Array|The dead zone at the bow of the ship that must be "stenciled out" of the launcher's `horizSector`, given in degrees port (negative) and starboard (positive).
+ * horizSector|Array|The weapon arc of this launcher, given in degrees port (negative) and starboard (positive). See `deadZone`.
+ * numBarrels|number|The number of individual tubes to this launcher.
+ * shotDelay|number (seconds)|The reload time of this launcher.
+ * torpedoAngles|Array|The spread angle settings in degrees.
+ * typeinfo.type|String|Always "Gun"
+ * typeinfo.species|String|Always "Torpedo"
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name ATBA component
+ * @instance
+ * @description
+ * Contains a definition for the ship's secondary batteries. This largely follows the format of main batteries. It is unknown what the
+ * abbreviation "ATBA" stands for.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * maxDist|number (meters)|Maximum range.
+ * sigmaCount|number|Sigma value of secondaries.
+ *
+ * The individual mounts are defined as objects within the component, usually following the naming convention `HP_` followed by a letter 
+ * denoting the nation, a `G` for "Gun", and an `S` for "Secondary", then another underscore and a number denoting the mount.
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * ammoList|Array|The shell type the gun fires. For secondaries, this array will only ever contain one item.
+ * barrelDiameter|number (meters)|The caliber of the gun.
+ * horizSector|Array|The firing arc of the gun.
+ * numBarrels|number|The number of barrels to the gun.
+ * rotationSpeed|Array|Presumably the rotation speed of the gun, following the same format as for the main guns.
+ * shotDelay|number (seconds)|The reload time of the gun.
+ * typeinfo.type|string|Always "Gun"
+ * typeinfo.species|string|Always "Secondary"
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name FireControl component
+ * @instance
+ * @description
+ * Contains a definition for the ship's fire control devices.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * maxDistCoef|number|The factor with which to multiply the main guns' base range to get the actual max range: `actualMaxRange = artillery.maxDist * maxDistCoef`.
+ * sigmaCountCoef|number|Presumable a factor with which to multiply the main guns' sigma value.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Engine component
+ * @instance
+ * @description
+ * Contains a definition for the ship's engine.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * backwardEngineUpTime|number (seconds?)|Presumably the number of seconds it takes to reach full backward power from stop.
+ * forwardEngineUpTime|number (seconds?)|Presumable the number of seconds it takes to reach full forward power from stop.
+ * speedCoef|number|A percentage to deduct from the ship's hull's maximum speed to give the actual maximum speed: `actualMaxSpeed = hull.maxSpeed * (1 - speedCoef)`.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name DeptChargeGun component
+ * @instance
+ * @description
+ * Contains a definition for the ship's onboard depth charge launchers. Much of this component remains unknown at this time and will need to be
+ * reverse engineered more once submarines and their counterplay have reached a stable form.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * maxPacks|number|Presumably the number of attacks that can be loaded simultaneously, unless that is `numShots`.
+ * numShots|number|Presumably the number of attacks that can be loaded simultaneously, unless that is `maxPacks`.
+ * reloadTime|number (seconds)|The reload time for a single depth charge run.
+ * 
+ * Individual launchers are defined as objects within the component, following the naming
+ * convention of `HP_` followed by a letter for the nation, a `G` for "Gun" and a `B` for (presumably) "Bomb", followed by another underscore and a 
+ * sequential number.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * ammoList|Array|The depth charge types that can be loaded.
+ * numBombs|number|Presumably the number of bombs to the launcher.
+ * typeinfo.type|String|Always "Gun"
+ * typeinfo.species|String|Always "DCharge"
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name AirSupport component
+ * @instance
+ * @description
+ * Contains a definition for the ship's _external_ air support. Most commonly these are ASW depth charge strikes, but it also includes the 
+ * HE bomb strikes of the Dutch cruisers.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * chargesNum|number|The number of flights that can be called in at the same time.
+ * maxDist|number (meters)|The farthest the strike can be conducted from the ship.
+ * minDist|number (meters)|The closest the strike can be conducted from the ship.
+ * planeType|String|Reference name of the plane comprising the strike.
+ * reloadTime|number (seconds)|The reload time of an individual strike.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name AirArmament component
+ * @instance
+ * @description
+ * Contains a definition for the ship's organic air support launch facilities. Appears to be cosmetic in nature.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Radars component
+ * @instance
+ * @description
+ * Appears to be cosmetic only.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Directors component
+ * @instance
+ * @description
+ * Appears to be cosmetic only.
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Finders component
+ * @instance
+ * @description
+ * Appears to be cosmetic only.
+ */
