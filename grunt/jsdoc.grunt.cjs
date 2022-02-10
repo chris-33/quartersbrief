@@ -1,6 +1,6 @@
 module.exports = {
 	dist : {
-		src: ['src/**/*.js','obj_formats/**/*'],
+		src: ['src/**/*.js','gamedata-jsdoc/**/*'],
 		dest: 'docs',
 		options: {
 			verbose: true,
