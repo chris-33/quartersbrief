@@ -4,6 +4,7 @@ import { Ship } from './ship.js';
 import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
+import { Camouflage } from './camouflage.js';
 
 /**
  * @see GameObject
@@ -144,7 +145,8 @@ class GameObjectFactory {
 			'Ship': Ship,
 			'Modernization': Modernization,
 			'Ability': Consumable,
-			'Crew': Captain
+			'Crew': Captain,
+			'Exterior': Camouflage
 		}[gameObject.typeinfo.type];
 
 		if (!Constructor) Constructor = GameObject;
