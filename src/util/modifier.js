@@ -51,6 +51,16 @@ class Modifier {
 	}
 
 	/**
+	 * Returns a new modifier that has the same target but the inverse value of this modifier. Applying 
+	 * that modifier will negate the effects of this modifier.
+	 * @return {Modifier} A `Modifier` that will negate the effects of the modifier that `invert` was 
+	 * called on.
+	 */
+	invert() {
+		return new Modifier(this.target, 1 / this.value);
+	}
+
+	/**
 	 * Applies this modifier to the given `ship`. If this modifier's `value` is an object, the value
 	 * for the `ship`'s species will be used. It is not an error for the modifier's target to be 
 	 * undefined or `null`, in this case this method just has no effect.

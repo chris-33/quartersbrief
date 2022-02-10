@@ -24,6 +24,23 @@ describe('Modifier', function() {
 		});
 	});
 
+	describe('.invert', function() {
+		it('should have 1 / value as its value', function() {
+			const value = 5;
+			let modifier = new Modifier('target', value);
+			expect(modifier.invert().value).to.equal(1 / value);
+		});
+
+		it('should negate the effects of the original modifier when applying', function() {
+			let ship = new Ship(clone(SHIPDATA));
+			let modifier = new Modifier('engine.value', 2);
+			let val = ship.getCurrentConfiguration().get('engine.value');
+			modifier.applyTo(ship);
+			modifier.invert().applyTo(ship);
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(val);
+		})
+	});
+
 	describe('.applyTo', function() {
 		it('should throw only if trying to apply to something other than a ship, or if the value is not a number or a mapping from species to number', function() {
 			// Check that it errors when trying to apply to anything other than a ship
