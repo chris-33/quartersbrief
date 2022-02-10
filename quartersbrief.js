@@ -17,7 +17,8 @@ const HELPTEXT = 'Known commands:\n' +
 '		upgrade <upgrade>\t\tEquip an upgrade on the current ship. <upgrade> can be a numeric ID, a reference code, or a reference name\n' +
 '		captain <captain>\t\t\tSet the current captain to <captain>\n'+
 '		learn <skill>\t\t\tLearn skill <skill> on the current captain. <skill> must be the number (skillType)\n' +
-'		command \t\t\t Set the current captain to take command of the current ship\n';
+'		command \t\t\t Set the current captain to take command of the current ship\n' +
+'		camo <camouflage> \t\t\t Set the current ship\' camouflage to <camouflage>\n' +
 '		stat <property>\t\t\tPrint the value for the current ship\'s property, considering all equipped modules, upgrades and captain skills\n' + 
 '		help \t\t\t Print this text\n' + 
 '		exit \t\t\t Exit this program';
@@ -69,6 +70,13 @@ readline.on('line', function(input) {
 		case 'command':
 			ship.setCaptain(captain);
 			console.log(`Captain ${captain.name} set to command ship ${ship.name}`);
+			break;
+		case 'camo':
+			let camouflage = gameObjectFactory.createGameObject(param);
+			if (ship.setCamouflage(camouflage)) 
+				console.log(`Set camouflage ${camouflage.getName()} on ship ${ship.getName()}`);
+			else
+				console.log(`Ship ${ship.getName()} is not eligible for camouflage ${camouflage.getName()}`);
 			break;
 		case 'stat': 
 			console.log(`Value is ${ship['get' + param].call(ship)}`);
