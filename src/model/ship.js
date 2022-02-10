@@ -132,6 +132,7 @@ class Ship extends GameObject {
 	 * Sets the camouflage for this ship and applies its effects.
 	 * @param {Camouflage} camouflage The camouflage to set. If the camouflage is not eligible,
 	 * nothing will be done.
+	 * @returns `True` if the camouflage was mounted, `false` otherwise. 
 	 * @throws Throws a `TypeError` if `camouflage` is not an instance of `Camouflage`.
 	 */
 	setCamouflage(camouflage) {
@@ -140,13 +141,14 @@ class Ship extends GameObject {
 		if (!(camouflage instanceof Camouflage)) throw new TypeError(`Expected a Camouflage but got a ${camouflage}`);
 
 		// Don't equip if not eligible
-		if (!camouflage.eligible(this)) return;
+		if (!camouflage.eligible(this)) return false;
 
 		// @todo Remove old camouflage's effects if ship was already under command
 		for (let modifier of camouflage.getModifiers())
 			modifier.applyTo(this);
 
 		this.#camouflage = camouflage;
+		return true;
 	}
 
 	/**
@@ -156,6 +158,7 @@ class Ship extends GameObject {
 	 * The already equipped upgrades are tracked. If the modernization is already equipped, nothing
 	 * will happen.
 	 * @param  {Modernization} modernization The modernization to equip
+	 * @returns `True` if the modernization was equipped, `false` otherwise. 
 	 * @throws 
 	 * Throws a `TypeError` if `modernization` is not a `Modernization`.
 	 */
@@ -167,7 +170,7 @@ class Ship extends GameObject {
 		
 		// Don't equip if already equipped or not eligible
 		if (self.#modernizations.some(equipped => equipped.getName() === modernization.getName()) || !modernization.eligible(self))
-			return;
+			return false;
 
 		let modifiers = modernization.getModifiers();
 		for (let modifier of modifiers) {
@@ -175,6 +178,7 @@ class Ship extends GameObject {
 		}
 		// Remember that it is already equipped now
 		self.#modernizations.push(modernization);
+		return true;
 	}
 
 	// @todo unequipModernization(modernization)

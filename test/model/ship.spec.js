@@ -201,6 +201,14 @@ describe('Ship', function() {
 			expect(ship.equipModernization.bind(ship, {})).to.throw();
 		});
 
+		it('should return true if the modernization was equipped, false otherwise', function() {
+			expect(ship.equipModernization(modernization)).to.be.true;
+			// Should not mount more than once
+			expect(ship.equipModernization(modernization)).to.be.false;
+			modernization.eligible.returns(false);
+			expect(ship.equipModernization(modernization)).to.be.false;
+		});
+
 		it('should apply the modernization effects', function() {
 			ship.equipModernization(modernization);
 			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
@@ -255,7 +263,16 @@ describe('Ship', function() {
 			expect(ship.setCamouflage.bind(ship, camouflage)).to.not.throw();
 		});
 
-		it('should apply the effects of the captain\'s learned skills', function() {
+		it('should return true if the camouflage was set, false otherwise', function() {
+			let eligible = sinon.stub(camouflage, 'eligible').returns(true);
+			try {
+				expect(ship.setCamouflage(camouflage)).to.be.true;
+				eligible.returns(false);
+				expect(ship.setCamouflage(camouflage)).to.be.false;
+			} finally { eligible.restore(); }
+		});
+
+		it('should apply the effects of the camouflage', function() {
 			ship.equipModules('stock');
 			ship.setCamouflage(camouflage);
 			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
