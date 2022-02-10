@@ -1,0 +1,121 @@
+/**
+ * @namespace Captain.gamedata
+ * @name Captain.gamedata
+ * @description
+ * 
+ * Captains (called "commanders" in game and "crew" in the game data files) can learn a variety of skills to boost ship's characteristics.
+
+ * Their general data is as follows:
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * CrewPersonality.ships|Object|Presumably restricts which ships this captain can be assigned to, but more research is needed.
+ * Skills|Object|The skills the captain can learn. See below.
+ * UniqueSkills|Object|The unique skills a legendary commander possesses.
+ * Vanity|Object|Cosmetic in nature.
+ * typeinfo.type|String|Always "Crew".
+ */
+
+/**
+ * @memberof Captain.gamedata
+ * @name Skills
+ * @instance
+ * @description 
+ * The top-level object `Skills` contains definitions for all learnable skills of the captain. Each skill is an object of the following form:
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * LogicTrigger|Object|Conditional effects
+ * LogicTrigger.modifiers|Object|Key-value pairs describing the effects the skill has once its activation conditions are met.
+ * modifiers|Object|Key-value pairs describing the effects the skill has on the ship. Presumed to always be factors.
+ * skillType|number|A serial number of the skill. As such, "skillType" is a bit of a misnomer. In particular, the skillType seems to carry no inherent information about which ships the skill can be learned on.
+ * tier|Object|The level the skill sits at for different ship types (DD, BB, ...); equates to the points it takes to learn the skill.
+ *
+ * Unfortunately, the names of the skills within the files differ vastly from their in-game names. They translate as follows:
+ * 
+ * Name in file|Name in game
+ * --- | ---
+ * AaDamageConstantBubbles|AA Defense and ASW Expert
+ * AaDamageConstantBubblesCv|Secondary Armament Expert
+ * AaPrioritysectorDamageConstant|Focus Fire Training
+ * ApDamageBb|Super-Heavy AP Shells
+ * ApDamageCa|Super-Heavy AP Shells
+ * ApDamageDd|Extra-Heavy Ammunition
+ * ArmamentReloadAaDamage|Adrenaline Rush
+ * ArmamentReloadSubmarine|Adrenaline Rush
+ * AtbaAccuracy|Manual Secondary Battery Aiming
+ * AtbaRange|Long-Range Secondary Battery Shells
+ * AtbaUpgrade|Close Quarters Expert
+ * ConsumablesAdditional|Superintendent
+ * ConsumablesCrashcrewRegencrewReload|Emergency Repair Specialist
+ * ConsumablesCrashcrewRegencrewUpgrade|Emergency Repair Expert
+ * ConsumablesDuration|Consumables Enhancements
+ * ConsumablesFighterAdditional|Direction Center for Fighters
+ * ConsumablesReload|Consumables Specialist
+ * ConsumablesSpotterUpgrade|Eye in the Sky
+ * DefenceCritFireFlooding|Basics of Survivability
+ * DefenceFireProbability|Fire Prevention
+ * DefenceUw|Improved Repair Party Readiness
+ * DefenseCritProbability|Preventive Maintenance
+ * DefenseHp|Survivability Expert
+ * DetectionAiming|Priority Target
+ * DetectionAlert|Incoming Fire Alert
+ * DetectionDirection|Radio Location
+ * DetectionTorpedoRange|Vigilance
+ * DetectionVisibilityCrashcrew|Hidden Menace
+ * DetectionVisibilityRange|Concealment Expert
+ * GmRangeAaDamageBubbles|Main Battery and AA Expert
+ * GmReloadAaDamageConstant|Main Battery and AA Specialist
+ * GmShellReload|Gun Feeder
+ * GmTurn|Grease the Gears
+ * HeFireProbability|Demolition Expert
+ * HeFireProbabilityCv|Pyrotechnician
+ * HePenetration|Inertia Fuse for HE Shells
+ * HeSapDamage|Heavy HE and SAP Shells
+ * Maneuverability|Last Stand
+ * PlanesAimingBoost|Sight Stabilization
+ * PlanesApDamage|Enhanced Armor-Piercing Ammunition
+ * PlanesConsumablesCallfightersAdditional|Patrol Group Leader
+ * PlanesConsumablesCallfightersPreparationtime|Enhanced Reactions
+ * PlanesConsumablesCallfightersRange|Search and Destroy
+ * PlanesConsumablesCallfightersUpgrade|Interceptor
+ * PlanesConsumablesRegeneratehealthUpgrade|Repair Specialist
+ * PlanesConsumablesSpeedboosterReload|Engine Techie
+ * PlanesDefenseDamageBubbles|Enhanced Aircraft Armor
+ * PlanesDefenseDamageConstant|Aircraft Armor
+ * PlanesDivebomberSpeed|Bomber Flight Control
+ * PlanesForsageDuration|Improved Engine Boost
+ * PlanesForsageRenewal|Last Gasp
+ * PlanesHp|Survivability Expert
+ * PlanesReload|Air Supremacy
+ * PlanesSpeed|Improved Engines
+ * PlanesTorpedoArmingrange|Torpedo Bomber
+ * PlanesTorpedoSpeed|Swift Fish
+ * PlanesTorpedoUwReduced|Proximity Fuze
+ * SubmarineBatteryBurnDown|Improved Battery Efficiency
+ * SubmarineBatteryCapacity|Improved Battery Capacity
+ * SubmarineConsumablesDuration|Consumables Enhancement
+ * SubmarineConsumablesReload|Consumables Specialist
+ * SubmarineDangerAlert|Watchful
+ * SubmarineHoldSectors|Sonarman
+ * SubmarineSpeed|Enlarged Propeller Shaft
+ * SubmarineTorpedoPingDamage|Torpedo Aiming Master
+ * TorpedoDamage|Enhanced Torpedo Explosive Charge
+ * TorpedoFloodingProbability|Liquidator
+ * TorpedoReload|Fill the Tubes
+ * TorpedoSpeed|Swift Fish
+ * TriggerBurnGmReload|Furious
+ * TriggerConsRudderTimeCoeff|Helmsman
+ * TriggerConsSonarTimeCoeff|Sonarman Expert
+ * TriggerGmAtbaReloadBb|Close Quarters Combat
+ * TriggerGmAtbaReloadCa|Top Grade Gunner
+ * TriggerGmReload|Fearless Brawler
+ * TriggerPingerReloadBuff|Enhanced Sonar
+ * TriggerPingerSpeedBuff|Enhanced Impulse Generator
+ * TriggerSeenTorpedoReload|Torpedo Crew Training
+ * TriggerSpeed|Swift in Silence
+ * TriggerSpeedAccuracy|Outnumbered
+ * TriggerSpeedBb|Brisk
+ * TriggerSpreading|Dazzle
+ */
+
