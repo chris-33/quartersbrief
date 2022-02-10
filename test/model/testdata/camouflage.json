@@ -1,0 +1,14 @@
+{
+    "id": 4,
+    "index": "PAEP001",
+    "modifiers": {
+        "EngineValue": 2,
+        "ArtilleryValue": 3
+    },
+    "name": "PAEP001_Camouflage",
+    "typeinfo": {
+        "nation": "USA",
+        "species": "Permoflage",
+        "type": "Exterior"
+    }	
+}
