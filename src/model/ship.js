@@ -113,14 +113,21 @@ class Ship extends GameObject {
 	 * @throws Throws a `TypeError` if `captain` is not an instance of `Captain`.
 	 */
 	setCaptain(captain) {
-		if (!captain) throw new Error('Removing captains is not yet supported'); // @todo Support removing captains by setting them to null or undefined
+		if (captain && !(captain instanceof Captain)) throw new TypeError(`Expected a Captain, but got a ${captain}`);
 
-		if (!(captain instanceof Captain)) throw new TypeError(`Expected a Captain, but got a ${captain}`);
+		// Remove old captain's effects if ship was already under command
+		if (this.#captain) {
+			let skills = this.#captain.getLearnedForShip(this);
+			for (let skill of skills) {
+				let modifiers = skill.getModifiers();
+				for (let modifier of modifiers) modifier.invert().applyTo(this);
+			}
+		}
 
-		// @todo Remove old captain's effects if ship was already under command
 		// @todo Apply skills even if learned after setting the captain. (-> Observer pattern)
 
-		let skills = captain.getLearnedForShip(this);
+		// Get captain skills, if captain is set. If being set to null, default to empty array
+		let skills = captain?.getLearnedForShip(this) ?? []; 
 		for (let skill of skills) {
 			let modifiers = skill.getModifiers();
 			for (let modifier of modifiers) modifier.applyTo(this);
@@ -129,23 +136,30 @@ class Ship extends GameObject {
 	}	
 
 	/**
-	 * Sets the camouflage for this ship and applies its effects.
+	 * Sets the camouflage for this ship and applies its effects. If another camouflage was previously
+	 * set, its effects will be removed.
 	 * @param {Camouflage} camouflage The camouflage to set. If the camouflage is not eligible,
-	 * nothing will be done.
+	 * nothing will be done. Passing a value of `null` or `undefined` or any other falsy value will
+	 * remove a previously set camouflage.
 	 * @returns `True` if the camouflage was mounted, `false` otherwise. 
 	 * @throws Throws a `TypeError` if `camouflage` is not an instance of `Camouflage`.
 	 */
 	setCamouflage(camouflage) {
-		if (!camouflage) throw new Error('Removing camouflages is not yet supported'); // @todo Support removing camouflages by setting them to null or undefined
-
-		if (!(camouflage instanceof Camouflage)) throw new TypeError(`Expected a Camouflage but got a ${camouflage}`);
+		if (camouflage && !(camouflage instanceof Camouflage)) throw new TypeError(`Expected a Camouflage but got a ${camouflage}`);
 
 		// Don't equip if not eligible
-		if (!camouflage.eligible(this)) return false;
+		if (camouflage && !camouflage.eligible(this)) return false;
 
-		// @todo Remove old camouflage's effects if ship was already under command
-		for (let modifier of camouflage.getModifiers())
-			modifier.applyTo(this);
+		// Remove the effects of the previously set camouflage, if any
+		if (this.#camouflage) {
+			let modifiers = this.#camouflage.getModifiers();
+			for (let modifier of modifiers)
+				modifier.invert().applyTo(this);
+		}
+
+		if (camouflage)
+			for (let modifier of camouflage.getModifiers())
+				modifier.applyTo(this);
 
 		this.#camouflage = camouflage;
 		return true;
@@ -181,7 +195,32 @@ class Ship extends GameObject {
 		return true;
 	}
 
-	// @todo unequipModernization(modernization)
+	/**
+	 * Unequips the modernization, if it was previously equipped, and removes all its effects from this ship.
+	 * @param  {Modernization} modernization The modernization to unequip.
+	 * @return {boolean} `True` if the modernization was previously equipped, `false` otherwise.
+	 * Throws a `TypeError` if `modernization` is not a `Modernization`.
+	 */
+	unequipModernization(modernization) {
+		if (!(modernization instanceof Modernization))
+			throw new TypeError(`Tried to unequip ${modernization} but it is not a Modernization`);
+		
+		
+		// Need to find the modernization by ID first because the object references might not be the same
+		let index = this.#modernizations.findIndex(equipped => equipped.getID() === modernization.getID());
+		
+		// Don't equip if already equipped or not eligible
+		if (index === -1)
+			return false;
+
+		// Remove the effects of the modernization
+		let modifiers = this.#modernizations[index].getModifiers();
+		for (let modifier of modifiers)
+			modifier.invert().applyTo(this);
+
+		this.#modernizations.splice(index, 1);
+		return true;
+	}
 
 	/**
 	 * Applies the module configuration designated by `descriptor` to the ship.

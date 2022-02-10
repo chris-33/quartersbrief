@@ -223,6 +223,37 @@ describe('Ship', function() {
 		});
 	});
 
+	describe('.unequipModernization', function() {
+		let modernization;
+		let ship;
+	
+		beforeEach(function() {
+			ship = new Ship(TEST_DATA);
+			modernization = new Modernization(JSON.parse(readFileSync('test/model/testdata/modernization.json')));
+			sinon.stub(modernization, 'eligible').returns(true);
+			ship.equipModernization(modernization);
+		});
+
+		afterEach(function() {
+			modernization.eligible.restore();
+		});
+
+		it('should throw if trying to unequip something that is not a Modernization', function() {
+			expect(ship.unequipModernization.bind(ship, {})).to.throw();
+		});
+
+		it('should return true if the modernization was previously equipped, false otherwise', function() {
+			expect(ship.unequipModernization(modernization)).to.be.true;
+			expect(ship.unequipModernization(modernization)).to.be.false;
+		});
+
+		it('should negate the modernization effects', function() {
+			ship.unequipModernization(modernization);
+			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
+			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value);
+		});
+	});
+
 	describe('.setCaptain', function() {
 		let captain;
 		let ship;
@@ -247,6 +278,27 @@ describe('Ship', function() {
 			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * captain.get('Skills.BattleshipSkill1.modifiers.EngineValue'));
 			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * captain.get('Skills.BattleshipSkill2.modifiers.ArtilleryValue'));
 		});
+
+		it('should revert the effects learned skills of any captain previously in command', function() {
+			let captain1 = new Captain(captain);
+			let captain2 = new Captain(captain);
+
+			captain1.learn(1);
+			captain2.learn(2);
+
+			let engineValue = ship.getCurrentConfiguration().get('engine.value');
+			ship.setCaptain(captain1);
+			ship.setCaptain(captain2);
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(engineValue);
+		});
+
+		it('should remove a previously set camouflage when setting to null', function() {
+			let engineValue = ship.getCurrentConfiguration().get('engine.value');
+			ship.setCaptain(captain);
+			ship.setCaptain(null);
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(engineValue);
+		});
+
 	});
 
 	describe('.setCamouflage', function() {
@@ -270,6 +322,24 @@ describe('Ship', function() {
 				eligible.returns(false);
 				expect(ship.setCamouflage(camouflage)).to.be.false;
 			} finally { eligible.restore(); }
+		});
+
+		it('should revert the effects of any previously set camouflage', function() {
+			let camouflage1 = new Camouflage(camouflage);
+			camouflage1.set('modifiers', [ new Modifier('engine.value', 2) ]);
+			let camouflage2 = new Camouflage(camouflage);
+			camouflage2.set('modifiers', [ new Modifier('artillery.value', 3) ]);
+			let engineValue = ship.getCurrentConfiguration().get('engine.value');
+			expect(ship.setCamouflage(camouflage1)).to.be.true;
+			expect(ship.setCamouflage(camouflage2)).to.be.true;
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(engineValue);
+		});
+
+		it('should revert the effects of a previously set camouflage when setting to null', function() {
+			let engineValue = ship.getCurrentConfiguration().get('engine.value');
+			ship.setCamouflage(camouflage);
+			ship.setCamouflage(null);
+			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(engineValue);
 		});
 
 		it('should apply the effects of the camouflage', function() {
