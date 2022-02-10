@@ -1,0 +1,48 @@
+/**
+ * @namespace Ability.gamedata
+ * @name Ability.gamedata
+ * @description
+ * 
+ * Abilities (called "consumables" in-game) give a ship time-limited special capabilities. While there is only
+ * a few different kinds of consumables, their characteristics can vary greatly from ship to ship. These "flavors" are stored
+ * as top-level objects in the consumable.
+ *
+ * Their general data is as follows:
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * typeinfo.type|String|Always "Ability"
+ * typeinfo.species|String|`null`
+ */
+
+/**
+ * @memberof Ability.gamedata
+ * @name Consumable flavor definition
+ * @instance
+ * @description 
+ *
+ * Consumable flavors have the following properties:
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * consumableType|String|Identifies the kind of consumable.
+ * group|String|Either "ship" or "squadron", depending on whether this is a ship- or airborne consumable.
+ * numConsumables|number|The number of charges the consumable has.
+ * reloadTime|number (seconds)|How much time has to elapse between consumable activations.
+ * workTime|number (seconds)|How long the effects of the consumable last once activated.
+ *
+ * In addition, they have some consumable-specific properties:
+ *
+ * **Radar** (consumableType rls)
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * distShip|number (30m)|The radar range in thirties of meters.
+ *
+ * **Hydro** (consumableType sonar)
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * distShip|number (30m)|The hydro range against ships in thirties of meters.
+ * distTorpedo|number (30m)|The hydro range against torpedoes in thirties of meters.
+ */
