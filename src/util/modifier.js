@@ -28,6 +28,7 @@ class Modifier {
 		visibilityDistCoeff: 'hull.visibilityFactor', // PCM027_ConcealmentMeasures_Mod_I				
 	
 		// Everything up to PCM035_SteeringGear_Mod_III
+		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 	}
 
 	/**
@@ -71,7 +72,10 @@ class Modifier {
 		ship.getCurrentConfiguration().multiply(this.target, value, options ?? { collate: false });
 	}
 
-
+	/** 
+	 * Constructs a `Modifier` object whose `target` is the result of looking up the `key` in the list of
+	 * well-known targets {@link Modifier#KNOWN_TARGETS} and whose value is `data`.
+	 */
 	static from(key, data) {
 		let target = Modifier.KNOWN_TARGETS[key];
 
