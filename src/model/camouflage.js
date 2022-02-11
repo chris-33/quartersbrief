@@ -16,7 +16,7 @@ class Camouflage extends GameObject {
 	 * An expendable camouflage can be mounted on any ship. A permanent camouflage can only be mounted on a ship
 	 * if it is listed as a valid camouflage by that ship, as per {@link Ship#getPermoflages}.
 	 * @param  {Ship} ship The ship for which to check.
-	 * @return {[type]}      `True` if `ship` can mount this camouflage, `false` otherwise.
+	 * @return {boolean}      `True` if `ship` can mount this camouflage, `false` otherwise.
 	 * @throws Throws a `TypeError` if `ship` is not a `Ship`.
 	 */
 	eligible(ship) {

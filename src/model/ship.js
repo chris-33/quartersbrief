@@ -16,11 +16,13 @@ function readthrough(property) {
 
 
 /**
- * This class represents a ship within the game. Ships are complex objects by themselves, made even more 
- * complicated by the fact that they are the targets of many modifications by upgrades and captain
- * skills.
+ * This class represents a ship within the game. Ships have some core characteristics (e.g. their tier or nation), but the
+ * bulk of their performance characteristics are defined in the form of equippable modules. These characteristics are then
+ * subject to modification by {@link Modernization}s, a {@link Captain} and a {@link Camouflage}.
  *
- * ## Modules
+ * 
+ *
+ * ### Modules
  * 
  * A ship can usually exist in several different configurations through the application of modules. In
  * game, modules can be researched for XP and equipped for credits. Each subsequent module becomes 
@@ -32,8 +34,54 @@ function readthrough(property) {
  * There are still legacy ship definitions in the game data (e.g. PJSD007_Fubuki_1944) that follow the old
  * logic, and therefore this class allows for such cases as well. Regardless of their interdependency for
  * research in the game, modules are always grouped by their type in this class. The series of modules for
- * of a certain type is called a *module line*.
+ * of a certain type is called a *module line*. 
+ *
+ * This example shows the difference:
+ * ```
+ *
  * 
+ *      Module line       '    Module line   '    Module line
+ *      _Artillery        '       _Hull      '     _Engine
+ *                        '                  '
+ *      AB1_Artillery     '      A_Hull      '     AB1_Engine
+ *                        '         |        '        
+ *                        '         |        '        
+ *                        '         V        '
+ *      AB2_Artillery <--------- B_Hull --------->  AB2_Engine
+ *                        '                  '
+ *                        '                  '
+ *
+ * 
+ *  '  = Module line delineation
+ * --> = Research progression
+ * ``` 
+ * As can be seen, while research progression to both the improved artillery and engine depend on the B_Hull
+ * being researched, the module lines are homogenous in type.
+ *
+ * ### Modernizations
+ *
+ * Modernizations are known as "upgrades" in the game. They can be equipped in slots and improve the ship's 
+ * characteristics. Not all upgrades are eligible for every ship - this largely depends on ship tier. Also, 
+ * in game, upgrades compete with each other in the sense that each upgrade slot usually offers a variety of
+ * different choices. This is not modeled here, since the purpose of this project is to look at the capabilities
+ * a ship _could_ have.
+ *
+ * ### Captain
+ *
+ * Putting a captain in command of a ship will allow the captain's learned skill to further modify the ship's
+ * characteristics. Note that, as of current, any skills a captain learns after being put in command of a ship
+ * will **not** modify the ship's characteristics. 	This is planned as a future feature.
+ *
+ * ### Camouflage
+ *
+ * Camouflages modify a ship's visuals, but also have some impact on the ship's characteristics. 
+ *
+ * ### Signal flags
+ *
+ * Much as camouflages, signal flags provide some bonuses to a ship that mounts them. While only one camouflage
+ * can be set on a ship, everal signal flags can be mounted at the same time.
+ *
+ * @see Ship.gamedata
  */
 class Ship extends GameObject {
 	/**

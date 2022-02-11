@@ -5,6 +5,8 @@ import { Modifier } from '../util/modifier.js';
 
 /**
  * This class describes _Modernizations_. In game, these are called "upgrades".
+ *
+ * @see Modernization.gamedata
  */
 class Modernization extends GameObject {
 	

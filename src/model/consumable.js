@@ -1,9 +1,19 @@
 import { GameObject } from './gameobject.js';
 
+/**
+ * This class models a ship ability - called "consumable" in game.
+ * 
+ * @see Ability.gamedata
+ */
 class Consumable extends GameObject {
 
 	#flavor;
 
+	/**
+	 * Sets the flavor that defines the characteristics of this consumable.
+	 * 
+	 * @param {Object} flavor The flavor to set.
+	 */
 	setFlavor(flavor) {
 		if (typeof this[flavor] !== 'object')
 			throw new Error(`Trying to set unknown flavor ${flavor} on consumable ${this.name}`);

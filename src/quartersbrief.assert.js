@@ -5,6 +5,8 @@ import { arrayIntersect } from './util/util.js';
 
 
 /**
+ * @module quartersbrief.assert.js
+ * @description
  * This modules checks that some invariants that were found through reverse engineering are actually
  * true. The code of this program depends on these, but of course we cannot be entirely sure that
  * we reverse engineered them correctly.
@@ -18,6 +20,7 @@ import { arrayIntersect } from './util/util.js';
 
 
 /**
+ * @description
  * Main function. It will call all of its enumerable properties that are functions,
  * passing along its `data` parameter. Any thrown InvariantErrors will be caught,
  * collected, and thrown together in the end as an AggregateError.
@@ -65,7 +68,8 @@ class InvariantError extends Error {
  * 	Returns an array of key names of all those objects for which the passed
  * 	function was false, null if the function was true for all objects.
  *
- *  This function is not exposed on module.exports.
+ *  This function is not exported.
+ *  @private
  */
 function violates(data, fn) {	
 	let counterexamples = [];
@@ -108,26 +112,26 @@ assertInvariants.assertHaveNames = function(data) {
  * If a ship's module has a component definition that includes more than one possibility for
  * that component, there must be some other modules that will specifiy this component exactly.
  */
-/*
-	This assertion's algorithm works as follows:
-	- For every ship, check if the component definitions of all its modules have length 1. In
-	  that case, there cannot be any ambiguity, and we are done.
-	- If this is not the case, there is at least one module with at least one component definition of 
-	  length more than 1. This is called a problematic module, that component definition is called
-	  a problematic component definition.
-	- If this module has several problematic component definitions, split it into several new
-	  modules that have one problematic component definition each.
-	- Find any modules for this ship that have a different ucType (that means, can be equipped
-	  simultaneously with the problematic module) and include a component definition for the
-	  same component (the problematic component). Intersect this component definition with the 
-	  problematic component definition from the problematic module. 
-	- If the result has length 1, this module resolved the ambiguity. We are done with this 
-	  problematic module, repeat with any other problematic modules. 
-	- If the result does not have length 1, try to find another module that remedies the remaining
-	  ambiguity, now excluding both the problematic module's ucType and the ucType of the module
-	  that contributed to resolving the ambiguity in the previous step.
- */
 assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
+	/*
+		This assertion's algorithm works as follows:
+		- For every ship, check if the component definitions of all its modules have length 1. In
+		  that case, there cannot be any ambiguity, and we are done.
+		- If this is not the case, there is at least one module with at least one component definition of 
+		  length more than 1. This is called a problematic module, that component definition is called
+		  a problematic component definition.
+		- If this module has several problematic component definitions, split it into several new
+		  modules that have one problematic component definition each.
+		- Find any modules for this ship that have a different ucType (that means, can be equipped
+		  simultaneously with the problematic module) and include a component definition for the
+		  same component (the problematic component). Intersect this component definition with the 
+		  problematic component definition from the problematic module. 
+		- If the result has length 1, this module resolved the ambiguity. We are done with this 
+		  problematic module, repeat with any other problematic modules. 
+		- If the result does not have length 1, try to find another module that remedies the remaining
+		  ambiguity, now excluding both the problematic module's ucType and the ucType of the module
+		  that contributed to resolving the ambiguity in the previous step.
+	 */
 	let counterexamples = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
 	for (let ship of ships) {

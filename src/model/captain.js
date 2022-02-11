@@ -13,6 +13,8 @@ import { Modifier } from '../util/modifier.js';
  * Only the improved standard skills are modeled here, since the unique skills often require rare preconditions
  * be met - usually gaining an achievement such as Kraken Unleashed or similar. Since this happens - if at 
  * all - late into the game, it would not be a useful briefing contribution.
+ *
+ * @see Captain.gamedata
  */
 class Captain extends GameObject {
 	
