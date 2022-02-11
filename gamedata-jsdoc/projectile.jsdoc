@@ -1,0 +1,39 @@
+/**
+ * @namespace Projectile.gamedata
+ * @name Projectile.gamedata
+ * @description
+ * 
+ * Projectiles are fired from ships armament and deal damage on impact with their target.
+ * Their general data is as follows:
+ *
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * alphaDamage|number|Alpha damage of the projectile
+ * alphaPiercingCS|number (millimeters)|How many millimeters of armor the shell is capable of penetrating, if it is a CS (SAP) shell.
+ * alphaPiercingHE|number (millimeters)|How many millimeters of armor the shell is capable of penetrating, if it is an HE shell.
+ * ammoType|String|One of "AP", "HE", "CS" (SAP) or "torpedo"
+ * bulletAlwaysRicochetAt|number (degrees)|The angle at which ricocheting is guaranteed.
+ * bulletDetonator|number (seconds)|The fuse time of the projectile.
+ * bulletDetonatorThreshold|number (millimeters?)|Presumably the minimum armor thickness that must be met to arm the detonator?
+ * bulletDiametr|number (meters)|Caliber of the projectile.
+ * bulletRicochetAt|number (degrees)|The angle at which ricocheting begins.
+ * bulletSpeed|number (meters/second)|The initial velocity of the projectile.
+ * burnProb|number|The chance of starting a fire upon impact, i.e. a value of 0.11 means 11%.
+ * typeinfo.type|String|Always "Projectile"
+ * typeinfo.species|String|One of "Artillery", "Bomb", "DepthCharge", "Rocket", "SkipBomb" or "Torpedo"
+ */
+
+/**
+ * @memberof Ship.gamedata
+ * @name Torpedo properties
+ * @instance
+ * @description 
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * alphaDamage|number|The base damage of the torpedo. The actual damage is calculated as `alphaDamage / 3 + damage`. Why? Because it's Wargaming, that's why.
+ * damage|number|The extra damage of the torpedo. The actual damage is calculated as `alphaDamage / 3 + damage`.
+ * maxDist|number (30 meters)|The maximum running distance of the torpedo in thirties of meters.
+ * speed|number (knots)|The speed of the torpedo.
+ * uwCritical|number|The change of causing a flood upon impact, i.e. a value of 2.00 means 200%.
+ */
