@@ -4,6 +4,11 @@
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/impish64"
 
+  # Need this plugin to forward file system events from the host to the guest
+  # Otherwise watching for file changes is not going to work
+  # See https://github.com/mhallin/vagrant-notify-forwarder
+  config.vagrant.plugins = ["vagrant-notify-forwarder"]
+
   # Expose port 9229 to allow debuggin
   config.vm.network :forwarded_port, guest: 9229, host: 9229
 
