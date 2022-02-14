@@ -1,4 +1,4 @@
-import { gameObjectFactory } from '../../src/model/gameobjectfactory.js';
+import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import { GameObject } from '../../src/model/gameobject.js';
 
 describe('GameObjectFactory', function() {
@@ -52,15 +52,16 @@ describe('GameObjectFactory', function() {
 			}
 		}
 	};
+	let gameObjectFactory;
 
+	beforeEach(function() {
+		gameObjectFactory = new GameObjectFactory(TEST_DATA);
+	});
+	
 	describe('.createGameObject', function() {
-		beforeEach(function() {
-			gameObjectFactory.setEverything(TEST_DATA);
-		});
-
 		it('should throw an error if no data has been set', function() {
 			// Unset data from beforeEach
-			gameObjectFactory.setEverything(undefined);
+			gameObjectFactory = new GameObjectFactory(undefined);
 			expect(function() { gameObjectFactory.createGameObject('PAAA001'); }).to.throw(/No data/);
 
 		});
@@ -90,10 +91,6 @@ describe('GameObjectFactory', function() {
 	});
 
 	describe('.expandReferences', function() {
-		beforeEach(function() {
-			gameObjectFactory.setEverything(TEST_DATA);
-		});
-
 		it('should expand references', function() {
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA002_Test2)).to
 				.have.property('reference')

@@ -52,6 +52,10 @@ class GameObjectFactory {
 	 */
 	#everything;
 
+	constructor(everything) {
+		this.setEverything(everything);
+	}
+
 	expandReferences(data) {
 		let self = this;
 
@@ -192,6 +196,4 @@ class GameObjectFactory {
 	}
 }
 
-let gameObjectFactory = new GameObjectFactory();
-
-export { gameObjectFactory }
+export { GameObjectFactory }
