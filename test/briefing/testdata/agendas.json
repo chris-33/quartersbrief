@@ -1,0 +1,17 @@
+[
+	{ "matches": { 
+		"tiers": [ 8, 9, 10 ]
+	}},
+	{ "matches": {
+		"tiers": [ 8, 9, 10 ],
+		"classes": [ "Cruiser", "Battleship" ]
+	}},
+	{ "matches": {
+		"nations": [ "USA" ]
+	}},
+	{ "matches": {
+		"tiers": [ 8, 9, 10 ],
+		"classes": [ "Cruiser", "Battleship" ],
+		"nations": [ "USA", "Germany" ]
+	}}
+]
