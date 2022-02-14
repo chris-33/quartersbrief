@@ -25,11 +25,11 @@ class AgendaFactory {
 	 * Chooses the highest-scoring agenda that matches the ship. If no agendas match the ship,
 	 * `chooseAgendas` will return `null`.
 	 * @param  {Ship} ship    The ship for which to match.
-	 * @param  {Agenda[]} agendas The agendas from which to choose.
 	 * @return {Agenda}        Returns the agenda with the highest specificity score that matched
 	 * the ship, or `null` if no agendas matched.
 	 */
-	chooseAgenda(ship, agendas) {
+	async chooseAgenda(ship) {
+		let agendas = await this.getAgendas();
 		agendas = agendas.filter(agenda => agenda.matches(ship));
 		if (agendas.length === 0) return null;
 		return agendas.reduce((a1,a2) => a1.score > a2.score ? a1 : a2);
