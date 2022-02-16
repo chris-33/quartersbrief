@@ -5,7 +5,7 @@ import { Agenda } from '../../src/briefing/agenda.js';
 import { Battle } from '../../src/model/battle.js';
 import sinon from 'sinon';
 import { readFileSync } from 'fs';
-import isHtml from 'is-html';
+import { valid as isHtml } from 'node-html-parser';
 
 describe('BriefingBuilder', function() {
 	let builder;
