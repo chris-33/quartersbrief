@@ -18,7 +18,7 @@ class AgendaFactory {
 	async getAgendas() {
 		let agendas = await readdir(this.agendadir);
 		agendas = await Promise.all(agendas.map(agenda => readFile(this.agendadir + '/' + agenda)));
-		return agendas.map(agenda => { agenda = TOML.parse(agenda); return new Agenda(agenda.matches, agenda.topics) });		
+		return agendas.map(agenda => { agenda = TOML.parse(agenda); return new Agenda(agenda.matches, agenda.topics) });
 	}
 
 	/**
@@ -33,10 +33,6 @@ class AgendaFactory {
 		agendas = agendas.filter(agenda => agenda.matches(ship));
 		if (agendas.length === 0) return null;
 		return agendas.reduce((a1,a2) => a1.score > a2.score ? a1 : a2);
-	}
-
-	getTopicBuilder(topic) {
-		return import(`./topics/${topic}/${topic}.js`);		
 	}
 }
 
