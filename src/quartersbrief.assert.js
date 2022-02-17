@@ -47,7 +47,7 @@ function assertInvariants(data) {
 
 	log.info(`Checked assertions in ${Date.now() - t0}ms`);
 	if (exceptions.length > 0)
-		throw new AggregateError(exceptions);
+		throw new AggregateError(exceptions, 'Invariant checking failed.');
 }
 
 /**
