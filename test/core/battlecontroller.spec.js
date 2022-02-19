@@ -4,7 +4,7 @@ import os from 'os';
 import path from 'path';
 
 describe('BattleController', function() {
-	const filepath = os.tmpdir();
+	const filepath = os.tmpdir(); // eslint-disable-line mocha/no-setup-in-describe
 
 	let battlecontroller;
 
