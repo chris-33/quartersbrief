@@ -1,8 +1,6 @@
 import watch from 'node-watch';
 import log from 'loglevel';
-import { readFile } from 'fs/promises';
 import { EventEmitter } from 'events';
-import path from 'path';
 
 /**
  * The `BattleController` watches the World of Warships replay directory for the existence of `tempArenaInfo.json`. When it detects
@@ -15,17 +13,18 @@ class BattleController extends EventEmitter {
 		let self = this;
 
 		let watcher = watch(replaydir, { persistent: false, recursive: false, filter: /tempArenaInfo.json/ });
-		watcher.on('change', async function(evt, name) {
+		log.debug(`Watching folder ${replaydir} for tempArenaInfo.json`);
+		watcher.on('change', function(evt) {
 			if (evt === 'update') { // file created or modified
-				log.info('Detected new battle');
-				let battle = JSON.parse(await readFile(path.join(replaydir, 'tempArenaInfo.json')));
-				self.emit('battlestart', battle);
+				log.debug('Detected battle start');
+				self.emit('battlestart');
 			} else if (evt === 'remove') { // file deleted
+				log.debug('Detected battle end');
 				self.emit('battleend');
 			}
 		});
 
-		process.on('exit', function() { watcher.close(); });
+		process.on('exit', function() { log.debug('Ending folder watch'); watcher.close(); });
 	}
 }
 
