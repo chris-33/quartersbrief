@@ -1,3 +1,5 @@
+import { Ship } from '../../src/model/ship.js';
+
 /**
  * An agenda describes how to construct a briefing. It consists of two main constituents: a _matcher_ and _topics_.
  * The matcher determines what ships this agenda pertains to. The topics are the briefing's content.
@@ -38,18 +40,22 @@ class Agenda {
 	}	
 
 	/**
-	 * Checks whether the given ship matches the agenda's matcher section.
-	 * A ship is considered a match if the following conditions are met:
+	 * Checks whether the given battle matches the agenda's matcher section.
+	 * A battle is considered a match if the following conditions are met for
+	 * the player's ship:
 	 * - If the matcher has a ship list, the ship must be in it.
 	 * - If the matcher has a class list, the ship's class must be in it.
 	 * - If the matcher has a tier list, the ship's tier must be in it.
 	 * - If the matcher has a nation list, the ship's nation must be in it.
 	 * Any matcher lists that are missing are considered to match everything.
-	 * @param  {Ship} ship The ship which to check.
+	 * @param  {Battle} battle The battle which to check.
 	 * @return {boolean}      `True` if the ship matches, `false` otherwise.
 	 */
-	matches(ship) {
+	matches(battle) {
 		if (!this.matcher) return undefined;
+		
+		let ship = battle.getPlayer().ship;
+		Ship.errorIfNotShip(ship);
 
 		return (this.matcher.ships?.includes(ship.getName()) ?? true)
 			&& (this.matcher.classes?.includes(ship.getSpecies()) ?? true)
