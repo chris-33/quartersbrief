@@ -40,7 +40,7 @@ Vagrant.configure("2") do |config|
   # https://specifications.freedesktop.org/basedir-spec/latest/index.html
   config.vm.synced_folder "config/", "/home/vagrant/.config/quartersbrief"
   # Share "Fake WoWS" directory to simulate the game actually being installed
-  config.vm.synced_folder "wows/", "/opt/WorldOfWarships", fsnotify: true
+  config.vm.synced_folder "wows/", "/opt/World of Warships", fsnotify: true
 
   # cd to the /vagrant directory upon login
   config.ssh.extra_args = ["-t", "cd /vagrant; bash --login"]
