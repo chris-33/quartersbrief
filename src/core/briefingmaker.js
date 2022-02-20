@@ -1,5 +1,4 @@
 import { BriefingBuilder } from '../briefing/briefingbuilder.js';
-import { SpecificityStrategy } from '../briefing/specificitystrategy.js';
 import { Battle } from '../model/battle.js';
 import { readFile } from 'fs/promises';
 import log from 'loglevel';
@@ -17,11 +16,21 @@ import path from 'path';
 //  error handling: what if no agenda fits
 // 5. Build the briefing as per the chosen agenda
 
+/**
+ * Helper class to read 'tempArenaInfo.json' from the World of Warship replays directory and parse it to an object.
+ * It can recover from `ENOENT` errors (meaning the file or the directory isn't there) and `EACCES` errors (meaning
+ * the file or the replays directory have insufficient permissions).
+ */
 class BattleDataReader {
 	constructor(replaydir) {
 		this.replaydir = replaydir;
 	}
 
+	/**
+	 * Attempt to read `tempArenaInfo.json` and return its contents.
+	 * @return {Object} The contents of `tempArenaInfo.json`, or `null` if the file doesn't exist, the watched directory
+	 * doesn't exist, or either one has insufficient permissions for reading.
+	 */
 	async read() {
 		try {
 			return JSON.parse(await readFile(path.join(this.replaydir, 'tempArenaInfo.json')));
@@ -45,11 +54,19 @@ class BattleDataReader {
 	}
 }
 
+/**
+ * Decorates {@link AgendaStore} to recover `ENOENT` (agendas directory does not exist) and `EACCES` (agendas directory's
+ * permissions do not allow reading) errors when trying to read agendas.
+ */
 class ErrorHandlingAgendaStore {
 	constructor(agendaStore) {
 		this.agendaStore = agendaStore;
 	}
 
+	/**
+	 * Wraps {@link AgendaStore#getAgendas} to recover from `ENOENT` and `EACCESS` errors.
+	 * @return {Agenda[]} The results of the wrapped call to `AgendaStore#getAgendas`, or `[]` if the above errors occurred.
+	 */
 	async getAgendas() {
 		try {
 			return await this.agendaStore.getAgendas();
@@ -71,13 +88,29 @@ class ErrorHandlingAgendaStore {
 	}
 }
 
+/**
+ * `BriefingMaker` encapsulates the algorithm to make a briefing, using `BattleDataReader`, `AgendaStore` (or, more specifically,
+ * `ErrorHandlingAgendaStore`) and `BriefingBuilder`. 
+ */
 class BriefingMaker {
-	constructor(replaydir, gameObjectFactory, agendaStore) {
+	constructor(replaydir, gameObjectFactory, agendaStore, strategy) {
 		this.battleDataReader = new BattleDataReader(replaydir);
 		this.gameObjectFactory = gameObjectFactory;
 		this.errorHandlingAgendaStore = new ErrorHandlingAgendaStore(agendaStore);
+		this.strategy = strategy;
 	}
 
+	/**
+	 * Makes a briefing for the battle currently underway, as per `tempArenaInfo.json` in the World of Warships replays directory.
+	 * This involves the following steps:
+	 * 1. The current battle's data is read from `tempArenaInfo.json` using a `BattleDataReader`.
+	 * 2. The battle is enriched by adding `Ship` objects for all participants.
+	 * 3. An agenda is chosen for the briefing, using `this.strategy`.
+	 * 4. A briefing is built using a `BriefingBuilder`.
+	 * If there is no battle currently, the special template `no-battle.pug` is rendered and returned.
+	 * If there is no agenda that matches the battle, the special template `no-agenda.pug` is rendered and returned.
+	 * @return {String} The complete HTML for the briefing.
+	 */
 	async makeBriefing() {
 		// Helper function to enrich the passed battle with game objects like ships and players
 		async function enrichBattle(battle, gameObjectFactory) {
@@ -93,7 +126,7 @@ class BriefingMaker {
 		battle = new Battle(battle);
 		await enrichBattle(battle, this.gameObjectFactory);
 		let agendas = await this.errorHandlingAgendaStore.getAgendas();
-		let agenda = new SpecificityStrategy().chooseAgenda(battle, agendas);
+		let agenda = this.strategy.chooseAgenda(battle, agendas);
 		if (agenda === null) {
 			// @todo Render special template for "no agenda fit the battle"
 			return

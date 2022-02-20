@@ -4,6 +4,7 @@ import { assertInvariants, InvariantError } from './src/quartersbrief.assert.js'
 import { BattleController } from './src/core/battlecontroller.js';
 import { GameObjectFactory } from './src/model/gameobjectfactory.js';
 import { AgendaStore } from './src/briefing/agendastore.js';
+import { SpecificityStrategy } from './src/briefing/specificitystrategy.js';
 import createServers from './src/core/server.js';
 import { BriefingMaker } from './src/core/briefingmaker.js';
 import { existsSync, readFileSync } from 'fs';
@@ -55,7 +56,7 @@ if (!config.get('skipInvariants')) {
 const gameObjectFactory = new GameObjectFactory(data);
 const agendaStore = new AgendaStore(config.get('agendasdir'));
 const battleController = new BattleController(path.join(config.get('wowsdir'), 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
-const briefingMaker = new BriefingMaker(path.join(config.get('wowsdir'), 'replays'), gameObjectFactory, agendaStore);
+const briefingMaker = new BriefingMaker(path.join(config.get('wowsdir'), 'replays'), gameObjectFactory, agendaStore, new SpecificityStrategy());
 
 const { srv, io } = createServers(config.get('host'), config.get('port'));
 
