@@ -78,7 +78,7 @@ class BriefingMaker {
 		this.errorHandlingAgendaStore = new ErrorHandlingAgendaStore(agendaStore);
 	}
 
-	async makeBriefing() {debugger;
+	async makeBriefing() {
 		// Helper function to enrich the passed battle with game objects like ships and players
 		async function enrichBattle(battle, gameObjectFactory) {
 			return await Promise.allSettled(battle.get('vehicles').map(vehicle => vehicle.ship = gameObjectFactory.createGameObject(vehicle.shipId))); // Assignments are expressions in js

@@ -61,7 +61,7 @@ const { srv, io } = createServers(config.get('host'), config.get('port'));
 
 const indexTemplate = pug.compileFile('./src/core/index.pug');
 srv.get('/', async function(req, res) {
-	let briefing = await briefingMaker.makeBriefing();
+	let briefing = await briefingMaker.makeBriefing();	
 	let html = indexTemplate({ briefing: briefing });
 	res.send(html);
 });
