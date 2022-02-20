@@ -1,0 +1,12 @@
+html
+  head
+    block head
+      meta(charset='utf-8')
+      meta(name='viewport', content='width=device-width, initial-scale=1.0')
+      script(src="/socket.io/socket.io.js")
+  body
+    header World of Warships Quarters Brief
+    | !{briefing}
+    script
+      const socket = io();
+      socket.on('battlestart', function() { window.location.reload() })  

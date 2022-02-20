@@ -91,7 +91,7 @@ class Captain extends GameObject {
 	learn(skill) {
 		if (!Array.isArray(skill)) skill = [skill];
 
-		for (let s of skill) {debugger
+		for (let s of skill) {
 			if (typeof s === 'number')
 				s = this.qb_skills.find(x => x.getSkillnumber() === s);
 
