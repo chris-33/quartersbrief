@@ -78,7 +78,7 @@ class BriefingMaker {
 		this.errorHandlingAgendaStore = new ErrorHandlingAgendaStore(agendaStore);
 	}
 
-	async makeBriefing() {
+	async makeBriefing() {debugger;
 		// Helper function to enrich the passed battle with game objects like ships and players
 		async function enrichBattle(battle, gameObjectFactory) {
 			return await Promise.allSettled(battle.get('vehicles').map(vehicle => vehicle.ship = gameObjectFactory.createGameObject(vehicle.shipId))); // Assignments are expressions in js
@@ -98,7 +98,7 @@ class BriefingMaker {
 			// @todo Render special template for "no agenda fit the battle"
 			return
 		}
-		return await new BriefingBuilder(battle, this.gameObjectFactory).build();
+		return await new BriefingBuilder(battle, agenda, this.gameObjectFactory).build();
 	}
 }
 
