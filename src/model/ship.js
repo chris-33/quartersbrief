@@ -619,8 +619,6 @@ Ship.ModuleConfiguration =  class extends ComplexDataObject {
 		TorpodoFloodChance: 'torpedoes.qb_mounts.*.ammoList.*.uwCritical',
 		ATBARange: 'atba.maxDist',
 	}
-	// static #SETTER_DEFINITIONS = Ship.#GETTER_DEFINITIONS;
-
 
 	#ship;
 

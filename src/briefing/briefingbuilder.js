@@ -28,7 +28,7 @@ class BriefingBuilder {
 	/**
 	 * Dynamically imports the topic builder for the given `topic`. Topic builders will be expected
 	 * to be a file with the topic's name and extension '.js' in a subdirectory of the topic's name,
-	 * exporting a single function of length 2 as default.
+	 * exporting a function of length 2 under the name `buildTopic`.
 	 * @param  {String} topic The topic for which to get a topic builder.
 	 * @return {Promise}       A promise that resolves to the topic builder, or rejects if none could be found.
 	 */

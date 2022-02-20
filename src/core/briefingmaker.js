@@ -4,18 +4,6 @@ import { readFile } from 'fs/promises';
 import log from 'loglevel';
 import path from 'path';
 
-// How to make a briefing:
-// 1. Read the battle parameters from tempArenaInfo.json
-// 	error handling: ENOENT -> no battle currently
-// @todo Make a template to render if no battle
-// 2. Enrich it with the participating ships (and in the future, players)
-//  error handling: if a ship can't be found, display an error in the briefing to that effect
-// 3. Get all agendas
-//  error handling: what if no agendas are defined
-// 4. Choose the one that best fits the battle
-//  error handling: what if no agenda fits
-// 5. Build the briefing as per the chosen agenda
-
 /**
  * Helper class to read 'tempArenaInfo.json' from the World of Warship replays directory and parse it to an object.
  * It can recover from `ENOENT` errors (meaning the file or the directory isn't there) and `EACCES` errors (meaning
@@ -65,7 +53,7 @@ class ErrorHandlingAgendaStore {
 
 	/**
 	 * Wraps {@link AgendaStore#getAgendas} to recover from `ENOENT` and `EACCESS` errors.
-	 * @return {Agenda[]} The results of the wrapped call to `AgendaStore#getAgendas`, or `[]` if the above errors occurred.
+	 * @return {Agenda[]} The results of the wrapped call to `AgendaStore.getAgendas`, or an empty array if the above errors occurred.
 	 */
 	async getAgendas() {
 		try {
@@ -103,10 +91,12 @@ class BriefingMaker {
 	/**
 	 * Makes a briefing for the battle currently underway, as per `tempArenaInfo.json` in the World of Warships replays directory.
 	 * This involves the following steps:
+	 * 
 	 * 1. The current battle's data is read from `tempArenaInfo.json` using a `BattleDataReader`.
 	 * 2. The battle is enriched by adding `Ship` objects for all participants.
 	 * 3. An agenda is chosen for the briefing, using `this.strategy`.
 	 * 4. A briefing is built using a `BriefingBuilder`.
+	 * 
 	 * If there is no battle currently, the special template `no-battle.pug` is rendered and returned.
 	 * If there is no agenda that matches the battle, the special template `no-agenda.pug` is rendered and returned.
 	 * @return {String} The complete HTML for the briefing.
