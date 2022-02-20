@@ -1,4 +1,5 @@
 import pug from 'pug';
+import log from 'loglevel';
 
 /**
  * The `BriefingBuilder` constructs a briefing for a given battle and agenda. It dynamically imports the 
@@ -55,13 +56,16 @@ class BriefingBuilder {
 
 		// For each briefing content part, get the dedicated builder for that part and build it
 		// Assign it to the layout pane dedicated to it
-		await Promise.allSettled(self.agenda.topics.map((topic, index) => {
-			this.getTopicBuilder(topic)
-				.then(module => {
-					briefing.topics[index] = module.buildTopic(self.battle, self.gameObjectFactory);
-				}).catch(err => briefing[`topic${index}`] = self.buildErrorTopic(err));
-
-		}));
+		let dynimports = await Promise.allSettled(self.agenda.topics.map(topic => self.getTopicBuilder(topic)));
+		for (let i = 0; i < dynimports.length; i++) {
+			let dynimport = dynimports[i];
+			if (dynimport.status === 'fulfilled')
+				briefing.topics[i] = dynimport.value.buildTopic(self.battle, self.gameObjectFactory);
+			else {
+				log.error(`Error while building topic ${self.agenda.topics[i]}: ${dynimport.reason}`);
+				briefing.topics[i] = self.buildErrorTopic(dynimport.reason);
+			}
+		}
 		return pug.renderFile('src/briefing/briefing.pug', briefing)
 	}
 }
