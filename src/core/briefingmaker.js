@@ -118,16 +118,14 @@ class BriefingMaker {
 
 		let battle = await this.battleDataReader.read();
 		if (battle === null) {
-			// @todo Render special template for "no battle"
-			return
+			return BriefingBuilder.buildNoBattle();
 		}
 		battle = new Battle(battle);
 		await enrichBattle(battle, this.gameObjectFactory);
 		let agendas = await this.errorHandlingAgendaStore.getAgendas();
 		let agenda = this.strategy.chooseAgenda(battle, agendas);
 		if (agenda === null) {
-			// @todo Render special template for "no agenda fit the battle"
-			return
+			return BriefingBuilder.buildNoAgenda();
 		}
 		return await new BriefingBuilder(battle, agenda, this.gameObjectFactory).build();
 	}

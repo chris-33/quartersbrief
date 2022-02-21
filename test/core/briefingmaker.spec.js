@@ -2,10 +2,12 @@ import { BriefingMaker, ErrorHandlingAgendaStore, BattleDataReader } from '../..
 import { BriefingBuilder } from '../../src/briefing/briefingbuilder.js';
 import { AgendaStore } from '../../src/briefing/agendastore.js';
 import { Agenda } from '../../src/briefing/agenda.js';
+import { SpecificityStrategy } from '../../src/briefing/specificitystrategy.js';
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import mockfs from 'mock-fs';
 import sinon from 'sinon';
 import { valid as isHtml } from 'node-html-parser';
+import pug from 'pug';
 
 describe('.BattleDataReader', function() {
 	let battleDataReader;
@@ -79,7 +81,7 @@ describe('BriefingMaker', function() {
 		sinon.stub(gameObjectFactory, 'createGameObject').returns(null);
 		
 		sinon.stub(BattleDataReader.prototype, 'read').resolves({ "vehicles": [ { "shipId": 1 }, { "shipId": 2 } ] });
-		briefingMaker = new BriefingMaker('replays', gameObjectFactory, agendaStore, { chooseAgenda: function() { return new Agenda(null, [ 'mock' ]); }});
+		briefingMaker = new BriefingMaker('replays', gameObjectFactory, agendaStore, { chooseAgenda: sinon.stub().returns(new Agenda(null, [ 'mock' ])) });
 	});
 
 	afterEach(function() {
@@ -106,4 +108,16 @@ describe('BriefingMaker', function() {
 			BriefingBuilder.prototype.getTopicBuilder.restore(); 
 		}
 	});
+
+	it('should render the "no battle" template when the BattleDataReader returned null', function() {
+		BattleDataReader.prototype.read.returns(null);
+		let expected = pug.renderFile('src/briefing/no-battle.pug');
+		return expect(briefingMaker.makeBriefing()).to.eventually.equal(expected);
+	});
+
+	it('should render the "no agendas" template when the choose strategy returned null', function() {
+		briefingMaker.strategy.chooseAgenda.returns(null);
+		let expected = pug.renderFile('src/briefing/no-agenda.pug');
+		return expect(briefingMaker.makeBriefing()).to.eventually.equal(expected);
+	});	
 });

@@ -68,6 +68,15 @@ class BriefingBuilder {
 		}
 		return pug.renderFile('src/briefing/briefing.pug', briefing)
 	}
+
+	static buildNoBattle() {
+		return pug.renderFile('src/briefing/no-battle.pug');
+	}
+
+	static buildNoAgenda() {
+		return pug.renderFile('src/briefing/no-agenda.pug');
+	}
+
 }
 
 export { BriefingBuilder }
