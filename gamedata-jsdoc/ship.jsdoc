@@ -108,6 +108,7 @@
  * ---- | ---------- | ------------
  * ammoList|Array|The names of the different shell types this ship can fire.
  * barrelDiameter|number (meters)|The caliber of the guns, given in meters. Thus, a caliber of 40.6cm is given as 0.406.
+ * deadZone|Array|Any dead zones to be "stenciled out" of the turret's `horizSector`, given in degrees port (negative) and starboard (positive).
  * horizSector|Array|The firing arc of the turret, given in degrees to port (negative) and starboard (positive) of dead ahead.
  * numBarrels|number|The number of barrels of the turret.
  * rotationSpeed|Array|First array element is turret traverse speed in degrees per second. Unknown why this is an array, and what the second value is.
@@ -127,7 +128,7 @@
  * Key | Data type | Meaning
  * ---- | ---------- | ------------
  * barrelDiameter|number (meters)|The caliber of the launcher in meters. Thus, a 533mm torpedo launcher will have a value of 0.533.
- * deadZone|Array|The dead zone at the bow of the ship that must be "stenciled out" of the launcher's `horizSector`, given in degrees port (negative) and starboard (positive).
+ * deadZone|Array|Any dead zones to be "stenciled out" of the launcher's `horizSector`, given in degrees port (negative) and starboard (positive).
  * horizSector|Array|The weapon arc of this launcher, given in degrees port (negative) and starboard (positive). See `deadZone`.
  * numBarrels|number|The number of individual tubes to this launcher.
  * shotDelay|number (seconds)|The reload time of this launcher.
