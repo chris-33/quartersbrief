@@ -1,11 +1,13 @@
-import { BriefingMaker, BattleDataReader, ErrorHandlingAgendaStore } from '../../src/core/briefingmaker.js';
-import { AgendaStore } from '../../src/briefing/agendastore.js';
+import { BriefingMaker, ErrorHandlingAgendaStore, BattleDataReader } from '../../src/core/briefingmaker.js';
 import { BriefingBuilder } from '../../src/briefing/briefingbuilder.js';
+import { AgendaStore } from '../../src/briefing/agendastore.js';
+import { Agenda } from '../../src/briefing/agenda.js';
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import mockfs from 'mock-fs';
 import sinon from 'sinon';
+import { valid as isHtml } from 'node-html-parser';
 
-describe('BattleDataReader', function() {
+describe('.BattleDataReader', function() {
 	let battleDataReader;
 	
 	beforeEach(function() {
@@ -36,7 +38,8 @@ describe('BattleDataReader', function() {
 	});
 });
 
-describe('ErrorHandlingAgendaStore', function() { // eslint-disable-line mocha/max-top-level-suites
+
+describe('.ErrorHandlingAgendaStore', function() { // eslint-disable-line mocha/max-top-level-suites
 	let errorHandlingAgendaStore;
 
 	beforeEach(function() {
@@ -71,11 +74,36 @@ describe('BriefingMaker', function() {
 	beforeEach(function() {
 		let agendaStore = new AgendaStore();
 		sinon.stub(agendaStore, 'getAgendas').returns([]);
+		
 		let gameObjectFactory = new GameObjectFactory({});
-		sinon.stub(gameObjectFactory, 'createGameObject').returnsArg(0);
-		briefingMaker = new BriefingMaker(null, agendaStore, gameObjectFactory);
+		sinon.stub(gameObjectFactory, 'createGameObject').returns(null);
+		
+		sinon.stub(BattleDataReader.prototype, 'read').resolves({ "vehicles": [ { "shipId": 1 }, { "shipId": 2 } ] });
+		briefingMaker = new BriefingMaker('replays', gameObjectFactory, agendaStore, { chooseAgenda: function() { return new Agenda(null, [ 'mock' ]); }});
+	});
+
+	afterEach(function() {
+		BattleDataReader.prototype.read.restore();
 	});
 	
-	it('should create valid HTML');
-	it('should enrich the battle');
+	it('should create valid HTML', function() {
+		return expect(briefingMaker.makeBriefing()).to.eventually.satisfy(isHtml);
+	});
+
+	it('should enrich the battle', async function() {
+		// We check this assertion by creating a fake topic builder which will be passed the battle
+		// We can then sure that the battle was enriched
+		let buildTopic = sinon.stub();
+		sinon.stub(BriefingBuilder.prototype, 'getTopicBuilder').resolves({ buildTopic });
+		try {
+			await briefingMaker.makeBriefing();
+			expect(buildTopic).to.have.been.called;
+			let battle = buildTopic.firstCall.args[0];
+			// Check that battle.vehicles' entries have been enriched with a ship property
+			expect(battle.get('vehicles.0')).to.have.property('ship');
+			expect(battle.get('vehicles.1')).to.have.property('ship');
+		} finally { 
+			BriefingBuilder.prototype.getTopicBuilder.restore(); 
+		}
+	});
 });

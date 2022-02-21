@@ -81,6 +81,14 @@ class ErrorHandlingAgendaStore {
  * `ErrorHandlingAgendaStore`) and `BriefingBuilder`. 
  */
 class BriefingMaker {
+	/**
+	 * Creates a new `BriefingMaker`.
+	 * @param  {String} replaydir         The path where `tempArenaInfo.json` can be found.
+	 * @param  {GameObjectFactory} gameObjectFactory A ´GameObjectFactory` instance to use for retrieving game objects, such as ships.
+	 * @param  {AgendaStore} agendaStore       An `AgendaStore` instance that will provide the known agendas.
+	 * @param  {Object} strategy          A strategy to use for choosing the agenda to use. Must have a `chooseAgenda` method.
+	 * @param  {Function} BriefingBuilder   The constructor of a `BriefingBuilder` to use for assembling briefings.
+	 */
 	constructor(replaydir, gameObjectFactory, agendaStore, strategy) {
 		this.battleDataReader = new BattleDataReader(replaydir);
 		this.gameObjectFactory = gameObjectFactory;
@@ -125,4 +133,4 @@ class BriefingMaker {
 	}
 }
 
-export { BriefingMaker, BattleDataReader, ErrorHandlingAgendaStore }
+export { BattleDataReader, ErrorHandlingAgendaStore, BriefingMaker }
