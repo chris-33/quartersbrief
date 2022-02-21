@@ -13,11 +13,6 @@ describe('Battle', function() {
 		battle = new Battle(TEST_DATA);
 	});
 
-	it.skip('should have a ship for all vehicles', function() {
-		for (let vehicle of TEST_DATA.vehicles)
-			expect(battle.gameObjectFactory.createGameObject).to.have.been.calledWith(vehicle.shipId);
-	});		
-
 	describe('.getPlayer', function() {
 		it('should return the vehicle with the player ID', function() {
 			expect(battle.getPlayer()).to.deep.equal(TEST_DATA.vehicles[7]);
