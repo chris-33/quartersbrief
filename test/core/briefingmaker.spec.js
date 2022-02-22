@@ -2,7 +2,6 @@ import { BriefingMaker, ErrorHandlingAgendaStore, BattleDataReader } from '../..
 import { BriefingBuilder } from '../../src/briefing/briefingbuilder.js';
 import { AgendaStore } from '../../src/briefing/agendastore.js';
 import { Agenda } from '../../src/briefing/agenda.js';
-import { SpecificityStrategy } from '../../src/briefing/specificitystrategy.js';
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import mockfs from 'mock-fs';
 import sinon from 'sinon';

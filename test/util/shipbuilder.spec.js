@@ -69,7 +69,5 @@ describe('ShipBuilder', function() {
 				expect(ship.setCamouflage).to.have.been.calledWith(shipBuilder.gameObjectFactory.createGameObject.firstCall.returnValue);
 			} finally { ship.setCamouflage.restore(); }
 		});
-
-
-	})
+	});
 });
