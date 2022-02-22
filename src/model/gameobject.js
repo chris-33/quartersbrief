@@ -21,7 +21,8 @@ class GameObject extends ComplexDataObject {
 		Index: 'index', // Alias
 		ID: 'id',
 		TypeInfo: 'typeinfo',
-		Type: 'typeinfo.type'
+		Type: 'typeinfo.type',
+		Nation: 'typeinfo.nation'
 	};
 
 	/**
