@@ -8,11 +8,13 @@
  *
  * Key | Data type | Meaning
  * ---- | ---------- | ------------
- * level | number | Tier
- * permoflages | Array | The permament camouflages this ship can mount.
- * typeinfo.type | string | Always "Ship".
- * typeinfo.species | string | The type of ship. One of "Battleship", "Cruiser", "Destroyer", "AirCarrier" or "Submarine"
- * typeinfo.nation | string | The nation this ship belongs to.
+ * defaultCrew|string|The default captain to use for this ship. This seems to rarely be used, and when it is, it appears to always be on ships of conglomerate nations.
+ * level|number|Tier
+ * permoflages|Array|The permament camouflages this ship can mount.
+ * subnation|string|If the ship's nation is a conglomerate (e.g. "Pan-America"), the actual nation the ship belongs to (e.g. "Argentina").
+ * typeinfo.type |string|Always "Ship".
+ * typeinfo.species|string|The type of ship. One of "Battleship", "Cruiser", "Destroyer", "AirCarrier" or "Submarine"
+ * typeinfo.nation|string|The nation this ship belongs to.
  *
  */
 

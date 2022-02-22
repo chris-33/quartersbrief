@@ -9,11 +9,31 @@
  *
  * Key | Data type | Meaning
  * ---- | ---------- | ------------
- * CrewPersonality.ships|Object|Presumably restricts which ships this captain can be assigned to, but more research is needed.
+ * CrewPersonality|Object|How the captain appear in game. See below.
  * Skills|Object|The skills the captain can learn. See below.
  * UniqueSkills|Object|The unique skills a legendary commander possesses.
  * Vanity|Object|Cosmetic in nature.
  * typeinfo.type|String|Always "Crew".
+ */
+
+/**
+ * @memberof Captain.gamedata
+ * @name CrewPersonality
+ * @instance
+ * @description 
+ * The top-level object `CrewPersonality` contains properties of the captain as a "person", including restrictions on what ships
+ * the captain is eligible to command.
+ * 
+ * Key | Data type | Meaning
+ * ---- | ---------- | ------------
+ * personName|string|The name to display for this captain. Presumably a reference to a localized string. For the default captain, this is `''`.
+ * ships|Object|A set of filters to determine what ships the captain is eligible to command.
+ * &emsp; ships.groups|Array|If set, contains values that a ship's `group` can be for the captain to be eligible.
+ * &emsp; ships.nations|Array|If set, contains values that a ship's `typeinfo.nation` can be for the captain to be eligible.
+ * &emsp; ships.peculiarity|Array|If set, contains values that a ship's `peculiarity` can be for the captain to be eligible.
+ * &emsp; ships.ships|Array|If set, presumably a whitelist of ships regardless of the other entries.
+ * subnation|string|The subnation this captain comes from, if the nation is a conglomerate such as "Pan-America". Presumably, captains can command ships even when they are from a different subnation, as long as their nations match.
+ * tags|Array|Describes some special property of the captain. Common tags include `ingameevent`, `anime`, `CatalogueHiddenIfMissing`. Empty for default captains.
  */
 
 /**

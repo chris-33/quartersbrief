@@ -100,6 +100,42 @@ class Captain extends GameObject {
 		}
 	}
 
+	/**
+	 * Returns whether this captain is eligible to command the given ship. A captain is eligible if the ship's reference
+	 * name is whitelisted in `CrewPersonality.ships.ships`, or if `groups`, `nations`, and `peculiarity` are either empty or 
+	 * contain the respective values for the given `ship`.
+	 * @param  {Ship} ship The ship for which to check.
+	 * @return {boolean} `True` if this captain can command the ship, `false` otherwise.
+	 */
+	eligible(ship) {
+		Ship.errorIfNotShip(ship);
+
+		// If there is a whitelist, the ship must be in it
+		if (this.get('CrewPersonality.ships.ships').length > 0)
+			return this.get('CrewPersonality.ships.ships').includes(ship.getName());
+		
+		// Where a property of CrewPersonality.ships is empty, it won't limit what ships the captain can command,
+		// but if it is set, it must contain the ship's value for that property
+		return (this.get('CrewPersonality.ships.groups').length === 0 || this.get('CrewPersonality.ships.groups').includes(ship.get('group')))
+			&& (this.get('CrewPersonality.ships.nation').length === 0 || this.get('CrewPersonality.ships.nation').includes(ship.getNation()))
+			&& (this.get('CrewPersonality.ships.peculiarity').length === 0 || this.get('CrewPersonality.ships.peculiarity').includes(ship.get('peculiarity')))
+	}
+
+	/**
+	 * Checks whether this captain is the default captain for his nation. There is not an obvious indication of whether this is the
+	 * case in the captain's game data, however, it appears that the following always holds true for default captains:
+	 *
+	 * - `CrewPersonality.peculiarty` is `default`
+	 * - `CrewPersonality.personName` is `''`
+	 * - `CrewPersonality.tags` is empty
+	 * @return {Boolean} `True` if this captain is a default captain, `false` otherwise.
+	 */
+	isDefault() {
+		return this.get('CrewPersonality.peculiarity') === 'default' 
+			&& this.get('CrewPersonality.personName') === ''
+			&& this.get('CrewPersonality.tags').length === 0;
+	}
+
 	constructor(data) {
 		// Should not need to clone here since we will not be changing the values
 		super(data);

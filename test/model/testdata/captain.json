@@ -1,4 +1,15 @@
 {
+	"CrewPersonality": {
+		"peculiarity": "default",
+		"personName": "",
+		"ships": {
+			"groups": [],
+			"nation": ["USA"],
+			"peculiarity": [],
+			"ships": []
+		},
+		"tags": []
+	},
 	"Skills": {
 		"BattleshipSkill1": {
 			"modifiers": {

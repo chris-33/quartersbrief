@@ -96,6 +96,64 @@ describe('Captain', function() {
 		});
 	});
 
+	describe('.eligible', function() {
+		it('should always return true when the ship is whitelisted', function() {
+			captain.set('CrewPersonality.ships.ships', [ship.getName()]);
+			expect(captain.eligible(ship)).to.be.true;
+			captain.set('CrewPersonality.ships.nation', ['Germany']);
+			expect(captain.eligible(ship)).to.be.true;
+			captain.set('CrewPersonality.ships.groups', ['somegroup']);
+			expect(captain.eligible(ship)).to.be.true;
+			captain.set('CrewPersonality.ships.peculiarity', ['somepeculiarity']);
+			expect(captain.eligible(ship)).to.be.true;
+		});
+
+		it('should return true when nation, group, and peculiarity match, false otherwise', function() {
+			ship.peculiarity = 'somepeculiarity';
+			ship.group = 'somegroup';
+
+			captain.set('CrewPersonality.ships.peculiarity', [ 'somepeculiarity' ]);
+			captain.set('CrewPersonality.ships.groups', [ 'somegroup' ]);
+			captain.set('CrewPersonality.ships.nation', [ ship.getNation() ]);
+			captain.set('CrewPersonality.ships.ships', []);
+
+			expect(captain.eligible(ship)).to.be.true;
+
+			captain.set('CrewPersonality.ships.nation', ['Germany']);
+			expect(captain.eligible(ship)).to.be.false;
+			captain.set('CrewPersonality.ships.nation', [ ship.getNation() ]);
+			
+			captain.set('CrewPersonality.ships.groups', ['someothergroup']);
+			expect(captain.eligible(ship)).to.be.false;
+			captain.set('CrewPersonality.ships.groups', [ ship.get('group') ]);
+			
+			captain.set('CrewPersonality.ships.peculiarity', ['someotherpeculiarity']);
+			expect(captain.eligible(ship)).to.be.false;			
+		});
+
+		it('should ignore nation, group, peculiarity and ship when they are empty', function() {
+			captain.set('CrewPersonality.ships.groups', []);
+			captain.set('CrewPersonality.ships.nation', []);
+			captain.set('CrewPersonality.ships.peculiarity', []);
+			captain.set('CrewPersonality.ships.ships', []);
+			expect(captain.eligible(ship)).to.be.true;
+		});
+	});
+
+	describe('.isDefault', function() {
+		it('should return true if tags is empty, personName is \'\' and peculiarity is \'default\', false otherwise', function() {
+			expect(captain.isDefault()).to.be.true;
+			captain.set('CrewPersonality.tags', ['']);
+			expect(captain.isDefault()).to.be.false;
+			captain.set('CrewPersonality.tags', []);
+			captain.set('CrewPersonality.peculiarity', 'not-default');
+			expect(captain.isDefault()).to.be.false;
+			captain.set('CrewPersonality.peculiarity', 'default');
+			captain.set('CrewPersonality.personName', 'somename');
+			expect(captain.isDefault()).to.be.false;
+		});
+	})
+
 	describe('Captain.Skill', function() {
 		describe('.eligible', function() {
 			it('should be true for skills that match the ship and false otherwise', function() {
