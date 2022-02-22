@@ -13,7 +13,7 @@ class Modernization extends GameObject {
 	static #GETTER_DEFINITIONS = {
 		Tiers: 'shiplevel',
 		Nations: 'nation',
-		Species: 'shiptype',
+		ShipTypes: 'shiptype',
 		Blacklist: 'excludes',
 		Whitelist: 'ships',
 		Slot: 'slot'
@@ -50,7 +50,7 @@ class Modernization extends GameObject {
 
 		// Otherwise apply the standard tier+type+nation logic
 		return (self.getTiers().length === 0 || self.getTiers().includes(ship.getTier()))
-			&& (self.getSpecies().length === 0 || self.getSpecies().includes(ship.getSpecies()))
+			&& (self.getShipTypes().length === 0 || self.getShipTypes().includes(ship.getSpecies()))
 			&& (self.getNations().length === 0 || self.getNations().includes(ship.getNation()));
 	}
 

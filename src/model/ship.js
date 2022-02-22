@@ -89,8 +89,6 @@ class Ship extends GameObject {
 	 * @todo Remove the need to explicitly state readthroughs
 	 */
 	static #GETTER_DEFINITIONS = {
-		Nation: 'typeinfo.nation',
-		Species: 'typeinfo.species',
 		Tier: 'level',
 		Permoflages: 'permoflages',
 		Speed: readthrough('Speed'),

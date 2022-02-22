@@ -22,7 +22,8 @@ class GameObject extends ComplexDataObject {
 		ID: 'id',
 		TypeInfo: 'typeinfo',
 		Type: 'typeinfo.type',
-		Nation: 'typeinfo.nation'
+		Nation: 'typeinfo.nation',
+		Species: 'typeinfo.species'
 	};
 
 	/**
