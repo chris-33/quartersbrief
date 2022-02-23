@@ -5,6 +5,7 @@ import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
+import template from 'pupa';
 
 /**
  * @see GameObject
@@ -42,18 +43,40 @@ class GameObjectFactory {
 			'ships', 'excluded',
 			// These seem to refer to UI localization resources that are not available
 			// in GameParams.data
-			'titleIDs', 'descIDs', 'iconIDs'
+			'titleIDs', 'descIDs', 'iconIDs',
+			// Omit attached labels from expansion
+			'qb_label'
 		];
 
+	// We can't use template literals (`${foo}`) here, because their interpolation cannot be deferred,
+	// and right now there is no context to allow their interpolation.
+	// So we use a templating engine (pupa) here, and interpolate at runtime in the attachLabel method.
+	// These are regular strings, and there is no $ in front of the expressions to be interpolated.
+	static LABEL_KEYS = {
+		'Ship': 'IDS_{data.index}_FULL',
+		'Modernization': 'IDS_TITLE_{data.name}',
+		'Crew': 'IDS_{data.CrewPersonality.personName}',
+		'Projectile': 'IDS_{data.name}',
+		'Gun': 'IDS_{data.name}'
+	}
+	
 	/**
 	 * Private property that holds the loaded
 	 * GameParams data in toto.
 	 * @private
 	 */
-	#everything;
+	#data;
 
-	constructor(everything) {
-		this.setEverything(everything);
+	/**
+	 * Private property that holds the loaded
+	 * human-readable label strings.
+	 * @private
+	 */
+	#labels;
+
+	constructor(data, labels) {
+		this.setData(data);
+		this.#labels = labels;
 	}
 
 	expandReferences(data) {
@@ -79,8 +102,8 @@ class GameObjectFactory {
 				// PAUB002_Grumman_TBF, and then referenced as such in the
 				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
 				// most other files use. This matches the regex, obviously, but
-				// no data of that refcode will be found in #everything.
-				// let expanded = self.#everything[data[key]];
+				// no data of that refcode will be found in #data.
+				// let expanded = self.#data[data[key]];
 				let expanded = self.createGameObject(data[key]);
 				if (expanded) {
 					log.debug(`Expanded reference ${data[key]}`);
@@ -102,9 +125,24 @@ class GameObjectFactory {
 					for (let i = 0; i< data[key].length; i++)
 						data[key][i] = self.expandReferences(data[key][i]);
 					break;
-				// Otherwise keep everything as is.						
+				// Otherwise keep data as is.						
 				default:
 			}
+		}
+		return data;
+	}
+
+	/** 
+	 * Attaches a human-readable label to the provided `data` object. The label is looked up depending
+	 * on ``data.typeinfo.type`. If this `GameObjectFactory` instance was created without the second parameter, 
+	 * or if `data` does not have a `typeinfo.type` property, it does nothing.
+	 * @param {*} data The `data` to attach the label to.
+	 * @returns {Object} Returns `data`, with a label attached under `qb_label`.
+	 */
+	attachLabel(data) {
+		if (this.#labels) {
+			let key = template(GameObjectFactory.LABEL_KEYS[data.typeinfo?.type], data).toUpperCase();
+			data.qb_label = this.#labels[key];
 		}
 		return data;
 	}
@@ -119,7 +157,7 @@ class GameObjectFactory {
 	 * be assumed to be the object's reference code.
 	 * @return {GameObject} The game object for that designator.
 	 * @throws Will throw an error ("No data set") if the GameObjectManager's data has not
-	 * been set using {@link GameObjectFactory#setEverything}.
+	 * been set using {@link GameObjectFactory#setData}.
 	 * @throws Will throw an error ("Invalid argument") if a malformed
 	 * designator is passed.
 	 */
@@ -129,19 +167,19 @@ class GameObjectFactory {
 		let t0 = Date.now();
 		log.debug('Create game object for designator ' + designator)
 		
-		self.#checkEverything();
+		self.#checkData();
 
 		let gameObject;
 		
 		if (typeof designator === 'number') { // designator is an ID
 			// Find an object that has an 'id' property the same as designator
-			gameObject = Object.values(self.#everything).find(obj => obj.id && obj.id === designator);
+			gameObject = Object.values(self.#data).find(obj => obj.id && obj.id === designator);
 		} else if (typeof designator === 'string' && GameObject.REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
 			// Find an object that has an 'index' property the same as designator
-			gameObject = Object.values(self.#everything).find(obj => obj.index && obj.index === designator);
+			gameObject = Object.values(self.#data).find(obj => obj.index && obj.index === designator);
 		} else if (typeof designator === 'string' && GameObject.REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
-			// Access self.#everything directly, as reference names are already its keys
-			gameObject = self.#everything[designator];
+			// Access self.#data directly, as reference names are already its keys
+			gameObject = self.#data[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 
@@ -152,10 +190,11 @@ class GameObjectFactory {
 			'Crew': Captain,
 			'Exterior': Camouflage
 		}[gameObject.typeinfo.type];
-
 		if (!Constructor) Constructor = GameObject;
-		if (Constructor === Ship) gameObject = self.expandReferences(gameObject);
 
+		if (Constructor === Ship) gameObject = self.expandReferences(gameObject);
+		gameObject = self.attachLabel(gameObject);
+		
 		gameObject = new Constructor(gameObject);
 		log.info(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0} ms`);
 		return gameObject; 
@@ -173,26 +212,25 @@ class GameObjectFactory {
 		let self = this;
 
 		log.debug(`Getting all ref codes for type ${type}`);
-		self.#checkEverything();
+		self.#checkData();
 
-		return Object.values(self.#everything)
+		return Object.values(self.#data)
 			.filter(obj => obj.typeinfo && obj.typeinfo.type === type)
 			.map(obj => obj.index);
 	}
 
-	setEverything(everything) {
-		let self = this;
-		self.#everything = everything;
+	setData(data) {
+		this.#data = data;
 	}
 
 	/**
-	 * Checks that this#everything has been set, throws if it hasn't
-	 * @throws Throws an error if this.#everything is `null` or `undefined`.
+	 * Checks that this#data has been set, throws if it hasn't
+	 * @throws Throws an error if this.#data is `null` or `undefined`.
 	 * @private
 	 */
-	#checkEverything() {
-		if (!this.#everything)
-			throw new Error('No data set. Make sure to set data using setEverything before requesting.');
+	#checkData() {
+		if (!this.#data)
+			throw new Error('No data set. Make sure to set data using setData before requesting.');
 	}
 }
 

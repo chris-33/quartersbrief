@@ -23,7 +23,8 @@ class GameObject extends ComplexDataObject {
 		TypeInfo: 'typeinfo',
 		Type: 'typeinfo.type',
 		Nation: 'typeinfo.nation',
-		Species: 'typeinfo.species'
+		Species: 'typeinfo.species',
+		Label: 'qb_label'
 	};
 
 	/**

@@ -1,5 +1,6 @@
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import { GameObject } from '../../src/model/gameobject.js';
+import clone from 'just-clone';
 
 describe('GameObjectFactory', function() {
 	const TEST_DATA = {
@@ -55,7 +56,7 @@ describe('GameObjectFactory', function() {
 	let gameObjectFactory;
 
 	beforeEach(function() {
-		gameObjectFactory = new GameObjectFactory(TEST_DATA);
+		gameObjectFactory = new GameObjectFactory(clone(TEST_DATA));
 	});
 	
 	describe('.createGameObject', function() {
@@ -87,7 +88,33 @@ describe('GameObjectFactory', function() {
 
 		it('should return a GameObject', function() {
 			expect(gameObjectFactory.createGameObject('PAAA001')).to.be.an.instanceof(GameObject);
-		})
+		});
+
+	});
+
+	describe('.attachLabel', function() {
+		let labelKeys;
+		before(function() {
+			labelKeys = GameObjectFactory.LABEL_KEYS;
+			GameObjectFactory.LABEL_KEYS = {
+				'Type1': 'CONSTANT_LABEL', // Simple lookup
+				'Type2': 'LABEL_{typeinfo.type}' // Lookup with interpolation
+			}
+		});
+
+		after(function() {
+			GameObjectFactory.LABEL_KEYS = labelKeys;
+		});
+
+		it('should attach a human-readable label by simple lookup', function() {
+			gameObjectFactory = new GameObjectFactory(clone(TEST_DATA), { CONSTANT_LABEL: 'constant label' });
+			expect(gameObjectFactory.attachLabel(TEST_DATA.PAAA001_Test1)).to.have.property('qb_label', 'constant label');
+		});
+
+		it('should attach a human-readable label by interpolated lookup', function() {
+			gameObjectFactory = new GameObjectFactory(clone(TEST_DATA), { LABEL_TYPE2: 'interpolated label' });
+			expect(gameObjectFactory.attachLabel(TEST_DATA.PAAA003_Test3)).to.have.property('qb_label', 'interpolated label');
+		});
 	});
 
 	describe('.expandReferences', function() {
@@ -104,7 +131,7 @@ describe('GameObjectFactory', function() {
 		});
 
 		it('should not expand blacklisted references', function() {
-			expect(gameObjectFactory.constructor.IGNORED_KEYS).to.include('name'); // Just to make sure
+			expect(GameObjectFactory.IGNORED_KEYS).to.include('name'); // Just to make sure
 			expect(gameObjectFactory.expandReferences(TEST_DATA.PAAA001_Test1)).to
 				.have.property('name')
 				.that.deep.equals(TEST_DATA.PAAA001_Test1.name);
@@ -131,10 +158,6 @@ describe('GameObjectFactory', function() {
 	});
 
 	describe('.listCodesForType', function() {
-		beforeEach(function() {
-			gameObjectFactory.setEverything(TEST_DATA);
-		});
-
 		it('should get the reference codes for all objects with a given type', function() {
 			expect(gameObjectFactory.listCodesForType('Type1')).to
 				.have.members([TEST_DATA.PAAA001_Test1.index, TEST_DATA.PAAA002_Test2.index]);
