@@ -3,7 +3,7 @@
 
 Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/impish64"
-
+  
   # Need this plugin to forward file system events from the host to the guest
   # Otherwise watching for file changes is not going to work
   # See https://github.com/adrienkohlbecker/vagrant-fsnotify
@@ -19,6 +19,7 @@ Vagrant.configure("2") do |config|
     # large amounts of data
     # Processing GameParams.data will fail without this
     vb.memory = "2048"
+    vb.name = "quartersbrief"
   end
 
   # Install NodeJS
@@ -40,13 +41,13 @@ Vagrant.configure("2") do |config|
   # https://specifications.freedesktop.org/basedir-spec/latest/index.html
   config.vm.synced_folder "config/", "/home/vagrant/.config/quartersbrief"
   # Share "Fake WoWS" directory to simulate the game actually being installed
-  config.vm.synced_folder "wows/", "/opt/World of Warships", fsnotify: true
+  config.vm.synced_folder "wows/", "/opt/World_of_Warships", fsnotify: true
 
   # cd to the /vagrant directory upon login
   config.ssh.extra_args = ["-t", "cd /vagrant; bash --login"]
 
-  config.trigger.after :up do |t|
-    t.name = "vagrant fsnotify"
-    t.run = { inline: "vagrant fsnotify" }
-  end
+  #config.trigger.after :up do |t|
+  #  t.name = "vagrant fsnotify"
+  #  t.run = { inline: "vagrant fsnotify" }
+  #end
 end
