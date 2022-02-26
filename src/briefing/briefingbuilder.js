@@ -1,4 +1,5 @@
 import pug from 'pug';
+import sass from 'sass';
 import log from 'loglevel';
 
 /**
@@ -6,29 +7,42 @@ import log from 'loglevel';
  * topic builder for each topic of the agenda, then calls this with the battle and a `GameObjectFactory`.
  * If no topic builder could be found, it constructs a special `error topic` for that topic, but finishes
  * the briefing otherwise.
+ *
+ * Topic content is constructed by getting each topic's dedicated topic builder. Topic builders are functions
+ * of length 2 that return an object with properties `html` and `scss` containing the briefing's content 
+ * and styling respectively. (Note that the property here is still `**s**css`. In the similarly composed 
+ * object returned by {@link BriefingBuilder#build}, this becomes `css`.) 
+ *
+ * Topic builders are retrieved by calling `{@link #getTopicBuilder}`, which in turn attempts a dynamic import of
+ * the module for the topic builder. Topic builder modules are expected to be found in `topics/<topicname>/<topicname>.js`
+ * and export a function as described above as default. The function may be `async`.
  */
 class BriefingBuilder {
+	#briefingHTML;
+	#briefingCSS(briefing) {
+		return sass.compileString(`${sass.compile('src/briefing/briefing.scss').css}${briefing.topics.map(b => b.scss).join()}`).css;
+	}
+
 	/**
 	 * Creates a new `BriefingBuilder`.
-	 * @param  {Battle} battle            The battle for which the briefing will be.
-	 * @param  {GameObjectFactory} gameObjectFactory A game object factory that will be passed to each
-	 * topic builder.
-	 * @throws Throws an error if either the `battle` or the `agenda` are missing. It is possible to create
-	 * a briefing builder without a game object factory, but note that topic builders will then also not
-	 * have one available.
+	 * @param  {GameObjectFactory} [gameObjectFactory] A game object factory that will be passed to each
+	 * topic builder. It is possible to create a briefing builder without a game object factory, but note 
+	 * that topic builders will then also not have one available.
 	 */
-	constructor(battle, agenda, gameObjectFactory) {
-		if (!battle) throw new Error('Cannot create a BriefingBuilder without a battle');		
-		this.battle = battle;
-		if (!agenda) throw new Error('Cannot create a BriefingBuilder without an agenda');		
-		this.agenda = agenda;
+	constructor(gameObjectFactory) {
 		this.gameObjectFactory = gameObjectFactory;
+		this.#briefingHTML = pug.compileFile('src/briefing/briefing.pug');
 	}
+
 
 	/**
 	 * Dynamically imports the topic builder for the given `topic`. Topic builders will be expected
 	 * to be a file with the topic's name and extension '.js' in a subdirectory of the topic's name,
-	 * exporting a function of length 2 under the name `buildTopic`.
+	 * exporting a function of length 2 as default.
+	 * The function may be async and must return an object containing the topic's html as a `string` 
+	 * in a property `html`, and (optionally) the topic's styling as a `string` in a property `scss`.
+	 * Topic builder's do not need to worry about polluting other topic's styles, as topic styles
+	 * are automatically scoped.
 	 * @param  {String} topic The topic for which to get a topic builder.
 	 * @return {Promise}       A promise that resolves to the topic builder, or rejects if none could be found.
 	 */
@@ -47,34 +61,50 @@ class BriefingBuilder {
 
 	/**
 	 * Builds a briefing using the battle and the agenda.
-	 * @return {string} A string containing the HTML for the briefing.
+	 * @param  {Battle} battle            The battle for which to build the briefing.
+	 * @param  {Agenda} agenda            The agenda by which to build the briefing.
+	 * @return {Object} An object containing the HTML for the briefing in `html` and the
+	 * scoped styling for the briefing in `css`.
 	 */
-	async build() {
-		const self = this;
-		if (!self.agenda || !self.agenda.topics) return {};
-		let briefing = { topics: new Array(self.agenda.topics.length) };
+	async build(battle, agenda) {
+		if (!agenda || !agenda.topics) return {};
+		let briefing = { topics: new Array(agenda.topics.length) };
 
 		// For each briefing content part, get the dedicated builder for that part and build it
-		// Assign it to the layout pane dedicated to it
-		let dynimports = await Promise.allSettled(self.agenda.topics.map(topic => self.getTopicBuilder(topic)));
-		for (let i = 0; i < dynimports.length; i++) {
-			let dynimport = dynimports[i];
-			if (dynimport.status === 'fulfilled')
-				briefing.topics[i] = dynimport.value.buildTopic(self.battle, self.gameObjectFactory);
-			else {
-				log.error(`Error while building topic ${self.agenda.topics[i]}: ${dynimport.reason}`);
-				briefing.topics[i] = self.buildErrorTopic(dynimport.reason);
+		
+		let builtTopics = await Promise.allSettled(agenda.topics.map(topic => this.getTopicBuilder(topic)
+			.then(dynimport => dynimport.default(battle, this.gameObjectFactory))));
+
+		// Assign it to the layout pane dedicated to it for successful builds
+		// Or build an error topic for unsuccessful ones. (That includes unsuccessful imports)
+		for (let i = 0; i < builtTopics.length; i++) {
+			let dynimport = builtTopics[i];
+			if (dynimport.status === 'fulfilled') {
+				briefing.topics[i] = dynimport.value;
+				// Scope topic SCSS by nesting it inside the topic <div>
+				// If the topic builder returned no SCSS, use ''
+				briefing.topics[i].scss = `#topic-${i} {${briefing.topics[i].scss ?? ''}}`;
+			} else {
+				log.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
+				briefing.topics[i] = this.buildErrorTopic(dynimport.reason);
 			}
 		}
-		return pug.renderFile('src/briefing/briefing.pug', briefing)
+		return {
+			html: this.#briefingHTML(briefing),
+			css: this.#briefingCSS(briefing)
+		}
 	}
 
 	static buildNoBattle() {
-		return pug.renderFile('src/briefing/no-battle.pug');
+		return {
+			html: pug.renderFile('src/briefing/no-battle.pug')
+		}
 	}
 
 	static buildNoAgenda() {
-		return pug.renderFile('src/briefing/no-agenda.pug');
+		return {
+			html: pug.renderFile('src/briefing/no-agenda.pug')
+		}
 	}
 
 }

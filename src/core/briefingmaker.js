@@ -79,6 +79,22 @@ class ErrorHandlingAgendaStore {
 /**
  * `BriefingMaker` encapsulates the algorithm to make a briefing, using `BattleDataReader`, `AgendaStore` (or, more specifically,
  * `ErrorHandlingAgendaStore`) and `BriefingBuilder`. 
+ *
+ * In broad terms, this works as follows:
+ * When the `BriefingMaker` is told to make a new briefing, it will look for the file `tempArenaInfo.json` in the World of Warships
+ * replay directory. If it finds such a file, it will read the battle data from it and enrich it with `Ship` objects for all 
+ * participating player, using its `GameObjectFactory` to do so. 
+ *
+ * It will then request all known `Agenda`s from its `AgendaStore` (generally, the `AgendaStore` will do this by reading all agenda
+ * definitions from the quartersbrief agenda directory, but this is, of course, up to the `AgendaStore` implementation). Among these,
+ * the agenda to use is chosen using the provided `strategy`. 
+ *
+ * Finally, a briefing is built using a `BriefingBuilder` on the battle and agenda. (See there for details on how the agenda's topics 
+ * are processed and turned into briefing content.)
+ * @see GameObjectFactory
+ * @see AgendaStore
+ * @see SpecificityStrategy
+ * @see BriefingBuilder
  */
 class BriefingMaker {
 	/**
@@ -87,13 +103,13 @@ class BriefingMaker {
 	 * @param  {GameObjectFactory} gameObjectFactory A ´GameObjectFactory` instance to use for retrieving game objects, such as ships.
 	 * @param  {AgendaStore} agendaStore       An `AgendaStore` instance that will provide the known agendas.
 	 * @param  {Object} strategy          A strategy to use for choosing the agenda to use. Must have a `chooseAgenda` method.
-	 * @param  {Function} BriefingBuilder   The constructor of a `BriefingBuilder` to use for assembling briefings.
 	 */
 	constructor(replaydir, gameObjectFactory, agendaStore, strategy) {
 		this.battleDataReader = new BattleDataReader(replaydir);
 		this.gameObjectFactory = gameObjectFactory;
 		this.errorHandlingAgendaStore = new ErrorHandlingAgendaStore(agendaStore);
 		this.strategy = strategy;
+		this.briefingBuilder = new BriefingBuilder(this.gameObjectFactory);
 	}
 
 	/**
@@ -107,7 +123,7 @@ class BriefingMaker {
 	 * 
 	 * If there is no battle currently, the special template `no-battle.pug` is rendered and returned.
 	 * If there is no agenda that matches the battle, the special template `no-agenda.pug` is rendered and returned.
-	 * @return {String} The complete HTML for the briefing.
+	 * @return {Object} An object with two string properties `html` and `css` containing the complete HTML and CSS for the briefing, respectively.
 	 */
 	async makeBriefing() {
 		// Helper function to enrich the passed battle with game objects like ships and players
@@ -127,7 +143,7 @@ class BriefingMaker {
 		if (agenda === null) {
 			return BriefingBuilder.buildNoAgenda();
 		}
-		return await new BriefingBuilder(battle, agenda, this.gameObjectFactory).build();
+		return await this.briefingBuilder.build(battle, agenda);
 	}
 }
 
