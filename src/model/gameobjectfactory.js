@@ -53,11 +53,11 @@ class GameObjectFactory {
 	// So we use a templating engine (pupa) here, and interpolate at runtime in the attachLabel method.
 	// These are regular strings, and there is no $ in front of the expressions to be interpolated.
 	static LABEL_KEYS = {
-		'Ship': 'IDS_{data.index}_FULL',
-		'Modernization': 'IDS_TITLE_{data.name}',
-		'Crew': 'IDS_{data.CrewPersonality.personName}',
-		'Projectile': 'IDS_{data.name}',
-		'Gun': 'IDS_{data.name}'
+		'Ship': 'IDS_{index}_FULL',
+		'Modernization': 'IDS_TITLE_{name}',
+		'Crew': 'IDS_{CrewPersonality.personName}',
+		'Projectile': 'IDS_{name}',
+		'Gun': 'IDS_{name}'
 	}
 	
 	/**
@@ -141,8 +141,11 @@ class GameObjectFactory {
 	 */
 	attachLabel(data) {
 		if (this.#labels) {
-			let key = template(GameObjectFactory.LABEL_KEYS[data.typeinfo?.type], data).toUpperCase();
+			let key = GameObjectFactory.LABEL_KEYS[data.typeinfo?.type];
+			if (!key) return data;
+			key = template(key, data).toUpperCase();
 			data.qb_label = this.#labels[key];
+			// @todo Find a way to attach labels to captain skills and consumable flavors (flavors may be different than the base - e.g. Crawling Smoke Generator is a flavor of Smoke Generator)
 		}
 		return data;
 	}
