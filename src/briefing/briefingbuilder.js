@@ -19,8 +19,8 @@ import log from 'loglevel';
  */
 class BriefingBuilder {
 	#briefingHTML;
-	#briefingCSS(briefing) {
-		return sass.compileString(`${sass.compile('src/briefing/briefing.scss').css}${briefing.topics.map(b => b.scss).join()}`).css;
+	#briefingCSS(briefingScss) {
+		return sass.compileString(`${sass.compile('src/briefing/briefing.scss').css}${briefingScss.topics.join()}`).css;
 	}
 
 	/**
@@ -68,7 +68,10 @@ class BriefingBuilder {
 	 */
 	async build(battle, agenda) {
 		if (!agenda || !agenda.topics) return {};
-		let briefing = { topics: new Array(agenda.topics.length) };
+		let briefing = { 
+			html: { topics: new Array(agenda.topics.length) },
+			scss: { topics: new Array(agenda.topics.length) }
+		};
 
 		// For each briefing content part, get the dedicated builder for that part and build it
 		
@@ -80,18 +83,18 @@ class BriefingBuilder {
 		for (let i = 0; i < builtTopics.length; i++) {
 			let dynimport = builtTopics[i];
 			if (dynimport.status === 'fulfilled') {
-				briefing.topics[i] = dynimport.value;
+				briefing.html.topics[i] = dynimport.value.html;
 				// Scope topic SCSS by nesting it inside the topic <div>
 				// If the topic builder returned no SCSS, use ''
-				briefing.topics[i].scss = `#topic-${i} {${briefing.topics[i].scss ?? ''}}`;
+				briefing.scss.topics[i] = `#topic-${i} {${dynimport.value.scss ?? ''}}`;
 			} else {
 				log.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
-				briefing.topics[i] = this.buildErrorTopic(dynimport.reason);
+				briefing.html.topics[i] = this.buildErrorTopic(dynimport.reason);
 			}
 		}
 		return {
-			html: this.#briefingHTML(briefing),
-			css: this.#briefingCSS(briefing)
+			html: this.#briefingHTML(briefing.html),
+			css: this.#briefingCSS(briefing.scss)
 		}
 	}
 

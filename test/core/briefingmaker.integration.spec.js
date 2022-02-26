@@ -7,6 +7,8 @@ import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import { AgendaStore } from '../../src/briefing/agendastore.js';
 import { SpecificityStrategy } from '../../src/briefing/specificitystrategy.js';
 import { valid as isHtml, parse } from 'node-html-parser';
+import { validate } from 'csstree-validator';
+const isCss = (s) => typeof s === 'string' && validate(s).length === 0;
 
 describe('BriefingMaker @integration', function() {
 	let pathExisted;
@@ -56,11 +58,13 @@ describe('BriefingMaker @integration', function() {
 		playerVehicle: 'PAAA001_Battleship'
 	}
 	const MOCK_TOPIC_HTML = '<p>Mock topic</p>';
+	const MOCK_TOPIC_SCSS = '$color: red; p { color: $color }';
+
 	before(function() {
 		pathExisted = existsSync(mockpath);
 		if (!pathExisted) {
 			mkdirSync('src/briefing/topics/mock/');
-			writeFileSync(path.join(mockpath, 'mock.js'), `function buildTopic() { return "${MOCK_TOPIC_HTML}"; }\nexport { buildTopic }`);
+			writeFileSync(path.join(mockpath, 'mock.js'), `export default function buildTopic() { return { html: "${MOCK_TOPIC_HTML}", scss: "${MOCK_TOPIC_SCSS}" }; }`);
 
 			writeFileSync(path.join(os.tmpdir(), 'tempArenaInfo.json'), JSON.stringify(MOCK_TEMP_ARENA_INFO));
 
@@ -87,8 +91,9 @@ describe('BriefingMaker @integration', function() {
 
 	it('should construct a briefing from tempArenaInfo.json', async function() {
 		let briefing = await briefingMaker.makeBriefing();
-		expect(briefing, 'briefing should be valid HTML').to.satisfy(isHtml);
-		let html = parse(briefing);		
+		expect(briefing.html, 'briefing should have valid HTML').to.satisfy(isHtml);
+		expect(briefing.css, 'briefing should have valid css').to.satisfy(isCss);
+		let html = parse(briefing.html);
 		expect(html.querySelector('#topic-0'), 'briefing should have a topic').to.exist;
 		expect(html.querySelector('#topic-0').innerHTML, 'briefing\'s topic should equal the mock topicBuilder\'s output').to.equal(MOCK_TOPIC_HTML);
 	});
