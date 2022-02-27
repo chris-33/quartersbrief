@@ -1,5 +1,7 @@
 each topic, index in topics
 	.topic(id = `topic-${index}`)
+		.topic-caption
+			| #{topic.caption}
 		//- Need to use !{} here instead of #{} to prevent the pug engine from escaping HTML tags
 		//- See https://pugjs.org/language/interpolation.html#string-interpolation-unescaped
-		| !{topic}
+		| !{topic.html}

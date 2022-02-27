@@ -1,6 +1,7 @@
 import pug from 'pug';
 import sass from 'sass';
 import log from 'loglevel';
+import { readFileSync } from 'fs';
 
 /**
  * The `BriefingBuilder` constructs a briefing for a given battle and agenda. It dynamically imports the 
@@ -19,8 +20,9 @@ import log from 'loglevel';
  */
 class BriefingBuilder {
 	#briefingHTML;
-	#briefingCSS(briefingScss) {
-		return sass.compileString(`${sass.compile('src/briefing/briefing.scss').css}${briefingScss.topics.join()}`).css;
+	#briefingCSS(briefing) {
+		// @todo Cache contents of briefing.scss to avoid synchronous reads on every refresh
+		return sass.compileString(`${readFileSync('src/briefing/briefing.scss').toString()}${briefing.topics.map(topic => topic.scss).join()}`).css;
 	}
 
 	/**
@@ -67,10 +69,19 @@ class BriefingBuilder {
 	 * scoped styling for the briefing in `css`.
 	 */
 	async build(battle, agenda) {
+		// Helper function to infer a caption from a topic name by
+		// - replacing all underscores with spaces
+		// - capitalizing the first letter of the topic name
+		// - capitalizing the first letter after an underscore
+		function inferCaption(topicName) {			
+			return topicName.split('_')
+						.map(substr => substr.charAt(0).toUpperCase() + substr.substring(1))
+						.join(' ');
+		}
+
 		if (!agenda || !agenda.topics) return {};
 		let briefing = { 
-			html: { topics: new Array(agenda.topics.length) },
-			scss: { topics: new Array(agenda.topics.length) }
+			topics: new Array(agenda.topics.length)
 		};
 
 		// For each briefing content part, get the dedicated builder for that part and build it
@@ -83,18 +94,23 @@ class BriefingBuilder {
 		for (let i = 0; i < builtTopics.length; i++) {
 			let dynimport = builtTopics[i];
 			if (dynimport.status === 'fulfilled') {
-				briefing.html.topics[i] = dynimport.value.html;
-				// Scope topic SCSS by nesting it inside the topic <div>
-				// If the topic builder returned no SCSS, use ''
-				briefing.scss.topics[i] = `#topic-${i} {${dynimport.value.scss ?? ''}}`;
+				briefing.topics[i] = {
+					html: dynimport.value.html,
+					// Scope topic SCSS by nesting it inside the topic <div>
+					// If the topic builder returned no SCSS, use ''
+					scss: `#topic-${i} {${dynimport.value.scss ?? ''}}`,
+					// Use the caption the topic builder provided if any, otherwise try to infer a 
+					// caption from the topic's name
+					caption: dynimport.value.caption ?? inferCaption(agenda.topics[i])
+				}				
 			} else {
 				log.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
-				briefing.html.topics[i] = this.buildErrorTopic(dynimport.reason);
+				briefing.topics[i].html = this.buildErrorTopic(dynimport.reason);
 			}
 		}
 		return {
-			html: this.#briefingHTML(briefing.html),
-			css: this.#briefingCSS(briefing.scss)
+			html: this.#briefingHTML(briefing),
+			css: this.#briefingCSS(briefing)
 		}
 	}
 
