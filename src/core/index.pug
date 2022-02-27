@@ -3,10 +3,13 @@ html
     block head
       meta(charset='utf-8')
       meta(name='viewport', content='width=device-width, initial-scale=1.0')
+      link(href='quartersbrief.css' rel='stylesheet')        
+      link(href='quartersbrief-briefing.css' rel='stylesheet')        
       script(src="/socket.io/socket.io.js")
   body
     header World of Warships Quarters Brief
-    | !{briefing}
+    #briefing  
+      | !{briefing}
     script
       | const socket = io();
       | socket.on('battlestart', function() { window.location.reload() })
