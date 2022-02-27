@@ -95,6 +95,6 @@ describe('BriefingMaker @integration', function() {
 		expect(briefing.css, 'briefing should have valid css').to.satisfy(isCss);
 		let html = parse(briefing.html);
 		expect(html.querySelector('#topic-0'), 'briefing should have a topic').to.exist;
-		expect(html.querySelector('#topic-0').innerHTML, 'briefing\'s topic should equal the mock topicBuilder\'s output').to.equal(MOCK_TOPIC_HTML);
+		expect(html.querySelector('#topic-0 .topic-content').innerHTML, 'briefing\'s topic should equal the mock topicBuilder\'s output').to.equal(MOCK_TOPIC_HTML);
 	});
 });
