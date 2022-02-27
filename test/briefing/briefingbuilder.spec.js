@@ -18,7 +18,7 @@ describe('BriefingBuilder', function() {
 		gameObjectFactory = new GameObjectFactory({});
 		sinon.stub(gameObjectFactory, 'createGameObject').returns(null);
 		battle = new Battle(JSON.parse(readFileSync('test/model/testdata/battle.json')));
-		agenda = new Agenda({}, [ 'testtopic' ]);
+		agenda = new Agenda({}, { testtopic: {} });
 	});
 
 	beforeEach(function() {
@@ -53,8 +53,8 @@ describe('BriefingBuilder', function() {
 		it('should pass along options to the topic builder', async function() {
 			const buildTopic = sinon.stub().returns({});
 			builder.getTopicBuilder.resolves({ default: buildTopic });
-			agenda.testtopic = { option: 'option' };
-			let expected = agenda.testtopic;
+			agenda.topics.testtopic = { option: 'option' };
+			let expected = agenda.topics.testtopic;
 			await builder.build(battle, agenda);
 			expect(buildTopic).to.have.been.calledWith(battle, gameObjectFactory, expected);
 			// No need to do buildTopic.restore() because it's an isolated stub, not an object method			

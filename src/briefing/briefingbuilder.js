@@ -81,12 +81,12 @@ class BriefingBuilder {
 
 		if (!agenda || !agenda.topics) return {};
 		let briefing = { 
-			topics: new Array(agenda.topics.length)
+			topics: new Array(agenda.getTopicNames().length)
 		};
 
 		// For each briefing content part, get the dedicated builder for that part and build it
-		let builtTopics = await Promise.allSettled(agenda.topics.map(topic => this.getTopicBuilder(topic)
-			.then(dynimport => dynimport.default(battle, this.gameObjectFactory, agenda[topic]))));
+		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(topicName => this.getTopicBuilder(topicName)
+			.then(dynimport => dynimport.default(battle, this.gameObjectFactory, agenda.topics[topicName]))));
 
 		// Assign it to the layout pane dedicated to it for successful builds
 		// Or build an error topic for unsuccessful ones. (That includes unsuccessful imports)
@@ -100,7 +100,7 @@ class BriefingBuilder {
 					scss: `#topic-${i} {${dynimport.value.scss ?? ''}}`,
 					// Use the caption the topic builder provided if any, otherwise try to infer a 
 					// caption from the topic's name
-					caption: dynimport.value.caption ?? inferCaption(agenda.topics[i])
+					caption: dynimport.value.caption ?? inferCaption(agenda.getTopicNames()[i])
 				}				
 			} else {
 				log.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);

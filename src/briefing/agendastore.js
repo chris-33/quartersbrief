@@ -18,7 +18,10 @@ class AgendaStore {
 	async getAgendas() {
 		let agendas = await readdir(this.agendadir);
 		agendas = await Promise.all(agendas.map(agenda => readFile(path.join(this.agendadir, agenda))));
-		return agendas.map(agenda => { agenda = TOML.parse(agenda); return new Agenda(agenda.matches, agenda.topics) });
+		return agendas.map(agenda => { 
+			agenda = TOML.parse(agenda); 
+			return new Agenda(agenda.matches, agenda.topics);
+		});
 	}
 
 }

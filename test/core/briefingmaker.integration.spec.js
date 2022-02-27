@@ -45,7 +45,9 @@ describe('BriefingMaker @integration', function() {
 	}
 	const MOCK_AGENDA = {
 		matches: {},
-		topics: [ 'mock' ]
+		topics: { 
+			mock: {}
+		}
 	}
 	const MOCK_TEMP_ARENA_INFO = {
 		playerID: 0,

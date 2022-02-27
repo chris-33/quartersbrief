@@ -62,6 +62,15 @@ class Agenda {
 			&& (this.matcher.tiers?.includes(ship.getTier()) ?? true)
 			&& (this.matcher.nations?.includes(ship.getNation()) ?? true);
 	}
+
+	/**
+	 * Returns the names of all topics defined on this agenda. The topic's data
+	 * will be available under `agenda.topics[topicname]`
+	 * @return {String[]} The names of all the topics on this agenda.
+	 */
+	getTopicNames() {
+		return Object.keys(this.topics);
+	}
 }
 
 export { Agenda }
