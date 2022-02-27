@@ -95,7 +95,7 @@ srv.get('/quartersbrief-briefing.css', function(req, res) {
 	if (briefing.css)
 		res.send(briefing.css);
 	else
-		res.status(404);
+		res.status(404).end();
 });
 
 battleController.on('battlestart', function() {
