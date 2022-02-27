@@ -187,11 +187,15 @@ describe('assertInvariants', function() {
 		});
 
 		it('should throw an InvariantError when weapons\' ammos are in a different order for different guns', function() {
+			// Make the ammo lists of the second gun the reverse of the first gun in AB1_Artillery
+			// Should fail
 			data.PAAA001_Battleship.AB1_Artillery.HP_AGM_2.ammoList = clone(data.PAAA001_Battleship.AB1_Artillery.HP_AGM_1.ammoList).reverse(); // Need to clone because reverse() works in-place
 			expect(assertInvariants.assertWeaponAmmosAreOrdered.bind(null, data)).to.throw(InvariantError);
 		});
 
 		it('should not throw if ammo order is different between different modules as long as it is consistent within the module', function() {
+			// Make the ammo lists of all guns in AB2_Artillery be in reverse order from AB1_Artillery
+			// Should pass, because the order is consistent within the modules
 			data.PAAA001_Battleship.AB2_Artillery.HP_AGM_1.ammoList = clone(data.PAAA001_Battleship.AB1_Artillery.HP_AGM_1.ammoList).reverse(); // Need to clone because reverse() works in-place
 			data.PAAA001_Battleship.AB2_Artillery.HP_AGM_2.ammoList = clone(data.PAAA001_Battleship.AB1_Artillery.HP_AGM_2.ammoList).reverse(); // Need to clone because reverse() works in-place
 			expect(assertInvariants.assertWeaponAmmosAreOrdered.bind(null, data)).to.not.throw();			
