@@ -235,5 +235,64 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		throw new InvariantError('all modules\' components must be resolvable unambiguously', counterexamples);
 }
 
+assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
+	/*
+		This algorithm works as follows:
+		For every ship, it looks at every top-level object defined within that ship and finds any objects
+		contained therein that have a typeinfo with typeinfo.type === 'Gun'. 
+		It then checks that each of the found guns' ammoList is in the same order.
+		By iterating over the top-level objects instead of just finding guns directly on the ship, it
+		allows for the order to vary across modules, but makes sure that within a module the order is
+		the same for all guns. 
+		E.g. if a ship has two artillery modules (AB1_Artillery and AB2_Artillery), and all guns within
+		AB1_Artillery have ammo lists that order the HE shell first and the AP shell second, even though
+		the order is the other way around for all guns in AB2_Artillery that is okay.
+		But if one gun in AB1_Artillery has the order HE-AP and one gun has the order AP-HE, that is not okay.
+	 */
+	
+	 // Helper function to find all descendant (including deeply nested) objects within data that have a 
+	 // typeinfo.type property equal to 'Gun'.
+	function findGuns(data) {
+		let objects = Object.values(data).filter(item => 
+					typeof item === 'object' // This includes arrays
+					&& item !== null);  // Because typeof null === 'object'
+		let result = objects.filter(obj => obj.typeinfo?.type === 'Gun');
+		result.concat(objects.map(findGuns));
+		return result;
+	}
+
+	let counterexamples = [];
+	let ships = Object.values(data).filter(obj => obj.typeinfo?.type === 'Ship');
+	for (let ship of ships) {
+		// Iterate over ship's top level objects. This will scope found guns to those top-level objects,
+		// ultimately causing the invariant to only fail if ammos are out of order WITHIN a module's 
+		// guns.
+		// E.g. if a ship's stock artillery has a different order from that ship's top artillery, this
+		// will not violate the invariant, but if two different turrets within the same artillery module
+		// have different orders for the ammos it will.
+		for (let key of Object.keys(ship)) {
+			let obj = ship[key];
+			// Filter out primitives and null values (because typeof null === 'object')
+			if (typeof obj !== 'object' || obj === null) continue;
+
+			let ammos = {};
+			let guns = findGuns(obj);
+			for (let gun of guns) {
+				// Iterate over all ammos for that gun
+				for (let i = 0; i < gun.ammoList?.length; i++) {
+					let ammo = gun.ammoList[i];
+					// Is this a new ammo? If so, remember its index
+					if (!(ammo in ammos))
+						ammos[ammo] = i;
+					// If it is a known ammo, check that it's at the same index as remembered
+					else if (ammos[ammo] !== i)
+						counterexamples.push(`${ship.name}.${key} has gun with ammo ${ammo} at index ${i}, but it was expected at index ${ammos[ammo]}`);
+				}
+			}
+		}
+	}
+	if (counterexamples.length > 0)
+		throw new InvariantError('a ship\'s weapon ammos must always be in the same order', counterexamples);
+}
 
 export { assertInvariants, InvariantError } 

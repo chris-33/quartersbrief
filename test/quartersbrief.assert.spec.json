@@ -9,25 +9,106 @@
 			"nation": "USA"
 		},
 		"AB1_Artillery": {
-			"HP_AGM_1": {}
+			"HP_AGM_1": {
+				"ammoList": [
+					"PAPA001_HE_Ammo",
+					"PAPA002_AP_Ammo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Main",
+					"nation": "USA"
+				}
+			},
+			"HP_AGM_2": {
+				"ammoList": [
+					"PAPA001_HE_Ammo",
+					"PAPA002_AP_Ammo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Main",
+					"nation": "USA"
+				}
+			}
 		},
 		"AB2_Artillery": {
-			"HP_AGM_1": {}
+			"HP_AGM_1": {
+				"ammoList": [
+					"PAPA001_HE_Ammo",
+					"PAPA002_AP_Ammo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Main",
+					"nation": "USA"
+				}
+			},
+			"HP_AGM_2": {
+				"ammoList": [
+					"PAPA001_HE_Ammo",
+					"PAPA002_AP_Ammo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Main",
+					"nation": "USA"
+				}
+			}
 		},		
 		"AA1": {
-			"HP_AGA_1": {}
+			"HP_AGA_1": {
+				"typeinfo": {
+					"type": "Gun",
+					"species": "AAircraft",
+					"nation": "USA"
+				}				
+			}
 		},
 		"AA2": {
-			"HP_AGA_1": {}
+			"HP_AGA_1": {
+				"typeinfo": {
+					"type": "Gun",
+					"species": "AAircraft",
+					"nation": "USA"
+				}								
+			}
 		},
 		"A_ATBA": {
-			"HP_AGS_1": {}
+			"HP_AGS_1": {
+				"ammoList": [
+					"PAPA003_HE_Secondary_Ammo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Secondary",
+					"nation": "USA"
+				}												
+			}
 		},
 		"B_ATBA": {
-			"HP_AGS_1": {}
+			"HP_AGS_1": {
+				"ammoList": [
+					"PAPA003_HE_Secondary_Ammo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Secondary",
+					"nation": "USA"
+				}																
+			}
 		},
 		"AB1_Torpedoes": {
-			"HP_AGT_1": {}
+			"HP_AGT_1": {
+				"ammoList": [
+					"PAPT001_Torpedo"
+				],
+				"typeinfo": {
+					"type": "Gun",
+					"species": "Torpedo",
+					"nation": "USA"
+				}				
+			}
 		},
 		"ShipUpgradeInfo": {
 			"A_Hull": {

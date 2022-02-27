@@ -174,4 +174,27 @@ describe('assertInvariants', function() {
 				.throw(InvariantError);
 		});
 	});
+
+	describe('.assertWeaponAmmosAreOrdered', function() {
+		let data;
+
+		beforeEach(function() {
+			data = clone(TEST_DATA);
+		});
+
+		it('should not error when all weapons\' ammos are always in the same order', function() {
+			expect(assertInvariants.assertWeaponAmmosAreOrdered.bind(null, data)).to.not.throw();
+		});
+
+		it('should throw an InvariantError when weapons\' ammos are in a different order for different guns', function() {
+			data.PAAA001_Battleship.AB1_Artillery.HP_AGM_2.ammoList = clone(data.PAAA001_Battleship.AB1_Artillery.HP_AGM_1.ammoList).reverse(); // Need to clone because reverse() works in-place
+			expect(assertInvariants.assertWeaponAmmosAreOrdered.bind(null, data)).to.throw(InvariantError);
+		});
+
+		it('should not throw if ammo order is different between different modules as long as it is consistent within the module', function() {
+			data.PAAA001_Battleship.AB2_Artillery.HP_AGM_1.ammoList = clone(data.PAAA001_Battleship.AB1_Artillery.HP_AGM_1.ammoList).reverse(); // Need to clone because reverse() works in-place
+			data.PAAA001_Battleship.AB2_Artillery.HP_AGM_2.ammoList = clone(data.PAAA001_Battleship.AB1_Artillery.HP_AGM_2.ammoList).reverse(); // Need to clone because reverse() works in-place
+			expect(assertInvariants.assertWeaponAmmosAreOrdered.bind(null, data)).to.not.throw();			
+		});
+	});
 });
