@@ -1,0 +1,9 @@
+p {
+	grid-column: 1 / span 10; // Span a high number so we can always be sure to span all
+	text-align: center;
+	color: darkgray;
+	font-size: 20pt;
+	font-style: italic;
+	font-weight: bold;
+	margin-top: 30vh;
+}
