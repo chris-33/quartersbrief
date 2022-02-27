@@ -85,9 +85,8 @@ class BriefingBuilder {
 		};
 
 		// For each briefing content part, get the dedicated builder for that part and build it
-		
 		let builtTopics = await Promise.allSettled(agenda.topics.map(topic => this.getTopicBuilder(topic)
-			.then(dynimport => dynimport.default(battle, this.gameObjectFactory))));
+			.then(dynimport => dynimport.default(battle, this.gameObjectFactory, agenda[topic]))));
 
 		// Assign it to the layout pane dedicated to it for successful builds
 		// Or build an error topic for unsuccessful ones. (That includes unsuccessful imports)
@@ -105,7 +104,9 @@ class BriefingBuilder {
 				}				
 			} else {
 				log.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
-				briefing.topics[i].html = this.buildErrorTopic(dynimport.reason);
+				briefing.topics[i] = {
+					html: this.buildErrorTopic(dynimport.reason)
+				}
 			}
 		}
 		return {
@@ -116,13 +117,15 @@ class BriefingBuilder {
 
 	static buildNoBattle() {
 		return {
-			html: pug.renderFile('src/briefing/no-battle.pug')
+			html: pug.renderFile('src/briefing/no-battle.pug'),
+			css: sass.compile('src/briefing/message.scss').css
 		}
 	}
 
 	static buildNoAgenda() {
 		return {
-			html: pug.renderFile('src/briefing/no-agenda.pug')
+			html: pug.renderFile('src/briefing/no-agenda.pug'),
+			css: sass.compile('src/briefing/message.scss').css
 		}
 	}
 

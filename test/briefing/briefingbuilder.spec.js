@@ -22,7 +22,7 @@ describe('BriefingBuilder', function() {
 	});
 
 	beforeEach(function() {
-		builder = new BriefingBuilder(battle, agenda, gameObjectFactory);
+		builder = new BriefingBuilder(gameObjectFactory);
 		sinon.stub(builder, 'getTopicBuilder');
 	});
 
@@ -48,6 +48,16 @@ describe('BriefingBuilder', function() {
 			await builder.build(battle, agenda);
 			expect(buildTopic).to.have.been.called;
 			// No need to do buildTopic.restore() because it's an isolated stub, not an object method
+		});
+
+		it('should pass along options to the topic builder', async function() {
+			const buildTopic = sinon.stub().returns({});
+			builder.getTopicBuilder.resolves({ default: buildTopic });
+			agenda.testtopic = { option: 'option' };
+			let expected = agenda.testtopic;
+			await builder.build(battle, agenda);
+			expect(buildTopic).to.have.been.calledWith(battle, gameObjectFactory, expected);
+			// No need to do buildTopic.restore() because it's an isolated stub, not an object method			
 		});
 
 		it('should return a promise that resolves to a briefing object with valid HTML', async function() {
