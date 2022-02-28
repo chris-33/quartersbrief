@@ -1,0 +1,10 @@
+@use "sass:color";
+
+$background-color-ally: hsl(170deg,50%,50%);
+$background-color-enemy: hsl(0deg,65%,50%);
+$color-player: #fbd770;
+
+.unit {
+	color: #757575;
+	font-size: 80%
+}
