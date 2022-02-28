@@ -17,14 +17,6 @@ describe('ComplexDataObject', function() {
 	});
 
 	describe('constructor', function() {
-		it('should throw when called with null or a primitive', function() {
-			expect(() => new ComplexDataObject(null)).to.throw();
-			expect(() => new ComplexDataObject()).to.throw();
-			expect(() => new ComplexDataObject(0)).to.throw();
-			expect(() => new ComplexDataObject('string')).to.throw();
-			expect(() => new ComplexDataObject(true)).to.throw();
-		});
-
 		it('should turn nested object properties into ComplexDataObjects', function() {
 			expect(cdo.get('nested'), 'objects should be turned into ComplexDataObjects').to.be.an.instanceof(ComplexDataObject);
 			expect(cdo.get('arr'), 'arrays should be turned into ComplexDataObjects').to.be.an.instanceof(ComplexDataObject);

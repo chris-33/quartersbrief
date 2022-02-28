@@ -9,9 +9,6 @@ class ComplexDataObject {
 	#data;
 
 	constructor(data) {
-		if (typeof data !== 'object' || data === null)
-			throw new TypeError(`ComplexDataObject constructor: Expected an object, but got ${data}`);
-
 		// If data is already a ComplexDataObject, copy all its values it.
 		if (data instanceof ComplexDataObject) {
 			this.#data = {};
