@@ -8,8 +8,11 @@ describe('GameObject', function() {
 		arr: [ 'prop4' ] 
 	};
 
-	it('should copy all properties from the source', function() {
-		expect(new GameObject(TEST_DATA)).to.deep.equal(TEST_DATA);
+	describe('.clone', function() {
+		it('should return a GameObject that .equals() the original', function() {
+			let gameObject = new GameObject(TEST_DATA);
+			expect(gameObject.clone()).to.be.an.instanceof(GameObject);
+			expect(gameObject.clone().equals(gameObject)).to.be.true;
+		});
 	});
-
 });

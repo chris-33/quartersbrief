@@ -1,4 +1,3 @@
-import clone from 'just-clone';
 import { ComplexDataObject } from '../util/cdo.js';
 
 /**
@@ -52,10 +51,16 @@ class GameObject extends ComplexDataObject {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		super(clone(data));
-		let self = this;
+		super(data);
+		ComplexDataObject.createGetters(this, GameObject.#LOOKUP_DEFINITIONS);
+	}
 
-		ComplexDataObject.createGetters(self, GameObject.#LOOKUP_DEFINITIONS);
+	/** 
+	 * Clones this `GameObject`.
+	 * @override
+	 */
+	clone() {
+		return new GameObject(super.clone());
 	}
 }
 
