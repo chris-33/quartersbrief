@@ -1,0 +1,56 @@
+// The effect that makes the bar appear lighter at the start
+$bareffect: linear-gradient(to right, #fffffff0, #ffffff60 30%, transparent 50%);
+
+// A line in the ship graph
+.ship {
+	white-space: nowrap;
+}
+
+// The colored bar visualizing the ship's concealment
+.shipbar {
+	display: inline-block;
+	padding: 4pt 1.5em;
+	margin: 2pt;
+	background-image: $bareffect;
+}
+
+// The bar for an enemy ship
+.shipbar.enemy {
+	background-color: $background-color-enemy;
+}
+
+// The bar for an allied ship
+.shipbar.ally {
+	background-color: $background-color-ally;
+}
+
+// The bar for a ship that appears both on the allied and on the enemy team
+.shipbar.ally.enemy {
+	background: 
+		$bareffect,
+		linear-gradient(20deg, $background-color-ally 30%, $background-color-enemy 70%)
+}
+
+// The bar for the player's ship
+.shipbar.player {
+	background-color: $color-player;
+	color: black;
+}
+
+// .label.player, .value.player {
+// 	color: $color-player;
+// 	font-weight: bold;
+// 	text-shadow: 0 0 1px color.scale($color-player, $lightness: 50%);
+// }
+
+// The ship's label (human-readable name)
+.label {
+	font-style: italic;
+	text-align: right;
+	color: white;
+}
+
+// The ship's concealment value
+.value {
+	font-style: normal;
+}

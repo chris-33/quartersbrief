@@ -1,0 +1,11 @@
+div
+	each ship in ships
+		.ship
+			span.shipbar.label(style=`width: ${(ship.getConcealment() - 3) * 10}%`, class = {
+				"ally": allies.includes(ship.getID()) && ship.getID() !== player.getID(),
+				"enemy": enemies.includes(ship.getID()) && ship.getID() !== player.getID(),
+				"player": ship.getID() === player.getID()
+			})
+				| #{ship.getLabel()}
+			span.value(class={ "player": ship.getID() === player.getID() }) #{ship.getConcealment().toFixed(2)}
+			span.unit km
