@@ -1,4 +1,5 @@
 import rootlog from 'loglevel';
+import clone from 'just-clone';
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
 import { Modernization } from './modernization.js';
@@ -6,7 +7,7 @@ import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import template from 'pupa';
-
+import { ComplexDataObject } from '../util/cdo.js'
 /**
  * @see GameObject
  */
@@ -79,9 +80,59 @@ class GameObjectFactory {
 		this.#labels = labels;
 	}
 
+	/**
+	 * Transforms the passed data into an instance of `GameObject` or a descendant class based on 
+	 * its `typeinfo.type` property. Any contained game objects are transformed as well. The return type
+	 * will be as follows:
+	 *
+	 * - If `data` is a primitive, `null` or `undefined`, it will be returned.
+	 * - If `data` is an `object`, it is cloned and its properties are deep transformed in turn.
+	 * - If `data` is an `object` and has a `typeinfo` property, the return type depends on the value of `typeinfo.type`:
+	 * 
+	 *     `typeinfo.type`|return type
+	 *     --------|--------
+	 *     `'Ship'`|`Ship`
+	 *     `'Modernization'`|`Modernization`
+	 *     `'Ability'`|`Consumable`
+	 *     `'Crew'`|`Captain`
+	 *     `'Exterior'`|`Camouflage`
+	 *     any other|`GameObject`
+	 * 
+	 * @param  {*} data The data which to attempt transformation on.
+	 * @return {*}     If `data` was an `object` with a `typeinfo.type` property, a `GameObject` or
+	 * descendant as detailed above. 
+	 */
+	deepTransform(data) {
+		if (data === null || data === undefined) return data;
+		// Clone data to avoid changing this GameObjectFactory's data:
+		// Anytime an object is changed into a GameObject, all its contained
+		// objects will be turned into a ComplexDataObject, and if we did this
+		// in-place, it would pollute the GameObjectFactory's source data. This would cause
+		// problems any time we iterate over object properties (for example in expandReferences)
+		if (typeof data === 'object')
+			data = clone(data);
+
+		for (let key in data) {
+			if (typeof data[key] === 'object')
+				data[key] = this.deepTransform(data[key]);
+		}
+		if (data.typeinfo) {
+			let Constructor = {
+				'Ship': Ship,
+				'Modernization': Modernization,
+				'Ability': Consumable,
+				'Crew': Captain,
+				'Exterior': Camouflage
+			}[data.typeinfo.type];
+			if (!Constructor) Constructor = GameObject;
+
+			rootlog.getLogger(this.constructor.name).debug(`Turned object of ${data.typeinfo.type} into instance of ${Constructor}`);
+			return new Constructor(data);
+		} else return data;
+	}
+
 	expandReferences(data) {
-		let self = this;
-		let dedicatedlog = rootlog.getLogger(self.constructor.name);
+		let dedicatedlog = rootlog.getLogger(this.constructor.name);
 
 		// Iterate over all keys in the current object
 		for (let key of Object.keys(data)) {
@@ -92,6 +143,7 @@ class GameObjectFactory {
 				continue;
 			}
 
+			let expanded = false;
 			// If the current key's value is a reference name, replace the code with
 			// its actual content.
 			if (typeof data[key] === 'string' && data[key].match(GameObject.REFERENCE_NAME_REGEX)) {				
@@ -104,8 +156,7 @@ class GameObjectFactory {
 				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
 				// most other files use. This matches the regex, obviously, but
 				// no data of that refcode will be found in #data.
-				// let expanded = self.#data[data[key]];
-				let expanded = self.createGameObject(data[key]);
+				expanded = this.#data[data[key]]; //self.createGameObject(data[key]);
 				if (expanded) {
 					dedicatedlog.debug(`Expanded reference ${data[key]}`);
 					data[key] = expanded;
@@ -113,21 +164,9 @@ class GameObjectFactory {
 					dedicatedlog.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
 				}	
 			}
-			// If the current key's value is an...
-			switch (typeof data[key]) {
-				// ...  object: resolve it recursively.
-				case 'object': 
-					// Because typeof null === 'object'
-					if (data[key] === null) break;
-					data[key] = self.expandReferences(data[key]);
-					break;
-				// ... array: resolve each of its entries recursively.
-				case 'array': 
-					for (let i = 0; i< data[key].length; i++)
-						data[key][i] = self.expandReferences(data[key][i]);
-					break;
-				// Otherwise keep data as is.						
-				default:
+			// If the current key's value is an object, resolve it recursively. (This includes arrays.)
+			if (typeof data[key] === 'object' && data[key] !== null) {
+				data[key] = this.expandReferences(data[key]);
 			}
 		}
 		return data;
@@ -141,6 +180,7 @@ class GameObjectFactory {
 	 * @returns {Object} Returns `data`, with a label attached under `qb_label`.
 	 */
 	attachLabel(data) {
+		data = clone(data);
 		if (this.#labels) {
 			let key = GameObjectFactory.LABEL_KEYS[data.typeinfo?.type];
 			if (!key) return data;
@@ -188,23 +228,14 @@ class GameObjectFactory {
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 
-		let Constructor = {
-			'Ship': Ship,
-			'Modernization': Modernization,
-			'Ability': Consumable,
-			'Crew': Captain,
-			'Exterior': Camouflage
-		}[gameObject.typeinfo.type];
-		if (!Constructor) Constructor = GameObject;
-
-		if (Constructor === Ship) {
+		if (gameObject.typeinfo.type === 'Ship') {
 			let t0 = Date.now();
 			gameObject = self.expandReferences(gameObject);
 			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
 		}
 		gameObject = self.attachLabel(gameObject);
 		
-		gameObject = new Constructor(gameObject);
+		gameObject = this.deepTransform(gameObject);
 		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
 		return gameObject; 
 	}
