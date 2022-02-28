@@ -12,11 +12,17 @@ class ComplexDataObject {
 		if (typeof data !== 'object' || data === null)
 			throw new TypeError(`ComplexDataObject constructor: Expected an object, but got ${data}`);
 
-		// Recursively turn any object properties of the data into CDOs
 		this.#data = Object.assign({}, data);
-		for (let key in this.#data)
+
+		// Recursively turn any object properties of the data into CDOs.
+		// If a property is already a CDO, clone it (otherwise, copying them
+		// will result in all data being lost because it is private).
+		for (let key in this.#data)			
 			if (typeof this.#data[key] === 'object' && this.#data[key] !== null)
-				this.#data[key] = new ComplexDataObject(this.#data[key]);
+				if (this.#data[key] instanceof ComplexDataObject)
+					this.#data[key] = this.#data[key].clone();
+				else
+					this.#data[key] = new ComplexDataObject(this.#data[key]);
 	}
 
 	/**
@@ -75,7 +81,9 @@ class ComplexDataObject {
 		return `${chalk.blue('ComplexDataObject')} ${util.inspect(this.#data, options)}`;
 	}
 
-
+	clone() {
+		return new ComplexDataObject(this.#data);
+	}
 
 
 	// /**

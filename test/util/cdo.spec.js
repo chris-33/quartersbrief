@@ -26,8 +26,13 @@ describe('ComplexDataObject', function() {
 		});
 
 		it('should turn nested object properties into ComplexDataObjects', function() {
-			expect(cdo.get('nested')).to.be.an.instanceof(ComplexDataObject);
-			expect(cdo.get('arr')).to.be.an.instanceof(ComplexDataObject);
+			expect(cdo.get('nested'), 'objects should be turned into ComplexDataObjects').to.be.an.instanceof(ComplexDataObject);
+			expect(cdo.get('arr'), 'arrays should be turned into ComplexDataObjects').to.be.an.instanceof(ComplexDataObject);
+			const data = {
+				preexisting: new ComplexDataObject({})				
+			}
+			cdo = new ComplexDataObject(data);
+			expect(cdo.get('preexisting'), 'should clone pre-existing ComplexDataObjects properties').to.not.equal(data.preexisting);
 		});
 	});
 
@@ -155,4 +160,12 @@ describe('ComplexDataObject', function() {
 			expect(cdo.get.bind('nested*.prop4')).to.throw();
 		});
 	});
+
+	describe('.clone', function() {
+		it('should .equal() the original CDO, but not be strictly equal', function() {
+			let clonedCDO = cdo.clone();
+			expect(cdo.equals(clonedCDO)).to.be.true;
+			expect(cdo).to.not.equal(clonedCDO);
+		});
+	})
 });
