@@ -8,11 +8,30 @@ describe('ComplexDataObject', function() {
 			prop2: 0,
 			nested: { prop3: 1, prop4: 0, prop5: 0 },
 			nested2: { prop3: 1, prop4: 1 },
-			arr: [ 1 ]
+			arr: [ 1, 2, 3 ]
 	};
+	let cdo;
+
+	beforeEach(function() {
+		cdo = new ComplexDataObject(clone(TEST_DATA));
+	});
+
+	describe('constructor', function() {
+		it('should throw when called with null or a primitive', function() {
+			expect(() => new ComplexDataObject(null)).to.throw();
+			expect(() => new ComplexDataObject()).to.throw();
+			expect(() => new ComplexDataObject(0)).to.throw();
+			expect(() => new ComplexDataObject('string')).to.throw();
+			expect(() => new ComplexDataObject(true)).to.throw();
+		});
+
+		it('should turn nested object properties into ComplexDataObjects', function() {
+			expect(cdo.get('nested')).to.be.an.instanceof(ComplexDataObject);
+			expect(cdo.get('arr')).to.be.an.instanceof(ComplexDataObject);
+		});
+	});
 
 	describe('ComplexDataObject.createGetters', function() {
-
 		it('should create getters for all properties', function() {
 			let obj = {};
 			let definitions = {
@@ -52,87 +71,88 @@ describe('ComplexDataObject', function() {
 			// methods of an actual object
 		});
 	});
-	
-	describe('.apply', function() {		
-		let cdo;
-		const fn = (x) => x === undefined ? - 1 : 2**x; // Will always be positive for any defined x, is injective
 
-		beforeEach(function() {
-			cdo = new ComplexDataObject(clone(TEST_DATA));
+	describe('.keys', function() {
+		it('should return all property keys', function() {
+			expect(cdo.keys()).to.be.an('array').with.members(Object.keys(TEST_DATA));
+		});
+	});
+
+	describe('.equals', function() {
+		it('should return false if the other object is not a ComplexDataObject', function() {
+			expect(cdo.equals({})).to.be.false;
 		});
 
-		it('should apply the function to top-level properties', function() {						
-			let spy = sinon.spy(fn);
-			let val = cdo.prop1;
-			expect(cdo.apply('prop1', spy)).to.equal(fn(val));
-			expect(spy).to.have.been.calledWith(val);
+		it('should return false if the two CDOs don\'t have exactly the same keys', function() {
+			let other = new ComplexDataObject({ otherprop: 0 });
+			expect(cdo.equals(other)).to.be.false;
 		});
 
-		it('should apply the function to nested properties with dot notation', function() {
-			let spy = sinon.spy(fn);
-			let val = cdo.nested.prop3;
-			expect(cdo.apply('nested.prop3', spy)).to.equal(fn(val));
-			expect(cdo.nested.prop3).to.equal(fn(val));
-			expect(spy).to.have.been.calledWith(val);
+		it('should return true if all "own" properties (i.e., primitives) are equal, false otherwise', function() {
+			cdo = new ComplexDataObject({ prop1: 1, prop2: 'string', prop3: false });
+			let other = new ComplexDataObject({ prop1: 1, prop2: 'string', prop3: false });
+			expect(cdo.equals(other)).to.be.true;
+			other = new ComplexDataObject({ prop1: 1, prop2: 'string', prop3: true });
+			expect(cdo.equals(other)).to.be.false;
 		});
 
-		it('should apply the function to array entries with dot notation', function() {
-			let spy = sinon.spy(fn);
-			let val = cdo.arr[0];
-			expect(cdo.apply('arr.0', spy)).to.equal(fn(val));
-			expect(cdo).to.have.property('arr').with.members([fn(val)]);
-			expect(spy).to.have.been.calledWith(val);
+		it('should return true if all nested values are equal, false otherwise', function() {
+			const data = {
+				prop1: {
+					prop2: 0
+				},
+				prop3: [ 'a', 'b' ]
+			}
+			cdo = new ComplexDataObject(data);
+			let other = new ComplexDataObject(data);
+			expect(cdo.equals(other)).to.be.true;
+			other = new ComplexDataObject({ ...data, prop1: { prop2: 1 }});
+			expect(cdo.equals(other)).to.be.false;
 		});
 
-		it('should throw if no such property exists and strict is set to true, ignore otherwise', function() {			
-			expect(cdo.apply.bind(cdo,'doesnotexist', fn, { strict: true })).to.throw();
-			expect(cdo.apply('doesnotexist', fn, { strict: false })).to.be.undefined;
+		it('should equal itself', function() {
+			expect(cdo.equals(cdo)).to.be.true;
+		});
+	});
+
+	describe('.get', function() {		
+		it('should get primitive top-level properties', function() {						
+			for (let key in TEST_DATA)
+				if (typeof TEST_DATA[key] !== 'object')
+					expect(cdo.get(key)).to.equal(TEST_DATA[key]);
 		});
 
-		it('should throw if any intermediate levels are missing when using dot notation in strict mode, ignore otherwise', function() {
-			expect(cdo.get.bind(cdo,'doesnotexist.withdotnotation'), { strict: true }).to.throw();			
-			expect(cdo.apply('doesnotexist.withdotnotation', fn, { strict: false })).to.be.undefined;
+		it('should get object top-level properties, and they should be CDOs', function() {
+			for (let key in TEST_DATA)
+				if (typeof TEST_DATA[key] === 'object') {
+					expect(cdo.get(key)).to.exist.and.be.an.instanceof(ComplexDataObject);
+					expect(cdo.get(key).equals(new ComplexDataObject(TEST_DATA[key]))).to.be.true;
+				}
+		});
+
+		it('should get nested properties with dot notation', function() {
+			for (let key in TEST_DATA.nested)
+				expect(cdo.get(`nested.${key}`)).to.equal(TEST_DATA.nested[key]);
+		});
+
+		it('should get array entries with dot notation', function() {
+			for (let i = 0; i < TEST_DATA.arr.length; i++)
+				expect(cdo.get(`arr.${i}`)).to.equal(TEST_DATA.arr[i]);
 		});
 
 		it('should return an array if collate option is set to false', function() {
-			expect(cdo.apply('prop1', fn, { collate: false })).to.be.an('array');
+			for (let key in TEST_DATA)
+				expect(cdo.get(key, { collate: false })).to.be.an('array');
 		});
 
-		it('should apply the function to all matching properties when using wildcards', function() {
-			let spy = sinon.spy(fn);
-			let val = [cdo.nested.prop3, cdo.nested2.prop3];
-			expect(cdo.apply('nested*.prop3', spy, { collate: false })).to
-				.be.an('array').with.members(val.map(fn));
-			expect(cdo.nested.prop3).to.equal(fn(val[0]));
-			expect(cdo.nested2.prop3).to.equal(fn(val[1]));
-			expect(spy).to.have.been.calledTwice;
+		it('should return a single value when using wildcards and collate is true, an array of values when collate is false', function() {
+			expect(cdo.get.bind('nested*.prop3')).to.not.throw();
+			expect(cdo.get('nested*.prop3')).to.equal(TEST_DATA.nested.prop3);
+			expect(cdo.get('nested*.prop3', { collate: false })).to.be.an('array').with.members([ TEST_DATA.nested.prop3, TEST_DATA.nested2.prop3 ]);
 		});
 
-		it('should always throw if no properties match when using wildcards, regardless of create option', function() {
-			expect(cdo.apply.bind(cdo, 'doesnotexist*', fn, { create: true })).to.throw();
-			expect(cdo.apply.bind(cdo, 'doesnotexist*', fn, { create: false })).to.throw();
+		it('should throw when using wildcards and collate is true, but the values of the read properties are not all equal', function() {
+			expect(cdo.get.bind('nested*.prop4')).to.throw();
 		});
-
-		it('should throw if collate is true and results of applying the function are not equal', function() {
-			expect(cdo.apply.bind(cdo, 'nested*.prop4', fn, { collate: true })).to.throw();
-		});
-
-		it('should apply the function to all matching properties even with multiple wildcards', function() {
-			const complex = new ComplexDataObject({
-				nested: {
-					prop: { innernested1: { prop: 1 }, innernested2: { prop: 2 }}
-				},
-				nested2: {
-					prop: { innernested1: { prop: 3 }, innernested2: { prop: 4 }}
-				}
-			});
-			let val = [complex.nested.prop.innernested1.prop, complex.nested.prop.innernested2.prop, complex.nested2.prop.innernested1.prop, complex.nested2.prop.innernested2.prop];
-			let spy = sinon.spy(fn);
-			expect(complex.apply('nested*.prop.innernested*.prop', spy, { collate: false })).to
-				.be.an('array')
-				.with.members([fn(val[0]), fn(val[1]), fn(val[2]), fn(val[3])]);
-			expect(spy).to.have.callCount(val.length);
-		});
-
 	});
 });
