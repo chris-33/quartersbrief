@@ -35,11 +35,25 @@ describe('ComplexDataObject', function() {
 			expect(cdo.get('preexisting'), 'should clone pre-existing ComplexDataObjects properties').to.not.equal(data.preexisting);
 		});
 
-		it.only('should create a new CDO that .equals() the source but is not strictly equal when called with a CDO', function() {
+		it('should create a new CDO that .equals() the source but is not strictly equal when called with a CDO', function() {
 			let newCDO = new ComplexDataObject(cdo);
 			expect(newCDO.equals(cdo)).to.be.true;
 			expect(newCDO).to.not.equal(cdo);
-		})
+		});
+
+		it('should always work on a copy', function() {
+			let data = {
+				nested: {
+					prop: 0
+				},
+				arr: [ { prop: 1 } ],
+				preexisting: new ComplexDataObject({ prop: 2 })
+			}
+			cdo = new ComplexDataObject(data);
+			expect(cdo.get('nested')).to.not.equal(data.nested);
+			expect(cdo.get('arr.0')).to.not.equal(data.arr[0]);
+			expect(cdo.get('preexisting')).to.not.equal(data.preexisting);
+		});
 	});
 
 	describe('ComplexDataObject.createGetters', function() {
