@@ -12,7 +12,13 @@ class ComplexDataObject {
 		if (typeof data !== 'object' || data === null)
 			throw new TypeError(`ComplexDataObject constructor: Expected an object, but got ${data}`);
 
-		this.#data = Object.assign({}, data);
+		// If data is already a ComplexDataObject, copy all its values it.
+		if (data instanceof ComplexDataObject) {
+			this.#data = {};
+			data.keys().forEach(key => this.#data[key] = data.get(key));
+		} else
+			// Otherwise make a shallow copy.
+			this.#data = Object.assign({}, data);
 
 		// Recursively turn any object properties of the data into CDOs.
 		// If a property is already a CDO, clone it (otherwise, copying them
@@ -78,9 +84,13 @@ class ComplexDataObject {
 	// Override how CDOs are displayed in console.log.
 	// See https://nodejs.org/api/util.html#custom-inspection-functions-on-objects
 	[util.inspect.custom](depth, options, inspect) {
-		return `${chalk.blue('ComplexDataObject')} ${util.inspect(this.#data, options)}`;
+		return `${chalk.blue(this.constructor.name)} ${util.inspect(this.#data, options)}`;
 	}
 
+	/**
+	 * Clones this `ComplexDataObject`.
+	 * @return {ComplexDataObject} A new `ComplexDataObject` that has exactly the same data as this one.
+	 */
 	clone() {
 		return new ComplexDataObject(this.#data);
 	}
