@@ -1,5 +1,5 @@
 import { GameObject } from './model/gameobject.js';
-import log from 'loglevel';
+import rootlog from 'loglevel';
 import clone from 'just-clone';
 import { arrayIntersect } from './util/util.js';
 
@@ -45,7 +45,7 @@ function assertInvariants(data) {
 		}
 	}
 
-	log.info(`Checked assertions in ${Date.now() - t0}ms`);
+	rootlog.info(`Checked assertions in ${Date.now() - t0}ms`);
 	if (exceptions.length > 0)
 		throw new AggregateError(exceptions, 'Invariant checking failed.');
 }
@@ -132,9 +132,11 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		  ambiguity, now excluding both the problematic module's ucType and the ucType of the module
 		  that contributed to resolving the ambiguity in the previous step.
 	 */
+	let dedicatedlog = rootlog.getLogger('assertInvariants');
 	let counterexamples = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
 	for (let ship of ships) {
+		dedicatedlog.debug(`Checking invariant assertModuleComponentsResolveUnambiguously for ${ship.name}`);
 		// Filter modules to objects, because ShipUpgradeInfo contains some
 		// other things, too. (Even some primitives)
 		let modules = Object.values(ship.ShipUpgradeInfo)
@@ -143,7 +145,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		// Do a quick check first: If all arrays are length 1, there can't be any ambiguity
 		if (modules.every(module => 
 						Object.values(module.components).every(component => component.length <= 1))) {
-			log.debug(`For ${ship.name} All components were at most length 1, continuing`);
+			dedicatedlog.debug(`For ${ship.name} All components were at most length 1, continuing`);
 			continue;
 		}
 
@@ -160,7 +162,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		// Get a list of those modules that are problematic in that they have
 		// a component definition that has more than one entry
 		let problematic = modules.filter(module => Object.values(module.components).some(component => component.length > 1));
-		log.debug(`Problematic modules are ${problematic.map(x => x.quartersbrief_name)}`);
+		dedicatedlog.debug(`Problematic modules are ${problematic.map(x => x.quartersbrief_name)}`);
 		
 
 		// Split any modules with more than one problem into several modules with one problem each
@@ -171,7 +173,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 			let problematicComponentKeys = Object.keys(problem.components).filter(componentKey => problem.components[componentKey].length > 1);
 			// If the array of key names is itself longer than 1, this problematic module must be split
 			if (problematicComponentKeys.length > 1) {
-				log.debug(`Module ${problem.quartersbrief_name} has more than one problem: ${problematicComponentKeys}. Splitting.`);
+				rootlog.debug(`Module ${problem.quartersbrief_name} has more than one problem: ${problematicComponentKeys}. Splitting.`);
 				// Mark the module for deletion
 				toDelete.push(problem);
 				// Construct new problems for each problematic component
@@ -180,12 +182,12 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 					let newProblem = clone(problem);
 					// Then delete all problematic components except one
 					for (let otherKey of problematicComponentKeys.filter(component => component !== problematicComponentKey)) {
-						log.debug(`Deleting ${otherKey} which is ${JSON.stringify(newProblem.components[otherKey])}`)
+						dedicatedlog.debug(`Deleting ${otherKey} which is ${JSON.stringify(newProblem.components[otherKey])}`)
 						delete newProblem.components[otherKey];
 					}
 					// Mark the new problem for addition
 					toAdd.push(newProblem);
-					log.debug(`Created problem ${problematicComponentKey} for ${newProblem.quartersbrief_name}`);
+					dedicatedlog.debug(`Created problem ${problematicComponentKey} for ${newProblem.quartersbrief_name}`);
 				}
 			}				
 		}
@@ -196,7 +198,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 		for (let problem of problematic) {
 			let problematicComponentKey = Object.keys(problem.components).filter(key => problem.components[key].length > 1);
 			let problematicComponent = problem.components[problematicComponentKey];
-			log.debug(`For ${problem.quartersbrief_name} problem narrowed down to ${problematicComponentKey} which is ${problematicComponent}`);
+			dedicatedlog.debug(`For ${problem.quartersbrief_name} problem narrowed down to ${problematicComponentKey} which is ${problematicComponent}`);
 
 			// The ucTypes of all modules that have a definition for the problem field.
 			// This is so that we don't consider more than one module of a specific
@@ -218,11 +220,11 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 					// Add the module's ucType to the list of contributors, because we
 					// have "equipped" it now.
 					contributors.push(module.ucType);
-					log.debug(`Found module ${module.quartersbrief_name} that has a definition for ${problematicComponentKey}. Problematic component is now ${problematicComponent}`);
+					dedicatedlog.debug(`Found module ${module.quartersbrief_name} that has a definition for ${problematicComponentKey}. Problematic component is now ${problematicComponent}`);
 				}
 				// If that narrowed it down to length 1, we're done with this problem
 				if (problematicComponent.length === 1) {
-					log.debug(`Problem solved for ${problem.quartersbrief_name} ${problematicComponentKey}`)
+					dedicatedlog.debug(`Problem solved for ${problem.quartersbrief_name} ${problematicComponentKey}`)
 					break;						
 				}
 			}
@@ -250,8 +252,8 @@ assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
 		But if one gun in AB1_Artillery has the order HE-AP and one gun has the order AP-HE, that is not okay.
 	 */
 	
-	 // Helper function to find all descendant (including deeply nested) objects within data that have a 
-	 // typeinfo.type property equal to 'Gun'.
+	// Helper function to find all descendant (including deeply nested) objects within data that have a 
+	// typeinfo.type property equal to 'Gun'.
 	function findGuns(data) {
 		let objects = Object.values(data).filter(item => 
 					typeof item === 'object' // This includes arrays
@@ -261,9 +263,11 @@ assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
 		return result;
 	}
 
+	let dedicatedlog = rootlog.getLogger('assertInvariants');
 	let counterexamples = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo?.type === 'Ship');
 	for (let ship of ships) {
+		dedicatedlog.debug(`Checking invariant assertWeaponAmmosAreOrdered for ${ship.name}`);		
 		// Iterate over ship's top level objects. This will scope found guns to those top-level objects,
 		// ultimately causing the invariant to only fail if ammos are out of order WITHIN a module's 
 		// guns.
@@ -277,7 +281,10 @@ assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
 
 			let ammos = {};
 			let guns = findGuns(obj);
+			if (guns.length > 0) dedicatedlog.debug(`${ship.name}.${key} has ${guns.length} guns`);
 			for (let gun of guns) {
+				let gunKey = Object.keys(obj).find(key => obj[key] === gun);
+				dedicatedlog.debug(`Gun ${gunKey} has ${gun.ammoList ? 'ammos ' + gun.ammoList : 'no ammos'}`);
 				// Iterate over all ammos for that gun
 				for (let i = 0; i < gun.ammoList?.length; i++) {
 					let ammo = gun.ammoList[i];
@@ -286,7 +293,7 @@ assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
 						ammos[ammo] = i;
 					// If it is a known ammo, check that it's at the same index as remembered
 					else if (ammos[ammo] !== i)
-						counterexamples.push(`${ship.name}.${key} has gun with ammo ${ammo} at index ${i}, but it was expected at index ${ammos[ammo]}`);
+						counterexamples.push(`${ship.name}.${key}.${gunKey} has ammo ${ammo} at index ${i}, but it was expected at index ${ammos[ammo]}`);
 				}
 			}
 		}

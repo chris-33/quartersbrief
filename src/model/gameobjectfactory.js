@@ -1,4 +1,4 @@
-import log from 'loglevel';
+import rootlog from 'loglevel';
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
 import { Modernization } from './modernization.js';
@@ -81,13 +81,14 @@ class GameObjectFactory {
 
 	expandReferences(data) {
 		let self = this;
+		let dedicatedlog = rootlog.getLogger(self.constructor.name);
 
 		// Iterate over all keys in the current object
 		for (let key of Object.keys(data)) {
 			// Therefore, omit certain keys from reference resolution. See
 			// JSDoc comment for IGNORED_KEYS.
 			if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
-				log.debug(`Ignored key ${key} because it is blacklisted`);	
+				dedicatedlog.debug(`Ignored key ${key} because it is blacklisted`);	
 				continue;
 			}
 
@@ -106,10 +107,10 @@ class GameObjectFactory {
 				// let expanded = self.#data[data[key]];
 				let expanded = self.createGameObject(data[key]);
 				if (expanded) {
-					log.debug(`Expanded reference ${data[key]}`);
+					dedicatedlog.debug(`Expanded reference ${data[key]}`);
 					data[key] = expanded;
 				} else {
-					log.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
+					dedicatedlog.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
 				}	
 			}
 			// If the current key's value is an...
@@ -166,9 +167,10 @@ class GameObjectFactory {
 	 */
 	createGameObject(designator) {
 		let self = this;
+		let dedicatedlog = rootlog.getLogger(self.constructor.name);
 
 		let t0 = Date.now();
-		log.debug('Create game object for designator ' + designator)
+		dedicatedlog.debug('Creating game object for designator ' + designator)
 		
 		self.#checkData();
 
@@ -195,11 +197,15 @@ class GameObjectFactory {
 		}[gameObject.typeinfo.type];
 		if (!Constructor) Constructor = GameObject;
 
-		if (Constructor === Ship) gameObject = self.expandReferences(gameObject);
+		if (Constructor === Ship) {
+			let t0 = Date.now();
+			gameObject = self.expandReferences(gameObject);
+			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
+		}
 		gameObject = self.attachLabel(gameObject);
 		
 		gameObject = new Constructor(gameObject);
-		log.info(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0} ms`);
+		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
 		return gameObject; 
 	}
 
@@ -212,14 +218,13 @@ class GameObjectFactory {
 	 * @throws Throws an error if no data has been set. 
 	 */
 	listCodesForType(type) {
-		let self = this;
+		this.#checkData();
 
-		log.debug(`Getting all ref codes for type ${type}`);
-		self.#checkData();
-
-		return Object.values(self.#data)
+		let result = Object.values(this.#data)
 			.filter(obj => obj.typeinfo && obj.typeinfo.type === type)
 			.map(obj => obj.index);
+		rootlog.getLogger(this.constructor.name).debug(`Got all ref codes for type ${type} - found ${result.length} matches.`);
+		return result;
 	}
 
 	setData(data) {

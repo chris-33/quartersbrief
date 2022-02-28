@@ -3,13 +3,37 @@ import prefix from 'loglevel-plugin-prefix';
 import nconf from 'nconf';
 import envpaths from 'env-paths';
 import path from 'path';
+import chalk from 'chalk';
 
 // Assume production environment if nothing is specified
 process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
 
 // Use loglevel-plugin-prefix on the logger
 prefix.reg(log);
-prefix.apply(log);
+prefix.apply(log, {
+	template: '[%t] %l%n:',
+	nameFormatter: (name) => name ? ` ${name}` : '',
+	levelFormatter: (level) => {
+		const colors = {
+			error: chalk.red,
+			warn: chalk.yellow,
+			info: chalk.cyan,
+			debug: (x) => x
+		}
+		return colors[level](level.toUpperCase());
+	},
+	timestampFormatter: date => date.toJSON()
+});
+
+// Make child loggers silent by default, unless they were explicitly listed with the --debug flag
+const getChildLogger = log.getLogger;
+log.getLogger = function(name,...args) {
+	let result = getChildLogger.call(this,name,...args);
+	result.disableAll();
+	if (config.get('debug').includes(name) || config.get('debug').toLowerCase() === 'all')
+		result.enableAll();
+	return result;
+}.bind(log);
 
 // get app name and version from package.json
 // As per https://docs.npmjs.com/cli/v6/using-npm/scripts#packagejson-vars
@@ -25,8 +49,10 @@ const ENV_DEFAULTS = {
 	production: {
 	},
 	development: {
-		wowsdir: '/opt/World of Warships',
-		debug: true
+		wowsdir: '/opt/World_of_Warships',
+		host: '0.0.0.0',
+		skipInvariants: true,
+		debug: true,
 	},
 	common: {
 		host: '127.0.0.1',
@@ -73,7 +99,7 @@ const config = nconf
 						description: 'Show more output.'
 					},
 					'debug': {
-						description: 'Show even more output'
+						description: 'Show debug level output. Optionally, a comma-separated list of components can be supplied that will be logged even more extensively. Possible values are: assertInvariants for invariant checking, GameObjectFactory for game object retrieval. --debug all will turn on all extra loggers.'
 					}
 				})
 				.env({ lowerCase: true })
@@ -83,6 +109,6 @@ const config = nconf
 // Set the loglevel, according to supplied options (--verbose and --debug)
 if (config.get('debug')) log.setLevel('debug')
 else if (config.get('verbose')) log.setLevel('info')
-else log.setLevel('warn');
+else log.setLevel('info');
 
 export { config }

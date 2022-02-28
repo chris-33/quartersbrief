@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
+    "chalk": "^5.0.0",
     "config": "^3.3.7",
     "deep-equal": "^2.0.5",
     "env-paths": "^3.0.0",
