@@ -8,6 +8,13 @@ import chalk from 'chalk';
 class ComplexDataObject {
 	#data;
 
+	/** 
+	 * Creates a new `ComplexDataObject` over a copy of the provided data. Any
+	 * nested properties of `data` that are not primitives will likewise be
+	 * turned into `ComplexDataObject`s.
+	 * 
+	 * @param  {*} data The `data` for the `ComplexDataObject`.
+	 */
 	constructor(data) {
 		// If data is already a ComplexDataObject, copy all its values it.
 		if (data instanceof ComplexDataObject) {
@@ -54,11 +61,62 @@ class ComplexDataObject {
 	keys() { return Object.keys(this.#data); }
 	values() { return this.keys().map(this.get); }
 
+	/**
+	 * Gets the values of the (possibly deeply nested) property of the object identified by `key`. 
+	 * This method supports dot notation, wildcards, and result collation.
+	 *
+	 * **Dot notation**
+	 * The key supports dot notation to gain access to nested properties and
+	 * array entries. To manipulate array elements, array indices need to be 
+	 * expressed in dot notation as well.
+	 *
+	 * Examples, where `obj` is an `ComplexDataObject`:
+	 * - `prop` refers to the property named "prop" of `obj` (`obj.prop`).
+	 * - `nested.prop` refers to the property named "prop" of a property named
+	 * "nested" of `obj` (`obj.nested.prop`).
+	 * - `arr.0` refers to the element at index 0 of an array property named "arr"
+	 * of `obj` (`obj.arr[0]`).
+	 * - Similarly, `arr.0.prop` refers to a property named prop of the element
+	 * at index 0 of an array property "arr" of `obj` (`obj.arr[0].prop`).
+	 *
+	 * **Wildcards**
+	 * Furthermore, the key supports wildcards. Thus, an asterisk in any part
+	 * of a key name will match an arbitrary number of characters, underscores,
+	 * or digits. 
+	 *
+	 * Examples, where `obj` is an `ComplexDataObject`:
+	 * - `prop` matches only the property named "prop" of `obj`
+	 * - `prop*` matches _any_ property whose name starts with "prop". For example,
+	 * `prop1`, `prop2`, `propA`, `propB` all match.
+	 * - `prop*suffix` matches any property whose name starts with "prop" and ends
+	 * with "suffix", with an arbitrary number of letters, digits and underscore in
+	 * between. 
+	 *
+	 * **Result collation**
+	 * If you are expecting the property values to all be the same, `get` can return that
+	 * value as a scalar. It will perform a check that this is indeed the case, and throw 
+	 * an error if they were not. Equality is determined by using strict equality (`===`) for
+	 * primitives, and calling `{@link ComplexDataObject#equals}` for `ComplexDataObject`s.
+	 * 
+	 * The default is to return a scalar when `key` contains no wildcards, and an array if it does.
+	 * It can be overridden by setting the `collate` property of the `options` object.
+	 *
+	 * @param {string} key   The key of the property to get. By using wildcards, 
+	 * multiple properties can be selected.
+	 * @param {Object} [options] An optional options object that can have the following properties:
+	 * - `collate`: Whether to return the gotten property values as an array (`false`) or a primitive (`true`). 
+	 * Defaults to `false` if `key` contains wildcards and to `true` if it doesn't.
+	 * @throws
+	 * Throws an error if `options.collate` is `true` but the values of all matched properties are not equal. Equality
+	 * is strict equality for primitives and determined by calling `.equals()` for `ComplexDataObject`s.
+	 * @memberof ComplexDataObject
+	 * @instance
+	 */
 	get(key, options) {
 		let path = key.split('.');
 		
 		options ??= {};
-		options.collate ??= true;
+		options.collate ??= !key.includes('*');
 
 		let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
 		let result = this.keys()
@@ -80,7 +138,7 @@ class ComplexDataObject {
 
 	// Override how CDOs are displayed in console.log.
 	// See https://nodejs.org/api/util.html#custom-inspection-functions-on-objects
-	[util.inspect.custom](depth, options, inspect) {
+	[util.inspect.custom](depth, options) {
 		return `${chalk.blue(this.constructor.name)} ${util.inspect(this.#data, options)}`;
 	}
 
