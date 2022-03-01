@@ -1,12 +1,14 @@
 import { arrayEqual } from './util.js';
 import util from 'util';
 import chalk from 'chalk';
+import clone from 'just-clone';
 
 /**
  * @class ComplexDataObject
  */
 class ComplexDataObject {
 	#data;
+	#coefficients;
 
 	/**
 	 * This method mirrors some Array functions to make working with CDOs over arrays easier. The mirrored functions are:
@@ -17,11 +19,11 @@ class ComplexDataObject {
 	 * The above methods are mirrored in a way that ensures that any coefficients registered on the array's contents will be applied.
 	 */
 	#arrayify() {
-		const EXPOSE = [
+		const MIRROR = [
 			'concat', 'every', 'filter', 'find', 'findIndex', 'flat', 'flatMap', 'forEach', 'indexOf', 'join', 'map', 'reduce', 'some'
 			// Not exposing push, pop, shift, unshift, sort because it those change the array, and CDOs are supposed to be immutable
 		];
-		for (let prop of EXPOSE) {
+		for (let prop of MIRROR) {
 			let desc = Object.getOwnPropertyDescriptor(Array.prototype, prop);
 			Object.defineProperty(this, prop, { ...desc, value: (...args) => {
 				// Create a proxy to intercept read operations on the array and turn them into calls to cdo.get()
@@ -57,15 +59,17 @@ class ComplexDataObject {
 	 * @param  {*} data The `data` for the `ComplexDataObject`.
 	 */
 	constructor(data) {
+		this.#coefficients = {};
+
 		// If data is already a ComplexDataObject, copy all its values it.
 		if (data instanceof ComplexDataObject) {
 			this.#data = {};
 			data.keys().forEach(key => this.#data[key] = data.get(key));
 		} else
 			// Otherwise make a shallow copy of the object/array.
-			this.#data = Array.isArray(data) ? [ ...data ] : Object.assign({}, data);
+			this.#data = Array.isArray(data) ? [ ...data ] : { ...data };
 
-		// Mirror Array.prototype methods on the CDO
+		// If data is an array, mirror Array.prototype methods on the CDO
 		if (Array.isArray(data)) this.#arrayify();
 
 		// Recursively turn any object properties of the data into CDOs.
@@ -80,30 +84,11 @@ class ComplexDataObject {
 	}
 
 	/**
-	 * Checks this CDO for equality with another. Two CDOs are considered equal if and only if
-	 * - both are instances of `ComplexDataObject`,
-	 * - they have the same keys as returned by `keys()`,
-	 * - any primitive properties are strictly equal to each other,
-	 * - any complex properties are equal to each other, as determined by calling `equals` recursively.
-	 * @param  {*} other The value to compare this `ComplexDataObject` to.
-	 * @return {boolean} `true` if the above conditions listed above are met, `false` otherwise.
-	 */
-	equals(other) {
-		if (!(other instanceof ComplexDataObject)) return false;
-
-		if (!arrayEqual(this.keys(), other.keys())) return false;
-
-		return this.keys().reduce(
-			(prev, key) => prev && this.get(key) instanceof ComplexDataObject ? this.#data[key].equals(other.get(key)) : this.get(key) === other.get(key), true
-		);
-	}
-
-	/**
 	 * Returns the set of keys this `ComplexDataObject` has.
 	 * @return {String[]} The keys this CDO has.
 	 */
 	keys() { return Object.keys(this.#data); }
-	values() { return this.keys().map(this.get); }
+	values() { return this.keys().map(key => this.get(key)); }
 
 	/**
 	 * Gets the values of the (possibly deeply nested) property of the object identified by `key`. 
@@ -165,7 +150,8 @@ class ComplexDataObject {
 		let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
 		let result = this.keys()
 			.filter(key => currKeyRegex.test(key))
-			.map(key => this.#data[key]);
+			// Apply all coefficients to #data[key], or if #coefficients[key] == undefined return #data[key]
+			.map(key => (this.#coefficients[key])?.reduce((prev, coeff) => prev * coeff, this.#data[key]) ?? this.#data[key]);
 		if (path.length > 0)
 			result = result.flatMap(x => x.get(path.join('.')));
 
@@ -183,177 +169,105 @@ class ComplexDataObject {
 	// Override how CDOs are displayed in console.log.
 	// See https://nodejs.org/api/util.html#custom-inspection-functions-on-objects
 	[util.inspect.custom](depth, options) {
-		return `${chalk.blue(this.constructor.name)} ${util.inspect(this.#data, options)}`;
+		return `${chalk.blue(this.constructor.name)} ${util.inspect(this.#data, options)}\nCoefficients: ${util.inspect(this.#coefficients, options)}`;
 	}
 
 	/**
-	 * Clones this `ComplexDataObject`.
-	 * @return {ComplexDataObject} A new `ComplexDataObject` that has exactly the same data as this one.
+	 * Checks this CDO for equality with another. Two CDOs are considered equal if and only if
+	 * - both are instances of `ComplexDataObject`,
+	 * - they have the same keys as returned by `keys()`,
+	 * - any primitive properties are strictly equal to each other,
+	 * - any complex properties are equal to each other, as determined by calling `equals` recursively.
+	 * @param  {*} other The value to compare this `ComplexDataObject` to.
+	 * @return {boolean} `true` if the above conditions listed above are met, `false` otherwise.
 	 */
-	clone() {
-		return new ComplexDataObject(this.#data);
+	equals(other) {
+		if (!(other instanceof ComplexDataObject)) return false;
+
+		if (!arrayEqual(this.keys(), other.keys())) return false;
+
+		return this.keys().reduce(
+			(prev, key) => {
+				let curr = this.get(key);
+				return prev && (curr instanceof ComplexDataObject ? curr.equals(other.get(key)) : curr === other.get(key))
+			}, true);
 	}
 
-	
-	// /**
-	//  * Multiplies the value that is stored under the provided key name with `factor`. 
-	//  * This method supports the same options and key notation rules as {@link ComplexDataObject#apply}.
-	//  *
-	//  * It is a shorthand for `apply(key, (x) => x * factor, options)`.
-	//  * @memberof ComplexDataObject
-	//  * @instance
-	//  * @see ComplexDataObject#apply
-	//  */
-	// multiply(key, factor, options) {
-	// 	return this.apply(key, (x) => x * factor, options);
-	// }
+	/**
+	 * Clones this `ComplexDataObject`, including any registered coefficients.
+	 * @return {ComplexDataObject} A new `ComplexDataObject` that has exactly the same data and coefficients as this one.
+	 */
+	clone() {
+		let cdo = new ComplexDataObject(this.#data);
+		cdo.#coefficients = clone(this.#coefficients);
+		return cdo;
+	}
 
-	// /**
-	//  * Gets the value that is stored under the provided key name. This method
-	//  * supports the same options and key notation rules as {@link ComplexDataObject#apply}.
-	//  *
-	//  * It is a shorthand for `apply(key, (x) => x, options)`.
-	//  * @memberof ComplexDataObject
-	//  * @instance
-	//  * @see ComplexDataObject#apply
-	//  */
-	// get(key,options) {
-	// 	return this.apply(key, function identity(x) { return x; }, options);
-	// }
+	/**
+	 * Gets a fresh copy of this `ComplexDataObject`: A clone without registered coefficients.
+	 * @return {ComplexDataObject} A new `ComplexDataObject` that has exactly the same data as this one and no coefficients.
+	 */
+	fresh() {
+		let cdo = this.clone();
+		cdo.unmultiplyAll();
+		return cdo;
+	}
 
-	// /**
-	//  * Sets the value that is stored under the provided key name, if any, to the supplied
-	//  * value. This method supports the same options and key notation rules as {@link ComplexDataObject#apply}.
-	//  *
-	//  * It is a shorthand for `apply(key, (x) => value, options)`.
-	//  *
-	//  * @memberof ComplexDataObject
-	//  * @instance
-	//  * @see ComplexDataObject#apply
-	//  */
-	// set(key, value, options) {
-	// 	return this.apply(key, function assign() { return value; }, options);
-	// }
+	/**
+	 * Registers a new coefficient to be applied any time `key` is read. 
+	 *
+	 * Example:
+	 * @example
+	 * let cdo = new ComplexDataObject({ a: 2 });
+	 * cdo.get('a'); // 2
+	 * cdo.multiply('a', 3);
+	 * cdo.get('a') // 6
+	 * @param  {String} key   The key for which to register a coefficient. Can include dot notation and wildcards.
+	 * @param  {Number} coeff The coefficient to register.
+	 */
+	multiply(key, coeff) {
+		let path = key.split('.');
+		let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
+		let keys = this.keys().filter(key => currKeyRegex.test(key));
 
-	// *
-	//  * Applies the passed function to any (possibly deeply nested) property of the object, 
-	//  * and returns the result. This provides a simple but powerful tool to make manipulating 
-	//  * values that are possibly deeply embedded in a data object easy. Getting and setting values
-	//  * are then just special cases of this, by providing the identity function (that always returns
-	//  * its argument) or a constant function (that always returns a constant regardless of its
-	//  * argument), respectively. This method supports dot notation, wildcards, and result
-	//  * collation.
-	//  *
-	//  * **Dot notation**
-	//  * The key supports dot notation to gain access to nested properties and
-	//  * array entries. To manipulate array elements, array indices need to be 
-	//  * expressed in dot notation as well.
-	//  *
-	//  * Examples, where `obj` is an `ComplexDataObject`:
-	//  * - `prop` refers to the property named "prop" of `obj` (`obj.prop`).
-	//  * - `nested.prop` refers to the property named "prop" of a property named
-	//  * "nested" of `obj` (`obj.nested.prop`).
-	//  * - `arr.0` refers to the element at index 0 of an array property named "arr"
-	//  * of `obj` (`obj.arr[0]`).
-	//  * - Similarly, `arr.0.prop` refers to a property named prop of the element
-	//  * at index 0 of an array property "arr" of `obj` (`obj.arr[0].prop`).
-	//  *
-	//  * **Wildcards**
-	//  * Furthermore, the key supports wildcards. Thus, an asterisk in any part
-	//  * of a key name will match an arbitrary number of characters, underscores,
-	//  * or digits. Note that when accessing nested properties after a wildcard,
-	//  * **all** properties that matched for the wildcard are expected to have 
-	//  * subsequent properties. If this is not the case, an error will be thrown.
-	//  *
-	//  * Examples, where `obj` is an `ComplexDataObject`:
-	//  * - `prop` matches only the property named "prop" of `obj`
-	//  * - `prop*` matches _any_ property whose name starts with "prop". For example,
-	//  * `prop1`, `prop2`, `propA`, `propB` all match.
-	//  * - `prop*suffix` matches any property whose name starts with "prop" and ends
-	//  * with "suffix", with an arbitrary number of letters, digits and underscore in
-	//  * between. 
-	//  * `nested*.prop` matches the property "prop" of _any_ property of `obj` whose
-	//  * name starts with "nested". In strict mode, all of these are expected to have such 
-	//  * a property, otherwise an error will be thrown. 
-	//  *
-	//  * **Result collation**
-	//  * If you are expecting the results to all be the same, `apply` can return that
-	//  * value as a scalar. This will frequently be the case when the values that `fn`
-	//  * was applied to were all equal to begin with, assuming `fn` is a 
-	//  * [pure function](https://en.wikipedia.org/wiki/Pure_function). **This is therefore
-	//  * the default behavior.** `apply` will then perform a final check that all
-	//  * values were indeed equal (more specifically, deeply equal), and throw an error
-	//  * if they were not. Note that `fn` will still be applied to all properties
-	//  * that matched `key` regardless.
-	//  * 
-	//  * Scalar return of expected equal results can be be turned off by passing an
-	//  * `options` object that has `options.collate` set to `false`. In this case,
-	//  * `apply` will return an array with the results of the function applications,
-	//  * even if only a single property matched.
-	//  *
-	//  * Setting it to `false` will _always_ return an array - even if the 
-	//  * key did not contain any wildcards at all. In that case, an array with a 
-	//  * single value is returned.
-	//  * 
-	//  * @param {string} key   The key of the property to apply `fn` to. By using wildcards, 
-	//  * multiple properties can be selected.
-	//  * @param {Function} fn The function to apply to the property's (or properties') value(s). 
-	//  * This must be a function that accepts a single argument and returns a value. 
-	//  * @param {Object} [options={collate: true, strict: true}] An optional options object.
-	//  * @param {boolean} options.collate=true	Whether to return the results of the 
-	//  * function application as a single value or as an array.
-	//  * @param {boolean} [options.strict=true] Whether to error if nothing matches or just ignore. The default is false. 
-	//  * @throws
-	//  * Throws an error if the requested property or any intermediate properties do
-	//  * not exist, and `options.strict` is `true`.
-	//  * @throws
-	//  * Throws an error if `options.collate` is `true` but the results of the function application
-	//  * to all matched properties are not equal (deeply equal).
-	//  * @memberof ComplexDataObject
-	//  * @instance
-	 
-	// apply(key, fn, options = { /* defaults will be set in method */ }) {			
-	// 	let self = this;
+		if (path.length === 0) 
+			keys.forEach(key => {
+				this.#coefficients[key] ??= [];
+				this.#coefficients[key].push(coeff);
+			});
+		else
+			keys.forEach(key => this.#data[key].multiply(path.join('.'), coeff));
+	}
 
-	// 	// Set default values, if they are not set
-	// 	options.collate ??= true;
-	// 	options.strict ??= true;
+	/**
+	 * Unregister a coefficient. If `coeff` wasn't previously registered on `key`, does nothing.
+	 * If `coeff` was registered more than once, only one instance is removed.
+	 * @param  {String} key   The key from which to unregister the coefficient.
+	 * @param  {Number} coeff The coefficient to unregister.
+	 */
+	unmultiply(key, coeff) {
+		let path = key.split('.');
+		let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
+		let keys = this.keys().filter(key => currKeyRegex.test(key));
 
-	// 	// Split the key into its parts. These can be thought of as "path elements"
-	// 	// to traverse along the data object
-	// 	let path = key.split('.');
-	// 	let targets = [ self ];
-		
-	// 	while(path.length > 0) { 
-	// 		let currKey = path.shift(); // Remove first element							
-	// 		// Turn the current key into a regular expression by replacing the asterisk with its regex equivalent
-	// 		let currKeyRegex = new RegExp(`^${currKey.replace('*', '\\w*')}$`);
+		if (path.length === 0) 
+			keys.forEach(key => {
+				let index = this.#coefficients[key]?.indexOf(coeff);
+				if (index !== -1) this.#coefficients[key]?.splice(index, 1);
+			})
+		else 
+			keys.forEach(key => this.#data[key].ummultiply(path.join('.'), coeff));
+	}
 
-	// 		// For every target ...
-	// 		targets = targets.flatMap(target => {
-	// 			// ... get a list of its keys that match the currKey. This will be an array of
-	// 			// just one (or zero) key(s) if currKey does not contain wildcards.
-	// 			let matches = Object.keys(target).filter(key => currKeyRegex.test(key));
-	// 			// If that key doesn't exist in the object and we are in strict mode, throw an error
-	// 			if (matches.length === 0 && options.strict) {
-	// 				throw new Error(`Trying to apply fn to unknown property ${key} of ${self} in strict mode`);
-	// 			} else
-	// 				// If there were matches, either traverse if this is an intermediate level,
-	// 				// or apply the function to its value if we are at the end
-	// 				// If there were no matches, this will just return an empty array which will be
-	// 				// nuked by flatMap()
-	// 				return matches.map(match => path.length > 0 ? target[match] : target[match] = fn(target[match]));
-	// 		});
-	// 	}
-	// 	if (options.collate) {
-	// 		if (!targets.every(target => deepequal(target, targets[0])))
-	// 			throw new Error(`Expected all values to be equal while collating but they were not: ${targets}`);
-	// 		// We can just project to the first item, since we just checked that they're
-	// 		// all equal anyway
-	// 		targets = targets[0];
-	// 	}
-	// 	return targets;			
-	// }
+	/**
+	 * Unregisters all coefficients, including on child objects.
+	 */
+	unmultiplyAll() {
+		this.#coefficients = {};
+		for (let key in this.#data)
+			if (this.#data[key] instanceof ComplexDataObject)
+				this.#data[key].unmultiplyAll();
+	}
 
 	/**
 	* This function defines getter functions on the object for the definitions
