@@ -8,10 +8,51 @@ import chalk from 'chalk';
 class ComplexDataObject {
 	#data;
 
+	/**
+	 * This method mirrors some Array functions to make working with CDOs over arrays easier. The mirrored functions are:
+	 * `concat`, `every`, `filter`, `find`, `findIndex`, `flat`, `flatMap`, `forEach`, `indexOf`, `join`, `map`, `reduce`, some`.
+	 * Notably missing from this list are `push`, `pop`, `shift`, `unshift` and `sort`. These are intentionally not mirrored,
+	 * because they change the contents of the underlying array.
+	 *
+	 * The above methods are mirrored in a way that ensures that any coefficients registered on the array's contents will be applied.
+	 */
+	#arrayify() {
+		const EXPOSE = [
+			'concat', 'every', 'filter', 'find', 'findIndex', 'flat', 'flatMap', 'forEach', 'indexOf', 'join', 'map', 'reduce', 'some'
+			// Not exposing push, pop, shift, unshift, sort because it those change the array, and CDOs are supposed to be immutable
+		];
+		for (let prop of EXPOSE) {
+			let desc = Object.getOwnPropertyDescriptor(Array.prototype, prop);
+			Object.defineProperty(this, prop, { ...desc, value: (...args) => {
+				// Create a proxy to intercept read operations on the array and turn them into calls to cdo.get()
+				let proxy = new Proxy(this.#data, {
+					get: (target, property) => {
+						// Typecheck for symbols first, because trying to coerce a symbol to a string is a TypeError
+						// Then, if the requested property can be parsed into a number, this means the mirrored method was 
+						// accessing the array contents. Change that call to the CDO's get() method to allow registered
+						// coefficients to be applied.
+						if (typeof property !== 'symbol' && !Number.isNaN(Number.parseInt(property))) {
+							return this.get(property);
+						}
+						// Otherwise just return the requested property
+						return target[property];
+					}
+				});
+				// Apply the mirrored method on the proxy with the original arguments
+				return proxy[prop].apply(proxy, args);
+			}});
+		}
+	}
+
 	/** 
 	 * Creates a new `ComplexDataObject` over a copy of the provided data. Any
 	 * nested properties of `data` that are not primitives will likewise be
-	 * turned into `ComplexDataObject`s.
+	 * turned into `ComplexDataObject`s. 
+	 *
+	 * If `data` is an array, the resulting `ComplexDataObject` will mirror the following methods:
+	 * `concat`, `every`, `filter`, `find`, `findIndex`, `flat`, `flatMap`, `forEach`, `indexOf`, `join`, `map`, `reduce`, some`.
+	 * These behave as their counterparts from `Array.prototype`, but ensure that registered coefficients are correctly
+	 * applied.
 	 * 
 	 * @param  {*} data The `data` for the `ComplexDataObject`.
 	 */
@@ -21,8 +62,11 @@ class ComplexDataObject {
 			this.#data = {};
 			data.keys().forEach(key => this.#data[key] = data.get(key));
 		} else
-			// Otherwise make a shallow copy.
-			this.#data = Object.assign({}, data);
+			// Otherwise make a shallow copy of the object/array.
+			this.#data = Array.isArray(data) ? [ ...data ] : Object.assign({}, data);
+
+		// Mirror Array.prototype methods on the CDO
+		if (Array.isArray(data)) this.#arrayify();
 
 		// Recursively turn any object properties of the data into CDOs.
 		// If a property is already a CDO, clone it (otherwise, copying them
@@ -123,7 +167,7 @@ class ComplexDataObject {
 			.filter(key => currKeyRegex.test(key))
 			.map(key => this.#data[key]);
 		if (path.length > 0)
-			result = result.map(x => x.get(path.join('.')));
+			result = result.flatMap(x => x.get(path.join('.')));
 
 		if (options.collate) {
 			if (!result.every(res => res instanceof ComplexDataObject ? res.equals(result[0]) : res === result[0]))
@@ -150,7 +194,7 @@ class ComplexDataObject {
 		return new ComplexDataObject(this.#data);
 	}
 
-
+	
 	// /**
 	//  * Multiplies the value that is stored under the provided key name with `factor`. 
 	//  * This method supports the same options and key notation rules as {@link ComplexDataObject#apply}.

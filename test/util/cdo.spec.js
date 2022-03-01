@@ -2,7 +2,7 @@ import { ComplexDataObject } from '../../src/util/cdo.js';
 import sinon from 'sinon';
 import clone from 'just-clone';
 
-describe('ComplexDataObject', function() {
+describe.only('ComplexDataObject', function() {
 	const TEST_DATA = {
 			prop1: 1,
 			prop2: 0,
@@ -24,7 +24,7 @@ describe('ComplexDataObject', function() {
 				preexisting: new ComplexDataObject({})				
 			}
 			cdo = new ComplexDataObject(data);
-			expect(cdo.get('preexisting'), 'should clone pre-existing ComplexDataObjects properties').to.not.equal(data.preexisting);
+			expect(cdo.get('preexisting'), 'should clone pre-existing ComplexDataObjects properties').to.not.equal(data.preexisting); // shouldn't be the same instance
 		});
 
 		it('should create a new CDO that .equals() the source but is not strictly equal when called with a CDO', function() {
@@ -45,6 +45,20 @@ describe('ComplexDataObject', function() {
 			expect(cdo.get('nested')).to.not.equal(data.nested);
 			expect(cdo.get('arr.0')).to.not.equal(data.arr[0]);
 			expect(cdo.get('preexisting')).to.not.equal(data.preexisting);
+		});
+
+		it('should mirror Array.prototype\'s functions if data is an array', function() {
+			cdo = new ComplexDataObject([]);
+			['concat', 'every', 'filter', 'find', 'findIndex', 'flat', 'flatMap', 'forEach', 'indexOf', 'join', 'map', 'reduce', 'some']
+				.forEach(method => expect(cdo).to.respondTo(method));
+		});
+
+		it('should give the same result as the underlying array when using mirrored methods', function() {
+			let fn = x => x;
+			let arr = [1];
+			cdo = new ComplexDataObject(arr);
+			['concat', 'every', 'filter', 'find', 'findIndex', 'flat', 'flatMap', 'forEach', 'indexOf', 'join', 'map', 'reduce', 'some']
+				.forEach(method => expect(cdo[method].call(cdo, fn), method).to.deep.equal(arr[method].call(arr, fn)));
 		});
 	});
 
@@ -163,10 +177,17 @@ describe('ComplexDataObject', function() {
 		});
 
 		it('should return a single value when using wildcards and collate is true, an array of values when collate is false', function() {
-			expect(cdo.get.bind('nested*.prop3')).to.not.throw();
-			expect(cdo.get('nested*.prop3')).to.equal(TEST_DATA.nested.prop3);
+			expect(cdo.get.bind(cdo, 'nested*.prop3', { collate: true })).to.not.throw();
+			expect(cdo.get('nested*.prop3', { collate: true })).to.equal(TEST_DATA.nested.prop3);
 			expect(cdo.get('nested*.prop3', { collate: false })).to.be.an('array').with.members([ TEST_DATA.nested.prop3, TEST_DATA.nested2.prop3 ]);
 		});
+
+		it('should return always return a shallow array even if using multiple wildcards', function() {
+			expect(cdo.get('nested*.prop*', { collate: false })).to.be.an('array').with.members([
+				TEST_DATA.nested.prop3, TEST_DATA.nested.prop4, TEST_DATA.nested.prop5,
+				TEST_DATA.nested2.prop3, TEST_DATA.nested2.prop4
+			]);
+		})
 
 		it('should throw when using wildcards and collate is true, but the values of the read properties are not all equal', function() {
 			expect(cdo.get.bind('nested*.prop4')).to.throw();
