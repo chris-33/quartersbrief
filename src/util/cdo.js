@@ -207,14 +207,44 @@ class ComplexDataObject {
 	 * Gets a fresh copy of this `ComplexDataObject`: A clone without registered coefficients.
 	 * @return {ComplexDataObject} A new `ComplexDataObject` that has exactly the same data as this one and no coefficients.
 	 */
-	fresh() {
+	replicate() {
 		let cdo = this.clone();
 		cdo.unmultiplyAll();
 		return cdo;
 	}
 
 	/**
-	 * Registers a new coefficient to be applied any time `key` is read. 
+	 * Gets a hash of all coefficients registered on this `ComplexDataObject`, including those for nested properties.
+	 * @return {Object} A hash where keys are properties and values are arrays of registered coefficients. Nested 
+	 * properties are expressed in dot notation.
+	 */
+	coefficients() {
+		let coefficients = clone(this.#coefficients);
+		for (let key of this.keys()) {
+			if (this.#data[key] instanceof ComplexDataObject) {
+				let childcoeffs = this.#data[key].coefficients();
+				for (let childKey in childcoeffs) {
+					coefficients[`${key}.${childKey}`] = childcoeffs[childKey];
+				}
+			}
+		}
+		return coefficients;
+	}
+
+	/**
+	 * Registers all coefficients in the passed `coefficients` object.
+	 * @param  {Object} coefficients The coefficients to register. This parameter is a hash where keys are the
+	 * `ComplexDataObject`'s keys to register coefficients on (supporting dot notation and wildcards), and their
+	 * values are arrays of the coefficients to register.
+	 */
+	multiplyAll(coefficients) {
+		for (let key in coefficients) 
+			coefficients[key].forEach(coeff => this.multiply(key, coeff));
+	}
+
+	/**
+	 * Registers a new coefficient to be applied any time `key` is read. `key` may refer to a nested property using
+	 * dot notation, and supports wildcards.
 	 *
 	 * Example:
 	 * @example

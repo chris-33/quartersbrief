@@ -2,7 +2,7 @@ import { ComplexDataObject } from '../../src/util/cdo.js';
 import sinon from 'sinon';
 import clone from 'just-clone';
 
-describe.only('ComplexDataObject', function() {
+describe('ComplexDataObject', function() {
 	const TEST_DATA = {
 			prop1: 1,
 			prop2: 0,
@@ -293,6 +293,51 @@ describe.only('ComplexDataObject', function() {
 		});
 	});
 
+	describe('.coefficients', function() {
+		it('should get own coefficients', function() {
+			const coeff1 = 2;
+			const coeff2 = 3;
+			const coeff3 = 4;
+			cdo.multiply('prop1', coeff1);
+			cdo.multiply('prop2', coeff2);
+			cdo.multiply('prop2', coeff3);
+			const coeffs = cdo.coefficients();
+			expect(coeffs).to.have.property('prop1').that.is.an('array').with.members([ coeff1 ]);
+			expect(coeffs).to.have.property('prop2').that.is.an('array').with.members([ coeff2, coeff3 ]);
+		});
+
+		it('should get nested coefficients in dot notation', function() {
+			const coeff1 = 2;
+			const coeff2 = 3;
+			cdo.multiply('nested.prop3', coeff1);
+			cdo.multiply('arr.0', coeff2);
+			const coeffs = cdo.coefficients();
+			expect(coeffs).to.have.property('nested.prop3').that.is.an('array').with.members([ coeff1 ]);
+			expect(coeffs).to.have.property('arr.0').that.is.an('array').with.members([ coeff2 ]);
+		});
+	});
+
+	describe('.multiplyAll', function() {
+		it('should register all coefficients', function() {
+			const coeff = 2;
+			const coefficients = {
+				'prop1': [ coeff ],
+				'prop2': [ coeff ],
+				'nested.prop3': [ coeff ],
+				'arr.*': [ coeff ]
+			};
+			const expected = {
+				'prop1': coeff * TEST_DATA.prop1,
+				'prop2': coeff * TEST_DATA.prop2,
+				'nested.prop3': coeff * TEST_DATA.nested.prop3,
+				'arr.*': TEST_DATA.arr.map(item => coeff * item)
+			};
+			cdo.multiplyAll(coefficients);
+			for (let key in coefficients) 
+				expect(cdo.get(key), key).to.deep.equal(expected[key]);
+		});
+	});
+
 	describe('.unmultiplyAll', function() {
 		it('should remove all coefficients, including nested ones', function() {
 			const coeff = 2;
@@ -323,21 +368,21 @@ describe.only('ComplexDataObject', function() {
 		});
 	});
 
-	describe('.fresh', function() {
+	describe('.replicate', function() {
 		it('should .equal() the original CDO, but not be strictly equal', function() {
-			let freshCDO = cdo.fresh();
-			expect(cdo.equals(freshCDO)).to.be.true;
-			expect(cdo).to.not.equal(freshCDO);
+			let replicated = cdo.replicate();
+			expect(cdo.equals(replicated)).to.be.true;
+			expect(cdo).to.not.equal(replicated);
 		});
 
 		it('should have no registered coefficients', function() {
 			const prop = 'prop1';
 			const coeff = 2;
 			cdo.multiply(prop, coeff);
-			let freshCDO = cdo.fresh();
-			expect(cdo.equals(freshCDO)).to.be.false;
-			freshCDO.multiply(prop, coeff);
-			expect(cdo.equals(freshCDO)).to.be.true;
+			let replicated = cdo.replicate();
+			expect(cdo.equals(replicated)).to.be.false;
+			replicated.multiply(prop, coeff);
+			expect(cdo.equals(replicated)).to.be.true;
 		});
 	});
 });
