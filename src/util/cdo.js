@@ -61,10 +61,10 @@ class ComplexDataObject {
 	constructor(data) {
 		this.#coefficients = {};
 
-		// If data is already a ComplexDataObject, copy all its values it.
+		// If data is already a ComplexDataObject, clone it and return the clone. 
+		// It will be the new CDO instance.
 		if (data instanceof ComplexDataObject) {
-			this.#data = {};
-			data.keys().forEach(key => this.#data[key] = data.get(key));
+			return data.clone();
 		} else
 			// Otherwise make a shallow copy of the object/array.
 			this.#data = Array.isArray(data) ? [ ...data ] : { ...data };
@@ -198,7 +198,7 @@ class ComplexDataObject {
 	 * @return {ComplexDataObject} A new `ComplexDataObject` that has exactly the same data and coefficients as this one.
 	 */
 	clone() {
-		let cdo = new ComplexDataObject(this.#data);
+		let cdo = new this.constructor(this.#data);
 		cdo.#coefficients = clone(this.#coefficients);
 		return cdo;
 	}

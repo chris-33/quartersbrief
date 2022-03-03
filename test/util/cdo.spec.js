@@ -361,6 +361,15 @@ describe('ComplexDataObject', function() {
 			expect(cdo).to.not.equal(clonedCDO);
 		});
 
+		it('should clone instances of ComplexDataObject descendants with the correct class', function() {
+			const Subclass = class extends ComplexDataObject {				
+			}
+			cdo = new ComplexDataObject({
+				sub: new Subclass({})
+			}).clone();
+			expect(cdo.get('sub')).to.be.an.instanceof(Subclass);
+		});
+
 		it('should clone registered coefficients', function() {
 			cdo.multiply('prop1', 2);
 			let clonedCDO = cdo.clone();
