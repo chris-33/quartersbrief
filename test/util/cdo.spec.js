@@ -113,8 +113,8 @@ describe('ComplexDataObject', function() {
 		it('should return all own data\'s property values', function() {
 			let expected = Object.values(TEST_DATA);
 			let actual = cdo.values();
-			const primitives = x => typeof x !== 'object';
-			const objects = x => !primitives(x);
+			const primitives = x => !objects(x);
+			const objects = x => typeof x === 'object';
 
 			expect(actual).to.be.an('array')
 			expect(actual.filter(primitives), 'primitives').to.have.members(expected.filter(primitives));
