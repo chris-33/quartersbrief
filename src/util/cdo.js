@@ -169,7 +169,12 @@ class ComplexDataObject {
 	// Override how CDOs are displayed in console.log.
 	// See https://nodejs.org/api/util.html#custom-inspection-functions-on-objects
 	[util.inspect.custom](depth, options) {
-		return `${chalk.blue(this.constructor.name)} ${util.inspect(this.#data, options)}\nCoefficients: ${util.inspect(this.#coefficients, options)}`;
+		let result = this.constructor.name;
+		if (options.colors) 
+			result = chalk.blue(result);
+		result += ' ' + util.inspect(this.#data, options);
+		result += `Coefficients: ${util.inspect(this.#coefficients, options)}`
+		return result;
 	}
 
 	/**
