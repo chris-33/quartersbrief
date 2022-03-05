@@ -350,4 +350,21 @@ describe('Ship', function() {
 			expect(ship.getCurrentConfiguration().get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * camouflage.get('modifiers.ArtilleryValue'));
 		});
 	});
+
+	describe('.qb_consumables', function() {
+		let ship;
+
+		beforeEach(function() {
+			ship = new Ship(TEST_DATA);
+		});
+
+		it('should have all consumables', function() {
+			function getAbility(n) {
+				return TEST_DATA.ShipAbilities[`AbilitySlot${Math.floor(n / 2)}`].abils[n % 2][0];
+			}
+			expect(ship).to.have.property('qb_consumables');
+			expect(ship.qb_consumables).to.be.an('array').with.deep.members(
+				[ getAbility(0), getAbility(1), getAbility(2) ])
+		});
+	});
 });

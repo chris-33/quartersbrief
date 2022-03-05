@@ -54,9 +54,20 @@
     },
     "ShipAbilities": {
         "AbilitySlot0": {
-            "abils": [],
+            "abils": [
+                [ { "consumableType": "Ability01", "Ability01Flavor": {}}, "Ability01Flavor"],
+                [ { "consumableType": "Ability02", "Ability02Flavor": {}}, "Ability02Flavor"]
+
+            ],
             "slot": 0
-        }
+        },
+        "AbilitySlot1": {
+            "abils": [
+                [ { "consumableType": "Ability11", "Ability11Flavor": {}}, "Ability11Flavor"]
+
+            ],
+            "slot": 1
+        }        
     },
     "ShipUpgradeInfo": {
         "ART_STOCK": {

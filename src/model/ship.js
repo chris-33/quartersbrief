@@ -127,6 +127,11 @@ class Ship extends GameObject {
 	 */
 	#camouflage;
 
+	get qb_consumables() {
+		return Object.values(this.get('ShipAbilities'))
+				.flatMap(slot => slot.abils)
+	} 
+
 	/**
 	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
 	 * in `descriptor`. 
