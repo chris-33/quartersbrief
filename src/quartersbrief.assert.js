@@ -173,7 +173,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 			let problematicComponentKeys = Object.keys(problem.components).filter(componentKey => problem.components[componentKey].length > 1);
 			// If the array of key names is itself longer than 1, this problematic module must be split
 			if (problematicComponentKeys.length > 1) {
-				rootlog.debug(`Module ${problem.quartersbrief_name} has more than one problem: ${problematicComponentKeys}. Splitting.`);
+				dedicatedlog.debug(`Module ${problem.quartersbrief_name} has more than one problem: ${problematicComponentKeys}. Splitting.`);
 				// Mark the module for deletion
 				toDelete.push(problem);
 				// Construct new problems for each problematic component
