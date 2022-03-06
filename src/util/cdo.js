@@ -5,7 +5,8 @@ import deepequal from 'deep-equal';
  */
 class ComplexDataObject {
 	constructor(data) {
-		Object.assign(this, data);
+		if (data != null)
+			Object.defineProperties(this, Object.getOwnPropertyDescriptors(data));
 	}
 
 	/**

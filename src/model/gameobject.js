@@ -52,10 +52,9 @@ class GameObject extends ComplexDataObject {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		super(clone(data));
-		let self = this;
+		super(data);
 
-		ComplexDataObject.createGetters(self, GameObject.#LOOKUP_DEFINITIONS);
+		ComplexDataObject.createGetters(this, GameObject.#LOOKUP_DEFINITIONS);
 	}
 }
 
