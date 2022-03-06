@@ -1,5 +1,7 @@
 /node-modules/
 /.vagrant/
 /.project/
+/data/
+/config/
 /wows/
 package-lock.json
