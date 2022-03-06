@@ -25,8 +25,8 @@ class Modifier {
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
 		GSShotDelay: 'atba.qb_mounts.shotDelay', // PCM019_SecondaryGun_Mod_III
 		planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
-		visibilityDistCoeff: 'hull.visibilityFactor', // PCM027_ConcealmentMeasures_Mod_I				
-	
+		visibilityDistCoeff: 'hull.visibilityFactor', // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
+		rlsWorkTimeCoeff: 'qb_consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
 		// Everything up to PCM035_SteeringGear_Mod_III
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 	}
