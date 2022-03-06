@@ -22,7 +22,8 @@ class BriefingBuilder {
 	#briefingHTML;
 	#briefingCSS(briefing) {
 		// @todo Cache contents of briefing.scss to avoid synchronous reads on every refresh
-		return sass.compileString(`${readFileSync('src/briefing/briefing.scss').toString()}${briefing.topics.map(topic => topic.scss).join()}`).css;
+		let src = `${readFileSync('src/briefing/briefing.scss').toString()}${briefing.topics.map(topic => topic.scss).join('')}`;
+		return sass.compileString(src).css;
 	}
 
 	/**
@@ -85,8 +86,11 @@ class BriefingBuilder {
 		};
 
 		// For each briefing content part, get the dedicated builder for that part and build it
-		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(topicName => this.getTopicBuilder(topicName)
-			.then(dynimport => dynimport.default(battle, this.gameObjectFactory, agenda.topics[topicName]))));
+		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(topicName => {
+				log.debug(`Building topic ${topicName}`);
+				return this.getTopicBuilder(topicName)
+						.then(dynimport => dynimport.default(battle, this.gameObjectFactory, agenda.topics[topicName]))
+		}));
 
 		// Assign it to the layout pane dedicated to it for successful builds
 		// Or build an error topic for unsuccessful ones. (That includes unsuccessful imports)
