@@ -76,7 +76,7 @@ class GameObjectFactory {
 
 	constructor(data, labels) {
 		this.setData(data);
-		this.#labels = labels;
+		this.#labels = labels ?? {};
 	}
 
 	expandReferences(data) {
@@ -88,46 +88,54 @@ class GameObjectFactory {
 			// Therefore, omit certain keys from reference resolution. See
 			// JSDoc comment for IGNORED_KEYS.
 			if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
-				dedicatedlog.debug(`Ignored key ${key} because it is blacklisted`);	
 				continue;
 			}
 
 			// If the current key's value is a reference name, replace the code with
 			// its actual content.
 			if (typeof data[key] === 'string' && data[key].match(GameObject.REFERENCE_NAME_REGEX)) {				
+				dedicatedlog.debug(`Found reference ${data[key]} on key ${key}`)
 				// Only replace if the reference could actually be expanded
 				// If not, just keep the reference in there
-				// This can be the case with some unfortunately-named components
-				// in game files.
-				// See e.g. PASA010_Ranger_1944, where the planes are called
-				// PAUB002_Grumman_TBF, and then referenced as such in the
-				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
-				// most other files use. This matches the regex, obviously, but
-				// no data of that refcode will be found in #data.
-				// let expanded = self.#data[data[key]];
-				let expanded = self.createGameObject(data[key]);
-				if (expanded) {
-					dedicatedlog.debug(`Expanded reference ${data[key]}`);
-					data[key] = expanded;
-				} else {
-					dedicatedlog.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
-				}	
+				// Store reference name in this constant to keep it available for expansion.
+				// (Accessing data[key] within the getter will cause an infinite recursion.)
+				const reference = data[key];
+				// Replace object property with a getter that will expand the reference on the first read and
+				// replace the object property with the value
+				Object.defineProperty(data, key, {
+					get: function() {
+						// Expand reference
+						let expanded = self.createGameObject(reference);					
+						if (expanded) dedicatedlog.debug(`Expanded reference ${data.name}.${key}: ${reference}`);
+						else {
+							// If reference could not be expanded, keep it as is.
+							// This can be the case with some unfortunately-named components
+							// in game files.
+							// See e.g. PASA010_Ranger_1944, where the planes are called
+							// PAUB002_Grumman_TBF, and then referenced as such in the
+							// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
+							// most other files use. This matches the regex, obviously, but
+							// no data of that refcode will be found in #data.
+							expanded = data[key];
+							dedicatedlog.debug(`Unable to expand reference  ${data.name}.${key}: ${reference}. The reference has been ignored.`)
+						}
+						// Redefine the property from the current accessor property (using a getter) to a simple
+						// value property with the (possibly resolved) reference.
+						Object.defineProperty(data, key, {
+							value: expanded,
+							writable: true,
+							configurable: true,
+							enumerable: true
+						});
+						return expanded;
+					},
+					enumerable: true,
+					configurable: true
+				});
 			}
-			// If the current key's value is an...
-			switch (typeof data[key]) {
-				// ...  object: resolve it recursively.
-				case 'object': 
-					// Because typeof null === 'object'
-					if (data[key] === null) break;
-					data[key] = self.expandReferences(data[key]);
-					break;
-				// ... array: resolve each of its entries recursively.
-				case 'array': 
-					for (let i = 0; i< data[key].length; i++)
-						data[key][i] = self.expandReferences(data[key][i]);
-					break;
-				// Otherwise keep data as is.						
-				default:
+			// If the current key's value is an object, expand it recursively. (This includes arrays.)
+			else if (typeof data[key] === 'object' && data[key] !== null) {
+				data[key] = self.expandReferences(data[key]);
 			}
 		}
 		return data;
@@ -145,7 +153,8 @@ class GameObjectFactory {
 			let key = GameObjectFactory.LABEL_KEYS[data.typeinfo?.type];
 			if (!key) return data;
 			key = template(key, data).toUpperCase();
-			data.qb_label = this.#labels[key];
+			data.qb_label = this.#labels[key] ?? data.name;
+
 			// @todo Find a way to attach labels to captain skills and consumable flavors (flavors may be different than the base - e.g. Crawling Smoke Generator is a flavor of Smoke Generator)
 		}
 		return data;
@@ -187,6 +196,11 @@ class GameObjectFactory {
 			gameObject = self.#data[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
+		
+		if (!gameObject) {
+			rootlog.error(`Could not find game object for ${designator}`);
+			return null;
+		}
 
 		let Constructor = {
 			'Ship': Ship,
