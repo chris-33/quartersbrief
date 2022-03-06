@@ -127,9 +127,17 @@ class Ship extends GameObject {
 	 */
 	#camouflage;
 
+	/**
+	 * Gets a hash of all consumables the ship has. Hash keys are the consumable's type, 
+	 * the value is the `Consumable`.
+	 * @return {Object} A hash from consumable type to consumable.
+	 */
 	get qb_consumables() {
-		return Object.values(this.get('ShipAbilities'))
-				.flatMap(slot => slot.abils)
+		let consumables = {};
+		Object.values(this.get('ShipAbilities'))
+			.flatMap(slot => slot.abils)
+			.forEach(consumable => consumables[consumable.consumableType] = consumable);
+		return consumables;
 	} 
 
 	/**

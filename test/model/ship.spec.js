@@ -358,13 +358,19 @@ describe('Ship', function() {
 			ship = new Ship(TEST_DATA);
 		});
 
-		it('should have all consumables', function() {
+		it('should be a hash of all consumables, with the consumableType as the key', function() {
 			function getAbility(n) {
 				return TEST_DATA.ShipAbilities[`AbilitySlot${Math.floor(n / 2)}`].abils[n % 2][0];
 			}
 			expect(ship).to.have.property('qb_consumables');
-			expect(ship.qb_consumables).to.be.an('array').with.deep.members(
-				[ getAbility(0), getAbility(1), getAbility(2) ])
+			expect(ship.qb_consumables).to.be.an('object');
+
+			for (let i = 0; i <= 2; i++) {
+				let consumable = getAbility(i);
+				expect(ship.qb_consumables, consumable.consumableType).to
+					.have.property(consumable.consumableType)
+					.that.deep.equals(consumable);
+			}
 		});
 	});
 });
