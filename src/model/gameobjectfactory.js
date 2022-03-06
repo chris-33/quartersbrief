@@ -40,7 +40,9 @@ class GameObjectFactory {
 			// would fit the naming convention for game objects.
 			'prev',
 			// Whitelist and blacklist for modernizations
-			'ships', 'excluded',
+			'ships', 'excludes',
+			// Whitelist and blacklist for camouflages
+			'specificShips', 'forbiddenShips', 
 			// These seem to refer to UI localization resources that are not available
 			// in GameParams.data
 			'titleIDs', 'descIDs', 'iconIDs',
@@ -84,7 +86,7 @@ class GameObjectFactory {
 		let dedicatedlog = rootlog.getLogger(self.constructor.name);
 
 		// Iterate over all keys in the current object
-		for (let key of Object.keys(data)) {
+		for (let key in data) {
 			// Therefore, omit certain keys from reference resolution. See
 			// JSDoc comment for IGNORED_KEYS.
 			if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
@@ -106,7 +108,7 @@ class GameObjectFactory {
 					get: function() {
 						// Expand reference
 						let expanded = self.createGameObject(reference);					
-						if (expanded) dedicatedlog.debug(`Expanded reference ${data.name}.${key}: ${reference}`);
+						if (expanded) dedicatedlog.debug(`Expanded reference ${data.name ? data.name + '.' : ''}${key}: ${reference}`);
 						else {
 							// If reference could not be expanded, keep it as is.
 							// This can be the case with some unfortunately-named components
@@ -116,8 +118,8 @@ class GameObjectFactory {
 							// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
 							// most other files use. This matches the regex, obviously, but
 							// no data of that refcode will be found in #data.
-							expanded = data[key];
-							dedicatedlog.debug(`Unable to expand reference  ${data.name}.${key}: ${reference}. The reference has been ignored.`)
+							expanded = reference;
+							dedicatedlog.debug(`Unable to expand reference  ${data.name ? data.name + '.' : ''}${key}: ${reference}. The reference has been ignored.`)
 						}
 						// Redefine the property from the current accessor property (using a getter) to a simple
 						// value property with the (possibly resolved) reference.
@@ -211,11 +213,12 @@ class GameObjectFactory {
 		}[gameObject.typeinfo.type];
 		if (!Constructor) Constructor = GameObject;
 
-		if (Constructor === Ship) {
-			let t0 = Date.now();
-			gameObject = self.expandReferences(gameObject);
-			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
-		}
+		gameObject = this.expandReferences(gameObject);
+		// if (Constructor === Ship) {
+		// 	let t0 = Date.now();
+		// 	gameObject = self.expandReferences(gameObject);
+		// 	dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
+		// }
 		gameObject = self.attachLabel(gameObject);
 		
 		gameObject = new Constructor(gameObject);
