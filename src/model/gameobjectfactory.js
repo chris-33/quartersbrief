@@ -88,7 +88,7 @@ class GameObjectFactory {
 			// Therefore, omit certain keys from reference resolution. See
 			// JSDoc comment for IGNORED_KEYS.
 			if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
-				dedicatedlog.debug(`Ignored key ${key} because it is blacklisted`);	
+				dedicatedlog.trace(`Ignored key ${key} because it is blacklisted`);	
 				continue;
 			}
 
@@ -113,21 +113,9 @@ class GameObjectFactory {
 					dedicatedlog.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
 				}	
 			}
-			// If the current key's value is an...
-			switch (typeof data[key]) {
-				// ...  object: resolve it recursively.
-				case 'object': 
-					// Because typeof null === 'object'
-					if (data[key] === null) break;
-					data[key] = self.expandReferences(data[key]);
-					break;
-				// ... array: resolve each of its entries recursively.
-				case 'array': 
-					for (let i = 0; i< data[key].length; i++)
-						data[key][i] = self.expandReferences(data[key][i]);
-					break;
-				// Otherwise keep data as is.						
-				default:
+			// If the current key's value is an object, expand references recursively
+			else if (typeof data[key] === 'object' && data[key] !== null) {
+				data[key] = self.expandReferences(data[key]);
 			}
 		}
 		return data;
@@ -188,6 +176,13 @@ class GameObjectFactory {
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 
+		{
+			let t0 = Date.now();
+			gameObject = self.expandReferences(gameObject);
+			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
+		}
+		gameObject = self.attachLabel(gameObject);
+		
 		let Constructor = {
 			'Ship': Ship,
 			'Modernization': Modernization,
@@ -197,13 +192,6 @@ class GameObjectFactory {
 		}[gameObject.typeinfo.type];
 		if (!Constructor) Constructor = GameObject;
 
-		if (Constructor === Ship) {
-			let t0 = Date.now();
-			gameObject = self.expandReferences(gameObject);
-			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
-		}
-		gameObject = self.attachLabel(gameObject);
-		
 		gameObject = new Constructor(gameObject);
 		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
 		return gameObject; 
