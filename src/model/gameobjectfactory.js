@@ -40,7 +40,7 @@ class GameObjectFactory {
 			// would fit the naming convention for game objects.
 			'prev',
 			// Whitelist and blacklist for modernizations
-			'ships', 'excluded',
+			'ships', 'excludes',
 			// These seem to refer to UI localization resources that are not available
 			// in GameParams.data
 			'titleIDs', 'descIDs', 'iconIDs',
