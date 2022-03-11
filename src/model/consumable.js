@@ -16,7 +16,7 @@ class Consumable extends GameObject {
 	 */
 	setFlavor(flavor) {
 		if (typeof this._data[flavor] !== 'object')
-			throw new Error(`Trying to set unknown flavor ${flavor} on consumable ${this.name}`);
+			throw new Error(`Trying to set unknown flavor ${flavor} on consumable ${this.getName()}`);
 				
 		this.#flavor = flavor;
 	}
@@ -37,7 +37,7 @@ class Consumable extends GameObject {
 		// Otherwise read through to the flavor
 		if (!['typeinfo', 'name', 'index', 'id'].includes(key.split('.')[0]))
 			if (!this.#flavor)
-				throw new Error(`Trying to get property ${key} on consumable ${this.name} while no flavor is set`);
+				throw new Error(`Trying to get property ${key} on consumable ${this.getName()} while no flavor is set`);
 			else
 				key = this.#flavor + '.' + key;
 		
