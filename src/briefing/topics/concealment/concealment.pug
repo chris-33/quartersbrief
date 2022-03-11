@@ -1,7 +1,11 @@
+//- A constant value that all ship concealments will be reduced by. This reduces bar length and exaggerates concealment differences.
+- const reduction = 3;
+//- The maximum concealment present. Used to scale bar lengths - this value will translate to 100%.
+- const maxConcealment = ships[ships.length - 1].getConcealment()
 div
 	each ship in ships
 		.ship
-			span.shipbar.label(style=`width: ${(ship.getConcealment() - 3) * 10}%`, class = {
+			span.shipbar.label(style=`width: ${(ship.getConcealment() - reduction) * 100/maxConcealment}%`, class = {
 				"ally": allies.includes(ship.getID()) && ship.getID() !== player.getID(),
 				"enemy": enemies.includes(ship.getID()) && ship.getID() !== player.getID(),
 				"player": ship.getID() === player.getID()
