@@ -1,6 +1,6 @@
 import { GameObject } from './model/gameobject.js';
 import rootlog from 'loglevel';
-import clone from 'just-clone';
+import clone from 'clone';
 import { arrayIntersect } from './util/util.js';
 
 

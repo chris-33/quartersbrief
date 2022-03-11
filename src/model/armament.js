@@ -1,5 +1,5 @@
 import { ComplexDataObject } from '../util/cdo.js';
-import clone from 'just-clone';
+import clone from 'clone';
 
 /**
  * @class
