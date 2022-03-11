@@ -580,6 +580,10 @@ class Ship extends GameObject {
 
 	getClass() { return this.get('typeinfo.species'); }
 	getTier() { return this.get('level'); }
+	/**
+	 * Get a list of permanent camouflages that are mountable on this ship.
+	 * @return {Array} An array of permanent camouflages.
+	 */
 	getPermoflages() { return this.get('permoflages'); }
 	getSpeed() { return this.get('hull.maxSpeed') * (1 - this.get('engine.speedCoef')); }
 	getHealth() { return this.get('hull.health'); }
@@ -602,13 +606,6 @@ class Ship extends GameObject {
 }
 
 
-/**
- * @name Ship#getPermoflages
- * @function
- * @memberof Ship
- * Get a list of permanent camouflages that are mountable on this ship.
- * @return {Array} An array of permanent camouflages.
- */
 
 
 
