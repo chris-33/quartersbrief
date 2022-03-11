@@ -65,7 +65,4 @@ class GameObject {
 	getTypeInfo() { return this._data.typeinfo; }
 }
 
-ComplexDataObject.createGetters(GameObject.prototype, GameObject.LOOKUP_DEFINITIONS);
-
-
 export { GameObject }

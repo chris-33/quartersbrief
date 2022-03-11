@@ -10,11 +10,6 @@ import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'clone';
 import { conversions } from '../util/conversions.js';
 
-function readthrough(property) {
-	return function() { return this.getCurrentConfiguration()['get' + property].call(this.getCurrentConfiguration()) }
-}
-
-
 /**
  * This class represents a ship within the game. Ships have some core characteristics (e.g. their tier or nation), but the
  * bulk of their performance characteristics are defined in the form of equippable modules. These characteristics are then
@@ -85,28 +80,6 @@ function readthrough(property) {
  */
 class Ship extends GameObject {
 	/**
-	 * Definitions for autocreated getters
-	 * @todo Remove the need to explicitly state readthroughs
-	 */
-	static #GETTER_DEFINITIONS = {
-		Class: 'typeinfo.species', // Alias for getSpecies
-		Tier: 'level',
-		Permoflages: 'permoflages',
-		Speed: readthrough('Speed'),
-		Ruddershift: readthrough('Ruddershift'),
-		Health: readthrough('Health'),
-		Concealment: readthrough('Concealment'),		
-		ArtilleryRange: readthrough('ArtilleryRange'),		
-		ArtilleryCaliber: readthrough('ArtilleryCaliber'),		
-		ArtilleryRotationSpeed: readthrough('ArtilleryRotationSpeed'),
-		TorpedoRange: readthrough('TorpedoRange'),
-		TorpedoSpeed: readthrough('TorpedoSpeed'),
-		TorpedoDamage: readthrough('TorpedoDamage'),
-		TorpedoFloodChance: readthrough('TorpedoFloodChance'),
-	}
-	
-
-	/**
 	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
 	 */
 	#moduleLines;
@@ -137,7 +110,6 @@ class Ship extends GameObject {
 		super(data);
 
 		let self = this;
-		ComplexDataObject.createGetters(self, Ship.#GETTER_DEFINITIONS)
 
 		self.#modernizations = [];
 		self.equipModules(descriptor);
@@ -606,6 +578,23 @@ class Ship extends GameObject {
 
 	}
 
+	getClass() { return this.get('typeinfo.species'); }
+	getTier() { return this.get('level'); }
+	getPermoflages() { return this.get('permoflages'); }
+	getSpeed() { return this.get('hull.maxSpeed') * (1 - this.get('engine.speedCoef')); }
+	getHealth() { return this.get('hull.health'); }
+	getConcealment() { return this.get('hull.visibilityFactor'); }
+
+	// @todo Implement the following properties again
+	// ArtilleryRange: function() { return this.get('artillery.maxDist') * this.get('fireControl.maxDistCoef') },
+	// ArtilleryCaliber: function() { return 'artillery.qb_mounts.*.barrelDiameter' },
+	// ArtilleryRotationSpeed: 'artillery.qb_mounts.*.rotationSpeed.0',
+	// TorpedoRange: function() { return conversions.BWToMeters(this.get('torpedoes.qb_mounts.*.ammoList.*.maxDist')) },
+	// TorpedoSpeed: 'torpedoes.qb_mounts.*.ammoList.*.speed',
+	// TorpedoDamage: 'torpedoes.qb_mounts.*.ammoList.*.alphaDamage',
+	// TorpodoFloodChance: 'torpedoes.qb_mounts.*.ammoList.*.uwCritical',
+	// ATBARange: 'atba.maxDist',
+
 	/**
 	 * Checks that the provided argument is an instance of `Ship` and throws a `TypeError` otherwise.
 	 */
@@ -617,22 +606,6 @@ class Ship extends GameObject {
  * @name Ship#ModuleConfiguration
  */
 Ship.ModuleConfiguration =  class extends ComplexDataObject {
-	static #GETTER_DEFINITIONS = {
-		Ruddershift: 'hull.rudderTime',
-		Health: 'hull.health',
-		TurningCircle: 'hull.turningRadius',
-		Concealment: 'hull.visibilityFactor',
-		Speed: function() { return this.get('hull.maxSpeed') * (1 - this.get('engine.speedCoef')) },
-		ArtilleryRange: function() { return this.get('artillery.maxDist') * this.get('fireControl.maxDistCoef') },
-		ArtilleryCaliber: function() { return 'artillery.qb_mounts.*.barrelDiameter' },
-		ArtilleryRotationSpeed: 'artillery.qb_mounts.*.rotationSpeed.0',
-		TorpedoRange: function() { return conversions.BWToMeters(this.get('torpedoes.qb_mounts.*.ammoList.*.maxDist')) },
-		TorpedoSpeed: 'torpedoes.qb_mounts.*.ammoList.*.speed',
-		TorpedoDamage: 'torpedoes.qb_mounts.*.ammoList.*.alphaDamage',
-		TorpodoFloodChance: 'torpedoes.qb_mounts.*.ammoList.*.uwCritical',
-		ATBARange: 'atba.maxDist',
-	}
-
 	#ship;
 
 	/** 
@@ -652,8 +625,6 @@ Ship.ModuleConfiguration =  class extends ComplexDataObject {
 		if (!ship || !(ship instanceof Ship)) 
 			throw new TypeError(`Expected a ship but got ${ship}`);
 		self.#ship = ship;
-
-		ComplexDataObject.createGetters(self, Ship.ModuleConfiguration.#GETTER_DEFINITIONS);
 
 		// Turn armaments from pure data objects into instances of Armament
 		// @todo Add atbas and aa guns
