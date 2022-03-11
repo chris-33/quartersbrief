@@ -12,7 +12,7 @@ const CONCEALMENT_BUILD = {
 
 function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
-	let ships = battle.get('vehicles')
+	let ships = battle.getVehicles()
 		.map(vehicle => vehicle.ship)
 		.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD))		
 		// Filter out duplicates
