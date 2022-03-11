@@ -1,7 +1,7 @@
 import { Modifier } from '../../src/util/modifier.js';
 import { Ship } from '../../src/model/ship.js';
 import { readFileSync } from 'fs';
-import clone from 'just-clone';
+import clone from 'clone';
 
 describe('Modifier', function() {
 	let knownTargets;
@@ -34,10 +34,10 @@ describe('Modifier', function() {
 		it('should negate the effects of the original modifier when applying', function() {
 			let ship = new Ship(clone(SHIPDATA));
 			let modifier = new Modifier('engine.value', 2);
-			let val = ship.getCurrentConfiguration().get('engine.value');
+			let val = ship.get('engine.value');
 			modifier.applyTo(ship);
 			modifier.invert().applyTo(ship);
-			expect(ship.getCurrentConfiguration().get('engine.value')).to.equal(val);
+			expect(ship.get('engine.value')).to.equal(val);
 		})
 	});
 
@@ -72,15 +72,15 @@ describe('Modifier', function() {
 			let modifier = new Modifier('engine.value', 2);
 			let ship = new Ship(clone(SHIPDATA));
 
-			let val = ship.getCurrentConfiguration().engine.value;
+			let val = ship.engine.value;
 			modifier.applyTo(ship);
-			expect(ship.getCurrentConfiguration().engine.value, 'applying a primitive value').to.equal(val * modifier.value);
+			expect(ship.engine.value, 'applying a primitive value').to.equal(val * modifier.value);
 
 			modifier = new Modifier('artillery.value', {});
 			modifier.value[ship.getSpecies()] = 2;
-			val = ship.getCurrentConfiguration().artillery.value;
+			val = ship.artillery.value;
 			modifier.applyTo(ship);
-			expect(ship.getCurrentConfiguration().artillery.value, 'applying an object value').to.equal(val * modifier.value[ship.getSpecies()]);
+			expect(ship.artillery.value, 'applying an object value').to.equal(val * modifier.value[ship.getSpecies()]);
 		});
 	});
 
