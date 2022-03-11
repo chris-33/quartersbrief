@@ -2,6 +2,7 @@ import { Ship } from '../../src/model/ship.js';
 import { Modernization } from '../../src/model/modernization.js';
 import { Captain } from '../../src/model/captain.js';
 import { Camouflage } from '../../src/model/camouflage.js';
+import { Consumable } from '../../src/model/consumable.js';
 import { Modifier } from '../../src/util/modifier.js';
 import sinon from 'sinon';
 import clone from 'clone';
@@ -12,6 +13,8 @@ describe('Ship', function() {
 	let knownTargets;
 	let classSkills;
 
+	let ship;
+
 	before(function() {
 		knownTargets = Modifier.KNOWN_TARGETS;
 		Modifier.KNOWN_TARGETS = { EngineValue: 'engine.value', ArtilleryValue: 'artillery.value' }
@@ -19,6 +22,11 @@ describe('Ship', function() {
 		Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
 
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
+		Object.freeze(TEST_DATA);
+	});
+
+	beforeEach(function() {
+		ship = new Ship(clone(TEST_DATA));
 	});
 
 	after(function() {
@@ -26,10 +34,22 @@ describe('Ship', function() {
 		Captain.CLASS_SKILLS = classSkills;
 	});
 
+	describe('constructor', function() {
+		it('should set flavors for all consumables', function() {
+			let data = clone(TEST_DATA);
+			data.ShipAbilities.AbilitySlot0.abils = [
+				[ new Consumable({Flavor1: { prop: 1 }}), 'Flavor1' ]
+			]
+			let ship = new Ship(data);
+			let consumable = ship.get('ShipAbilities.AbilitySlot0.abils.0.0');
+			expect(consumable.get('prop')).to.equal(1);
+		});
+	});
+
 	describe('.getModuleLines', function() {
 		it('should start a new path for every module type', function() {
 			let expected = TEST_DATA.ShipUpgradeInfo;
-			expect(new Ship(TEST_DATA).getModuleLines()).to
+			expect(ship.getModuleLines()).to
 				.be.an('object')
 				.that.has.all.keys(expected.ART_STOCK.ucType, 
 					expected.ENG_STOCK.ucType,
@@ -38,7 +58,7 @@ describe('Ship', function() {
 		});
 
 		it('should assign modules to the correct module lines when every module\'s type is the same as its predecessor (simple case)', function() {
-			let result = new Ship(TEST_DATA).getModuleLines();
+			let result = ship.getModuleLines();
 			let expected = TEST_DATA.ShipUpgradeInfo;
 			for (let ucType of [expected.ART_STOCK.ucType, 
 							expected.HULL_STOCK.ucType, 
@@ -52,7 +72,7 @@ describe('Ship', function() {
 
 		it('should correctly order modules within the module lines when every module\'s type is the same as its predecessor (simple case)', function() {
 			let expected = TEST_DATA.ShipUpgradeInfo;
-			let result = new Ship(TEST_DATA).getModuleLines();
+			let result = ship.getModuleLines();
 			
 			expect(result[expected.ART_STOCK.ucType]).to
 				.have.ordered.deep.members([expected.ART_STOCK])
@@ -79,11 +99,6 @@ describe('Ship', function() {
 	});
 
 	describe('.equipModules', function() {
-		let ship;
-
-		beforeEach(function() {
-			ship = new Ship(TEST_DATA);
-		});
 		it('should have equipped the beginnings of the module lines after applying the stock configuration', function() {
 			let expected = {
 				artillery: TEST_DATA.AB1_Artillery,
@@ -180,10 +195,7 @@ describe('Ship', function() {
 
 	describe('.equipModernization', function() {
 		let modernization;
-		let ship;
-	
 		beforeEach(function() {
-			ship = new Ship(TEST_DATA);
 			modernization = new Modernization(JSON.parse(readFileSync('test/model/testdata/modernization.json')));
 			sinon.stub(modernization, 'eligible').returns(true);
 		});
@@ -221,10 +233,8 @@ describe('Ship', function() {
 
 	describe('.unequipModernization', function() {
 		let modernization;
-		let ship;
 	
 		beforeEach(function() {
-			ship = new Ship(TEST_DATA);
 			modernization = new Modernization(JSON.parse(readFileSync('test/model/testdata/modernization.json')));
 			sinon.stub(modernization, 'eligible').returns(true);
 			ship.equipModernization(modernization);
@@ -253,14 +263,12 @@ describe('Ship', function() {
 	describe('.setCaptain', function() {
 		let CAPTAIN_DATA;
 		let captain;
-		let ship;
 	
 		before(function() {
 			CAPTAIN_DATA = JSON.parse(readFileSync('test/model/testdata/captain.json'));
 		});
 
 		beforeEach(function() {
-			ship = new Ship(TEST_DATA);
 			captain = new Captain(CAPTAIN_DATA);
 		});
 
@@ -304,14 +312,12 @@ describe('Ship', function() {
 	describe('.setCamouflage', function() {
 		let CAMOUFLAGE_DATA;
 		let camouflage;
-		let ship;
 	
 		before(function() {
 			CAMOUFLAGE_DATA = JSON.parse(readFileSync('test/model/testdata/camouflage.json'));
 		});
 
 		beforeEach(function() {
-			ship = new Ship(TEST_DATA);
 			camouflage = new Camouflage(CAMOUFLAGE_DATA);
 		});
 
@@ -358,12 +364,6 @@ describe('Ship', function() {
 	});
 
 	describe('.qb_consumables', function() {
-		let ship;
-
-		beforeEach(function() {
-			ship = new Ship(clone(TEST_DATA));			
-		});
-
 		it('should return a hash of all consumables with the consumableType as keys');
 	});
 });

@@ -118,10 +118,9 @@ class Ship extends GameObject {
 		// This is necessary because within the game data, consumable definitions are arrays of length 2
 		// consisting of the consumable reference name (already expanded by GameObjectFactory) and the name
 		// of the flavor
-		this.consumables = this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false, strict: false }).map(ability => {
+		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false }).forEach(ability => {
 			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
-			let consumable = new Consumable(ability.get(0));
-			consumable.setFlavor(ability.get(1));			
+			ability[0].setFlavor(ability[1]);			
 		});
 	}
 
