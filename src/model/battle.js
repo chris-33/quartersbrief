@@ -16,6 +16,10 @@ class Battle {
 	getEnemies() {
 		return this._data.vehicles.filter(vehicle => vehicle.relation === 2);
 	}
+
+	getVehicles() {
+		return this._data.vehicles;
+	}
 }
 
 export { Battle }
