@@ -2,7 +2,7 @@ import { Captain } from '../../src/model/captain.js';
 import { Ship } from '../../src/model/ship.js';
 import { Modifier } from '../../src/util/modifier.js';
 import { readFileSync } from 'fs';
-import clone from 'just-clone';
+import clone from 'clone';
 
 describe('Captain', function() {
 	let ship;
@@ -37,7 +37,10 @@ describe('Captain', function() {
 		it('should return only skills that are in the skill list for the ship\'s species', function() {
 			expect(captain.getLearnableForShip(ship)).to
 				.be.an('array')
-				.with.deep.members([captain.get('Skills.BattleshipSkill1'), captain.get('Skills.BattleshipSkill2')]);	
+				.with.deep.members([ 
+					new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1), 
+					new Captain.Skill(TEST_DATA.Skills.BattleshipSkill2)
+				]);
 		});		
 	});
 
@@ -97,45 +100,86 @@ describe('Captain', function() {
 	});
 
 	describe('.eligible', function() {
+		// Helper function to overwrite properties in CrewPersonality.ships with those from the traits parameter
+		function changeTraits(data, traits) {
+			for (let key in traits)
+				data.CrewPersonality.ships[key] = traits[key];
+
+			return data;
+		}
+
 		it('should always return true when the ship is whitelisted', function() {
-			captain.set('CrewPersonality.ships.ships', [ship.getName()]);
-			expect(captain.eligible(ship)).to.be.true;
-			captain.set('CrewPersonality.ships.nation', ['Germany']);
-			expect(captain.eligible(ship)).to.be.true;
-			captain.set('CrewPersonality.ships.groups', ['somegroup']);
-			expect(captain.eligible(ship)).to.be.true;
-			captain.set('CrewPersonality.ships.peculiarity', ['somepeculiarity']);
-			expect(captain.eligible(ship)).to.be.true;
+			// This test creates a test captain and adds the ship to whitelist. It then
+			// checks that this captain is eligible to command the ship regardless of 
+			// the values of the other eligiblity traits.
+
+			const data = clone(TEST_DATA);
+			data.CrewPersonality.ships.ships = [ ship.getName() ];
+
+			captain = new Captain(changeTraits(clone(data), {}));
+			expect(captain.eligible(ship), 'ships').to.be.true;
+			
+			captain = new Captain(changeTraits(clone(data), { nation: [ 'Germany' ] }));
+			expect(captain.eligible(ship), 'nation').to.be.true;
+
+			captain = new Captain(changeTraits(clone(data), { groups: [ 'somegroup' ] }));			
+			expect(captain.eligible(ship), 'groups').to.be.true;
+
+			captain = new Captain(changeTraits(clone(data), { peculiarity: [ 'somepeculiarity' ] }));
+			expect(captain.eligible(ship), 'peculiarity').to.be.true;
 		});
 
 		it('should return true when nation, group, and peculiarity match, false otherwise', function() {
-			ship.peculiarity = 'somepeculiarity';
-			ship.group = 'somegroup';
+			let ship = new Ship({
+				peculiarity: 'somepeculiarity',
+				group: 'somegroup',
+				typeinfo: {
+					type: Ship,
+					nation: 'USA'
+				},
+				ShipUpgradeInfo: {}
+			});
 
-			captain.set('CrewPersonality.ships.peculiarity', [ 'somepeculiarity' ]);
-			captain.set('CrewPersonality.ships.groups', [ 'somegroup' ]);
-			captain.set('CrewPersonality.ships.nation', [ ship.getNation() ]);
-			captain.set('CrewPersonality.ships.ships', []);
-
+			captain = new Captain(changeTraits(clone(TEST_DATA), {
+				peculiarity: ['somepeculiarity'],
+				groups: ['somegroup'],
+				nation: [ ship.getNation() ],
+				ships: []
+			}));
 			expect(captain.eligible(ship)).to.be.true;
 
-			captain.set('CrewPersonality.ships.nation', ['Germany']);
+			captain = new Captain(changeTraits(clone(TEST_DATA), {
+				peculiarity: ['somepeculiarity'],
+				groups: ['somegroup'],
+				nation: [ 'Germany' ],
+				ships: []
+			}));			
 			expect(captain.eligible(ship)).to.be.false;
-			captain.set('CrewPersonality.ships.nation', [ ship.getNation() ]);
 			
-			captain.set('CrewPersonality.ships.groups', ['someothergroup']);
+			captain = new Captain(changeTraits(clone(TEST_DATA), {
+				peculiarity: ['somepeculiarity'],
+				groups: ['someothergroup'],
+				nation: [ ship.getNation() ],
+				ships: []
+			}));			
 			expect(captain.eligible(ship)).to.be.false;
-			captain.set('CrewPersonality.ships.groups', [ ship.get('group') ]);
 			
-			captain.set('CrewPersonality.ships.peculiarity', ['someotherpeculiarity']);
+			captain = new Captain(changeTraits(clone(TEST_DATA), {
+				peculiarity: ['someotherpeculiarity'],
+				groups: ['somegroup'],
+				nation: [ ship.getNation() ],
+				ships: []
+			}));			
 			expect(captain.eligible(ship)).to.be.false;			
 		});
 
 		it('should ignore nation, group, peculiarity and ship when they are empty', function() {
-			captain.set('CrewPersonality.ships.groups', []);
-			captain.set('CrewPersonality.ships.nation', []);
-			captain.set('CrewPersonality.ships.peculiarity', []);
-			captain.set('CrewPersonality.ships.ships', []);
+			captain = new Captain(changeTraits(clone(TEST_DATA), {
+				peculiarity: [],
+				groups: [],
+				nation: [],
+				ships: []
+			}));			
 			expect(captain.eligible(ship)).to.be.true;
 		});
 	});
@@ -143,16 +187,23 @@ describe('Captain', function() {
 	describe('.isDefault', function() {
 		it('should return true if tags is empty, personName is \'\' and peculiarity is \'default\', false otherwise', function() {
 			expect(captain.isDefault()).to.be.true;
-			captain.set('CrewPersonality.tags', ['']);
+
+			let data = clone(TEST_DATA);
+			data.CrewPersonality.tags = [ 'tag' ];
+			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.false;
-			captain.set('CrewPersonality.tags', []);
-			captain.set('CrewPersonality.peculiarity', 'not-default');
+
+			data = clone(TEST_DATA);
+			data.CrewPersonality.peculiarity = 'not-default';
+			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.false;
-			captain.set('CrewPersonality.peculiarity', 'default');
-			captain.set('CrewPersonality.personName', 'somename');
+
+			data = clone(TEST_DATA);
+			data.CrewPersonality.personName = 'somename';
+			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.false;
 		});
-	})
+	});
 
 	describe('Captain.Skill', function() {
 		describe('.eligible', function() {

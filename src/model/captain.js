@@ -141,7 +141,6 @@ class Captain extends GameObject {
 		super(data);
 
 		this.qb_learned = [];
-
 		// Turn the skills from the data into an array of Skill objects.
 		// This will also lose the name, but that shouldn't be a problem.
 		this.qb_skills = Object.values(this.get('Skills')).map(skill => new Captain.Skill(skill));
@@ -152,9 +151,9 @@ class Captain extends GameObject {
  * A single skill that a captain has. Each skill modifies the ship the captain commands. Some skills are conditional: 
  * They only take effect when certain circumstances apply. This is not modeled in this class.
  */
-Captain.Skill = class extends ComplexDataObject {
+Captain.Skill = class {
 	constructor(data) {
-		super(data);
+		this._data = data;
 	}
 
 	/**
@@ -176,13 +175,13 @@ Captain.Skill = class extends ComplexDataObject {
 	 * @see Modifier
 	 */
 	getModifiers() {
-		let modifiers = this.get('modifiers');
+		let modifiers = this._data.modifiers;
 		return Object.keys(modifiers)
 					.map(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}
 
-	getSkillnumber() { return this.get('skillType'); }
+	getSkillnumber() { return this._data.skillType; }
 }
 
 export { Captain };
