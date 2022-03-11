@@ -15,7 +15,7 @@ class Consumable extends GameObject {
 	 * @param {Object} flavor The flavor to set.
 	 */
 	setFlavor(flavor) {
-		if (typeof this[flavor] !== 'object')
+		if (typeof this._data[flavor] !== 'object')
 			throw new Error(`Trying to set unknown flavor ${flavor} on consumable ${this.name}`);
 				
 		this.#flavor = flavor;
