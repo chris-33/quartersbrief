@@ -601,43 +601,6 @@ class Ship extends GameObject {
 	static errorIfNotShip(ship) { if (!(ship instanceof Ship)) throw new TypeError(`Expected a Ship but got ${ship}`); }
 }
 
-/**
- * This class represents a configuration of a ship.
- * @name Ship#ModuleConfiguration
- */
-Ship.ModuleConfiguration =  class extends ComplexDataObject {
-	#ship;
-
-	/** 
-	 * Instantiate a configuration for the given `ship`,
-	 * using the values in `configuration` as the data.
-	 * `configuration` will be deep-copied to the new 
-	 * instance.
-	 * @param {Ship} ship The ship for which this configuration is.
-	 * @param {Object} configuration The configuration values.
-	 * @throws 
-	 * Throws a `TypeError` if `ship` is not provided or not a ship.
-	 */
-	constructor(ship, configuration) {
-		super(clone(configuration));
-		let self = this;
-		
-		if (!ship || !(ship instanceof Ship)) 
-			throw new TypeError(`Expected a ship but got ${ship}`);
-		self.#ship = ship;
-
-		// Turn armaments from pure data objects into instances of Armament
-		// @todo Add atbas and aa guns
-		for (let armament of ['artillery', 'torpedoes'])
-			if (self[armament]) {
-				let constructor = {
-					'artillery': Artillery,
-					'torpedoes': Torpedoes,
-				}[armament] ?? Armament;
-				self[armament] = new constructor(self[armament]);
-			}
-	}
-}
 
 /**
  * @name Ship#getPermoflages
