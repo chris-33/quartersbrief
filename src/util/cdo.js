@@ -1,21 +1,23 @@
-import clone from 'clone';
 import deepequal from 'deep-equal';
 
 const coefficients = Symbol('coefficients');
 
 
 function ComplexDataObject(data) {	
-	// First make a shallow copy. Doing it this way does NOT invoke getters
-	// Also, because getOwnPropertyDescriptors includes symbol-keyed properties, if data
-	// was already proxified before, calling proxify again will just return a copy.
-	data = clone(data, false, 1);
-	// Recursively turn complex properties into CDOs
+	// Recursively turn object properties into CDOs
 	for (let key in data) 
 		if (typeof data[key] === 'object' && data[key] !== null)
 			data[key] = ComplexDataObject(data[key]);
 
-	// If source is already a CDO, just return it.
-	if (ComplexDataObject.isCDO(data) || typeof data !== 'object') {
+	// Return the source if
+	// - it is already a CDO
+	// - it is a primitive
+	// - it is a "custom" class, i.e. it's not directly derived from Object. Arrays are excepted from this and
+	//   will be augmented.
+	if (ComplexDataObject.isCDO(data) 
+		|| typeof data !== 'object'
+		|| (Object.getPrototypeOf(data) !== Object.prototype && !Array.isArray(data))) {
+
 		return data;
 	}
 	

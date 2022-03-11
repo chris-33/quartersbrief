@@ -18,16 +18,7 @@ describe('ComplexDataObject', function() {
 	});
 
 	beforeEach(function() {
-		cdo = ComplexDataObject(TEST_DATA);
-	});
-
-	it('should copy the source', function() {
-		let data = clone(TEST_DATA);
-		cdo = ComplexDataObject(data);
-		expect(cdo, 'strict equality').to.not.equal(data);
-		expect(cdo, 'deep equality').to.deep.equal(data);
-		data.prop2 = 2;
-		expect(cdo.prop2, 'does not reflect later change').to.equal(TEST_DATA.prop2);
+		cdo = ComplexDataObject(clone(TEST_DATA));
 	});
 
 	it('should have methods multiply and get', function() {
@@ -35,11 +26,10 @@ describe('ComplexDataObject', function() {
 		expect(cdo).to.respondTo('get');
 	});
 
-	it('should return a copy if the source is already a ComplexDataObject', function() {		
+	it('should return the source if it is already a ComplexDataObject', function() {		
 		cdo.multiply('prop1', 2);
 		let other = ComplexDataObject(cdo);
-		expect(other, 'strict equality').to.not.equal(cdo);
-		expect(other, 'deep equality').to.deep.equal(cdo);
+		expect(other).to.equal(cdo);
 	});
 
 	describe('.multiply', function() {
