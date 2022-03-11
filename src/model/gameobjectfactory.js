@@ -6,6 +6,7 @@ import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import template from 'pupa';
+import clone from 'clone';
 
 /**
  * @see GameObject
@@ -180,6 +181,10 @@ class GameObjectFactory {
 
 		let Constructor = GameObjectFactory.KNOWN_TYPES[data.typeinfo.type];
 		if (!Constructor) Constructor = GameObject;
+
+		rootlog
+			.getLogger(this.constructor.name)
+			.debug(`Converting object ${data.name} of type ${data.typeinfo.type} into a ${Constructor.name}`);
 		return new Constructor(data);
 	}
 
@@ -231,9 +236,10 @@ class GameObjectFactory {
 			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
 		}
 		gameObject = self._attachLabel(gameObject);
+		gameObject = clone(gameObject);
 		gameObject = self._convert(gameObject);
 
-		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
+		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.getName()} in ${Date.now() - t0}ms`);
 		return gameObject; 
 	}
 
