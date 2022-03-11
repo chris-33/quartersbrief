@@ -7,7 +7,7 @@ import { Camouflage } from './camouflage.js';
 import { ComplexDataObject } from '../util/cdo.js';
 import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
-import clone from 'just-clone';
+import clone from 'clone';
 import { conversions } from '../util/conversions.js';
 
 function readthrough(property) {
@@ -146,11 +146,29 @@ class Ship extends GameObject {
 		// This is necessary because within the game data, consumable definitions are arrays of length 2
 		// consisting of the consumable reference name (already expanded by GameObjectFactory) and the name
 		// of the flavor
-		self.apply('ShipAbilities.AbilitySlot*.abils.*', function flavor(ability) {
-			let result = new Consumable(ability[0]);
-			result.setFlavor(ability[1]);
-			return result;
-		}, { collate: false, strict: false });
+		this.consumables = this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false, strict: false }).map(ability => {
+			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
+			let consumable = new Consumable(ability.get(0));
+			consumable.setFlavor(ability.get(1));			
+		});
+	}
+
+	multiply(key, factor) {
+		let path = key.split('.');
+		let key0 = path.shift();
+		if (key0 in this)
+			return this[key0].multiply(path.join('.'), factor);
+		else
+			return super.multiply(key, factor);		
+	}
+
+	get(key, options) {
+		let path = key.split('.');
+		let key0 = path.shift();
+		if (key0 in this)
+			return path.length > 0 ? this[key0].get(path.join('.'), options) : this[key0];
+		else
+			return super.get(key, options);		
 	}
 
 	/**
@@ -406,8 +424,8 @@ class Ship extends GameObject {
 		// Make a deep copy, because otherwise if any values are modified in the configuration further on
 		// (e.g. by applying modernizations), it will change the original values, too.
 		// This would lead to unexpected behavior when switching configurations back and forth.
-		self.#configuration = new Ship.ModuleConfiguration(self, configuration);
-		
+		Object.assign(this, configuration);
+
 		// Remember the equipped modernizations, re-initialize to no equipped,
 		// and re-apply them all
 		let modernizations = self.#modernizations;
@@ -425,16 +443,6 @@ class Ship extends GameObject {
 			self.#camouflage = null;
 			self.setCamouflage(camouflage);
 		}
-	}
-
-	/**
-	 * Gets the ship's current configuration.
-	 * @return {Object} The ship's current configuration, or `null` if no configuration has been
-	 * set yet.
-	 * @todo Remove when better solution for readthrough is implemented
-	 */
-	getCurrentConfiguration() {
-		return this.#configuration || null;
 	}
 
 	/**
@@ -590,6 +598,12 @@ class Ship extends GameObject {
 		// Cache for later
 		self.#moduleLines = moduleLines;
 		return moduleLines;
+	}
+
+	get qb_consumables() {
+		let result = this.get('ShipAbilities.*.abils', { collate: false })
+		return result;
+
 	}
 
 	/**
