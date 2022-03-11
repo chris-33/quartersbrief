@@ -23,7 +23,8 @@ function ComplexDataObject(data) {
 	Object.defineProperties(data, {
 		[coefficients]: {
 			value: {},
-			writable: true
+			writable: true,
+			enumerable: false
 		},
 		multiply: { 
 			value: function(key, factor) {
@@ -37,14 +38,16 @@ function ComplexDataObject(data) {
 					});
 				else 
 					targets.forEach(target => this[target].multiply(path.join('.'), factor));				
-			}
+			},
+			enumerable: false
 		},
 		clear: {
 			value: function() {
 				this[coefficients] = {};
 				for (let val of Object.values(this))
 					if (ComplexDataObject.isCDO(val)) val.clear();
-			}
+			},
+			enumerable: false
 		},
 		get: {
 			value: function(key, options) {
@@ -54,10 +57,17 @@ function ComplexDataObject(data) {
 				let path = key.split('.');
 				let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
 				let targets = Object.keys(this)
-					.filter(key => currKeyRegex.test(key))
-					.flatMap(target => path.length > 0 ? 
-								this[target].get(path.join('.'), options) : // If this is not a leaf, apply .get recursively. 
-								[ this[target] ]); // Otherwise, return an ARRAY of the matched properties. (It needs to be an array, because otherwise flatMap will clobber it.)
+					.filter(key => currKeyRegex.test(key));
+
+				// If we are getting a leaf property, do so for every target. Otherwise, call get
+				// recursively with the rest of the path. In this case, we must use flatMap and 
+				// turn off collation. This is to make sure that collating does not flatten
+				// array properties, and that not collating does not produce deeply nested arrays
+				// (i.e. arrays of arrays of arrays of ...)
+				if (path.length > 0)
+					targets = targets.flatMap(target => this[target].get(path.join('.'), { ...options, collate: false }));
+				else
+					targets = targets.map(target => this[target]);
 
 				if (options.collate) {
 					if (!targets.every(target => deepequal(target, targets[0])))

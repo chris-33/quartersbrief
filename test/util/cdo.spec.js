@@ -96,6 +96,36 @@ describe('ComplexDataObject', function() {
 				expect(cdo.get(`arr.${i}`), `arr.${i}`).to.equal(TEST_DATA.arr[i]);
 		});
 
+		it('should get deeply nested properties', function() {
+			// The point of this test is to make sure that deeply nested properties
+			// result in the right array depth - i.e., that collating does not remove
+			// too many levels, and that not collating does not add too many
+			let data = { ...clone(TEST_DATA), deeply: { nested: { object: { prop: 1 }}}};
+			cdo = ComplexDataObject(data);
+			expect(cdo.get('deeply.nested.object.prop'), 'scalar with default collate').to.equal(1);
+			expect(cdo.get('deeply*.nested*.object*.*'), 'shallow array with default collate').to.deep.equal([1])
+		});
+
+		it('should get array properties as arrays', function() {
+			// The point of this test is to make sure that collation does not unintentionally
+			// flatten array properties - i.e., that .get() doesn't try to collate array
+			// properties
+			let data = clone(TEST_DATA);
+			data.prop1 = [1,2,3];
+			data.nested.prop1 = [1,2,3];
+			data.nested.prop2 = [[1],[2],[3]];
+			cdo = ComplexDataObject(data);
+			expect(cdo.get('prop1'), 'top-level array property').to
+				.be.an('array')
+				.with.members(data.prop1);
+			expect(cdo.get('nested.prop1'), 'nested array property').to
+				.be.an('array')
+				.with.deep.members(data.nested.prop1);
+			expect(cdo.get('nested.prop2'), 'nested array of arrays property').to
+				.be.an('array')
+				.with.deep.members(data.nested.prop2)
+		});
+
 		it('should always return an array if collate option is set to false', function() {
 			for (let key in TEST_DATA)
 				expect(cdo.get(key, { collate: false })).to.be.an('array');
