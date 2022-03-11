@@ -4,7 +4,7 @@ import { Modifier } from '../../src/util/modifier.js';
 import { readFileSync } from 'fs';
 import clone from 'clone';
 
-describe.only('Camouflage', function() {
+describe('Camouflage', function() {
 	let TEST_DATA;
 	let SHIP_DATA;
 
