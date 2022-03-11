@@ -4,15 +4,15 @@ import { GameObject } from '../../src/model/gameobject.js';
 import { Modifier } from '../../src/util/modifier.js';
 
 import { readFileSync } from 'fs';
-import clone from 'just-clone';
+import clone from 'clone';
 
 describe('Modernization', function() {
 	let TEST_DATA;
-	let SHIP;
+	let SHIP_DATA;
 
 	before(function() {
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/modernization.json'));
-		SHIP = JSON.parse(readFileSync('test/model/testdata/ship.json'));
+		SHIP_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 	});
 
 	it('should be a GameObject', function() {
@@ -25,7 +25,7 @@ describe('Modernization', function() {
 		let data;
 
 		before(function() {
-			ship = new Ship(SHIP);	
+			ship = new Ship(SHIP_DATA);	
 		});
 
 		beforeEach(function() {
@@ -39,7 +39,7 @@ describe('Modernization', function() {
 		});
 
 		it('should always find whitelisted ships eligible', function() {
-			data.ships = [ship.name];
+			data.ships = [ ship.getName() ];
 			data.shiplevel = [];
 			data.shiptype = [];
 			expect(new Modernization(data).eligible(ship)).to
@@ -47,7 +47,7 @@ describe('Modernization', function() {
 		});
 
 		it('should always find blacklisted ships ineligible', function() {
-			data.excludes = [ship.name];
+			data.excludes = [ ship.getName() ];
 			expect(new Modernization(data).eligible(ship)).to
 				.be.false;
 		});
@@ -61,10 +61,12 @@ describe('Modernization', function() {
 			data.shiplevel = [9,10];
 			expect(new Modernization(data).eligible(ship)).to
 				.be.false;
+
 			data.shiplevel.push[8];
 			data.nation = ['Germany'];
 			expect(new Modernization(data).eligible(ship)).to
 				.be.false;
+
 			data.nation = [];
 			data.shiptype = ['Destroyer'];
 			expect(new Modernization(data).eligible(ship)).to

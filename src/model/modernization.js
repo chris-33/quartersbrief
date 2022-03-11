@@ -10,21 +10,6 @@ import { Modifier } from '../util/modifier.js';
  */
 class Modernization extends GameObject {
 	
-	static #GETTER_DEFINITIONS = {
-		Tiers: 'shiplevel',
-		Nations: 'nation',
-		ShipTypes: 'shiptype',
-		Blacklist: 'excludes',
-		Whitelist: 'ships',
-		Slot: 'slot'
-	}
-
-	constructor(data) {
-		super(data);
-
-		ComplexDataObject.createGetters(this, Modernization.#GETTER_DEFINITIONS);
-	}
-
 
 	/**
 	 * Checks whether the passed ship is eligible for this modernization.
@@ -61,10 +46,9 @@ class Modernization extends GameObject {
 	 * @see Modifier
 	 */
 	getModifiers() {
-		let self = this;
-		let modifiers = self.get('modifiers');
+		let modifiers = this.get('modifiers');
 		return Object.keys(modifiers)
-					.map(key => Modifier.from(key, self.modifiers[key]))
+					.map(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}
 
@@ -73,34 +57,37 @@ class Modernization extends GameObject {
 		
 		ship.equipModernization(this);
 	}
+
+	/**
+	 * Get the tiers that are eligible for this modernization.
+	 * An empty result means all tiers are eligible.
+	 * @return {Array} An array of the tiers that are eligible.
+	 */
+	getTiers() { return this._data.shiplevel; }
+	/**
+	 * Get the nations that are eligible for this modernization.
+	 * An empty result means all nations are eligible.
+	 * @return {Array} An array of the nations that are eligible.
+	 */
+	getNations() { return this._data.nation; }
+	/**
+	 * Get the ship classes (BB, DD, ...) that are eligible for this modernization.
+	 * An empty result means all ship classes are eligible.
+	 * @return {Array} An array of the ship classes that are eligible.
+	 */
+	getShipTypes() { return this._data.shiptype; }
+	/**
+	 * Get the list of ship reference names that are always considered ineligible, no matter their other properties.
+	 * @return {Array} An array of the ships that are always ineligible.
+	 */
+	getBlacklist() { return this._data.excludes; }
+	/**
+	 * Get the list of ship reference names that are always considered eligible, no matter their other properties.
+	 * @return {Array} An array of the ships that are always eligible.
+	 */
+	getWhitelist() { return this._data.ships; }
+	getSlot() { return this._data.slot; }
 }
-
-/**
- * @name Modernization#getTiers
- * @function
- * @memberof Modernization
- * @description Get the tiers that are eligible for this modernization.
- * An empty result means all tiers are eligible.
- * @return {Array} An array of the tiers that are eligible.
- */
-
-/**
- * @name Modernization#getNations
- * @function
- * @memberof Modernization
- * Get the nations that are eligible for this modernization.
- * An empty result means all nations are eligible.
- * @return {Array} An array of the nations that are eligible.
- */
-
-/**
- * @name Modernization#getSpecies
- * @function
- * @memberof Modernization
- * Get the ship species (BB, DD, ...) that are eligible for this modernization.
- * An empty result means all ship species are eligible.
- * @return {Array} An array of the ship species that are eligible.
- */
 
 
 export { Modernization }
