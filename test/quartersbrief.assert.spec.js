@@ -1,6 +1,6 @@
 import { assertInvariants, InvariantError } from '../src/quartersbrief.assert.js';
 import sinon from 'sinon';
-import clone from 'just-clone';
+import clone from 'clone';
 import { readFileSync } from 'fs';
 
 

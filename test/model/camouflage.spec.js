@@ -2,33 +2,45 @@ import { Camouflage } from '../../src/model/camouflage.js';
 import { Ship } from '../../src/model/ship.js';
 import { Modifier } from '../../src/util/modifier.js';
 import { readFileSync } from 'fs';
+import clone from 'clone';
 
 describe('Camouflage', function() {
 	let TEST_DATA;
+	let SHIP_DATA;
 
 	before(function() {
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/camouflage.json'));
+		SHIP_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 	});
 
 	describe('.eligible', function() {
 		let ship;
 
 		beforeEach(function() {
-			ship = new Ship(JSON.parse(readFileSync('test/model/testdata/ship.json')));
+			ship = new Ship(SHIP_DATA);
 		});
 
 		it('should always consider expendable camouflages eligible', function() {
-			let camouflage = new Camouflage(TEST_DATA);
-			camouflage.set('typeinfo.species', 'Camouflage');
+			let data = clone(TEST_DATA);
+			data.typeinfo.species = 'Camouflage';
+			let camouflage = new Camouflage(data);
 			expect(camouflage.eligible(ship)).to.be.true;
 		});
 
 		it('should consider a permoflage eligible for a ship if it is listed by that ship, ineligible otherwise', function() {
-			let camouflage = new Camouflage(TEST_DATA);
-			camouflage.set('typeinfo.species', 'Permoflage');
-			ship.set('permoflages', [camouflage]);
+			let data = clone(TEST_DATA);
+			data.typeinfo.species = 'Permoflage';
+			let camouflage = new Camouflage(data);
+
+
+			ship = clone(SHIP_DATA);
+			ship.permoflages = [camouflage];
+			ship = new Ship(ship);
 			expect(camouflage.eligible(ship)).to.be.true;
-			ship.set('permoflages', []);
+			
+			ship = clone(SHIP_DATA);
+			ship.permoflages = [];
+			ship = new Ship(ship);
 			expect(camouflage.eligible(ship)).to.be.false;
 		});
 	});
@@ -55,10 +67,13 @@ describe('Camouflage', function() {
 
 	describe('.isPermoflage', function() {
 		it('should return true if and only if the camouflage is a permanent one', function() {
-			let camouflage = new Camouflage(TEST_DATA);
-			camouflage.set('typeinfo.species', 'Permoflage');
+			let data = clone(TEST_DATA);
+			data.typeinfo.species = 'Permoflage';
+			let camouflage = new Camouflage(data);
 			expect(camouflage.isPermoflage()).to.be.true;
-			camouflage.set('typeinfo.species', 'Camouflage');
+
+			data.typeinfo.species = 'Camouflage';
+			camouflage = new Camouflage(data);
 			expect(camouflage.isPermoflage()).to.be.false;
 		});
 	});

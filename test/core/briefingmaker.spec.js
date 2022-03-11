@@ -111,8 +111,8 @@ describe('BriefingMaker', function() {
 			expect(buildTopic).to.have.been.called;
 			let battle = buildTopic.firstCall.args[0];
 			// Check that battle.vehicles' entries have been enriched with a ship property
-			expect(battle.get('vehicles.0')).to.have.property('ship');
-			expect(battle.get('vehicles.1')).to.have.property('ship');
+			expect(battle.getVehicles()[0]).to.have.property('ship');
+			expect(battle.getVehicles()[1]).to.have.property('ship');
 		} finally { 
 			BriefingBuilder.prototype.getTopicBuilder.restore(); 
 		}

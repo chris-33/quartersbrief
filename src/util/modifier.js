@@ -75,11 +75,11 @@ class Modifier {
 		Ship.errorIfNotShip(ship);
 
 		let value = this.value;
-		if (typeof value === 'object' && value.hasOwnProperty(ship.getSpecies()))
+		if (typeof value === 'object' && ship.getSpecies() in this.value)
 			value = value[ship.getSpecies()];
 		if (typeof value !== 'number') throw new TypeError(`Modifier value was not a number: ${value}`);
 
-		ship.getCurrentConfiguration().multiply(this.target, value, options ?? { collate: false });
+		ship.multiply(this.target, value, options ?? { collate: false });
 	}
 
 	/** 

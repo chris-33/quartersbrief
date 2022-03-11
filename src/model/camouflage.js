@@ -2,8 +2,6 @@ import { GameObject } from './gameobject.js';
 import { Modifier } from '../util/modifier.js';
 import { Ship } from './ship.js';
 
-// PCEC001
-
 /**
  * Camouflages are skins that can be mounted on ships. Aside from changing their visual appearance, camouflages also
  * grant certain bonuses. Camouflages can either be permanent ("permoflages") or expendable. While expendable camouflages
@@ -43,10 +41,9 @@ class Camouflage extends GameObject {
 	 * @see Modifier
 	 */
 	getModifiers() {
-		let self = this;
-		let modifiers = self.get('modifiers');
+		let modifiers = this.get('modifiers');
 		return Object.keys(modifiers)
-					.map(key => Modifier.from(key, self.modifiers[key]))
+					.map(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}
 

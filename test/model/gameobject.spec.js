@@ -9,7 +9,8 @@ describe('GameObject', function() {
 	};
 
 	it('should copy all properties from the source', function() {
-		expect(new GameObject(TEST_DATA)).to.deep.equal(TEST_DATA);
+		expect(new GameObject(TEST_DATA)).to
+			.have.property('_data')
+			.that.deep.equals(TEST_DATA);
 	});
-
 });

@@ -6,6 +6,7 @@ import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import template from 'pupa';
+import clone from 'clone';
 
 /**
  * @see GameObject
@@ -52,7 +53,7 @@ class GameObjectFactory {
 
 	// We can't use template literals (`${foo}`) here, because their interpolation cannot be deferred,
 	// and right now there is no context to allow their interpolation.
-	// So we use a templating engine (pupa) here, and interpolate at runtime in the attachLabel method.
+	// So we use a templating engine (pupa) here, and interpolate at runtime in the _attachLabel method.
 	// These are regular strings, and there is no $ in front of the expressions to be interpolated.
 	static LABEL_KEYS = {
 		'Ship': 'IDS_{index}_FULL',
@@ -62,6 +63,19 @@ class GameObjectFactory {
 		'Gun': 'IDS_{name}'
 	}
 	
+	/**
+	 * This property controls what specific classes will be instantiated for a given `typeinfo.type`
+	 * by `createGameObject` (or, more specifically, `_convert`). 
+	 * It is a hash from `typeinfo.type` to constructor functions.
+	 */
+	static KNOWN_TYPES = {
+		'Ship': Ship,
+		'Modernization': Modernization,
+		'Ability': Consumable,
+		'Crew': Captain,
+		'Exterior': Camouflage
+	}
+
 	/**
 	 * Private property that holds the loaded
 	 * GameParams data in toto.
@@ -81,7 +95,15 @@ class GameObjectFactory {
 		this.#labels = labels ?? {};
 	}
 
-	expandReferences(data) {
+	/**
+	 * Expands references within `data` to their corresponding definitions. That is, for any (possibly nested) string
+	 * property on `data` that is a reference name, the property's value is replaced by the object for that name 
+	 * within this `GameObjectFactory`'s data.
+	 * @param  {Object} data The object to expand references on. Not expected to be a `GameObject`.
+	 * @return {Object}      `data`, with any references expanded to their corresponding objects. This method does _not_
+	 * return a `GameObject`.
+	 */
+	_expandReferences(data) {
 		let self = this;
 		let dedicatedlog = rootlog.getLogger(self.constructor.name);
 
@@ -99,45 +121,25 @@ class GameObjectFactory {
 				dedicatedlog.debug(`Found reference ${data[key]} on key ${key}`)
 				// Only replace if the reference could actually be expanded
 				// If not, just keep the reference in there
-				// Store reference name in this constant to keep it available for expansion.
-				// (Accessing data[key] within the getter will cause an infinite recursion.)
-				const reference = data[key];
-				// Replace object property with a getter that will expand the reference on the first read and
-				// replace the object property with the value
-				Object.defineProperty(data, key, {
-					get: function() {
-						// Expand reference
-						let expanded = self.createGameObject(reference);					
-						if (expanded) dedicatedlog.debug(`Expanded reference ${data.name ? data.name + '.' : ''}${key}: ${reference}`);
-						else {
-							// If reference could not be expanded, keep it as is.
-							// This can be the case with some unfortunately-named components
-							// in game files.
-							// See e.g. PASA010_Ranger_1944, where the planes are called
-							// PAUB002_Grumman_TBF, and then referenced as such in the
-							// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
-							// most other files use. This matches the regex, obviously, but
-							// no data of that refcode will be found in #data.
-							expanded = reference;
-							dedicatedlog.debug(`Unable to expand reference  ${data.name ? data.name + '.' : ''}${key}: ${reference}. The reference has been ignored.`)
-						}
-						// Redefine the property from the current accessor property (using a getter) to a simple
-						// value property with the (possibly resolved) reference.
-						Object.defineProperty(data, key, {
-							value: expanded,
-							writable: true,
-							configurable: true,
-							enumerable: true
-						});
-						return expanded;
-					},
-					enumerable: true,
-					configurable: true
-				});
+				// This can be the case with some unfortunately-named components
+				// in game files.
+				// See e.g. PASA010_Ranger_1944, where the planes are called
+				// PAUB002_Grumman_TBF, and then referenced as such in the
+				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
+				// most other files use. This matches the regex, obviously, but
+				// no data of that refcode will be found in #data.
+				let expanded = self.#data[data[key]];
+				// let expanded = self.createGameObject(data[key]);
+				if (expanded) {
+					dedicatedlog.debug(`Expanded reference ${data[key]}`);
+					data[key] = expanded;
+				} else {
+					dedicatedlog.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
+				}	
 			}
-			// If the current key's value is an object, expand it recursively. (This includes arrays.)
+			// If the current key's value is an object, expand references recursively
 			else if (typeof data[key] === 'object' && data[key] !== null) {
-				data[key] = self.expandReferences(data[key]);
+				data[key] = self._expandReferences(data[key]);
 			}
 		}
 		return data;
@@ -150,7 +152,7 @@ class GameObjectFactory {
 	 * @param {*} data The `data` to attach the label to.
 	 * @returns {Object} Returns `data`, with a label attached under `qb_label`.
 	 */
-	attachLabel(data) {
+	_attachLabel(data) {
 		if (this.#labels) {
 			let key = GameObjectFactory.LABEL_KEYS[data.typeinfo?.type];
 			if (!key) return data;
@@ -163,9 +165,41 @@ class GameObjectFactory {
 	}
 
 	/**
+	 * Converts the passed data into a corresponding game object as per the `data`'s
+	 * `typeinfo.type` field. If no `typeinfo` property exists on `data`, it is
+	 * returned as-is, albeit with any nested object properties converted. 
+	 * 
+	 * Any nested game objects are converted as well.
+	 * @param  {Object} data The data to convert.
+	 * @return {GameObject}      If `data` had a `typeinfo.type` field, returns `data` converted into a `GameObject`.
+	 * Otherwise returns the raw `data`, with any nested objects converted if appropriate.
+	 */
+	_convert(data) {
+		for (let key in data)
+			if (typeof data[key] === 'object' && data[key] !== null)
+				data[key] = this._convert(data[key]);
+
+		if (!(data?.typeinfo?.type))
+			return data;
+
+		let Constructor = GameObjectFactory.KNOWN_TYPES[data.typeinfo.type];
+		if (!Constructor) Constructor = GameObject;
+
+		rootlog
+			.getLogger(this.constructor.name)
+			.debug(`Converting object ${data.name} of type ${data.typeinfo.type} into a ${Constructor.name}`);
+		return new Constructor(data);
+	}
+
+	/**
 	 * Creates a game object for the object with the given designator. 
 	 * If the object was requested before, it will be read from cache. 
-	 * Otherwise, it will be constructed.
+	 * Otherwise, it will be constructed. 
+	 *
+	 * References in the created game object are expanded: Any keys within the created
+	 * game object detected to be reference names will be replaced with the corresponding
+	 * game object.
+	 * 
 	 * @param  {Number|String} designator The designator for the object
 	 * to get. This can either be a number, in which case it will be assumed
 	 * to be the object's ID. Or it can be a string, in which case it will
@@ -204,25 +238,16 @@ class GameObjectFactory {
 			return null;
 		}
 
-		let Constructor = {
-			'Ship': Ship,
-			'Modernization': Modernization,
-			'Ability': Consumable,
-			'Crew': Captain,
-			'Exterior': Camouflage
-		}[gameObject.typeinfo.type];
-		if (!Constructor) Constructor = GameObject;
+		{
+			let t0 = Date.now();
+			gameObject = self._expandReferences(gameObject);
+			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
+		}
+		gameObject = self._attachLabel(gameObject);
+		gameObject = clone(gameObject);
+		gameObject = self._convert(gameObject);
 
-		gameObject = this.expandReferences(gameObject);
-		// if (Constructor === Ship) {
-		// 	let t0 = Date.now();
-		// 	gameObject = self.expandReferences(gameObject);
-		// 	dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
-		// }
-		gameObject = self.attachLabel(gameObject);
-		
-		gameObject = new Constructor(gameObject);
-		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
+		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.getName()} in ${Date.now() - t0}ms`);
 		return gameObject; 
 	}
 
