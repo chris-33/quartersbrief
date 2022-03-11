@@ -15,7 +15,7 @@ function ComplexDataObject(data) {
 			data[key] = ComplexDataObject(data[key]);
 
 	// If source is already a CDO, just return it.
-	if (ComplexDataObject.isCDO(data)) {
+	if (ComplexDataObject.isCDO(data) || typeof data !== 'object') {
 		return data;
 	}
 	
@@ -118,12 +118,12 @@ ComplexDataObject.createGetters = function(obj, definitions) {
 			case 'string': 
 				// If the lookup definition is a string, it is the name of a property 
 				// to look up
-				getter = function() { return obj.get(definitions[property]); }
+				getter = function() { return this.get(definitions[property]); }
 				break;
 			case 'function':
 				// If the lookup definition is a function, it is the function to use for 
 				// looking up that property. Use that function, binding "this" to this GameObject.
-				getter = definitions[property].bind(obj);
+				getter = definitions[property];
 				break;
 		}
 		// Make the getter non-enumerable
