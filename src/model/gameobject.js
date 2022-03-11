@@ -15,16 +15,7 @@ class GameObject {
 	/**
 	 * Definitions for autocreated getters
 	 */
-	static #LOOKUP_DEFINITIONS = {
-		Name: 'name',
-		Refcode: 'index',
-		Index: 'index', // Alias
-		ID: 'id',
-		TypeInfo: 'typeinfo',
-		Type: 'typeinfo.type',
-		Nation: 'typeinfo.nation',
-		Species: 'typeinfo.species',
-		Label: 'qb_label'
+	static LOOKUP_DEFINITIONS = {
 	};
 
 	/**
@@ -46,6 +37,7 @@ class GameObject {
 	 * @type {RegExp}
 	 */
 	static REFERENCE_NAME_REGEX = new RegExp(GameObject.REFERENCE_CODE_REGEX.source.slice(0,-1) + '(?:_\\w+)?$');
+
 	/**
 	 * Creates a new GameObject and copies all properties
 	 * from data to it.
@@ -53,8 +45,6 @@ class GameObject {
 	 */
 	constructor(data) {
 		this._data = ComplexDataObject(data);
-
-		ComplexDataObject.createGetters(this, GameObject.#LOOKUP_DEFINITIONS);
 	}
 
 	get(key, options) {
@@ -65,9 +55,17 @@ class GameObject {
 		return this._data.multiply(key, factor, options);
 	}
 
-	set(key, value, options) {
-		return this._data.set(key, value, options);
-	}
+	getID() { return this._data.id;	}
+	getName() { return this._data.name; }
+	getNation() { return this._data.typeinfo.nation; }
+	getSpecies() { return this._data.typeinfo.species; }
+	getType() { return this._data.typeinfo.type; }
+	getLabel() { return this.qb_label; }
+	getRefCode() { return this._data.index; }
+	getTypeInfo() { return this._data.typeinfo; }
 }
+
+ComplexDataObject.createGetters(GameObject.prototype, GameObject.LOOKUP_DEFINITIONS);
+
 
 export { GameObject }

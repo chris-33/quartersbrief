@@ -13,5 +13,4 @@ describe('GameObject', function() {
 			.have.property('_data')
 			.that.deep.equals(TEST_DATA);
 	});
-
 });
