@@ -1,4 +1,4 @@
-import clone from 'just-clone';
+import clone from 'clone';
 import { ComplexDataObject } from '../util/cdo.js';
 
 /**
@@ -11,7 +11,7 @@ import { ComplexDataObject } from '../util/cdo.js';
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
  * object. (This is checked at application startup through invariant assertion checking.)
  */
-class GameObject extends ComplexDataObject {
+class GameObject {
 	/**
 	 * Definitions for autocreated getters
 	 */
@@ -52,10 +52,21 @@ class GameObject extends ComplexDataObject {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		super(clone(data));
-		let self = this;
+		this._data = ComplexDataObject(data);
 
-		ComplexDataObject.createGetters(self, GameObject.#LOOKUP_DEFINITIONS);
+		ComplexDataObject.createGetters(this, GameObject.#LOOKUP_DEFINITIONS);
+	}
+
+	get(key, options) {
+		return this._data.get(key, options);
+	}
+
+	multiply(key, factor, options) {
+		return this._data.multiply(key, factor, options);
+	}
+
+	set(key, value, options) {
+		return this._data.set(key, value, options);
 	}
 }
 
