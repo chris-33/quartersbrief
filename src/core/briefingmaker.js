@@ -132,6 +132,8 @@ class BriefingMaker {
 			// @todo Enrich with player data - possibly lazily using proxy objects if the WoWS API is call limited
 		}
 
+		let t0 = Date.now();
+
 		let battle = await this.battleDataReader.read();
 		if (battle === null) {
 			return BriefingBuilder.buildNoBattle();
@@ -143,7 +145,9 @@ class BriefingMaker {
 		if (agenda === null) {
 			return BriefingBuilder.buildNoAgenda();
 		}
-		return await this.briefingBuilder.build(battle, agenda);
+		let briefing = await this.briefingBuilder.build(battle, agenda);
+		log.info(`Created briefing in ${Date.now() - t0}ms`);
+		return briefing;
 	}
 }
 
