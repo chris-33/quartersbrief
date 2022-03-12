@@ -2,6 +2,7 @@
   "name": "quartersbrief",
   "main": "quartersbrief.js",
   "type": "module",
+  "version": "0.0.1",
   "scripts": {
     "start": "node quartersbrief.js",
     "test": "node_modules/mocha/bin/mocha --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
