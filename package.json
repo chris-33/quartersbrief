@@ -21,7 +21,6 @@
     "express": "^4.17.3",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
-    "nconf": "^0.11.3",
     "node-watch": "^0.7.3",
     "object-hash": "^2.2.0",
     "pug": "^3.0.2",

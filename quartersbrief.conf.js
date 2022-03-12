@@ -1,9 +1,12 @@
 import log from 'loglevel';
 import prefix from 'loglevel-plugin-prefix';
-import nconf from 'nconf';
 import envpaths from 'env-paths';
 import path from 'path';
 import chalk from 'chalk';
+import _yargs from 'yargs';
+import { hideBin } from 'yargs/helpers'
+const yargs = _yargs(hideBin(process.argv));
+import { existsSync, readFileSync } from 'fs';
 
 // Assume production environment if nothing is specified
 process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
@@ -30,8 +33,10 @@ const getChildLogger = log.getLogger;
 log.getLogger = function(name,...args) {
 	let result = getChildLogger.call(this,name,...args);
 	result.disableAll();
-	if (config.get('debug').includes(name) || config.get('debug').toLowerCase() === 'all')
-		result.enableAll();
+	if ((Array.isArray(config.debug) && config.debug.includes(name)) 
+		|| (typeof config.debug === 'string' && config.debug.toLowerCase() === 'all'))
+		
+		result.setLevel('debug');
 	return result;
 }.bind(log);
 
@@ -44,71 +49,88 @@ const name = process.env.npm_package_name ?? 'quartersbrief';
 // The documentation warns against this, though.
 const standardpaths = envpaths(name, { suffix: '' });
 
-// Some default values for production & development
-const ENV_DEFAULTS = {
-	production: {
-	},
-	development: {
-		wowsdir: '/opt/World_of_Warships',
-		host: '0.0.0.0',
-		skipInvariants: true,
-		debug: true,
-	},
-	common: {
-		host: '127.0.0.1',
-		port: 10000,
-		agendas: path.join(standardpaths.data, 'agendas'),
-		skipInvariants: false,
-		verbose: false,
-		debug: false,
-		// Set some values to OS-specific defaults, even though they are not technically intended to be configurable
-		datadir: standardpaths.data,
-		agendasdir: path.join(standardpaths.config, 'agendas')
-	}
-}
-// Construct a defaults object using spread syntax based on ENV_DEFAULTS.common, with properties overwritten as per the current NODE_ENV
-const DEFAULTS = { ...ENV_DEFAULTS.common, ...ENV_DEFAULTS[process.env.NODE_ENV] };
+const config = {
+	// Defaults:
+	host: '127.0.0.1',
+	port: 10000,
 
-// Load config from 
-// 1. command-line options (highest priority)
-// 2. environment variables
-// 3. quartersbrief.json in config dir
-// 4. defaults (lowest priority)
-const config = nconf
-				.argv({
-					'skip-invariants': {
-						alias: 's',
-						parseValues: true,
-						description: 'Do not check fundamental assumptions at application start.',
-						transform: obj => ({ key: 'skipInvariants', value: obj.value })
-					},
-					'host': {
-						alias: 'h',
-						description: 'The IP addresses to accept connections from. You can use this to display the briefing on a secondary device, e.g. a tablet',
-					},
-					'port': {
-						alias: 'p',
-						parseValues: true,
-						description: 'The port on which to accept connections.',
-					},
-					'wowsdir': {
-						description: 'The base directory of World of Warship. This is the directory that WorldOfWarships.exe is in.'
-					},
-					'verbose': {
-						alias: 'v',
-						description: 'Show more output.'
-					},
-					'debug': {
-						description: 'Show debug level output. Optionally, a comma-separated list of components can be supplied that will be logged even more extensively. Possible values are: assertInvariants for invariant checking, GameObjectFactory for game object retrieval. --debug all will turn on all extra loggers.'
-					}
-				})
-				.env({ lowerCase: true })
-				.file(path.join(standardpaths.config, `${name}.json`))
-				.defaults(DEFAULTS);
+	...yargs
+		.scriptName(name)
+		.option('skip-invariants', {
+			alias: 's',
+			type: 'boolean',
+			description: 'Do not check fundamental assumptions at application start.',
+		})
+		.option('wowsdir', {
+			alias: 'd',
+			type: 'string',
+			normalize: true,
+			demandOption: 'Either pass it using --wowsdir or set it in your quartersbrief.conf. Exiting.',
+			description: 'The base directory of World of Warship. This is the directory that WorldOfWarships.exe is in.'
+		})
+		.option('host', {
+			alias: 'h',
+			type: 'string',
+			description: 'The IP addresses to accept connections from. You can use this to display the briefing on a secondary device, e.g. a tablet. Cannot be used together with --listen. Default: 127.0.0.1',
+			conflicts: 'listen',
+		})
+		.option('port', {
+			alias: 'p',
+			type: 'number',
+			description: 'The port to accept connections on. Cannot be used together with --listen. Default: 10000',
+			conflicts: 'listen',
+		})
+		.option('listen', {
+			type: 'string',
+			description: 'Specify host and port for connections. Usage: --listen host:port. Cannot be used together with --host and --port',
+			conflicts: [ 'host', 'port' ],
+		})
+		.option('debug', {
+			coerce: function(value) {
+				if (typeof value === 'boolean') 
+					value = [];
+				else if (value !== 'all')
+					value = value.split(',');
+				return value;
+			},
+			description: 'Output debug information. It can also be used in an alternate form --debug <dedicatedlogs>, where <dedicatedlogs> is a comma-separated list of dedicated loggers to switch on. Use --debug all to turn on all dedicated loggers. Available dedicated loggers are: GameObjectFactory, assertInvariants'
+		})
+		.config('config', function loadConfig(filename) {
+			// Do not expect the default config file to exist. If it doesn't, we will treat it as if it was empty.
+			// Config files passed explicitly using --config are still expected to exist though, and it is an
+			// error if they don't.
+			if (!existsSync(filename) && !process.argv.includes('--config')) {
+				log.warn(`Could not find default config file ${filename}.`)
+				return {};
+			}
+			return JSON.parse(readFileSync(filename));
+		}).default('config', 
+			path.format({ 
+				dir: standardpaths.config, 
+				name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
+				ext: '.json' 
+			}))
+		.help()
+		.version()
+		.wrap(yargs.terminalWidth())
+		.fail(function(msg) {
+			log.error(msg);
+			process.exit(1);
+		})
+		.argv
+};
+
+// Expand --listen shorthand into host and port
+if (config.listen) {
+	config.host = config.listen.split(':')[0];
+	config.port = config.listen.split(':')[1];
+}
+
+// Set some values to OS-specific defaults, even though they are not technically intended to be configurable
+config.datadir = standardpaths.data;
+config.agendasdir = path.join(standardpaths.config, 'agendas');
 
 // Set the loglevel, according to supplied options (--verbose and --debug)
-if (config.get('debug')) log.setLevel('debug')
-else if (config.get('verbose')) log.setLevel('info')
-else log.setLevel('info');
+log.setLevel(config.debug ? 'debug' : 'info');
 
 export { config }

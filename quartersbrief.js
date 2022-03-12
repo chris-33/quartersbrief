@@ -12,43 +12,36 @@ import path from 'path';
 import pug from 'pug';
 import sass from 'sass';
 
-try {
-	config.required([ 'wowsdir' ]);
-} catch (err) {
-	log.error('Missing required parameter \'wowsdir\'. Either pass it using --wowsdir or set it in your quartersbrief.conf. Exiting.');
-	process.exit(1);
-}
-
 // Make sure that the replays directory we will be watching actually exists
 // If it doesn't, this is a non-recoverable error, because this program is pointless without it.
-if (!existsSync(path.join(config.get('wowsdir'), 'replays'))) {
-	log.error(`Could not find replays directory at ${path.join(config.get('wowsdir'), 'replays')}.\nReplays must be turned on for this program to work.\nSee https://eu.wargaming.net/support/en/products/wows/article/15038/ for information on how to enable replays.`);
+if (!existsSync(path.join(config.wowsdir, 'replays'))) {
+	log.error(`Could not find replays directory at ${path.join(config.wowsdir, 'replays')}.\nReplays must be turned on for this program to work.\nSee https://eu.wargaming.net/support/en/products/wows/article/15038/ for information on how to enable replays.`);
 	process.exit(1);
 }
 // Make sure that GameParams.json is available and load it if it is
 let data;
-if (!existsSync(path.join(config.get('datadir'), 'GameParams.json'))) {
-	log.error(`Could not find game data at ${path.join(config.get('datadir'), 'GameParams.json')}`);
+if (!existsSync(path.join(config.datadir, 'GameParams.json'))) {
+	log.error(`Could not find game data at ${path.join(config.datadir, 'GameParams.json')}`);
 	process.exit(1);
 } else {
 	let t0 = Date.now();
-	data = JSON.parse(readFileSync(path.join(config.get('datadir'),'GameParams.json')));
+	data = JSON.parse(readFileSync(path.join(config.datadir,'GameParams.json')));
 	log.info(`Loaded game data in ${Date.now() - t0}ms.`);
 }
 
 // Make sure that global-en.json is available and load it if it is
 // But if it doesn't exist it's not fatal
 let labels;
-if (!existsSync(path.join(config.get('datadir'), 'global-en.json'))) {
-	log.warn(`Could not find labels at ${path.join(config.get('datadir'), 'global-en.json')}`);
+if (!existsSync(path.join(config.datadir, 'global-en.json'))) {
+	log.warn(`Could not find labels at ${path.join(config.datadir, 'global-en.json')}`);
 } else {
 	let t0 = Date.now();
-	labels = JSON.parse(readFileSync(path.join(config.get('datadir'),'global-en.json')));
+	labels = JSON.parse(readFileSync(path.join(config.datadir,'global-en.json')));
 	log.info(`Loaded labels in ${Date.now() - t0}ms.`);	
 }
 
 
-if (!config.get('skipInvariants')) {
+if (!config.skipInvariants) {
 	try {
 		assertInvariants(data);
 	} catch (err) {
@@ -65,11 +58,11 @@ if (!config.get('skipInvariants')) {
 }
 
 const gameObjectFactory = new GameObjectFactory(data, labels);
-const agendaStore = new AgendaStore(config.get('agendasdir'));
-const battleController = new BattleController(path.join(config.get('wowsdir'), 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
-const briefingMaker = new BriefingMaker(path.join(config.get('wowsdir'), 'replays'), gameObjectFactory, agendaStore, new SpecificityStrategy());
+const agendaStore = new AgendaStore(config.agendasdir);
+const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
+const briefingMaker = new BriefingMaker(path.join(config.wowsdir, 'replays'), gameObjectFactory, agendaStore, new SpecificityStrategy());
 
-const { srv, io } = createServers(config.get('host'), config.get('port'));
+const { srv, io } = createServers(config.host, config.port);
 
 const indexTemplate = pug.compileFile('./src/core/index.pug');
 let briefing;
