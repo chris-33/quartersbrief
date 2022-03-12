@@ -71,7 +71,7 @@ class InvariantError extends Error {
  *  This function is not exported.
  *  @private
  */
-function violates(data, fn) {	
+function violates(data, fn) {
 	let counterexamples = [];
 	for (let key in data) {
 		if (!fn(data[key])) 
@@ -106,6 +106,16 @@ assertInvariants.assertHaveNames = function(data) {
 	let counterexamples = violates(data, obj => obj.hasOwnProperty('name') && typeof obj.name === 'string' && GameObject.REFERENCE_NAME_REGEX.test(obj.name));
 	if (counterexamples) 
 		throw new InvariantError('every game object has a well-formed property "name"', counterexamples);
+}
+
+/**
+ * No game object has a property called "label", because we are using that name in GameObjectFactory._attachLabel
+ * to attach human-readable names to game objects.
+ */
+assertInvariants.assertNoLabels = function(data) {
+	let counterexamples = violates(data, obj => !obj.hasOwnProperty('label'));
+	if (counterexamples)
+		throw new InvariantError('no game object has a property "label"', counterexamples);
 }
 
 /**

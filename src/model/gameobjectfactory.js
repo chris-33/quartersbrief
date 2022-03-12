@@ -146,7 +146,7 @@ class GameObjectFactory {
 	}
 
 	/** 
-	 * Attaches a human-readable label to the provided `data` object. The label is looked up depending
+	 * Attaches a human-readable label to the provided `data` object and any contained objects. The label is looked up depending
 	 * on ``data.typeinfo.type`. If this `GameObjectFactory` instance was created without the second parameter, 
 	 * or if `data` does not have a `typeinfo.type` property, it does nothing.
 	 * @param {*} data The `data` to attach the label to.
@@ -154,11 +154,14 @@ class GameObjectFactory {
 	 */
 	_attachLabel(data) {
 		if (this.#labels) {
-			let key = GameObjectFactory.LABEL_KEYS[data.typeinfo?.type];
+			let key = GameObjectFactory.LABEL_KEYS[data?.typeinfo?.type];
 			if (!key) return data;
 			key = template(key, data).toUpperCase();
-			data.qb_label = this.#labels[key] ?? data.name;
+			data.label = this.#labels[key] ?? data.name;
 
+			for (let key in data)
+				if (typeof data[key] === 'object' && data[key] !== null)
+					data[key] = this._attachLabel(data[key]);
 			// @todo Find a way to attach labels to captain skills and consumable flavors (flavors may be different than the base - e.g. Crawling Smoke Generator is a flavor of Smoke Generator)
 		}
 		return data;
@@ -243,8 +246,8 @@ class GameObjectFactory {
 			gameObject = self._expandReferences(gameObject);
 			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
 		}
-		gameObject = self._attachLabel(gameObject);
 		gameObject = clone(gameObject);
+		gameObject = self._attachLabel(gameObject);
 		gameObject = self._convert(gameObject);
 
 		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.getName()} in ${Date.now() - t0}ms`);

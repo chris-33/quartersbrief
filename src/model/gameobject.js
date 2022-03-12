@@ -60,7 +60,7 @@ class GameObject {
 	getNation() { return this._data.typeinfo.nation; }
 	getSpecies() { return this._data.typeinfo.species; }
 	getType() { return this._data.typeinfo.type; }
-	getLabel() { return this.qb_label; }
+	getLabel() { return this._data.label; }
 	getRefCode() { return this._data.index; }
 	getTypeInfo() { return this._data.typeinfo; }
 }

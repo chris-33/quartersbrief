@@ -6,18 +6,25 @@ import { readFileSync } from 'fs';
 
 describe('assertInvariants', function() {	
 	let TEST_DATA;
+	let data;
 
 	before(function() {
 		TEST_DATA = JSON.parse(readFileSync('test/quartersbrief.assert.spec.json'));
 	});
 
+	beforeEach(function() {
+		data = clone(TEST_DATA);
+	});
+
 	it('should call all its assertion functions with its data', function() {
-		let data = {};
+		data = {};
 		let assertions = [
 			'assertHaveIDs',
 			'assertHaveIndices',
 			'assertHaveNames',
+			'assertNoLabels',
 			'assertModuleComponentsResolveUnambiguously',
+			'assertWeaponAmmosAreOrdered',
 		].map(name => sinon.stub(assertInvariants, name));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -32,12 +39,14 @@ describe('assertInvariants', function() {
 	});
 
 	it('should collect all InvariantErrors and throw them as an AggregateError at the end', function() {
-		let data = {};
+		data = {};
 		let assertions = [
 			'assertHaveIDs',
 			'assertHaveIndices',
 			'assertHaveNames',
+			'assertNoLabels',
 			'assertModuleComponentsResolveUnambiguously',
+			'assertWeaponAmmosAreOrdered',
 		].map(name => sinon.stub(assertInvariants, name).throws(new InvariantError()));
 
 		// Need to explicitly do this because sinon-test seems to not be 
@@ -50,12 +59,6 @@ describe('assertInvariants', function() {
 	});
 
 	describe('.assertHaveIDs', function() {
-		let data;
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-		});
-
 		it('should not error on data that has a numeric ID', function() {			
 			expect(assertInvariants.assertHaveIDs.bind(null, data)).to.not.throw();
 		});
@@ -72,12 +75,6 @@ describe('assertInvariants', function() {
 	});
 
 	describe('.assertHaveIndices', function() {
-		let data;
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-		});
-
 		it('should not error on data that has a well-formed index', function() {
 			expect(assertInvariants.assertHaveIndices.bind(null, data)).to.not.throw();
 		});
@@ -94,18 +91,11 @@ describe('assertInvariants', function() {
 	});
 
 	describe('.assertHaveNames', function() {
-		let data;
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-		});
-
 		it('should not error on data that has a well-formed name', function() {
 			expect(assertInvariants.assertHaveNames.bind(null, data)).to.not.throw();
 		});
 
 		it('should throw an InvariantError if name does not conform to the regex', function() {
-			let data = clone(TEST_DATA);
 			data.PAAA001_Battleship.name = 'ABCDEFG';
 			expect(assertInvariants.assertHaveNames.bind(null, data)).to.throw(InvariantError);
 		});
@@ -117,14 +107,15 @@ describe('assertInvariants', function() {
 		});
 	});
 
-	describe('.assertModuleComponentsResolveUnambiguously', function() {
-		let data;
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
+	describe('.assertNoLabels', function() {
+		it('should error only if data has a property called label', function() {
+			expect(assertInvariants.assertNoLabels.bind(null, data)).to.not.throw();
+			data.PAAA001_Battleship.label = 'label';
+			expect(assertInvariants.assertNoLabels.bind(null, data)).to.throw(InvariantError);
 		});
+	});
 
-
+	describe('.assertModuleComponentsResolveUnambiguously', function() {
 		it('should not error if all modules\'s components have length 1', function() {
 			expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
 				.not.throw();
@@ -176,12 +167,6 @@ describe('assertInvariants', function() {
 	});
 
 	describe('.assertWeaponAmmosAreOrdered', function() {
-		let data;
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-		});
-
 		it('should not error when all weapons\' ammos are always in the same order', function() {
 			expect(assertInvariants.assertWeaponAmmosAreOrdered.bind(null, data)).to.not.throw();
 		});
