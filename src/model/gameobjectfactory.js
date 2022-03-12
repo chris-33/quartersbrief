@@ -128,7 +128,7 @@ class GameObjectFactory {
 				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
 				// most other files use. This matches the regex, obviously, but
 				// no data of that refcode will be found in #data.
-				let expanded = self.#data[data[key]];
+				let expanded = clone(self.#data[data[key]]);
 				// let expanded = self.createGameObject(data[key]);
 				if (expanded) {
 					dedicatedlog.debug(`Expanded reference ${data[key]}`);
@@ -241,12 +241,12 @@ class GameObjectFactory {
 			return null;
 		}
 
+		gameObject = clone(gameObject);
 		{
 			let t0 = Date.now();
 			gameObject = self._expandReferences(gameObject);
 			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
 		}
-		gameObject = clone(gameObject);
 		gameObject = self._attachLabel(gameObject);
 		gameObject = self._convert(gameObject);
 
