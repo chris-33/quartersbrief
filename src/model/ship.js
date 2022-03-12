@@ -5,7 +5,6 @@ import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { ComplexDataObject } from '../util/cdo.js';
-import objecthash from 'object-hash'; let hash = objecthash.MD5;
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'clone';
 import { conversions } from '../util/conversions.js';
@@ -490,13 +489,13 @@ class Ship extends GameObject {
 		// 
 		// Keys for the metadata will be hashes of their corresponding
 		// module objects.
-		let metadata = {};
+		let metadata = new WeakMap();
 		for (let moduleKey in modules) {
 			let module = modules[moduleKey];
 			// Filter out primitives
 			if (!isModuleDefinition(module)) continue;
 			// Save the module's key name in metadata
-			metadata[hash(modules[moduleKey])] = { name: moduleKey };
+			metadata.set(modules[moduleKey], { name: moduleKey });
 		}
 		// Now project down to module definition objects
 		modules = Object.values(modules)
@@ -519,14 +518,14 @@ class Ship extends GameObject {
 				// Insert at the front
 				moduleLines[module.ucType].splice(0, 0, module);
 				// The module is at the start of the module line, so its distance is 0
-				metadata[hash(module)].distance = 0;
+				metadata.get(module).distance = 0;
 			} else {
 				// Try to find the module's predecessor. This might be in any module line.
 				// The predecessor is that module whose metadata name property equals the prev
 				// property of the module we're currently dealing with.
 				let predecessor = null;
 				for (let line of Object.values(moduleLines)) {
-					predecessor = line.find(u => metadata[hash(u)].name === module.prev);
+					predecessor = line.find(u => metadata.get(u).name === module.prev);
 					if (predecessor) break;
 				}
 
@@ -539,13 +538,13 @@ class Ship extends GameObject {
 				} else {
 					// If one has been found, our module's distance metadata is the predecesor's
 					// distance plus one.
-					metadata[hash(module)].distance = metadata[hash(predecessor)].distance + 1;
+					metadata.get(module).distance = metadata.get(predecessor).distance + 1;
 					// Initialize the module's module line if necessary
 					if (!moduleLines[module.ucType]) moduleLines[module.ucType] = [];
 					
 					// Two short-hands that make the following code a little more readable
 					let line = moduleLines[module.ucType];
-					let distance = (u => metadata[hash(u)].distance);
+					let distance = (u => metadata.get(u).distance);
 
 					// Look for the insertion index. This is the place where the previous module
 					// in the line has a lower distance, and the subsequent one has a higher distance.
