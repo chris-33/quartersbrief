@@ -1,5 +1,4 @@
-import _fetch from 'node-fetch';
-global.fetch ??= _fetch;
+import fetch from 'node-fetch';
 import template from 'pupa';
 import httpError from 'http-errors';
 
@@ -120,7 +119,7 @@ class WargamingAPI {
 	async access(op, params) {
 		const url = this.#getURL(op, params);
 		let res = await fetch(url.href);
-		
+
 		// fetch() promise resolves instead of rejecting even if HTTP status code is 
 		// not ok-ish (200-299), so we need to throw manually in that case.
 		if (!res.ok)
