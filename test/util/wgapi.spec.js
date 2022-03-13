@@ -81,6 +81,57 @@ describe('WargamingAPI', function() {
 			return expect(api.access('', {})).to.be.rejected;
 		});
 
+		it('should call the correct domain based on the realm', async function() {
+			for (let realm of ['na','eu','ru','asia']) {
+				const req = apiSrv.get(/./).reply(200, {});
+				api = new WargamingAPI('', realm);
+				api.access('', {});
+				await expect(req, realm).to.have.been.requestedWithHeadersMatch({ 
+					host: `api.worldofwarships.${realm === 'na' ? 'com' : realm}`
+				});			
+			}
+		});
+
+		it('should HTTP GET the correct endpoint based on the requested API operation', async function() {
+			for (let oper in WargamingAPI.OPERATIONS) {
+				const req = apiSrv.get(new RegExp(WargamingAPI.OPERATIONS[oper])).reply(200, {});
+				api.access(oper, {});
+				await expect(req, oper).to.have.been.requested;
+			}
+		});
+
+		it('should automatically set the application_id, but prefer one passed in params', async function() {
+			api = new WargamingAPI('appid', '');
+			let req = apiSrv.get(/./).query({ application_id: 'appid' }).reply(200, {});
+			api.access('', {});
+			await expect(req).to.have.been.requested;
+
+			req = apiSrv.get(/./).query({ application_id: 'otherid' }).reply(200, {});
+			api.access('', { application_id: 'otherid' });
+			await expect(req).to.have.been.requested;
+		});
+
+		it('should use the passed arguments for the request', async function() {
+			let params = { a: 1, b: false, c: 'string' }
+			let req = apiSrv
+				.get(/./)
+				// All entries of params must be the same in the query after conversion to a string 
+				// (but query may have more, e.g. application_id - we don't care about that)				
+				.query(q => Object.keys(params).every(key => q[key] == String(params[key])))
+				.reply(200, {});
+
+			api.access('', { a: 1, b: false, c: 'string' });
+			await expect(req, 'primitive params').to.have.been.requested;			
+
+			params = { arr: [ 1, 2, 3 ] };
+			req = apiSrv
+				.get(/./)
+				.query(q => q.arr === '1,2,3')
+				.reply(200, {});
+			api.access('', params);
+			await expect(req, 'array param').to.have.been.requested;
+		});
+
 		it('should return the data field of a successful API access', function() {
 			const data = { prop: 'prop' };
 			apiSrv.get(/./).reply(200, {
