@@ -30,11 +30,21 @@ class PlayerFactory {
 		const t0 = Date.now();
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 
+		// Designators that are a number are expected to be account IDs
 		let accounts = designators.filter(designator => typeof designator === 'number');
 		dedicatedlog.debug(`Designators detected as account IDs: ${accounts}`);
 		
-		const names = designators.filter(designator => typeof designator === 'string');
-		dedicatedlog.debug(`Designators detected as names: ${names}. Translating to account IDs`);
+		// Designators that are a string are expected to be nicknames
+		let names = designators.filter(designator => typeof designator === 'string');
+		dedicatedlog.debug(`Designators detected as names: ${names}.`);
+
+		// Filter out bots and keep them in a separate list
+		// Bots are players whose name starts and ends with a colon
+		const bots = names.filter(name => name.match(/^:.+:$/));
+		if (bots.length > 0)
+			dedicatedlog.debug(`Detected bots: ${bots}.`);
+
+		names = names.filter(name => !bots.includes(name));
 		if (names.length > 0)
 			accounts = accounts.concat(Object.values(await this.getAccounts(names)));
 		
@@ -48,6 +58,9 @@ class PlayerFactory {
 			let player = data[id];
 			result[player.nickname] = new Player(player);
 		}
+		// Add bots to the result
+		for (let bot of bots)
+			result[bot] = Player.createBot(bot);
 
 		rootlog.debug(`Retrieved players ${Object.keys(result)} in ${Date.now() - t0}ms`);
 		return result;

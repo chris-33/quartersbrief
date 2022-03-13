@@ -1,14 +1,25 @@
 import { ComplexDataObject } from '../util/cdo.js';
 
 class Player {
+	bot = false;
+
 	constructor(data) {
 		this._data = ComplexDataObject(data);
 	}
 
 	get name() { return this._data.nickname; }
-	get battles() { return this._data.statistics.pvp.battles; }
-	get victories() { return this._data.statistics.pvp.wins; }
-	get winrate() { return this.battles > 0 ? this.victories / this.battles : 0; }// Treat someone who hasn't played any battles as 0% winrate
+	get battles() { return this.bot ? NaN : this._data.statistics.pvp.battles; }
+	get victories() { return this.bot ? NaN : this._data.statistics.pvp.wins; }
+	get winrate() { 
+		// Treat someone who hasn't played any battles as 0% winrate
+		return this.battles === 0 ? 0 : this.victories / this.battles; 
+	}
+
+	static createBot(name) {
+		let player = new Player({ nickname: name });
+		player.bot = true;
+		return player;
+	}
 }
 
 export { Player }

@@ -9,4 +9,25 @@ describe('Player', function() {
 			}
 		});
 	});
-})
+
+	describe('Player.createBot', function() {
+		const name = ':Bot:';
+		let bot;
+		beforeEach(function() {
+			bot = Player.createBot(name);
+		});
+
+		it('should have a bot flag', function() {
+			expect(bot.bot).to.be.true;
+		});
+		
+		it('should have a name', function() {
+			expect(bot.name).to.equal(name);
+		});
+
+		it('should return NaN for all statistics', function() {
+			for (let prop of [ 'battles', 'victories', 'winrate' ])
+				expect(bot[prop], prop).to.be.NaN;
+		});
+	});
+});
