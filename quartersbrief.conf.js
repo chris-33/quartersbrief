@@ -85,6 +85,14 @@ const config = {
 			description: 'Specify host and port for connections. Usage: --listen host:port. Cannot be used together with --host and --port',
 			conflicts: [ 'host', 'port' ],
 		})
+		.option('api-key', {
+			type: 'string',
+			description: 'A Wargaming-issued application_id. This is required for topics that access the online Wargaming API.'
+		})
+		.option('realm', {
+			type: 'string',
+			description: 'The realm (server) you will be playing on. This is required for topics that access the online Wargaming API.'
+		})
 		.option('debug', {
 			coerce: function(value) {
 				if (typeof value === 'boolean') 
