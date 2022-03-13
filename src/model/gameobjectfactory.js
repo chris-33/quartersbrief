@@ -77,6 +77,15 @@ class GameObjectFactory {
 	}
 
 	/**
+	 * Private helper property that holds translations for numeric IDs to reference names.
+	 */
+	#idToName;
+	/**
+	 * Private helper property that holds translations for reference codes to reference names.
+	 */
+	#refcodeToName;
+
+	/**
 	 * Private property that holds the loaded
 	 * GameParams data in toto.
 	 * @private
@@ -128,14 +137,33 @@ class GameObjectFactory {
 				// shipUpgradeInfo fields, rather than the AB1_DiveBomber scheme
 				// most other files use. This matches the regex, obviously, but
 				// no data of that refcode will be found in #data.
-				let expanded = clone(self.#data[data[key]]);
+				// let expanded = clone(self.#data.get(data[key]));
 				// let expanded = self.createGameObject(data[key]);
-				if (expanded) {
-					dedicatedlog.debug(`Expanded reference ${data[key]}`);
-					data[key] = expanded;
-				} else {
-					dedicatedlog.debug(`Unable to expand reference ${data[key]}, target unknown. The reference has been ignored.`);
-				}	
+
+				const self = this;
+				const reference = data[key];
+				dedicatedlog.debug(`Creating lazy expansion for ${reference} on ${key}`);
+				Object.defineProperty(data, key, {
+					get: function() {
+						const expanded = self.createGameObject(reference);
+						this[key] = expanded;
+						return expanded;
+					},
+					set: function(expanded) {
+						Object.defineProperty(this, key, {
+							value: expanded ?? reference,
+							writable: true,
+							configurable: true,
+							enumerable: true
+						});
+						if (expanded)
+							dedicatedlog.debug(`Expanded reference ${reference} on ${key}`);
+						else
+							dedicatedlog.debug(`Unable to expand reference ${reference} on ${key}, target unknown. The reference has been ignored.`);						
+					},
+					configurable: true,
+					enumerable: true,
+				});
 			}
 			// If the current key's value is an object, expand references recursively
 			else if (typeof data[key] === 'object' && data[key] !== null) {
@@ -159,9 +187,9 @@ class GameObjectFactory {
 			key = template(key, data).toUpperCase();
 			data.label = this.#labels[key] ?? data.name;
 
-			for (let key in data)
-				if (typeof data[key] === 'object' && data[key] !== null)
-					data[key] = this._attachLabel(data[key]);
+			// for (let key in data)
+			// 	if (typeof data[key] === 'object' && data[key] !== null)
+			// 		data[key] = this._attachLabel(data[key]);
 			// @todo Find a way to attach labels to captain skills and consumable flavors (flavors may be different than the base - e.g. Crawling Smoke Generator is a flavor of Smoke Generator)
 		}
 		return data;
@@ -178,9 +206,9 @@ class GameObjectFactory {
 	 * Otherwise returns the raw `data`, with any nested objects converted if appropriate.
 	 */
 	_convert(data) {
-		for (let key in data)
-			if (typeof data[key] === 'object' && data[key] !== null)
-				data[key] = this._convert(data[key]);
+		// for (let key in data)
+		// 	if (typeof data[key] === 'object' && data[key] !== null)
+		// 		data[key] = this._convert(data[key]);
 
 		if (!(data?.typeinfo?.type))
 			return data;
@@ -226,13 +254,13 @@ class GameObjectFactory {
 		
 		if (typeof designator === 'number') { // designator is an ID
 			// Find an object that has an 'id' property the same as designator
-			gameObject = Object.values(self.#data).find(obj => obj.id && obj.id === designator);
+			gameObject = this.#data.get(this.#idToName.get(designator));
 		} else if (typeof designator === 'string' && GameObject.REFERENCE_CODE_REGEX.test(designator)) { // designator is a ref code
 			// Find an object that has an 'index' property the same as designator
-			gameObject = Object.values(self.#data).find(obj => obj.index && obj.index === designator);
+			gameObject = this.#data.get(this.#refcodeToName.get(designator));
 		} else if (typeof designator === 'string' && GameObject.REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
 			// Access self.#data directly, as reference names are already its keys
-			gameObject = self.#data[designator];
+			gameObject = this.#data.get(designator); //self.#data[designator];
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 		
@@ -265,7 +293,7 @@ class GameObjectFactory {
 	listCodesForType(type) {
 		this.#checkData();
 
-		let result = Object.values(this.#data)
+		let result = Array.from(this.#data.values())
 			.filter(obj => obj.typeinfo && obj.typeinfo.type === type)
 			.map(obj => obj.index);
 		rootlog.getLogger(this.constructor.name).debug(`Got all ref codes for type ${type} - found ${result.length} matches.`);
@@ -273,7 +301,29 @@ class GameObjectFactory {
 	}
 
 	setData(data) {
-		this.#data = data;
+		// Generator function to avoid having to create an intermediate array, as Object.entries(data) would
+		function* entries(data) {
+			for (let key in data)
+				yield [key, data[key]];
+		}
+		// Generator function that yields translations from numeric ID to reference name
+		function* idToNameEntries(data) {
+			for (let key in data)
+				yield [data[key].id, key];
+		}
+		function* refcodeToNameEntries(data) {
+			for (let key in data)
+				yield [data[key].index, key];
+		}
+
+		if (!data) return;
+
+		const t0 = Date.now();
+		this.#data = new Map(entries(data));
+		this.#idToName = new Map(idToNameEntries(data));
+		this.#refcodeToName = new Map(refcodeToNameEntries(data));
+
+		rootlog.getLogger(this.constructor.name).debug(`Set data in ${Date.now() - t0}ms`);
 	}
 
 	/**

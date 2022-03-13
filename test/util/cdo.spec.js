@@ -32,6 +32,19 @@ describe('ComplexDataObject', function() {
 		expect(other).to.equal(cdo);
 	});
 
+	it('should not invoke getters', function() {
+		const spy = sinon.spy(function getter() { return 42; });
+
+		let data = {};
+		Object.defineProperty(data, 'prop', {
+			get: spy,
+			enumerable: true,
+			configurable: true
+		});
+		cdo = ComplexDataObject(data);
+		expect(spy).to.not.have.been.called;
+	});
+
 	describe('.multiply', function() {
 		it('should apply the coefficient on the correct own, nested, or array property', function() {
 			const coeff = 2;

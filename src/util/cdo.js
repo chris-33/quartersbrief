@@ -4,9 +4,14 @@ const coefficients = Symbol('coefficients');
 
 function ComplexDataObject(data) {	
 	// Recursively turn object properties into CDOs
-	for (let key in data) 
-		if (typeof data[key] === 'object' && data[key] !== null)
+	for (let key in data) {
+		// Need to work on property descriptors here to avoid invoking getters.
+		// This is so that lazily-expanded references aren't forced to expand here.
+		let property = Object.getOwnPropertyDescriptor(data, key);
+		if (typeof property.value === 'object' && property.value !== null)
+		// if (typeof data[key] === 'object' && data[key] !== null)
 			data[key] = ComplexDataObject(data[key]);
+	}
 
 	// Return the source if
 	// - it is already a CDO
