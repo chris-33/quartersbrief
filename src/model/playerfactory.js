@@ -1,5 +1,6 @@
 import { Player } from './player.js';
 import { WargamingAPI } from '../util/wgapi.js';
+import rootlog from 'loglevel';
 
 class PlayerFactory {	
 	constructor(applicationID, realm) {
@@ -20,16 +21,24 @@ class PlayerFactory {
 		let result = {};
 		for (let player of data)
 			result[player.nickname] = player.account_id;
+		rootlog.getLogger(this.constructor.name).debug(`Retrieved account IDs for ${names}`);
 		return result;
 	}
 
 	
 	async getPlayers(designators) {
-		const names = designators.filter(designator => typeof designator === 'string');
+		const t0 = Date.now();
+		const dedicatedlog = rootlog.getLogger(this.constructor.name);
+
 		let accounts = designators.filter(designator => typeof designator === 'number');
-		if (names.length > 0)
-			accounts.concat(Object.values(await this.getAccounts(names)));
+		dedicatedlog.debug(`Designators detected as account IDs: ${accounts}`);
 		
+		const names = designators.filter(designator => typeof designator === 'string');
+		dedicatedlog.debug(`Designators detected as names: ${names}. Translating to account IDs`);
+		if (names.length > 0)
+			accounts = accounts.concat(Object.values(await this.getAccounts(names)));
+		
+		dedicatedlog.debug(`Final account IDs: ${accounts}. Requesting data`);
 		let data = await this._api.access('players.data', { account_id: accounts });
 		
 		let result = {};
@@ -39,6 +48,8 @@ class PlayerFactory {
 			let player = data[id];
 			result[player.nickname] = new Player(player);
 		}
+
+		rootlog.debug(`Retrieved players ${Object.keys(result)} in ${Date.now() - t0}ms`);
 		return result;
 	}
 
