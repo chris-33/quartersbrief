@@ -66,8 +66,9 @@ class WargamingAPI {
 	}
 
 	static OPERATIONS = {
-		'PLAYERS.LIST': 'accounts/list',
-		'PLAYERS.DATA': 'accounts/info'
+		// Important: MUST have trailing slashes, or we get Wargaming API error 407: Method not found
+		'PLAYERS.LIST': 'account/list/',
+		'PLAYERS.DATA': 'account/info/'
 	}
 
 	constructor(applicationID, realm) {
