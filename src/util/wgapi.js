@@ -34,7 +34,7 @@ class WargamingAPI {
 			INVALID_FIELD: 'Specified field value {field} is not valid.'
 		};
 
-		constructor(code, msg) {
+		constructor(code, msg, url) {
 			let field;
 			if (code === 402) {
 				let result = msg.match(/(\w+)_NOT_SPECIFIED/);
@@ -59,8 +59,9 @@ class WargamingAPI {
 				}
 			}
 			msg = template(WargamingAPI.APIError.MESSAGES[msg], { field });
-			super(msg);
+			super(`Error during Wargaming API access to ${url?.hash}: ${msg}.`);
 			this.code = code;
+			this.url = url;
 		}
 	}
 
@@ -75,7 +76,7 @@ class WargamingAPI {
 		if (realm.toLowerCase() === 'na')
 			this.tld = 'com';
 		else
-			this.tld = realm.toLowerCase() ?? 'eu';
+			this.tld = realm.toLowerCase();
 	}
 
 	/**
@@ -92,7 +93,7 @@ class WargamingAPI {
 		if (!Object.keys(params).includes('application_id'))
 			url.searchParams.append('application_id', this.#applicationID);
 		for (let param in params) {
-			let val = params.param;
+			let val = params[param];
 			if (Array.isArray(val))
 				val = val.join(',');
 			url.searchParams.append(param, val);
@@ -127,7 +128,7 @@ class WargamingAPI {
 		
 		res = await res.json();
 		if (res.status === 'error')
-			throw new WargamingAPI.APIError(res.error.code, res.error.message);
+			throw new WargamingAPI.APIError(res.error.code, res.error.message, url);
 
 		return res.data;
 	}
