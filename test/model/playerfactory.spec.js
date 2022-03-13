@@ -23,7 +23,7 @@ describe('PlayerFactory', function() {
 
 	describe('.getAccountIDs', function() {
 		it('should get account IDs for all requested names', async function() {
-			srv.get(/accounts\/list/).reply(200, {
+			srv.get(/account\/list/).reply(200, {
 				status: 'ok',
 				meta: { count: 1 },
 				data: [				
@@ -52,7 +52,7 @@ describe('PlayerFactory', function() {
 		});
 
 		it('should translate player names into account IDs when necessary', async function() {
-			srv.get(/accounts\/info/).times(3).reply(200, {});
+			srv.get(/account\/info/).times(3).reply(200, {});
 
 			await playerFactory.getPlayers(['player1, player2']);
 			expect(playerFactory.getAccounts, 'names').to.have.been.calledOnceWith(['player1, player2']);
@@ -70,7 +70,7 @@ describe('PlayerFactory', function() {
 				1: { account_id: 1, nickname: 'player1' },
 				2: { account_id: 2, nickname: 'player2' }
 			}
-			srv.get(/accounts\/info/).reply(200, {
+			srv.get(/account\/info/).reply(200, {
 				status: 'ok',
 				meta: { count: 2, hidden: null },
 				data
