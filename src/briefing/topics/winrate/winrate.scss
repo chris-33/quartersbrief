@@ -1,0 +1,99 @@
+table {
+	width: 100%;
+	table-layout: fixed;
+}
+
+th {
+	color: white;
+	font-weight: bold;
+
+	&.ally {
+		background-color: $background-color-ally;
+	}
+
+	&.enemy {
+		background-color: $background-color-enemy;
+	}
+}
+
+col {
+	&.name {
+		width: 26%;
+	}
+	&.winrate {
+		width: 12%;
+	}
+	&.pr {
+		width: 12%;
+	}
+	&.ally {
+		// Reduce opacity to 5%
+		background-color: color.adjust($background-color-ally, $alpha: -0.95);
+	}
+	&.enemy {
+		// Reduce opacity to 5%
+		background-color: color.adjust($background-color-enemy, $alpha: -0.95);
+	}
+}
+
+td {
+	text-align: right;
+	padding: 0.33ex 0.2ch;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+
+	padding-right: 0.5ch;
+
+	&:first-of-type {
+		text-align: left;
+		padding-right: 0;
+		padding-left: 0.5ch;
+	}
+}
+
+.notification {
+	color: darkgrey;
+	font-style: italic;
+	// Make the content appear centered:
+	display: inline-block;
+	width: 100%;
+	text-align: center;
+}
+
+.winrate {
+	font-weight: bold;
+	font-size: 105%;
+}
+
+.superunicum {
+	color: #a00dc5;
+}
+
+.unicum {
+	color: #d042f3;
+}
+
+.great {
+	color: #02c9b3;
+}
+
+.verygood {
+	color: #318000;
+}
+
+.good {
+	color: #44b300;
+}
+
+.average {
+	color: #ffc71f;
+}
+
+.belowaverage {
+	color: #fe7903;
+}
+
+.bad {
+	color: #fe0e00;
+}

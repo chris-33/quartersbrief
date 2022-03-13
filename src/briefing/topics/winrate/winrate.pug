@@ -1,0 +1,62 @@
+- const rows = Math.max(allies.length, enemies.length);
+- 
+	function winrateClass(wr) {
+		wr *= 100;
+		if (0 < wr && wr < 45)
+			return 'bad';
+		else if (45 <= wr && wr < 49)
+			return 'belowaverage';
+		else if (49 <= wr && wr < 52)			
+			return 'average';
+		else if (52 <= wr  && wr < 54)
+			return 'good';
+		else if (54 <= wr && wr < 56)
+			return 'verygood';
+		else if (56 <= wr && wr < 60)
+			return 'great';
+		else if (60 <= wr && wr < 65)
+			return 'unicum';
+		else if (65 <= wr)
+			return 'superunicum';
+	}
+div
+	table
+		colgroup
+			col.ally.name
+			col.ally.winrate
+			//col.ally.pr
+			col.enemy.winrate
+			//col.enemy.pr
+			col.enemy.name
+		tr
+			th.ally Player
+			th.ally %
+			//th.ally PR
+			th.enemy %
+			//th.enemy PR
+			th.enemy Player
+		- for (let i = 0; i < rows; i++) {
+		- const ally = allies[i].player;
+		- const enemy = enemies[i].player;
+			tr
+				td.name(class=ally.name === player.name ? 'player' : '') #{ally.name}
+				td 
+					if ally.bot
+						span.notification Bot
+					else if ally.hidden
+						span.notification private
+					else
+						span.winrate(class=winrateClass(ally.winrate)) #{(100 * ally.winrate).toFixed(1)} 
+						span.unit %
+				//	td.pr
+				td
+					if enemy.bot
+						span.notification Bot
+					else if enemy.hidden
+						span.notification private
+					else
+						span.winrate(class=winrateClass(enemy.winrate)) #{(100 * enemy.winrate).toFixed(1)}
+						span.unit %
+				//td.pr
+				td.name #{enemy.name}
+		- }
