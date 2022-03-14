@@ -5,3 +5,4 @@
 /config/
 /wows/
 package-lock.json
+*.secret
