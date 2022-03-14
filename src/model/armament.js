@@ -19,7 +19,7 @@ const Armament = class extends ComplexDataObject {
 	/** 
 	 * An array of the individual mounts (e.g. gun turrets, launchers, etc.) for this armament.
 	 */
-	get qb_mounts() {
+	get mounts() {
 		return Object.values(this).filter(obj => 
 				typeof obj === 'object' && 'typeinfo' in obj && obj.typeinfo.type === 'Gun');
 	}	
@@ -28,7 +28,7 @@ const Armament = class extends ComplexDataObject {
 const Artillery = class extends Armament {
 	static #GETTER_DEFINITIONS = {
 		BaseRange: 'maxDist',
-		Caliber: 'qb_mounts.barrelDiameter'
+		Caliber: 'mounts.barrelDiameter'
 	}
 
 	constructor(data) {

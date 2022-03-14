@@ -46,33 +46,33 @@ describe('Captain', function() {
 
 	describe('.learn', function() {
 		it('should learn a skill that is provided as an object', function() {
-			let skill = captain.qb_skills[0];
+			let skill = captain.skills[0];
 			captain.learn(skill);
-			expect(captain.qb_skills).to.include(skill);
+			expect(captain.skills).to.include(skill);
 		});
 
 		it('should learn a skill that is provided by number', function() {
 			let skill = 1;
 			captain.learn(skill);
-			skill = captain.qb_skills.find(s => s.getSkillnumber() === skill);
-			expect(captain.qb_learned).to.include(skill);
+			skill = captain.skills.find(s => s.getSkillnumber() === skill);
+			expect(captain.learned).to.include(skill);
 		});
 
 		it('should not learn the same skill more than once', function() {
-			let skill = captain.qb_skills[0];
-			expect(captain.qb_learned).to.be.empty;
+			let skill = captain.skills[0];
+			expect(captain.learned).to.be.empty;
 			captain.learn(skill);
-			expect(captain.qb_learned).to.have.lengthOf(1);
+			expect(captain.learned).to.have.lengthOf(1);
 			captain.learn(skill); // Learn the same skill again
-			expect(captain.qb_learned).to.have.lengthOf(1);
+			expect(captain.learned).to.have.lengthOf(1);
 		});
 
 		it('should learn all skills when passed an array of skills or numbers', function() {
-			let s1 = captain.qb_skills[0];
-			let s2 = captain.qb_skills[1];
-			expect(captain.qb_learned).to.be.empty;
+			let s1 = captain.skills[0];
+			let s2 = captain.skills[1];
+			expect(captain.learned).to.be.empty;
 			captain.learn([s1, s2.getSkillnumber()]);
-			expect(captain.qb_learned).to.be.an('array').with.deep.members([s1, s2]);
+			expect(captain.learned).to.be.an('array').with.deep.members([s1, s2]);
 		});
 	});
 
@@ -92,7 +92,7 @@ describe('Captain', function() {
 		});
 
 		it('should not return any skills that do not match the ship\'s type', function() {
-			captain.qb_learned = captain.qb_skills; // Learn all skills
+			captain.learned = captain.skills; // Learn all skills
 			let learned = captain.getLearnedForShip(ship);
 			expect(learned).to.be.an('array');
 			learned.forEach(skill => expect(skill.eligible(ship)).to.be.true);

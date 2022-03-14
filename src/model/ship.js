@@ -104,7 +104,7 @@ class Ship extends GameObject {
 	 * the value is the `Consumable`.
 	 * @return {Object} A hash from consumable type to consumable.
 	 */
-	get qb_consumables() {
+	get consumables() {
 		let consumables = {};
 		Object.values(this.get('ShipAbilities'))
 			.flatMap(slot => slot.abils)
@@ -583,7 +583,7 @@ class Ship extends GameObject {
 		return moduleLines;
 	}
 
-	get qb_consumables() {
+	get consumables() {
 		let result = this.get('ShipAbilities.*.abils', { collate: false })
 		return result;
 
@@ -602,12 +602,12 @@ class Ship extends GameObject {
 
 	// @todo Implement the following properties again
 	// ArtilleryRange: function() { return this.get('artillery.maxDist') * this.get('fireControl.maxDistCoef') },
-	// ArtilleryCaliber: function() { return 'artillery.qb_mounts.*.barrelDiameter' },
-	// ArtilleryRotationSpeed: 'artillery.qb_mounts.*.rotationSpeed.0',
-	// TorpedoRange: function() { return conversions.BWToMeters(this.get('torpedoes.qb_mounts.*.ammoList.*.maxDist')) },
-	// TorpedoSpeed: 'torpedoes.qb_mounts.*.ammoList.*.speed',
-	// TorpedoDamage: 'torpedoes.qb_mounts.*.ammoList.*.alphaDamage',
-	// TorpodoFloodChance: 'torpedoes.qb_mounts.*.ammoList.*.uwCritical',
+	// ArtilleryCaliber: function() { return 'artillery.mounts.*.barrelDiameter' },
+	// ArtilleryRotationSpeed: 'artillery.mounts.*.rotationSpeed.0',
+	// TorpedoRange: function() { return conversions.BWToMeters(this.get('torpedoes.mounts.*.ammoList.*.maxDist')) },
+	// TorpedoSpeed: 'torpedoes.mounts.*.ammoList.*.speed',
+	// TorpedoDamage: 'torpedoes.mounts.*.ammoList.*.alphaDamage',
+	// TorpodoFloodChance: 'torpedoes.mounts.*.ammoList.*.uwCritical',
 	// ATBARange: 'atba.maxDist',
 
 	/**

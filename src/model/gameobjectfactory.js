@@ -48,7 +48,7 @@ class GameObjectFactory {
 			// in GameParams.data
 			'titleIDs', 'descIDs', 'iconIDs',
 			// Omit attached labels from expansion
-			'qb_label'
+			'label'
 		];
 
 	// We can't use template literals (`${foo}`) here, because their interpolation cannot be deferred,
@@ -178,7 +178,7 @@ class GameObjectFactory {
 	 * on ``data.typeinfo.type`. If this `GameObjectFactory` instance was created without the second parameter, 
 	 * or if `data` does not have a `typeinfo.type` property, it does nothing.
 	 * @param {*} data The `data` to attach the label to.
-	 * @returns {Object} Returns `data`, with a label attached under `qb_label`.
+	 * @returns {Object} Returns `data`, with a label attached under `label`.
 	 */
 	_attachLabel(data) {
 		if (this.#labels) {

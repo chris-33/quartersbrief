@@ -363,7 +363,7 @@ describe('Ship', function() {
 		});
 	});
 
-	describe('.qb_consumables', function() {
+	describe('.consumables', function() {
 		let ship;
 
 		beforeEach(function() {
@@ -374,12 +374,12 @@ describe('Ship', function() {
 			function getAbility(n) {
 				return TEST_DATA.ShipAbilities[`AbilitySlot${Math.floor(n / 2)}`].abils[n % 2][0];
 			}
-			expect(ship).to.have.property('qb_consumables');
-			expect(ship.qb_consumables).to.be.an('object');
+			expect(ship).to.have.property('consumables');
+			expect(ship.consumables).to.be.an('object');
 
 			for (let i = 0; i <= 2; i++) {
 				let consumable = getAbility(i);
-				expect(ship.qb_consumables, consumable.consumableType).to
+				expect(ship.consumables, consumable.consumableType).to
 					.have.property(consumable.consumableType)
 					.that.deep.equals(consumable);
 			}

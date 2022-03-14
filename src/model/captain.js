@@ -39,13 +39,13 @@ class Captain extends GameObject {
 	 * The skills this captain **can learn**.
 	 * @type {Captain.Skill[]}
 	 */
-	qb_skills;
+	skills;
 
 	/**
 	 * The skills that this captain **has learned**.
 	 * @type {Captain.Skill[]}
 	 */
-	qb_learned;
+	learned;
 
 	/**
 	 * Get an array of the skills that are trainable on the provided `ship`. The result is dependent
@@ -62,7 +62,7 @@ class Captain extends GameObject {
 		if (!Object.keys(Captain.CLASS_SKILLS).includes(species))
 			throw new TypeError(`Unknown ship species ${species}. Could not get trainable skills`);
 
-		return this.qb_skills.filter(skill => skill.eligible(ship));
+		return this.skills.filter(skill => skill.eligible(ship));
 	}
 
 	/**
@@ -74,7 +74,7 @@ class Captain extends GameObject {
 	 */
 	getLearnedForShip(ship) {
 		Ship.errorIfNotShip(ship);
-		return this.qb_learned.filter(skill => skill.eligible(ship));
+		return this.learned.filter(skill => skill.eligible(ship));
 	}
 
 	/**
@@ -93,10 +93,10 @@ class Captain extends GameObject {
 
 		for (let s of skill) {
 			if (typeof s === 'number')
-				s = this.qb_skills.find(x => x.getSkillnumber() === s);
+				s = this.skills.find(x => x.getSkillnumber() === s);
 
-			if (s && !this.qb_learned.includes(s))
-				this.qb_learned.push(s);			
+			if (s && !this.learned.includes(s))
+				this.learned.push(s);			
 		}
 	}
 
@@ -140,10 +140,10 @@ class Captain extends GameObject {
 		// Should not need to clone here since we will not be changing the values
 		super(data);
 
-		this.qb_learned = [];
+		this.learned = [];
 		// Turn the skills from the data into an array of Skill objects.
 		// This will also lose the name, but that shouldn't be a problem.
-		this.qb_skills = Object.values(this.get('Skills')).map(skill => new Captain.Skill(skill));
+		this.skills = Object.values(this.get('Skills')).map(skill => new Captain.Skill(skill));
 	}
 }
 
