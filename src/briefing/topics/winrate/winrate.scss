@@ -28,11 +28,11 @@ col {
 	}
 	&.ally {
 		// Reduce opacity to 5%
-		background-color: color.adjust($background-color-ally, $alpha: -0.95);
+		background-color: color.adjust($background-color-ally, $alpha: -0.98);
 	}
 	&.enemy {
 		// Reduce opacity to 5%
-		background-color: color.adjust($background-color-enemy, $alpha: -0.95);
+		background-color: color.adjust($background-color-enemy, $alpha: -0.98);
 	}
 }
 
@@ -49,6 +49,10 @@ td {
 		text-align: left;
 		padding-right: 0;
 		padding-left: 0.5ch;
+	}
+	&.player {
+		color: $color-player;
+		font-weight: 600;
 	}
 }
 

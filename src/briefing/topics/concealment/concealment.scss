@@ -33,7 +33,7 @@ $bareffect: linear-gradient(to right, #fffffff0, #ffffff60 30%, transparent 50%)
 
 // The bar for the player's ship
 .shipbar.player {
-	background-color: $color-player;
+	background-color: $background-color-player;
 	color: black;
 }
 
