@@ -38,9 +38,6 @@ describe('Ship', function() {
 		let data;
 		beforeEach(function() {
 			data = clone(TEST_DATA);
-			data.ShipAbilities.AbilitySlot0.abils = [
-				[ new Consumable({Flavor1: { prop: 1 }}), 'Flavor1' ]
-			]
 		});
 
 		it('should set flavors for all consumables', function() {
@@ -50,15 +47,16 @@ describe('Ship', function() {
 
 
 			// Manually create a lazily-expanding reference
-			const val = data.ShipAbilities.AbilitySlot0.abils[0][0];
+			const val = TEST_DATA.ShipAbilities.AbilitySlot0.abils[0][0];
 			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
-				get: function() { return val; },
+				get: function() { return new Consumable(val); },
 				enumerable: true,
 				configurable: true
 			});
 			let ship = new Ship(data);
 			let consumable = ship.get('ShipAbilities.AbilitySlot0.abils.0.0');
-			expect(consumable.get('prop')).to.equal(1);
+			
+			expect(consumable.get('prop')).to.equal(TEST_DATA.ShipAbilities.AbilitySlot0.abils[0][0].Flavor1.prop);
 		});
 
 		it('should not expand consumable references', function() {
@@ -71,8 +69,8 @@ describe('Ship', function() {
 
 
 			// Manually create a lazily-expanding reference
-			const val = data.ShipAbilities.AbilitySlot0.abils[0][0];
-			const spy = sinon.spy(function() { return val; })
+			const val = TEST_DATA.ShipAbilities.AbilitySlot0.abils[0][0];
+			const spy = sinon.spy(function() { return new Consumable(val); })
 			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
 				get: spy,
 				enumerable: true,
@@ -402,20 +400,35 @@ describe('Ship', function() {
 
 	describe('.consumables', function() {
 		let ship;
-
+		let data;
 		beforeEach(function() {
-			ship = new Ship(TEST_DATA);
+			data = clone(TEST_DATA);
+			data.ShipAbilities.AbilitySlot0.abils = [
+				[ new Consumable({ Flavor1: { prop: 1 }, consumableType: 'c1' }), 'Flavor1' ],
+				[ new Consumable({ Flavor1: { prop: 2 }, consumableType: 'c2' }), 'Flavor1' ]
+			];
+			data.ShipAbilities.AbilitySlot1.abils = [
+				[ new Consumable({ Flavor1: { prop: 3 }, consumableType: 'c3' }), 'Flavor1' ]
+			];
+			ship = new Ship(data);
 		});
 
 		it('should be a hash of all consumables, with the consumableType as the key', function() {
-			function getAbility(n) {
-				return TEST_DATA.ShipAbilities[`AbilitySlot${Math.floor(n / 2)}`].abils[n % 2][0];
+			// Generator function that yields all the ships consumables one by one
+			function* abilities() {
+				const abils = Object.values(data.ShipAbilities)
+					.flatMap(abilityslot => abilityslot.abils)
+					.map(ability => ability[0]);
+				let i = 0;
+				while (i < abils.length)
+					yield abils[i++];
+				return;
 			}
+
 			expect(ship).to.have.property('consumables');
 			expect(ship.consumables).to.be.an('object');
 
-			for (let i = 0; i <= 2; i++) {
-				let consumable = getAbility(i);
+			for (let consumable of abilities()) {
 				expect(ship.consumables, consumable.consumableType).to
 					.have.property(consumable.consumableType)
 					.that.deep.equals(consumable);
