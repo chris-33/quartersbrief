@@ -132,7 +132,14 @@ class Ship extends GameObject {
 		// of the flavor
 		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false }).forEach(ability => {
 			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
-			ability[0].setFlavor(ability[1]);			
+			const getter = Object.getOwnPropertyDescriptor(ability, '0').get;
+			Object.defineProperty(ability, '0', {
+				get: function() {
+					const consumable = getter();
+					consumable.setFlavor(ability[1]);
+					return consumable;
+				}
+			});
 		});
 	}
 

@@ -35,14 +35,51 @@ describe('Ship', function() {
 	});
 
 	describe('constructor', function() {
-		it('should set flavors for all consumables', function() {
-			let data = clone(TEST_DATA);
+		let data;
+		beforeEach(function() {
+			data = clone(TEST_DATA);
 			data.ShipAbilities.AbilitySlot0.abils = [
 				[ new Consumable({Flavor1: { prop: 1 }}), 'Flavor1' ]
 			]
+		});
+
+		it('should set flavors for all consumables', function() {
+			// The point of this test:
+			// Even though consumables are lazily-expanding references, the constructor should set us up in
+			// such a way that when they ARE accessed, they have a flavor set.
+
+
+			// Manually create a lazily-expanding reference
+			const val = data.ShipAbilities.AbilitySlot0.abils[0][0];
+			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
+				get: function() { return val; },
+				enumerable: true,
+				configurable: true
+			});
 			let ship = new Ship(data);
 			let consumable = ship.get('ShipAbilities.AbilitySlot0.abils.0.0');
 			expect(consumable.get('prop')).to.equal(1);
+		});
+
+		it('should not expand consumable references', function() {
+			// The point of this test:
+			// Consumables are lazily-expanding references when Ship is instantiated. Make sure that
+			// the constructor, when setting flavors, does this in a way that does not force them
+			// to be expanded. (Otherwise, that would defeat the purpose of having them be lazily expanding
+			// in the first place - and expanding consumables can be expensive, e.g. with the CallFighters
+			// consumable.)
+
+
+			// Manually create a lazily-expanding reference
+			const val = data.ShipAbilities.AbilitySlot0.abils[0][0];
+			const spy = sinon.spy(function() { return val; })
+			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
+				get: spy,
+				enumerable: true,
+				configurable: true
+			});
+			new Ship(data);
+			expect(spy).to.not.have.been.called;			
 		});
 	});
 
