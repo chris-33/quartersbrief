@@ -1,14 +1,12 @@
 import { Consumable } from '../../src/model/consumable.js';
+import { readFileSync } from 'fs';
 
 describe('Consumable', function() {
-	const TEST_DATA = {
-		Flavor1: { prop: 1 },
-		Flavor2: { prop: 2 },
-		name: 'PCY001_Consumable',
-		index: 'PCY001',
-		id: 1,
-		typeinfo: { nation: 'Common', species: null, type: 'Ability' }
-	}
+	let TEST_DATA;
+
+	before(function() {
+		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/consumable.json')).PCY001_Consumable1;
+	});
 
 	it('should error when trying to get properties other than typeinfo, name, index and id without a set flavor', function() {
 		let consumable = new Consumable(TEST_DATA);
