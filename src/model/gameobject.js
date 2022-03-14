@@ -55,6 +55,10 @@ class GameObject {
 		return this._data.multiply(key, factor, options);
 	}
 
+	clear() {
+		this._data.clear();
+	}
+
 	getID() { return this._data.id;	}
 	getName() { return this._data.name; }
 	getNation() { return this._data.typeinfo.nation; }
