@@ -100,19 +100,6 @@ class Ship extends GameObject {
 	#camouflage;
 
 	/**
-	 * Gets a hash of all consumables the ship has. Hash keys are the consumable's type, 
-	 * the value is the `Consumable`.
-	 * @return {Object} A hash from consumable type to consumable.
-	 */
-	get consumables() {
-		let consumables = {};
-		Object.values(this.get('ShipAbilities'))
-			.flatMap(slot => slot.abils)
-			.forEach(consumable => consumables[consumable.consumableType] = consumable);
-		return consumables;
-	} 
-
-	/**
 	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
 	 * in `descriptor`. 
 	 * @param  {Object} data       The ship's data.
@@ -132,14 +119,20 @@ class Ship extends GameObject {
 		// of the flavor
 		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false }).forEach(ability => {
 			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
-			const getter = Object.getOwnPropertyDescriptor(ability, '0').get;
-			Object.defineProperty(ability, '0', {
-				get: function() {
-					const consumable = getter();
-					consumable.setFlavor(ability[1]);
-					return consumable;
-				}
-			});
+			const consumableProperty = Object.getOwnPropertyDescriptor(ability, '0');
+			if (consumableProperty.get)
+				Object.defineProperty(ability, '0', {
+					get: function() {
+						const consumable = consumableProperty.get();
+						consumable.setFlavor(ability[1]);
+						return consumable;
+					},
+					enumerable: true,
+					configurable: true
+				});
+			else if (consumableProperty.value)
+				// If this is a value property, call setFlavor if it exists, or do nothing if setFlavor doesn't exist
+				consumableProperty.value.setFlavor?.call(consumableProperty.value, ability[1]);
 		});
 	}
 
@@ -590,10 +583,20 @@ class Ship extends GameObject {
 		return moduleLines;
 	}
 
+	/**
+	 * Gets a hash of all consumables the ship has. Hash keys are the consumable's type, 
+	 * the value is the `Consumable`.
+	 *
+	 * Note that this forces expansion of all lazy references, because there is no other way to 
+	 * determine the consumable's `consumableType`.
+	 * @return {Object} A hash from consumable type to consumable.
+	 */
 	get consumables() {
-		let result = this.get('ShipAbilities.*.abils', { collate: false })
+		const result = {};
+		this.get('ShipAbilities.AbilitySlot*.abils.*.0', { collate: false }).forEach(consumable =>
+			result[consumable.consumableType] = consumable
+		);
 		return result;
-
 	}
 
 	getClass() { return this.get('typeinfo.species'); }
