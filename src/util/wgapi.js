@@ -59,7 +59,7 @@ class WargamingAPI {
 				}
 			}
 			msg = template(WargamingAPI.APIError.MESSAGES[msg], { field });
-			super(`Error during Wargaming API access to ${url?.hash}: ${msg}.`);
+			super(`Error during Wargaming API access${url ? ' to ' + url.href : ''}: ${msg}.`);
 			this.code = code;
 			this.url = url;
 		}
