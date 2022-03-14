@@ -21,11 +21,12 @@ describe('ComplexDataObject', function() {
 		cdo = ComplexDataObject(clone(TEST_DATA));
 	});
 
-	it('should have methods multiply and get', function() {
-		expect(cdo).to.respondTo('multiply');
-		expect(cdo).to.respondTo('get');
+	const methods = [ 'multiply', 'clear', 'get' ];
+	it(`should have methods ${methods.join(', ')}`, function() {
+		for (let method of methods)
+			expect(cdo, method).to.respondTo(method);
 	});
-
+	
 	it('should return the source if it is already a ComplexDataObject', function() {		
 		cdo.multiply('prop1', 2);
 		let other = ComplexDataObject(cdo);
@@ -83,6 +84,19 @@ describe('ComplexDataObject', function() {
 			[ 'nested.*', 'arr.*' ].forEach(prop => cdo.multiply(prop, coeff));
 			cdo.clear();
 			expect(cdo).to.deep.equal(TEST_DATA);
+		});
+
+		it('should not invoke getters', function() {
+			const data = clone(TEST_DATA);
+			const stub = sinon.stub().returns(TEST_DATA.nested);
+			Object.defineProperty(data, 'nested', {
+				get: stub,
+				enumerable: true,
+				configurable: true
+			});
+			cdo = ComplexDataObject(data);
+			cdo.clear();
+			expect(stub).to.not.have.been.called;
 		});
 	});
 

@@ -9,7 +9,6 @@ function ComplexDataObject(data) {
 		// This is so that lazily-expanded references aren't forced to expand here.
 		let property = Object.getOwnPropertyDescriptor(data, key);
 		if (typeof property.value === 'object' && property.value !== null)
-		// if (typeof data[key] === 'object' && data[key] !== null)
 			data[key] = ComplexDataObject(data[key]);
 	}
 
@@ -50,8 +49,11 @@ function ComplexDataObject(data) {
 		clear: {
 			value: function() {
 				this[coefficients] = {};
-				for (let val of Object.values(this))
-					if (ComplexDataObject.isCDO(val)) val.clear();
+				const descs = Object.getOwnPropertyDescriptors(this);
+				for (let desc of Object.values(descs)) {
+					if (typeof desc.value === 'object' && desc.value !== null && typeof desc.value.clear === 'function') 
+						desc.value.clear();
+				}
 			},
 			enumerable: false
 		},
