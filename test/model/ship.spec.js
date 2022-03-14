@@ -22,11 +22,14 @@ describe('Ship', function() {
 		Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
 
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
-		Object.freeze(TEST_DATA);
 	});
 
 	beforeEach(function() {
-		ship = new Ship(clone(TEST_DATA));
+		let data = clone(TEST_DATA);
+		data.ShipAbilities.AbilitySlot0.abils[0][0] = { setFlavor: function() {} };
+		data.ShipAbilities.AbilitySlot0.abils[1][0] = { setFlavor: function() {} };
+		data.ShipAbilities.AbilitySlot1.abils[0][0] = { setFlavor: function() {} };
+		ship = new Ship(data);
 	});
 
 	after(function() {
@@ -36,8 +39,17 @@ describe('Ship', function() {
 
 	describe('constructor', function() {
 		let data;
+		let CONSUMABLE_DATA;
+
+		before(function() {
+			CONSUMABLE_DATA = JSON.parse(readFileSync('test/model/testdata/consumable.json'));
+		});
+
 		beforeEach(function() {
 			data = clone(TEST_DATA);
+			data.ShipAbilities.AbilitySlot0.abils[0][0] = CONSUMABLE_DATA.PCY001_Consumable1;
+			data.ShipAbilities.AbilitySlot0.abils[1][0] = CONSUMABLE_DATA.PCY002_Consumable2;
+			data.ShipAbilities.AbilitySlot1.abils[0][0] = CONSUMABLE_DATA.PCY003_Consumable3;
 		});
 
 		it('should set flavors for all consumables', function() {
@@ -47,7 +59,7 @@ describe('Ship', function() {
 
 
 			// Manually create a lazily-expanding reference
-			const val = TEST_DATA.ShipAbilities.AbilitySlot0.abils[0][0];
+			const val = clone(CONSUMABLE_DATA.PCY001_Consumable1);
 			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
 				get: function() { return new Consumable(val); },
 				enumerable: true,
@@ -55,8 +67,8 @@ describe('Ship', function() {
 			});
 			let ship = new Ship(data);
 			let consumable = ship.get('ShipAbilities.AbilitySlot0.abils.0.0');
-			
-			expect(consumable.get('prop')).to.equal(TEST_DATA.ShipAbilities.AbilitySlot0.abils[0][0].Flavor1.prop);
+
+			expect(consumable.get('prop')).to.equal(CONSUMABLE_DATA.PCY001_Consumable1.Flavor1.prop);
 		});
 
 		it('should not expand consumable references', function() {
@@ -69,7 +81,7 @@ describe('Ship', function() {
 
 
 			// Manually create a lazily-expanding reference
-			const val = TEST_DATA.ShipAbilities.AbilitySlot0.abils[0][0];
+			const val = clone(CONSUMABLE_DATA.PCY001_Consumable1);
 			const spy = sinon.spy(function() { return new Consumable(val); })
 			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
 				get: spy,
