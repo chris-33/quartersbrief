@@ -43,6 +43,8 @@ class Consumable extends GameObject {
 		
 		return super.get(key, options);
 	}
+
+	get consumableType() { return this._data.consumableType; }
 }
 
 export { Consumable }
