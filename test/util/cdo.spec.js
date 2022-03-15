@@ -46,6 +46,12 @@ describe('ComplexDataObject', function() {
 		expect(spy).to.not.have.been.called;
 	});
 
+	it('should keep coefficients when cloning', function() {
+		cdo.multiply('prop1', 2);
+		const other = clone(cdo);
+		expect(cdo).to.deep.equal(other);
+	});
+
 	describe('.multiply', function() {
 		it('should apply the coefficient on the correct own, nested, or array property', function() {
 			const coeff = 2;
@@ -68,6 +74,29 @@ describe('ComplexDataObject', function() {
 			expect(cdo.nested.prop1).to.equal(TEST_DATA.nested.prop1 * coeff);
 			expect(cdo.nested2.prop1).to.equal(TEST_DATA.nested2.prop1 * coeff);
 			expect(cdo.arr).to.have.members(TEST_DATA.arr.map(i => i * coeff));
+		});
+	});
+
+	describe('.unmultiply', function() {
+		it('should remove the coefficient from the correct own, nested, or array property', function() {
+			const coeff = 2;
+			const targets = [ 'prop1', 'nested.prop1', 'arr.0' ];
+			targets.forEach(tgt => cdo.multiply(tgt, coeff));
+			targets.forEach(tgt => cdo.unmultiply(tgt, coeff));
+			expect(cdo.prop1, 'own property').to.equal(TEST_DATA.prop1);			
+			expect(cdo.nested.prop1, 'nested property').to.equal(TEST_DATA.nested.prop1);
+			expect(cdo.arr[0], 'array property').to.equal(TEST_DATA.arr[0]);
+		});
+
+		it('should remove the coefficient from all properties matching a wildcard key', function() {
+			const coeff = 2;
+			const targets = [ 'nested*.prop1', 'arr.*' ];
+			targets.forEach(tgt => cdo.multiply(tgt, coeff));
+			targets.forEach(tgt => cdo.unmultiply(tgt, coeff));
+
+			expect(cdo.nested.prop1).to.equal(TEST_DATA.nested.prop1);
+			expect(cdo.nested2.prop1).to.equal(TEST_DATA.nested2.prop1);
+			expect(cdo.arr).to.have.members(TEST_DATA.arr);
 		});
 	});
 

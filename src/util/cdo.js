@@ -46,6 +46,22 @@ function ComplexDataObject(data) {
 			},
 			enumerable: false
 		},
+		unmultiply: {
+			value: function(key, factor) {
+				let path = key.split('.');
+				let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
+				let targets = Object.keys(this).filter(key => currKeyRegex.test(key));
+				if (path.length === 0)
+					targets.forEach(target => {
+						let index = this[coefficients][target].indexOf(factor);
+						if (index > -1)
+							this[coefficients][target].splice(index, 1);
+					});
+				else 
+					targets.forEach(target => this[target].unmultiply(path.join('.'), factor));				
+			},
+			enumerable: false,
+		},
 		clear: {
 			value: function() {
 				this[coefficients] = {};
@@ -67,11 +83,11 @@ function ComplexDataObject(data) {
 				let targets = Object.keys(this)
 					.filter(key => currKeyRegex.test(key));
 
-				// If we are getting a leaf property, do so for every target. Otherwise, call get
+				// If this is the destination property, get it for every target. Otherwise, call get
 				// recursively with the rest of the path. In this case, we must use flatMap and 
 				// turn off collation. This is to make sure that collating does not flatten
 				// array properties, and that not collating does not produce deeply nested arrays
-				// (i.e. arrays of arrays of arrays of ...)
+				// (i.e. arrays of arrays of arrays of ... - this is what would happen with .map())
 				if (path.length > 0)
 					targets = targets.flatMap(target => this[target].get(path.join('.'), { ...options, collate: false }));
 				else
@@ -85,7 +101,8 @@ function ComplexDataObject(data) {
 					targets = targets[0];
 				}
 				return targets;
-			}
+			},
+			enumerable: false,
 		}
 	});
 
