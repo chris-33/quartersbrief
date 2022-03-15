@@ -205,4 +205,32 @@ describe('ComplexDataObject', function() {
 			expect(cdo.get.bind('nested*.prop4')).to.throw();
 		});
 	});
+
+	describe('.clone', function() {
+		it('should deep equal the source', function() {
+			const other = cdo.clone();
+			expect(other).to.deep.equal(cdo);
+		});
+
+		it('should not strict-equal the source, and neither should any contained object properties', function() {
+			const other = cdo.clone();
+			expect(other).to.not.equal(cdo);
+			Object.keys(other)
+				.filter(key => typeof cdo[key] === 'object')
+				.forEach(key => expect(other[key]).to.not.equal(cdo.key));
+		});
+
+		it('should clone accessor properties without invoking their getters', function() {
+			const spy = sinon.spy();
+			const data = {};
+			Object.defineProperty(data, 'prop', {
+				get: spy,
+				enumerable: true
+			});
+			cdo = ComplexDataObject(data);
+			const other = cdo.clone();
+			expect(spy).to.not.have.been.called;
+			expect(other).to.have.property('prop');
+		});
+	});
 });

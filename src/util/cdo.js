@@ -1,4 +1,6 @@
 import deepequal from 'deep-equal';
+import { cloneProperties } from './util.js';
+
 
 const coefficients = Symbol('coefficients');
 
@@ -103,6 +105,12 @@ function ComplexDataObject(data) {
 				return targets;
 			},
 			enumerable: false,
+		},
+		clone: {
+			value: function() {
+				return cloneProperties(this);
+			},
+			enumerable: false
 		}
 	});
 
