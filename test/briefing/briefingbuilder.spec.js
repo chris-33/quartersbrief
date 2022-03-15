@@ -65,7 +65,11 @@ describe('BriefingBuilder', function() {
 			expect(buildTopic1).to.have.been.called;
 			expect(buildTopic2).to.have.been.called;
 
-			// Expect the "battle" argument of each topic builder to have been deeply equal, but not strictly equal:
+			// Expect the "battle" argument of each topic builder to have been deeply equal, but not strictly equal:			
+			await builder.build(battle, agenda);
+			expect(buildTopic1).to.have.been.called;
+			expect(buildTopic2).to.have.been.called;
+			
 			const battle1 = buildTopic1.firstCall.firstArg;
 			const battle2 = buildTopic2.firstCall.firstArg;
 			expect(battle1).to.not.equal(battle2);
