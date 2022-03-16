@@ -2,6 +2,7 @@ import pug from 'pug';
 import sass from 'sass';
 import log from 'loglevel';
 import { readFileSync } from 'fs';
+import { GameObject } from '../model/gameobject.js';
 
 /**
  * The `BriefingBuilder` constructs a briefing for a given battle and agenda. It dynamically imports the 
@@ -88,8 +89,15 @@ class BriefingBuilder {
 		// For each briefing content part, get the dedicated builder for that part and build it
 		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(topicName => {
 				log.debug(`Building topic ${topicName}`);
-				return this.getTopicBuilder(topicName)
-						.then(dynimport => dynimport.default(battle, this.gameObjectFactory, agenda.topics[topicName]))
+				return this
+					.getTopicBuilder(topicName)
+					.then(dynimport => dynimport.default(
+						// This is by no means the cleanest solution in the world, but we are "borrowing"
+						// GameObject's freshCopy method here and calling it on the battle. This will 
+						// create a fresh copy of the battle, including fresh copies of all ships.
+						GameObject.prototype.freshCopy.call(battle), 
+						this.gameObjectFactory, 
+						agenda.topics[topicName]))
 		}));
 
 		// Assign it to the layout pane dedicated to it for successful builds
