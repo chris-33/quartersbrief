@@ -10,6 +10,7 @@ import { readFileSync } from 'fs';
 
 describe('Ship', function() {
 	let TEST_DATA;
+	let CONSUMABLE_DATA;
 	let knownTargets;
 	let classSkills;
 
@@ -22,13 +23,14 @@ describe('Ship', function() {
 		Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
 
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
+		CONSUMABLE_DATA = JSON.parse(readFileSync('test/model/testdata/consumable.json'));
 	});
 
 	beforeEach(function() {
 		let data = clone(TEST_DATA);
-		data.ShipAbilities.AbilitySlot0.abils[0][0] = { setFlavor: function() {} };
-		data.ShipAbilities.AbilitySlot0.abils[1][0] = { setFlavor: function() {} };
-		data.ShipAbilities.AbilitySlot1.abils[0][0] = { setFlavor: function() {} };
+		data.ShipAbilities.AbilitySlot0.abils[0][0] = new Consumable(CONSUMABLE_DATA.PCY001_Consumable1);
+		data.ShipAbilities.AbilitySlot0.abils[1][0] = new Consumable(CONSUMABLE_DATA.PCY002_Consumable2);
+		data.ShipAbilities.AbilitySlot1.abils[0][0] = new Consumable(CONSUMABLE_DATA.PCY003_Consumable3);
 		ship = new Ship(data);
 	});
 
@@ -411,24 +413,10 @@ describe('Ship', function() {
 	});
 
 	describe('.consumables', function() {
-		let ship;
-		let data;
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-			data.ShipAbilities.AbilitySlot0.abils = [
-				[ new Consumable({ Flavor1: { prop: 1 }, consumableType: 'c1' }), 'Flavor1' ],
-				[ new Consumable({ Flavor1: { prop: 2 }, consumableType: 'c2' }), 'Flavor1' ]
-			];
-			data.ShipAbilities.AbilitySlot1.abils = [
-				[ new Consumable({ Flavor1: { prop: 3 }, consumableType: 'c3' }), 'Flavor1' ]
-			];
-			ship = new Ship(data);
-		});
-
 		it('should be a hash of all consumables, with the consumableType as the key', function() {
 			// Generator function that yields all the ships consumables one by one
 			function* abilities() {
-				const abils = Object.values(data.ShipAbilities)
+				const abils = Object.values(ship.get('ShipAbilities'))
 					.flatMap(abilityslot => abilityslot.abils)
 					.map(ability => ability[0]);
 				let i = 0;

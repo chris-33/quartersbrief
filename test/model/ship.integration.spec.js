@@ -54,12 +54,11 @@ describe('Ship @integration', function() {
 	});
 
 	describe('.consumables', function() {
-
 		it('should be a hash of all consumables, with the consumableType as the key', function() {
 			for (let consumableName in CONSUMABLE_DATA) {
 				let consumable = CONSUMABLE_DATA[consumableName];
-				expect(ship.consumables, consumable.consumableType).to
-					.have.property(consumable.consumableType)
+				expect(ship.consumables, consumable.Flavor1.consumableType).to
+					.have.property(consumable.Flavor1.consumableType)
 					.that.deep.equals(new Consumable(consumable));
 			}
 		});
