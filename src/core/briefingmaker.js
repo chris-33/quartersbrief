@@ -128,7 +128,15 @@ class BriefingMaker {
 	async makeBriefing() {
 		// Helper function to enrich the passed battle with game objects like ships and players
 		async function enrichBattle(battle, gameObjectFactory) {
-			return await Promise.allSettled(battle.getVehicles().map(vehicle => vehicle.ship = gameObjectFactory.createGameObject(vehicle.shipId))); // Assignments are expressions in js
+			return await Promise.allSettled(battle.getVehicles().map(vehicle => 
+				// Artificial promisification to
+				// a) unify the interface with player enrichment, which HAS to be asynchronous, and 
+				// b) allow for lazy loading in the future, if intended
+				Promise.resolve(gameObjectFactory.createGameObject(vehicle.shipId))
+					.then(function(ship) {
+						vehicle.ship = ship;
+					})
+				));
 			// @todo Enrich with player data - possibly lazily using proxy objects if the WoWS API is call limited
 		}
 
