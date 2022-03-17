@@ -96,7 +96,7 @@ const config = {
 		.option('debug', {
 			coerce: function(value) {
 				if (typeof value === 'boolean') 
-					value = [];
+					value = value ? [] : null;
 				else if (value !== 'all')
 					value = value.split(',');
 				return value;
