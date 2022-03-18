@@ -44,6 +44,9 @@ describe('Ship @integration', function() {
 
 			// Change property descriptor so that we can spy on the getter:
 			const desc = Object.getOwnPropertyDescriptor(ship._data.ShipAbilities.AbilitySlot0.abils[0], '0');
+			// Make sure we actually got a lazy reference from createGameObject
+			expect(desc, 'should be an accessor property').to.not.have.property('value');
+
 			const spy = sinon.spy(desc.get);
 			Object.defineProperty(ship._data.ShipAbilities.AbilitySlot0.abils[0], '0', {
 				...desc,
