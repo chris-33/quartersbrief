@@ -206,6 +206,43 @@ describe('ComplexDataObject', function() {
 		});
 	});
 
+	describe('.freshCopy', function() {
+		it('should return a ComplexDataObject', function() {
+			const other = cdo.freshCopy();
+			expect(ComplexDataObject.isCDO(other)).to.be.true;
+		});
+
+		it('should not copy coefficients', function() {
+			cdo.multiply('prop3', 2);
+			const other = cdo.freshCopy();
+			expect(other).to.not.deep.equal(cdo);
+			cdo.clear();
+			expect(other).to.deep.equal(cdo);
+		});
+
+		it('should not strict-equal the source, and neither should any contained object properties', function() {
+			const other = cdo.freshCopy();
+			expect(other).to.not.equal(cdo);
+			Object.keys(other)
+				.filter(key => typeof cdo[key] === 'object')
+				.forEach(key => expect(other[key]).to.not.equal(cdo.key));
+		});
+
+		it('should copy accessor properties without invoking their getters', function() {
+			const spy = sinon.spy();
+			const data = {};
+			Object.defineProperty(data, 'prop', {
+				get: spy,
+				enumerable: true
+			});
+			cdo = ComplexDataObject(data);
+			const other = cdo.freshCopy();
+			expect(spy).to.not.have.been.called;
+			expect(other).to.have.property('prop');
+		});
+
+	});
+
 	describe('.clone', function() {
 		it('should deep equal the source', function() {
 			const other = cdo.clone();
