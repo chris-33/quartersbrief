@@ -54,6 +54,27 @@ describe('Ship @integration', function() {
 			});
 			expect(spy).to.not.have.been.called;			
 		});
+
+		it('should be a value property after expanding', function() {
+			// The point of this test:
+			// The Ship constructor needs to set flavors on all consumables, but at the same time should not
+			// force them all to expand. The way it does this is by wrapping the lazy reference in another
+			// getter, which assigns a flavor right after the reference has been expanded.
+			// 
+			// This test checks that this wrapper disappears together with the lazy expansion, and is afterwards
+			// just a regular value property of the Consumable.
+			// Manually create a lazily-expanding reference
+			// It should be an accessor property now:
+			expect(ship.get('ShipAbilities.AbilitySlot0.abils.0')).to
+				.have.ownPropertyDescriptor('0')
+				.that.has.property('get')
+			// Force expansion
+			ship.consumables;
+			// It should be a value property now:
+			expect(ship.get('ShipAbilities.AbilitySlot0.abils.0')).to
+				.have.ownPropertyDescriptor('0')
+				.that.has.property('value');
+		});
 	});
 
 	describe('.consumables', function() {
