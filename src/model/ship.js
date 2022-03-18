@@ -131,8 +131,6 @@ class Ship extends GameObject {
 						// (Otherwise it would get called with 'this' set to this property descriptor)
 						const consumable = consumableProperty.get.call(this);
 						consumable.setFlavor(ability[1]);
-						if (ability[1] === 'US_8_CL_CLEV')
-							console.log('Getter')
 						return consumable;
 					},
 					enumerable: true,
