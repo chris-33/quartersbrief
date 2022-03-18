@@ -145,11 +145,7 @@ class GameObjectFactory {
 				dedicatedlog.debug(`Creating lazy expansion for ${reference} on ${key}`);
 				Object.defineProperty(data, key, {
 					get: function() {
-						const expanded = self.createGameObject(reference);
-						this[key] = expanded;
-						return expanded;
-					},
-					set: function(expanded) {
+						const expanded = self.createGameObject(reference);						
 						Object.defineProperty(this, key, {
 							value: expanded ?? reference,
 							writable: true,
@@ -160,6 +156,16 @@ class GameObjectFactory {
 							dedicatedlog.debug(`Expanded reference ${reference} on ${key}`);
 						else
 							dedicatedlog.debug(`Unable to expand reference ${reference} on ${key}, target unknown. The reference has been ignored.`);						
+						return expanded;
+					},
+					set: function(val) {
+						Object.defineProperty(this, key, {
+							value: val,
+							writable: true,
+							enumerable: true,
+							configurable: true
+						});
+						dedicatedlog.debug(`Overwrote lazily expanding reference ${reference} on ${key}`);
 					},
 					configurable: true,
 					enumerable: true,
@@ -260,7 +266,7 @@ class GameObjectFactory {
 			gameObject = this.#data.get(this.#refcodeToName.get(designator));
 		} else if (typeof designator === 'string' && GameObject.REFERENCE_NAME_REGEX.test(designator)) { // designator is a ref name
 			// Access self.#data directly, as reference names are already its keys
-			gameObject = this.#data.get(designator); //self.#data[designator];
+			gameObject = this.#data.get(designator);
 		} else
 			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
 		
