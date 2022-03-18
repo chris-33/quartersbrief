@@ -1,4 +1,3 @@
-import clone from 'clone';
 import { ComplexDataObject } from '../util/cdo.js';
 
 /**
@@ -75,28 +74,7 @@ class GameObject {
 	 * data is a _copy_ of the data of this one.
 	 */
 	freshCopy() {
-		function _copy(data) {
-			let dest;
-			if (Array.isArray(data))
-				dest = [];
-			else 
-				dest = Object.create(Object.getPrototypeOf(data));
-
-			let descs = Object.getOwnPropertyDescriptors(data);
-			for (let prop in descs) {
-				let desc = descs[prop];
-				if (typeof desc.value === 'object' && desc.value !== null)
-					if (desc.value instanceof GameObject)
-						desc.value = desc.value.freshCopy()
-					else
-						desc.value = _copy(desc.value);
-			}
-			Object.defineProperties(dest, descs);
-			return dest;
-
-		}
-
-		return new this.constructor(_copy(this._data));
+		return new this.constructor(this._data.freshCopy());
 	}
 
 	getID() { return this._data.id;	}
