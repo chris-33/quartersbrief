@@ -137,16 +137,19 @@ describe('GameObjectFactory', function() {
 			const spy = sinon.spy(gameObjectFactory, 'createGameObject');
 			try {
 				let expanded = gameObjectFactory._expandReferences(data.PAAA002_Test2);
-				expect(expanded, 'reference is an accessor property').to
+				expect(expanded, 'reference is an accessor property before expansion').to
 					.have.ownPropertyDescriptor('reference')
 					.that.has.property('get');
 				expect(spy, 'did not create reference ').to.not.have.been.called;
 
+				// Force the reference to expand by accessing it:
 				expanded.reference;
-				expect(expanded, 'reference is a value property').to
+
+				expect(expanded, 'reference is a value property after expansion').to
 					.have.ownPropertyDescriptor('reference')
 					.that.has.property('value');
-				expect(spy, 'created reference').to.have.been.calledWith(TEST_DATA.PAAA002_Test2.reference);
+				expect(spy, 'created reference, and did it only once').to
+					.have.been.calledOnceWith(TEST_DATA.PAAA002_Test2.reference);
 			} finally {
 				spy.restore();
 			}
