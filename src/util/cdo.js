@@ -1,8 +1,7 @@
 import deepequal from 'deep-equal';
 import { cloneProperties } from './util.js';
-import util from 'util';
 
-const coefficients = Symbol('coefficients');
+const originals = Symbol('originals');
 
 function ComplexDataObject(data) {	
 	// Recursively turn object properties into CDOs
@@ -34,8 +33,9 @@ function ComplexDataObject(data) {
 
 			if (path.length === 0)
 				targets.forEach(target => {
-					this[coefficients][target] ??= [];
-					this[coefficients][target].push(factor);
+					if (!(target in this[originals]))
+						this[originals][target] = this[target];
+					this[target] *= factor
 				});
 			else 
 				targets.forEach(target => this[target].multiply(path.join('.'), factor));				
@@ -45,20 +45,18 @@ function ComplexDataObject(data) {
 			let currKeyRegex = new RegExp(`^${path.shift().replace('*', '\\w*')}$`);
 			let targets = Object.keys(this).filter(key => currKeyRegex.test(key));
 			if (path.length === 0)
-				targets.forEach(target => {
-					let index = this[coefficients][target].indexOf(factor);
-					if (index > -1)
-						this[coefficients][target].splice(index, 1);
-				});
+				targets.forEach(target => this[target] /= factor);
 			else 
 				targets.forEach(target => this[target].unmultiply(path.join('.'), factor));				
 		},
 		clear: function() {
-			this[coefficients] = {};
 			const descs = Object.getOwnPropertyDescriptors(this);
-			for (let desc of Object.values(descs)) {
+			for (let prop in descs) {
+				const desc = descs[prop];
 				if (typeof desc.value === 'object' && desc.value !== null && typeof desc.value.clear === 'function') 
 					desc.value.clear();
+				else if (typeof desc.value === 'number')
+					this[prop] = this[originals][prop] ?? this[prop];
 			}
 		},
 		get: function(key, options) {
@@ -92,17 +90,18 @@ function ComplexDataObject(data) {
 		},
 		freshCopy: function() {
 			let dest;
-			if (Array.isArray(data))
+			if (Array.isArray(this))
 				dest = [];
 			else 
-				dest = Object.create(Object.getPrototypeOf(data));
+				dest = Object.create(Object.getPrototypeOf(this));
 
 			// Copy all enumerable properties by copying their descriptors
-			for (let prop in data) {
-				let desc = Object.getOwnPropertyDescriptor(data, prop);
+			for (let prop in this) {
+				let desc = Object.getOwnPropertyDescriptor(this, prop);
 				// If it is a value property, and it is an object, fresh-copy it
 				if (typeof desc.value === 'object' && desc.value !== null)
-					desc.value.freshCopy();
+					desc.value = desc.value.freshCopy();
+				desc.value &&= this[originals][prop] ?? desc.value;
 				Object.defineProperty(dest, prop, desc);
 			}
 			return ComplexDataObject(dest);
@@ -111,10 +110,11 @@ function ComplexDataObject(data) {
 			return cloneProperties(this);
 		},	
 	}
-	Object.defineProperty(data, coefficients, {
+	Object.defineProperty(data, originals, {
 		value: {},
-		writable: true,
-		enumerable: false
+		enumerable: false,
+		configurable: true,
+		writable: true
 	});
 	for (let method in methods)
 		Object.defineProperty(data, method, {
@@ -123,17 +123,7 @@ function ComplexDataObject(data) {
 			configurable: true
 		});
 
-	// Finally, return a proxy to the data that intercepts all read operations and applies
-	// registered coefficients to number properties
-	return new Proxy(data, {
-		get: function(tgt, prop) {
-			if (typeof tgt[prop] === 'number') {
-				return tgt[coefficients][prop]?.reduce((prev, coeff) => prev * coeff, tgt[prop]) ?? tgt[prop];
-			}
-			else
-				return tgt[prop];
-		}
-	});
+	return data;
 }
 
 /**
@@ -142,8 +132,7 @@ function ComplexDataObject(data) {
 ComplexDataObject.isCDO = function(instance) {
 	return typeof instance === 'object' 
 		&& instance !== null 
-		&& coefficients in instance 
-		&& util.types.isProxy(instance);
+		&& originals in instance 
 }
 
 export { ComplexDataObject }
