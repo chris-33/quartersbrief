@@ -3,6 +3,8 @@ import { PlayerFactory } from '../../../model/playerfactory.js';
 import { config } from '../../../../quartersbrief.conf.js';
 import pug from 'pug';
 
+const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');
+
 async function buildHtml(battle, gameObjectFactory, options) {
 	let players = await new PlayerFactory(config.apiKey, config.realm).getPlayers(battle.getVehicles().map(vehicle => vehicle.name));	
 	
@@ -13,7 +15,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	enemies.forEach(enemy => enemy.player = players[enemy.name]);
 
 	const locals = { allies, enemies, player: battle.getPlayer() };
-	return pug.renderFile('src/briefing/topics/winrate/winrate.pug', locals);
+	return render(locals);
 }
 
 async function buildScss() {

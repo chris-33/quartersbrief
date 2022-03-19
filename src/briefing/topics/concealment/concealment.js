@@ -3,6 +3,8 @@ import { readFile } from 'fs/promises';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { arrayIntersect } from '../../../util/util.js';
 
+const render = pug.compileFile('src/briefing/topics/concealment/concealment.pug');
+
 const CONCEALMENT_BUILD = {
 	modules: 'top',
 	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
@@ -33,7 +35,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 	}
 	locals.allies.push(locals.player.getID()); // The player is an ally
 	locals.both = arrayIntersect(locals.allies, locals.enemies);
-	return pug.renderFile('src/briefing/topics/concealment/concealment.pug', locals);
+	return render(locals);
 }
 
 async function buildScss() {

@@ -3,6 +3,8 @@ import { readFile } from 'fs/promises';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
 
+const render = pug.compileFile('src/briefing/topics/radar/radar.pug');
+
 const BASE_BUILD = {
 	modules: 'top'	
 }
@@ -44,7 +46,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 			player: battle.getPlayer().ship
 		} 
 	};
-	return pug.renderFile('src/briefing/topics/radar/radar.pug', locals);
+	return render(locals);
 }
 
 async function buildScss() {
