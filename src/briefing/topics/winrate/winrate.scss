@@ -1,6 +1,11 @@
 table {
 	width: 100%;
 	table-layout: fixed;
+	// Set font-weight and -size specifically.
+	// Otherwise Firefox's default styling screws us over.
+	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
+	font-weight: inherit;
+	font-size: inherit;
 }
 
 th {
