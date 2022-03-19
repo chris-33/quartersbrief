@@ -1,9 +1,10 @@
-/notes and todos/
-/node-modules/
-/.vagrant/
-/.project/
-/data/
-/config/
-/wows/
+assets/
+notes and todos/
+node-modules/
+.vagrant/
+.project/
+data/
+config/
+wows/
 package-lock.json
 *.secret
