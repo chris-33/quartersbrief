@@ -97,13 +97,14 @@ function ComplexDataObject(data) {
 			else 
 				dest = Object.create(Object.getPrototypeOf(data));
 
-			let descs = Object.getOwnPropertyDescriptors(data);
-			for (let prop in descs) {
-				let desc = descs[prop];
+			// Copy all enumerable properties by copying their descriptors
+			for (let prop in data) {
+				let desc = Object.getOwnPropertyDescriptor(data, prop);
+				// If it is a value property, and it is an object, fresh-copy it
 				if (typeof desc.value === 'object' && desc.value !== null)
-					desc.value = desc.value.freshCopy();
+					desc.value.freshCopy();
+				Object.defineProperty(dest, prop, desc);
 			}
-			Object.defineProperties(dest, descs);
 			return ComplexDataObject(dest);
 		},
 		clone: function() {
