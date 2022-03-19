@@ -1,6 +1,6 @@
 import pug from 'pug';
 import sass from 'sass';
-import log from 'loglevel';
+import rootlog from 'loglevel';
 import { readFileSync } from 'fs';
 import { GameObject } from '../model/gameobject.js';
 
@@ -51,7 +51,12 @@ class BriefingBuilder {
 	 * @return {Promise}       A promise that resolves to the topic builder, or rejects if none could be found.
 	 */
 	getTopicBuilder(topic) {
-		return import(`./topics/${topic}/${topic}.js`);
+		const t0 = Date.now();
+		return import(`./topics/${topic}/${topic}.js`)
+			.then(x => (
+				rootlog.getLogger(this.constructor.name).debug(`Loaded topic builder ${topic} in ${Date.now() - t0}ms`),
+				x
+			));
 	}
 
 	/**
@@ -86,9 +91,12 @@ class BriefingBuilder {
 			topics: new Array(agenda.getTopicNames().length)
 		};
 
+		const t0 = Date.now();
+		const dedicatedlog = rootlog.getLogger(this.constructor.name);
+
 		// For each briefing content part, get the dedicated builder for that part and build it
 		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(topicName => {
-				log.debug(`Building topic ${topicName}`);
+				rootlog.debug(`Building topic ${topicName}`);
 				return this
 					.getTopicBuilder(topicName)
 					.then(dynimport => dynimport.default(
@@ -98,6 +106,10 @@ class BriefingBuilder {
 						GameObject.prototype.freshCopy.call(battle), 
 						this.gameObjectFactory, 
 						agenda.topics[topicName]))
+					.then(x => (
+						dedicatedlog.debug(`Built topic ${topicName} in ${Date.now() -t0}ms`),
+						x
+					));
 		}));
 
 		// Assign it to the layout pane dedicated to it for successful builds
@@ -115,7 +127,7 @@ class BriefingBuilder {
 					caption: dynimport.value.caption ?? inferCaption(agenda.getTopicNames()[i])
 				}				
 			} else {
-				log.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
+				rootlog.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
 				briefing.topics[i] = {
 					html: this.buildErrorTopic(dynimport.reason)
 				}
