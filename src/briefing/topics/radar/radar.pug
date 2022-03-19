@@ -1,0 +1,46 @@
+-
+	function warningClass(ship, dist) {
+		if (1000 * ship.getConcealment() < dist)
+			return "severe";
+		else if (1000 * ship.getConcealment() < dist + 1000)
+			return "moderate";
+	}
+
+.content
+	each ship in ships
+		- const radar = radars[ship.getName()];
+		- const stealthwarnClass = warningClass(ship, radar.distance);
+		.ship(class = {
+			"player": ship === teams.player,
+			"ally": teams.allies.includes(ship),
+			"enemy": teams.enemies.includes(ship)
+		})
+			div.name #{ship.getLabel()}
+			div.line.range
+				span Range:
+				span.value
+					span #{(radar.distance / 1000).toFixed(1)}
+					span.unit km
+				if (stealthwarnClass)
+					span.stealthwarn(class = warningClass(ship, radar.distance))
+			if (stealthwarnClass)
+				.line.stealthdetails(class = warningClass(ship, radar.distance))
+					span 
+						| #{stealthwarnClass === "moderate" ? "Safety margin" : "Stealth radar window"}: 
+						| #{(1000 * ship.getConcealment() - radar.distance).toFixed(0)}
+					span.unit m
+						
+			div.line.worktime
+				span Duration:
+				span.value
+					span #{radar.base}
+					span.unit s
+			div.line.worktime.aside
+				span.value
+					span (max:&nbsp;
+					span #{Math.ceil(radar.max)}
+					span.unit s
+					| )
+	else
+		.no-radars
+			| There are no radar ships in this battle.

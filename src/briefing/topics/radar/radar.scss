@@ -1,0 +1,160 @@
+.content {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+}
+
+// Styling for the stealth warning indicator and details
+// $stealthwarn-color: goldenrod;
+$stealthwarn-color-moderate: goldenrod;
+$stealthwarn-color-severe: red;
+$stealthwarn-color-fallback: slategray;
+
+.enemy .stealthwarn.moderate {
+	background-color: $stealthwarn-color-moderate;
+}
+
+.enemy .stealthwarn.severe {
+	background-color: $stealthwarn-color-severe;
+}
+
+.enemy .stealthdetails.moderate {
+	color: $stealthwarn-color-moderate;
+	border-color: $stealthwarn-color-moderate;
+}
+
+.enemy .stealthdetails.severe {
+	color: $stealthwarn-color-severe;
+	border-color: $stealthwarn-color-severe;
+}
+
+.ship {
+	padding: 6pt 2.5ch;
+	margin: 3ex 1ch;
+	box-shadow: 0 0 5px slategray;
+	min-width: 15ch;
+
+	&.ally {
+		border: 3px solid $background-color-ally;
+	}
+
+	&.enemy {
+		border: 3px solid $background-color-enemy;
+	}
+
+	&.player {
+		border: 3px solid $background-color-player;
+	}
+
+	.name {
+		margin-bottom: 1.5ex;
+		font-style: italic;
+		font-weight: 600;
+		font-size: 105%;
+	}
+
+	.value {
+		float: right;		
+
+		&::after {
+			// Clear floats to avoid the next value being pushed downwards.
+			clear: both;
+			content: "";
+			display: inline-block;
+		}
+	}
+
+	.line {
+		margin: 0.5ex 0;
+		position: relative;
+	}
+
+
+	$stealthwarn-indicator-size: 1.2em;
+
+	.stealthwarn {
+		//display: inline-block;
+		background-size: contain;
+		background-position: center;
+		background-color: $stealthwarn-color-fallback;
+		margin: 0 0.1ch;
+		width: $stealthwarn-indicator-size;
+		height: $stealthwarn-indicator-size;
+		// Display indicator icon by using the image as the MASK
+		// over a golden background. This will keep transparent
+		// parts of the image transparent and color anything that
+		// is opaque in the mask image in the background color.
+		mask-image: url(img/crosshair_indicator_visibility.png);
+		mask-size: $stealthwarn-indicator-size $stealthwarn-indicator-size;
+		// Position absolutely with respect to the surround div.
+		// Position to the top and then put it to the right of
+		// the label. This is actually outside the regular width,
+		// which is what we want here.
+		position: absolute;
+		top: 0;
+		left: 100%;
+	}	
+
+	.stealthdetails {
+		$stealthdetails-border-width: 1px;
+		$stealthdetails-border-style: solid;
+		
+		// Float right, so it sits under the value text
+		float: right;		
+		position: relative;
+
+		border-style: $stealthdetails-border-style;
+		border-width: $stealthdetails-border-width 0 0 0;
+
+		color: $stealthwarn-color-fallback;
+
+		// Turn half the normal margin into padding, so that the 
+		// horizontal line will sit in the middle of the space.
+		margin-top: 0.25ex;
+		padding-top: 0.25ex;
+
+		& > * {
+			font-size: 8pt;
+			color: inherit;
+		}		
+
+		// We are using the ::before pseudo-element to draw a little triangle pointing up at the
+		// indicator icon
+		&::before {
+			content: "";
+			// Draw triangle 3pt wide and high
+			border-width: 0 3pt 3pt;
+			border-style: $stealthdetails-border-style;
+			border-color: currentcolor transparent;
+			// Position so it sits right under the indicator icon
+			// Start out at 100% (i.e. to the right of the text), add half of the indicator size, 
+			// then subtract 1pt less than half the width of the triangle. 
+			// Unclear why we need to subtract 1pt, but it works.
+			position: absolute;
+			left: calc(100% + 0.5 * $stealthwarn-indicator-size - 2pt);
+			top: -3pt;
+		}
+
+		// We are using the ::after pseudo-element to clear the floats, and to extend the horizontal
+		// line under the indicator icon
+		&::after {
+			content: "";
+			// Clear floats
+			clear: both;
+			display: inline-block;
+			// Extend the horizontal line so it goes the length of the indicator icon
+			border-top: $stealthdetails-border-width $stealthdetails-border-style;			
+			width: $stealthwarn-indicator-size;
+			// Move the element to sit under the indicator icon
+			position: absolute;
+			top: -$stealthdetails-border-width;
+			left: 100%;
+			border-color: currentcolor;
+		}
+	}
+}
+
+.no-radars {
+	color: slategray;
+	font-size: 12pt;
+}
