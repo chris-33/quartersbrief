@@ -6,4 +6,5 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-jsdoc');
 	grunt.loadNpmTasks('grunt-eslint');
 	grunt.loadNpmTasks('grunt-todo');
+	grunt.loadNpmTasks('grunt-release');
 }
