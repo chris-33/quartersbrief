@@ -1,8 +1,8 @@
-import { ComplexDataObject } from '../util/cdo.js';
+import { cdo } from '../util/cdo.js';
 
 class Battle {
 	constructor(data) {
-		this._data = ComplexDataObject(data);
+		this._data = cdo(data);
 	}
 
 	getPlayer() {

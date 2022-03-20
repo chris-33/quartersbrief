@@ -1,4 +1,4 @@
-import { ComplexDataObject } from '../util/cdo.js';
+import { cdo } from '../util/cdo.js';
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from
@@ -43,7 +43,7 @@ class GameObject {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		this._data = ComplexDataObject(data);
+		this._data = cdo(data);
 	}
 
 	get(key, options) {

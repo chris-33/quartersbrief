@@ -1,10 +1,10 @@
-import { ComplexDataObject } from '../util/cdo.js';
+import { cdo } from '../util/cdo.js';
 
 class Player {
 	bot = false;
 
 	constructor(data) {
-		this._data = ComplexDataObject(data);
+		this._data = cdo(data);
 	}
 
 	get hidden() { return this._data.hidden_profile; }
