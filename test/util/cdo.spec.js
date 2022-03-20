@@ -2,7 +2,7 @@ import { cdo, isCDO } from '../../src/util/cdo.js';
 import sinon from 'sinon';
 import clone from 'clone';
 
-describe.only('ComplexDataObject', function() {
+describe('ComplexDataObject', function() {
 	const TEST_DATA = {
 			prop1: 1,
 			prop2: 0,
