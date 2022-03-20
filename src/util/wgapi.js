@@ -2,6 +2,9 @@ import fetch from 'node-fetch';
 import template from 'pupa';
 import httpError from 'http-errors';
 
+/**
+ * This class encapsulates working with the API provided online by Wargaming.
+ */
 class WargamingAPI {
 	
 	/**
@@ -16,54 +19,6 @@ class WargamingAPI {
 	tld;
 
 	#applicationID;
-
-	static APIError = class extends Error {
-		// See https://developers.wargaming.net/documentation/guide/getting-started/
-		// (section 'Common API Errors')
-		static MESSAGES = {
-			METHOD_NOT_FOUND: 'Invalid API method',
-			METHOD_DISABLED: 'Specified method is disabled',
-			APPLICATION_IS_BLOCKED: 'Application is blocked by the administration',
-			INVALID_APPLICATION_ID: 'Invalid application ID',
-			INVALID_IP_ADDRESS: 'Invalid IP address for the server application',
-			REQUEST_LIMIT_EXCEEDED: 'Request limit exceeded',
-			SOURCE_NOT_AVAILABLE: 'Data source is not available',
-			FIELD_NOT_SPECIFIED: 'Required field {field} not specified',
-			FIELD_NOT_FOUND: 'Field {field} not found',
-			FIELD_LIST_LIMIT_EXCEEDED: 'Limit of passed-in identifiers in the {field} exceeded',
-			INVALID_FIELD: 'Specified field value {field} is not valid.'
-		};
-
-		constructor(code, msg, url) {
-			let field;
-			if (code === 402) {
-				let result = msg.match(/(\w+)_NOT_SPECIFIED/);
-				field = result[1];
-				msg = 'FIELD_NOT_SPECIFIED';
-			} else if (code === 404) {
-				let result = msg.match(/(\w+)_NOT_FOUND/);
-				if (result[1].toUpperCase() !== 'METHOD') {
-					field = result[1];
-					msg = 'FIELD_NOT_FOUND';
-				}
-			} else if (code === 407) {
-				let result = msg.match(/INVALID_(\w+)/);
-				if (result && result[1].toUpperCase() !== 'APPLICATION_ID' && result[1].toUpperCase() !== 'IP_ADDRESS') {
-					field = result[1];
-					msg = 'INVALID_FIELD';
-				}
-				result = msg.match(/(\w+)_LIST_LIMIT_EXCEEDED/);
-				if (result) {
-					field = result[1];
-					msg = 'FIELD_LIST_LIMIT_EXCEEDED';
-				}
-			}
-			msg = template(WargamingAPI.APIError.MESSAGES[msg], { field });
-			super(`Error during Wargaming API access${url ? ' to ' + url.href : ''}: ${msg}.`);
-			this.code = code;
-			this.url = url;
-		}
-	}
 
 	static OPERATIONS = {
 		// Important: MUST have trailing slashes, or we get Wargaming API error 407: Method not found
@@ -134,5 +89,54 @@ class WargamingAPI {
 		return res.data;
 	}
 }
+
+WargamingAPI.APIError = class extends Error {
+	// See https://developers.wargaming.net/documentation/guide/getting-started/
+	// (section 'Common API Errors')
+	static MESSAGES = {
+		METHOD_NOT_FOUND: 'Invalid API method',
+		METHOD_DISABLED: 'Specified method is disabled',
+		APPLICATION_IS_BLOCKED: 'Application is blocked by the administration',
+		INVALID_APPLICATION_ID: 'Invalid application ID',
+		INVALID_IP_ADDRESS: 'Invalid IP address for the server application',
+		REQUEST_LIMIT_EXCEEDED: 'Request limit exceeded',
+		SOURCE_NOT_AVAILABLE: 'Data source is not available',
+		FIELD_NOT_SPECIFIED: 'Required field {field} not specified',
+		FIELD_NOT_FOUND: 'Field {field} not found',
+		FIELD_LIST_LIMIT_EXCEEDED: 'Limit of passed-in identifiers in the {field} exceeded',
+		INVALID_FIELD: 'Specified field value {field} is not valid.'
+	};
+
+	constructor(code, msg, url) {
+		let field;
+		if (code === 402) {
+			let result = msg.match(/(\w+)_NOT_SPECIFIED/);
+			field = result[1];
+			msg = 'FIELD_NOT_SPECIFIED';
+		} else if (code === 404) {
+			let result = msg.match(/(\w+)_NOT_FOUND/);
+			if (result[1].toUpperCase() !== 'METHOD') {
+				field = result[1];
+				msg = 'FIELD_NOT_FOUND';
+			}
+		} else if (code === 407) {
+			let result = msg.match(/INVALID_(\w+)/);
+			if (result && result[1].toUpperCase() !== 'APPLICATION_ID' && result[1].toUpperCase() !== 'IP_ADDRESS') {
+				field = result[1];
+				msg = 'INVALID_FIELD';
+			}
+			result = msg.match(/(\w+)_LIST_LIMIT_EXCEEDED/);
+			if (result) {
+				field = result[1];
+				msg = 'FIELD_LIST_LIMIT_EXCEEDED';
+			}
+		}
+		msg = template(WargamingAPI.APIError.MESSAGES[msg], { field });
+		super(`Error during Wargaming API access${url ? ' to ' + url.href : ''}: ${msg}.`);
+		this.code = code;
+		this.url = url;
+	}
+}
+
 
 export { WargamingAPI }
