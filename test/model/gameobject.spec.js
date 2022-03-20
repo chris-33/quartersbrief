@@ -32,21 +32,24 @@ describe('GameObject', function() {
 			nation: "Common"
 		}
 	};
+	let gameObject;
+
+	beforeEach(function() {
+		gameObject = new GameObject(clone(TEST_DATA));
+	});
 
 	it('should copy all properties from the source', function() {
-		expect(new GameObject(TEST_DATA)).to
+		expect(gameObject).to
 			.have.property('_data')
 			.that.deep.equals(TEST_DATA);
 	});
 
 	describe('.freshCopy', function() {
-		let gameObject;
-
 		beforeEach(function() {
 			const data = clone(TEST_DATA);
 			data.inner.go = new GameObject(data.inner.go);
 			data.go = new GameObject(data.go);
-
+			
 			gameObject = new GameObject(data);
 		});
 

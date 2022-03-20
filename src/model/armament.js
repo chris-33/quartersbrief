@@ -1,41 +1,41 @@
-import { ComplexDataObject } from '../util/cdo.js';
+import { cdo } from '../util/cdo.js';
 import clone from 'clone';
 
 /**
  * @class
  */
-const Armament = class extends ComplexDataObject {
-	static #GETTER_DEFINITIONS = {
+const Armament = class { //extends ComplexDataObject {
+	// static #GETTER_DEFINITIONS = {
 
-	}
+	// }
 
-	constructor(data) {
-		super();
-		let self = this;
+	// constructor(data) {
+	// 	super();
+	// 	let self = this;
 
-		Object.assign(self, clone(data));
-	}
+	// 	Object.assign(self, clone(data));
+	// }
 
-	/** 
-	 * An array of the individual mounts (e.g. gun turrets, launchers, etc.) for this armament.
-	 */
-	get mounts() {
-		return Object.values(this).filter(obj => 
-				typeof obj === 'object' && 'typeinfo' in obj && obj.typeinfo.type === 'Gun');
-	}	
+	// * 
+	//  * An array of the individual mounts (e.g. gun turrets, launchers, etc.) for this armament.
+	 
+	// get mounts() {
+	// 	return Object.values(this).filter(obj => 
+	// 			typeof obj === 'object' && 'typeinfo' in obj && obj.typeinfo.type === 'Gun');
+	// }	
 }
 
 const Artillery = class extends Armament {
-	static #GETTER_DEFINITIONS = {
-		BaseRange: 'maxDist',
-		Caliber: 'mounts.barrelDiameter'
-	}
+	// static #GETTER_DEFINITIONS = {
+	// 	BaseRange: 'maxDist',
+	// 	Caliber: 'mounts.barrelDiameter'
+	// }
 
-	constructor(data) {
-		super(data);
+	// constructor(data) {
+	// 	super(data);
 
-		ComplexDataObject.createGetters(this, Artillery.#GETTER_DEFINITIONS);		
-	}
+	// 	ComplexDataObject.createGetters(this, Artillery.#GETTER_DEFINITIONS);		
+	// }
 }
 
 const Torpedoes = class extends Armament {
