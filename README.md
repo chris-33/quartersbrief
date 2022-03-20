@@ -1,6 +1,6 @@
 # Word of Warships Quarters Brief
 
-This project is intended as an information tool for the popular video game [World of Warships](https://worldofwarships.eu/). While the game is easy enough to get started on, playing it well requires knowing a vast amount of information about ships' capabilities. This project provides that information, restricted to that which is actually pertinent to the current battle, saving you the trouble of having to memorize half of the [World of Warships wiki](https://wiki.wargaming.net/en/World_of_Warships).
+This project is intended as an information tool for the popular video game [World of Warships](https://worldofwarships.eu/). While the game is easy enough to get started on, playing it well requires knowing a vast amount of information about ships' capabilities, quirks and technical data. This project provides that information, restricted to that which is actually pertinent to the current battle, saving you the trouble of having to memorize half of the [World of Warships wiki](https://wiki.wargaming.net/en/World_of_Warships).
 
 ## Use
 
@@ -8,12 +8,16 @@ This project is intended as an information tool for the popular video game [Worl
 
 TBC
 
-### Configuring
+### Configuring (program)
 
 While all ways to configure quartersbrief are available as command-line options (run `quartersbrief --help`), the easiest way to configure is by editing the `quartersbrief.json` configuration file in the `quartersbrief` sub-folder of your user configuration directory. Most options are set to sensible defaults, but two in particular will probably require your attention:
 
 1. `wowsdir`: Set this to your World of Warships root directory. (This is the directory that contains `WorldOfWarships.exe`.)
 2. `application_id`: If you have a Wargaming.net API key, set it here. The program comes without a pre-configured one, because Wargaming forbids sharing API keys in their terms and conditions, so you will have to go through the trouble of obtaining one yourself if you want to see player information in your briefings.
+
+### Configuring (agendas)
+
+See (TBC)
 
 ### Running 
 
