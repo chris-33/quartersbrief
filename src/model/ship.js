@@ -4,7 +4,6 @@ import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
-import { ComplexDataObject } from '../util/cdo.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import clone from 'clone';
 import { conversions } from '../util/conversions.js';

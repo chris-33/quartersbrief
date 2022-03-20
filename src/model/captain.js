@@ -1,4 +1,3 @@
-import { ComplexDataObject } from '../util/cdo.js';
 import { GameObject } from './gameobject.js';
 import { Ship } from './ship.js';
 import { Modifier } from '../util/modifier.js';
