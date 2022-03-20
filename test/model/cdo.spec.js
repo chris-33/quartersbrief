@@ -279,7 +279,9 @@ describe('ComplexDataObject', function() {
 	describe('isCDO', function() {
 		it('should return true if the target is a ComplexDataObject, false otherwise', function() {
 			expect(isCDO(obj)).to.be.true;
+			expect(isCDO(cdo([]))).to.be.true;
 			expect(isCDO({})).to.be.false;
+			expect(isCDO([])).to.be.false;
 		});
 	});
 });
