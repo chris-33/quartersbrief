@@ -34,6 +34,11 @@ Vagrant.configure("2") do |config|
     echo "export NODE_ENV=development" > /etc/profile.d/node-env.sh
   SHELL
 
+  # Make the contents of github-access-token.secret available as environment variable
+  config.vm.provision "shell", run: "always", inline: <<-SHELL
+    echo 'export GITHUB_ACCESS_TOKEN=$(cat /vagrant/github-access-token.secret)' > /etc/profile.d/gh-token.sh
+  SHELL
+
   # Share data directory as per XDG Base Directory Specification
   # https://specifications.freedesktop.org/basedir-spec/latest/index.html
   config.vm.synced_folder "data/", "/home/vagrant/.local/share/quartersbrief"
