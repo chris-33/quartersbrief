@@ -1,4 +1,4 @@
-import { cdo } from '../util/cdo.js';
+import { cdo } from './cdo.js';
 
 class Battle {
 	constructor(data) {

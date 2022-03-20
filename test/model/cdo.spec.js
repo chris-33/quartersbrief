@@ -1,4 +1,4 @@
-import { cdo, isCDO } from '../../src/util/cdo.js';
+import { cdo, isCDO } from '../../src/model/cdo.js';
 import sinon from 'sinon';
 import clone from 'clone';
 

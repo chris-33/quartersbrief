@@ -1,4 +1,4 @@
-import { cdo } from '../util/cdo.js';
+import { cdo } from './cdo.js';
 
 /**
  * This is a thin wrapper around game object definitions as they can be read from

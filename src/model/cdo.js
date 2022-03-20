@@ -1,5 +1,5 @@
 import deepequal from 'deep-equal';
-import { cloneProperties } from './util.js';
+import { cloneProperties } from '../util/util.js';
 
 const originals = Symbol('originals');
 
