@@ -1,4 +1,5 @@
-import fetch from 'node-fetch';
+import _fetch from 'node-fetch';
+global.fetch = _fetch;
 import template from 'pupa';
 import httpError from 'http-errors';
 
@@ -131,8 +132,8 @@ WargamingAPI.APIError = class extends Error {
 				msg = 'FIELD_LIST_LIMIT_EXCEEDED';
 			}
 		}
-		msg = template(WargamingAPI.APIError.MESSAGES[msg], { field });
-		super(`Error during Wargaming API access${url ? ' to ' + url.href : ''}: ${msg}.`);
+		msg = template(WargamingAPI.APIError.MESSAGES[msg] ?? '', { field });
+		super(`Error during Wargaming API access ${url ? ' to ' + url.href : ''}: ${msg}.`);
 		this.code = code;
 		this.url = url;
 	}

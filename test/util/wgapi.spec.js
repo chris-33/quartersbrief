@@ -1,5 +1,5 @@
-import nock from 'nock';
 import { WargamingAPI } from '../../src/util/wgapi.js';
+import nock from 'nock';
 import httpError from 'http-errors';
 const HTTPError = httpError.HttpError;
 
@@ -71,7 +71,7 @@ describe('WargamingAPI', function() {
 		it('should throw an Error if there was an HTTP error', function() {
 			// Fetch returned 404 Not found
 			// (As per the spec, the promise still resolves)
-			apiSrv.get(/./).reply(404, 'Not found');//global.fetch.resolves(new Response(null, { status: 404, statusCode: 'Not found' }));
+			apiSrv.get(/./).reply(404, 'Not found');
 			return expect(api.access('', {})).to.be.rejectedWith(HTTPError);
 		});
 
