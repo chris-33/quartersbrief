@@ -1,6 +1,6 @@
 import { readFile } from 'fs/promises';
 import { PlayerFactory } from '../../../model/playerfactory.js';
-import { config } from '../../../../quartersbrief.conf.js';
+import config from '../../../../src/init/config.js';
 import pug from 'pug';
 
 const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');

@@ -1,44 +1,13 @@
-import log from 'loglevel';
-import prefix from 'loglevel-plugin-prefix';
 import envpaths from 'env-paths';
 import path from 'path';
-import chalk from 'chalk';
 import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
 import { existsSync, readFileSync } from 'fs';
+import log from 'loglevel';
 
 // Assume production environment if nothing is specified
 process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
-
-// Use loglevel-plugin-prefix on the logger
-prefix.reg(log);
-prefix.apply(log, {
-	template: '[%t] %l%n:',
-	nameFormatter: (name) => name ? ` ${name}` : '',
-	levelFormatter: (level) => {
-		const colors = {
-			error: chalk.red,
-			warn: chalk.yellow,
-			info: chalk.cyan,
-			debug: (x) => x
-		}
-		return colors[level](level.toUpperCase());
-	},
-	timestampFormatter: date => date.toJSON()
-});
-
-// Make child loggers silent by default, unless they were explicitly listed with the --debug flag
-const getChildLogger = log.getLogger;
-log.getLogger = function(name,...args) {
-	let result = getChildLogger.call(this,name,...args);
-	result.disableAll();
-	if ((Array.isArray(config.debug) && config.debug.includes(name)) 
-		|| (typeof config.debug === 'string' && config.debug.toLowerCase() === 'all'))
-		
-		result.setLevel('debug');
-	return result;
-}.bind(log);
 
 // get app name and version from package.json
 // As per https://docs.npmjs.com/cli/v6/using-npm/scripts#packagejson-vars
@@ -47,7 +16,7 @@ const name = process.env.npm_package_name ?? 'quartersbrief';
 // Get OS-specific paths for config, data, temp and cache.
 // Use no suffix (default would be '-nodejs') because I think it's ugly and I foresee no name clashes.
 // The documentation warns against this, though.
-const standardpaths = envpaths(name, { suffix: '' });
+const paths = envpaths(name, { suffix: '' });
 
 const config = {
 	// Defaults:
@@ -93,6 +62,12 @@ const config = {
 			type: 'string',
 			description: 'The realm (server) you will be playing on. This is required for topics that access the online Wargaming API.'
 		})
+		.option('update-policy', {
+			type: 'string',
+			choices: [ 'force', 'auto', 'prohibit' ],
+			default: 'auto',
+			description: 'Controls how updates to the game files are handled. Explanation of values:\n\tforce: perform extraction of game data regardless of game version\n\tauto: automatically check the game version, update if necessary\n\tprohibit: do not check the game version, do not update'
+		})
 		.option('debug', {
 			coerce: function(value) {
 				if (typeof value === 'boolean') 
@@ -114,7 +89,7 @@ const config = {
 			return JSON.parse(readFileSync(filename));
 		}).default('config', 
 			path.format({ 
-				dir: standardpaths.config, 
+				dir: paths.config, 
 				name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
 				ext: '.json' 
 			}))
@@ -125,6 +100,9 @@ const config = {
 			log.error(msg);
 			process.exit(1);
 		})
+		.updateStrings({
+			'default': '',
+		})
 		.argv
 };
 
@@ -134,11 +112,6 @@ if (config.listen) {
 	config.port = config.listen.split(':')[1];
 }
 
-// Set some values to OS-specific defaults, even though they are not technically intended to be configurable
-config.datadir = standardpaths.data;
-config.agendasdir = path.join(standardpaths.config, 'agendas');
+config.agendasdir = path.join(paths.config, 'agendas');
 
-// Set the loglevel, according to supplied options (--verbose and --debug)
-log.setLevel(config.debug ? 'debug' : 'info');
-
-export { config }
+export { config as default, paths };

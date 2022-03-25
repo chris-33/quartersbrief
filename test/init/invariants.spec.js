@@ -1,4 +1,4 @@
-import { assertInvariants, InvariantError } from '../src/quartersbrief.assert.js';
+import assertInvariants, { InvariantError } from '../../src/init/invariants.js';
 import sinon from 'sinon';
 import clone from 'clone';
 import { readFileSync } from 'fs';
@@ -9,7 +9,7 @@ describe('assertInvariants', function() {
 	let data;
 
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/quartersbrief.assert.spec.json'));
+		TEST_DATA = JSON.parse(readFileSync('test/init/testdata/invariants.spec.json'));
 	});
 
 	beforeEach(function() {

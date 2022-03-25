@@ -1,6 +1,9 @@
-import { config } from './quartersbrief.conf.js';
+import config, { paths } from './src/init/config.js';
+import './src/init/log.js';
+import update from './src/init/update.js';
 import log from 'loglevel';
-import { assertInvariants, InvariantError } from './src/quartersbrief.assert.js';
+import loadData from './src/init/load.js';
+import assertInvariants, { InvariantError } from './src/init/invariants.js';
 import { BattleController } from './src/core/battlecontroller.js';
 import { GameObjectFactory } from './src/model/gameobjectfactory.js';
 import { AgendaStore } from './src/briefing/agendastore.js';
@@ -18,28 +21,9 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 	log.error(`Could not find replays directory at ${path.join(config.wowsdir, 'replays')}.\nReplays must be turned on for this program to work.\nSee https://eu.wargaming.net/support/en/products/wows/article/15038/ for information on how to enable replays.`);
 	process.exit(1);
 }
-// Make sure that GameParams.json is available and load it if it is
-let data;
-if (!existsSync(path.join(config.datadir, 'GameParams.json'))) {
-	log.error(`Could not find game data at ${path.join(config.datadir, 'GameParams.json')}`);
-	process.exit(1);
-} else {
-	let t0 = Date.now();
-	data = JSON.parse(readFileSync(path.join(config.datadir,'GameParams.json')));
-	log.info(`Loaded game data in ${Date.now() - t0}ms.`);
-}
 
-// Make sure that global-en.json is available and load it if it is
-// But if it doesn't exist it's not fatal
-let labels;
-if (!existsSync(path.join(config.datadir, 'global-en.json'))) {
-	log.warn(`Could not find labels at ${path.join(config.datadir, 'global-en.json')}`);
-} else {
-	let t0 = Date.now();
-	labels = JSON.parse(readFileSync(path.join(config.datadir,'global-en.json')));
-	log.info(`Loaded labels in ${Date.now() - t0}ms.`);	
-}
-
+await update();
+let { data, labels } = await loadData(paths.data);
 
 if (!config.skipInvariants) {
 	try {

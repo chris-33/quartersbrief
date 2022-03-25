@@ -1,7 +1,7 @@
-import { GameObject } from './model/gameobject.js';
+import { GameObject } from '../model/gameobject.js';
 import rootlog from 'loglevel';
 import clone from 'clone';
-import { arrayIntersect } from './util/util.js';
+import { arrayIntersect } from '../util/util.js';
 
 
 /**
@@ -312,4 +312,4 @@ assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
 		throw new InvariantError('a ship\'s weapon ammos must always be in the same order', counterexamples);
 }
 
-export { assertInvariants, InvariantError } 
+export { assertInvariants as default, InvariantError } 
