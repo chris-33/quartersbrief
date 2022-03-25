@@ -8,7 +8,7 @@ import { BattleController } from './src/core/battlecontroller.js';
 import { GameObjectFactory } from './src/model/gameobjectfactory.js';
 import { AgendaStore } from './src/briefing/agendastore.js';
 import { SpecificityStrategy } from './src/briefing/specificitystrategy.js';
-import createServers from './src/core/server.js';
+import createServers from './src/init/servers.js';
 import { BriefingMaker } from './src/core/briefingmaker.js';
 import { existsSync, readFileSync } from 'fs';
 import path from 'path';
