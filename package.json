@@ -19,6 +19,8 @@
     "deep-equal": "^2.0.5",
     "env-paths": "^3.0.0",
     "express": "^4.17.3",
+    "fs-extra": "^10.0.1",
+    "gettext-parser": "^5.1.1",
     "http-errors": "^2.0.0",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
@@ -29,6 +31,7 @@
     "pupa": "^3.1.0",
     "sass": "^1.49.8",
     "socket.io": "^4.4.1",
+    "xml2js": "^0.4.23",
     "yargs": "^17.3.1"
   },
   "devDependencies": {
