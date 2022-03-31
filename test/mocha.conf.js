@@ -5,6 +5,7 @@ import sinonchai from 'sinon-chai';
 import chaiaspromised from 'chai-as-promised';
 import chaievents from 'chai-events';
 import chainock from 'chai-nock';
+import chaifs from 'chai-fs';
 import log from 'loglevel';
 
 sinon.test = sinontest(sinon);
@@ -16,6 +17,7 @@ chai.use(sinonchai);
 chai.use(chaiaspromised);
 chai.use(chaievents);
 chai.use(chainock);
+chai.use(chaifs);
 
 global.expect = chai.expect;
 

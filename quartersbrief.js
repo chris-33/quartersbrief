@@ -1,6 +1,6 @@
 import config, { paths } from './src/init/config.js';
 import './src/init/log.js';
-import update from './src/init/update.js';
+import { needsUpdate, update } from './src/init/update.js';
 import log from 'loglevel';
 import loadData from './src/init/load.js';
 import assertInvariants, { InvariantError } from './src/init/invariants.js';
@@ -22,7 +22,9 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 	process.exit(1);
 }
 
-await update();
+if (await needsUpdate())
+	await update();
+
 let { data, labels } = await loadData(paths.data);
 
 if (!config.skipInvariants) {
