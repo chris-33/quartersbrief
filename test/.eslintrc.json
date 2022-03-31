@@ -1,4 +1,7 @@
  {
+	"rules": {
+		"mocha/no-sibling-hooks": "off"
+	},
 	"globals": {
 		"describe": "readonly",
 		"context": "readonly",
