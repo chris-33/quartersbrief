@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import config, { paths } from './init/config.js';
 import './init/log.js';
 import { needsUpdate, update } from './init/update.js';
