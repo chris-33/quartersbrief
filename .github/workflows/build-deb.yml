@@ -32,7 +32,7 @@ jobs:
           rm .eslintrc.json .gitignore Gruntfile.cjs Vagrantfile *sublime*
 
       - uses: jiro4989/build-deb-action@v2
-      - with:
+        with:
           package: quartersbrief_${{ github.ref_name }}
           package_root: $GITHUB_REPO
           maintainer: 'BadIdeaException'
