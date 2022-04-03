@@ -25,7 +25,7 @@ Vagrant.configure("2") do |config|
   # Reflect host github user config in vm
   # This is necessary because otherwise using grunt to issue git commands will fail.
   userconfig = `git config -l | grep user`
-  config.vm.provision "shell", name: "Configure git user on VM to be the same as on the host", run: "always", privileged: false, inline: <<-SHELL
+  config.vm.provision "shell", name: "Configure git user on VM to be the same as on the host", privileged: false, inline: <<-SHELL
     # Read ruby userconfig variable line by line
     while read -r line; do      
       if [[ ! -z $line ]]; then # Skip empty line at EOF
