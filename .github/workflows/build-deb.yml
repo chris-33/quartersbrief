@@ -7,7 +7,7 @@ on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
     tags: 
-      - 'v*.*.*'
+      - 'v*'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -59,8 +59,7 @@ jobs:
           depends: 'nodejs (>= 17.0.0), wine, python3'
 
       - name: Upload package to release
-        uses: AButler/upload-release-assets@v2.0
+        uses: nebula-actions/upload-assets@v1.0.0
         with:
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          files: ${{ steps.package.outputs.file_name }}
-          release-tag: ${{ github.ref }}
+          asset-path: ${{ steps.package.outputs.file_name }}
+          tag: ${{ github.ref }}
