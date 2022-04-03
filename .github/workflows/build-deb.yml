@@ -62,4 +62,4 @@ jobs:
         uses: nebula-actions/upload-assets@v1.0.0
         with:
           asset-path: ${{ steps.package.outputs.file_name }}
-          tag: ${{ steps.version.outputs.non-prefixed }}
+          tag: ${{ steps.version.outputs.prefixed }}
