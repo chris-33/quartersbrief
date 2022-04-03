@@ -2,7 +2,7 @@
   "name": "quartersbrief",
   "main": "quartersbrief.js",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0-alpha.0",
   "bin": "./src/quartersbrief.js",
   "scripts": {
     "start": "node quartersbrief.js",
@@ -50,6 +50,7 @@
     "grunt-debian-package": "^0.1.14",
     "grunt-eslint": "^24.0.0",
     "grunt-jsdoc": "^2.4.1",
+    "grunt-mocha-test": "^0.13.3",
     "grunt-release": "^0.14.0",
     "grunt-todo": "^0.5.0",
     "ink-docstrap": "^1.3.2",
