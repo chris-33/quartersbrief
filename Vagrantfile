@@ -29,6 +29,30 @@ Vagrant.configure("2") do |config|
     sudo npm install -g grunt-cli
   SHELL
 
+  # act is a tool to run github actions locally for debugging purposes. 
+  # It requires docker.
+  # Therefore, install docker and configure non-root access. Then install act.
+  # Sources: 
+  #   https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
+  #   https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
+  #   https://github.com/nektos/act#bash-script
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt install ca-certificates curl gnupg lsb-release
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install docker-ce docker-ce-cli containerd.io
+    sudo groupadd docker
+    sudo usermod -aG docker vagrant
+
+    cd /usr/local/ && curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+  SHELL
+
+  # Install required packages for grunt-debian-package
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt-get install -y devscripts debhelper
+  SHELL
+
   # Set NODE_ENV to 'development' by default
   config.vm.provision "shell", inline: <<-SHELL
     echo "export NODE_ENV=development" > /etc/profile.d/node-env.sh
@@ -53,6 +77,6 @@ Vagrant.configure("2") do |config|
 
   #config.trigger.after :up do |t|
   #  t.name = "vagrant fsnotify"
-  #  t.run = { inline: "vagrant fsnotify" }
+  #  t.run = { inline: "vagrant fsnotify &" }
   #end
 end
