@@ -1,4 +1,4 @@
-# This is a basic workflow to help you get started with Actions
+# This workflow builds a .deb package when a version is pushed.
 
 name: build-deb
 
@@ -24,17 +24,43 @@ jobs:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
 
-      # Remove unwanted development-related stuff from the checked out repository.
-      - name: Remove development-related files
-        run: |
-          cd $GITHUB_WORKSPACE
-          rm -rf gamedata-jsdoc grunt test
-          rm .eslintrc.json .gitignore Gruntfile.cjs Vagrantfile *sublime*
-
-      - uses: jiro4989/build-deb-action@v2
+      - name: Get version from tag name
+        id: version
+        uses: LykkeBusiness/get-semver-from-tag-action@v1.0.2
         with:
-          package: quartersbrief_${{ github.ref_name }}
-          package_root: $GITHUB_REPO
+          tag: ${{ github.ref }}
+
+      # Create the package contents directory structure
+      - name: Assemble package contents
+        id: assemble
+        run: |
+          mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/DEBIAN
+          mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/src $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          # cp -r $GITHUB_WORKSPACE/assets $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          cp $GITHUB_WORKSPACE/package.json $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          cp $GITHUB_WORKSPACE/README.md $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          echo "::set-output name=pkgroot::$GITHUB_WORKSPACE/tmp/debpkg"
+
+      # Create .deb control scripts
+      - name: Create postinst
+        run: |
+          echo "cd /opt/quartersbrief && npm install --production 1> /dev/null 2> /dev/null && npm link" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst
+
+      - name: Build .deb package
+        uses: jiro4989/build-deb-action@v2
+        id: package
+        with:
+          package: quartersbrief
+          package_root: ${{ steps.assemble.outputs.pkgroot }}
+          version: ${{ steps.version.outputs.non-prefixed }}
           maintainer: 'BadIdeaException'
           arch: 'amd64'
           depends: 'nodejs (>= 17.0.0), wine, python3'
+
+      - name: Upload package to release
+        uses: AButler/upload-release-assets@v2.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          files: ${{ steps.package.outputs.file_name }}
+          release-tag: ${{ github.ref }}
