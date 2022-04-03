@@ -22,8 +22,24 @@ Vagrant.configure("2") do |config|
     vb.name = "quartersbrief"
   end
 
+  # Reflect host github user config in vm
+  # This is necessary because otherwise using grunt to issue git commands will fail.
+  userconfig = `git config -l | grep user`
+  config.vm.provision "shell", name: "Configure git user on VM to be the same as on the host", run: "always", privileged: false, inline: <<-SHELL
+    # Read ruby userconfig variable line by line
+    while read -r line; do      
+      if [[ ! -z $line ]]; then # Skip empty line at EOF
+        key=${line%=*} # key is $line, up to the =
+        val=${line#*=} # val is $line, after the =
+      
+        echo "Running command: git config --global --add $key $val"
+        git config --global --add "$key" "$val"
+      fi
+    done < <(echo "#{userconfig}")
+  SHELL
+
   # Install NodeJS
-  config.vm.provision "shell", inline: <<-SHELL
+  config.vm.provision "shell", name: "Install Node.JS", inline: <<-SHELL
     curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
     sudo apt-get install -y nodejs
     sudo npm install -g grunt-cli
@@ -36,7 +52,7 @@ Vagrant.configure("2") do |config|
   #   https://docs.docker.com/engine/install/ubuntu/#install-using-the-repository
   #   https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
   #   https://github.com/nektos/act#bash-script
-  config.vm.provision "shell", inline: <<-SHELL
+  config.vm.provision "shell", name: "Install act tool to run GitHub actions locally", inline: <<-SHELL
     sudo apt install ca-certificates curl gnupg lsb-release
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
@@ -54,12 +70,12 @@ Vagrant.configure("2") do |config|
   SHELL
 
   # Set NODE_ENV to 'development' by default
-  config.vm.provision "shell", inline: <<-SHELL
+  config.vm.provision "shell", name: "Set NODE_ENV to \"development\"", inline: <<-SHELL
     echo "export NODE_ENV=development" > /etc/profile.d/node-env.sh
   SHELL
 
   # Make the contents of github-access-token.secret available as environment variable
-  config.vm.provision "shell", run: "always", inline: <<-SHELL
+  config.vm.provision "shell", name: "Export github access token from .secret file", run: "always", inline: <<-SHELL
     echo 'export GITHUB_ACCESS_TOKEN=$(cat /vagrant/github-access-token.secret)' > /etc/profile.d/gh-token.sh
   SHELL
 
