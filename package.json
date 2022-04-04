@@ -10,7 +10,8 @@
     "debug": "node --inspect-brk=0.0.0.0:9229 quartersbrief.js",
     "debug-test": "node_modules/mocha/bin/mocha --loader=esmock --inspect-brk=0.0.0.0:9229 --debug-brk --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
     "debug-local": "node inspect quartersbrief.js",
-    "debug-local-test": "node_modules/mocha/bin/mocha inspect --loader=esmock --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js"
+    "debug-local-test": "node_modules/mocha/bin/mocha inspect --loader=esmock --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
+    "postinstall": "./scripts/postinstall.sh"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
