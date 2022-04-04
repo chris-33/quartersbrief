@@ -8,5 +8,4 @@ module.exports = function(grunt) {
 	grunt.loadNpmTasks('grunt-todo');
 	grunt.loadNpmTasks('grunt-mocha-test')
 	grunt.loadNpmTasks('grunt-bump');
-	grunt.loadNpmTasks('grunt-debian-package')
 }
