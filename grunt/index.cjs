@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const grunt = require('grunt');
 
 const config = {};
 
@@ -10,9 +11,13 @@ fs
 	})
 	.forEach(function(file) {
 		const modulename = path.basename(file, '.grunt.cjs');
-		console.log('Loading task ' + modulename + ' from ' + file);
+		try {
+			config[modulename] = require(`./${file}`);
+			grunt.log.ok(`Loaded task ${modulename}`);
+		} catch (err) {
+			grunt.log.error(`Loading task ${modulename} failed: ${err.message}`);
+		}
 		
-		config[modulename] = require('./' + file);
 	});
 
 module.exports = config;
