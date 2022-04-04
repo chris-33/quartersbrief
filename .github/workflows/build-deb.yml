@@ -46,7 +46,7 @@ jobs:
       - name: Create postinst
         run: |
           echo "cd /opt/quartersbrief && npm install --production --no-package-lock --no-progress --quiet && npm link" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst
-          echo "rm -rf /opt/quartersbrief/tools /opt/quartersbrief/node_modules" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm
+          echo "rm -rf /opt/quartersbrief/tools /opt/quartersbrief/node_modules /opt/quartersbrief/tools" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm
 
       - name: Build .deb package
         uses: jiro4989/build-deb-action@v2
