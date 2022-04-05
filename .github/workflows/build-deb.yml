@@ -55,7 +55,7 @@ jobs:
           EOF" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/preinst && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/preinst
           # postinst
           echo "cd /opt/quartersbrief && npm install --production --no-package-lock --no-progress --quiet && npm link" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst
-          # prerm          
+          # prerm
           echo "rm -rf /opt/quartersbrief/tools /opt/quartersbrief/node_modules /opt/quartersbrief/tools" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm
 
       - name: Build .deb package
@@ -69,8 +69,8 @@ jobs:
           arch: 'amd64'
           depends: 'nodejs (>= 17.0.0), wine, wine32, python3'
 
-      - name: Upload package to release
-        uses: nebula-actions/upload-assets@v1.0.0
+      - name: Release and upload package
+        uses: softprops/action-gh-release@v1
         with:
-          asset-path: ${{ steps.package.outputs.file_name }}
-          tag: ${{ steps.version.outputs.prefixed }}
+          prerelease: true
+          files: ${{ steps.package.outputs.file_name }}
