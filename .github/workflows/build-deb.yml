@@ -37,15 +37,25 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/DEBIAN
           mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp -r $GITHUB_WORKSPACE/src $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          # cp -r $GITHUB_WORKSPACE/assets $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/assets $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/scripts $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp $GITHUB_WORKSPACE/package.json $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp $GITHUB_WORKSPACE/README.md $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           echo "::set-output name=pkgroot::$GITHUB_WORKSPACE/tmp/debpkg"
 
       # Create .deb control scripts
-      - name: Create postinst
+      - name: Create maintainer scripts
         run: |
+          # preinst
+          echo "cat << EOF
+            #!/bin/sh
+            if dpkg --print-foreign-architectures | grep i386; then
+              echo 'quartersbrief depends on wine32 for automatic updates, but i386 is not set as a foreign architecture. Run dpkg --add-architecture i386 so wine32 can be installed.' >&2
+            fi
+          EOF" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/preinst && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/preinst
+          # postinst
           echo "cd /opt/quartersbrief && npm install --production --no-package-lock --no-progress --quiet && npm link" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/postinst
+          # prerm          
           echo "rm -rf /opt/quartersbrief/tools /opt/quartersbrief/node_modules /opt/quartersbrief/tools" > ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm && chmod +x ${{ steps.assemble.outputs.pkgroot }}/DEBIAN/prerm
 
       - name: Build .deb package
@@ -57,7 +67,7 @@ jobs:
           version: ${{ steps.version.outputs.non-prefixed }}
           maintainer: 'BadIdeaException'
           arch: 'amd64'
-          depends: 'nodejs (>= 17.0.0), wine, python3'
+          depends: 'nodejs (>= 17.0.0), wine, wine32, python3'
 
       - name: Upload package to release
         uses: nebula-actions/upload-assets@v1.0.0
