@@ -1,5 +1,4 @@
 import mockfs from 'mock-fs';
-// import config, { paths } from '../../src/init/config.js';
 import path from 'path';
 import esmock from 'esmock';
 import fse from 'fs-extra';
@@ -10,6 +9,7 @@ describe('update', function() {
 	let needsUpdate;
 	let updateLabels;
 	let updateGameParams;
+	let update;
 
 	const config = {
 		wowsdir: '/wows'
@@ -27,7 +27,7 @@ describe('update', function() {
 		// Do a dynamic import with a dynamic query parameter to cache-bust
 		// This is so we can get a fresh import for each test, as the module
 		// stores the contents of preferences.xml after the first read.		
-		({ needsUpdate, updateLabels, updateGameParams } = await esmock('../../src/init/update.js', {}, {
+		({ needsUpdate, updateLabels, updateGameParams, update } = await esmock('../../src/init/update.js', {}, {
 			execa: { execa },
 			'../../src/init/config.js': {
 				default: config,
@@ -139,9 +139,8 @@ describe('update', function() {
 				...prepopulated,
 				[path.join(config.wowsdir, `/bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`)]: mockfs.load('test/init/testdata/global.mo'),
 			});
-			await updateLabels(buildno);
-			const target = path.join(paths.data, 'global-en.json');
-			expect(target).to.be.a.file().with.contents(JSON.stringify(expected));
+			expect(await updateLabels(buildno)).to.be.true;
+			expect(path.join(paths.data, 'global-en.json')).to.be.a.file().with.contents(JSON.stringify(expected));
 		});
 
 		it('should revert labels to their previous version if the label update fails', async function() {
@@ -150,7 +149,7 @@ describe('update', function() {
 				[path.join(paths.data, 'global-en.json')]: 'preexisting',
 				[path.join(config.wowsdir, `/bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`)]: 'malformed',
 			});
-			await updateLabels(buildno);
+			expect(await updateLabels(buildno)).to.be.false;
 			expect(path.join(paths.data, 'global-en.json')).to.be.a.file().with.contents('preexisting');
 		});
 	});
@@ -229,8 +228,7 @@ describe('update', function() {
 				fse.writeFileSync(path.join(paths.temp, 'content/GameParams-0.json'), gamedata);
 			}).resolves();
 
-			await updateGameParams(buildno);			
-			
+			expect(await updateGameParams(buildno)).to.be.true;			
 			expect(path.join(paths.data, 'GameParams.json')).to.be.a.file().with.contents(gamedata);
 		});
 
@@ -242,8 +240,48 @@ describe('update', function() {
 			});
 
 			execa.rejects();
-			await updateGameParams(buildno);
+			expect(await updateGameParams(buildno)).to.be.false;
 			expect(path.join(paths.data, 'GameParams.json')).to.be.a.file().with.contents(gamedata);
+		});
+	});
+
+	describe('update', function() {
+		const buildno = '1';
+		const version = '1,0,0,0';
+		beforeEach(function() {
+			mockfs({
+				[config.wowsdir]: {
+					'preferences.xml': `
+						<preferences.xml>
+							<scriptsPreferences>
+								<net_credentials>
+									<last_server_version>1,0,0,${buildno}</last_server_version>
+								</net_credentials>
+							</scriptsPreferences>							
+							<clientVersion>${version}</clientVersion>
+						</preferences.xml>`,
+				},
+				[path.join(config.wowsdir, `bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`)]: mockfs.load('test/init/testdata/global.mo'),
+			});
+		});
+
+		it('should create the data folder if it is not present', async function() {
+			await update();
+			expect(paths.data).to.be.a.directory();
+		});
+
+		it('should write the new version to disk after a successful update', async function() {
+			await fse.ensureDir(paths.data);
+			await fse.ensureFile(path.join(paths.temp, 'content/GameParams-0.json'));
+			await update();
+			expect(path.join(paths.data, '.version')).to.be.a.file().with.contents(version);
+		});
+
+		it('should not change the remembered version after an unsuccessful update', async function() {
+			await fse.ensureDir(paths.data);
+			execa.rejects();
+			await update();
+			expect(path.join(paths.data, '.version')).to.not.be.a.path();
 		});
 	});
 });

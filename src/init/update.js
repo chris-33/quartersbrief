@@ -149,9 +149,9 @@ async function updateLabels(buildno) {
 		await moToJSON(
 			path.join(config.wowsdir, 'bin', buildno, 'res/texts/en/LC_MESSAGES/global.mo'), 
 			path.join(paths.data, 'global-en.json'));
+		return true;
 	} catch (err) {
 		rootlog.error(`There was an error while updating the labels: ${err.code ? err.code + ' ' : ''}${err.message}`);
-		rootlog.trace(err.stack)
 	} finally {
 		// If the operation was unsuccessful, use what we had before.
 		if (!await fse.pathExists(path.join(paths.data, 'global-en.json'))) {
@@ -161,6 +161,7 @@ async function updateLabels(buildno) {
 				path.join(paths.data, 'global-en.json'));
 		}
 	}
+	return false;
 }
 
 async function updateGameParams(buildno) {
@@ -218,9 +219,9 @@ async function updateGameParams(buildno) {
 			path.join(paths.data, 'GameParams.json'));
 		// Clean up after ourselves
 		await fse.remove(path.join(paths.temp, 'content'));
+		return true;
 	} catch (err) {
 		rootlog.error(`There was an error while updating the game data: ${err.code} ${err.message}`);
-		rootlog.trace(err.stack)
 	} finally {
 		// If the operation was unsuccessful, use what we had before.
 		if (!fse.existsSync(path.join(paths.data, 'GameParams.json'))) {
@@ -228,10 +229,12 @@ async function updateGameParams(buildno) {
 			fse.rename(path.join(paths.data, 'GameParams.json.bak'), path.join(paths.data, 'GameParams.json'));
 		}
 	}
-
+	return false;
 }
 
 async function update() {
+	await fse.ensureDir(paths.data);
+
 	const version = await getGameVersion();
 
 	rootlog.info(`Updating game data to version ${version}`);
@@ -242,11 +245,10 @@ async function update() {
 
 	const buildno = await getBuildNo();
 
-	await Promise.allSettled([
-		updateLabels(buildno), updateGameParams(buildno)
-	]);
-	
-	fse.writeFile(path.join(paths.config, '.version'), version);
+	let success = (await Promise.all([ updateLabels(buildno), updateGameParams(buildno) ]))
+						.reduce((prev, curr) => prev && curr, true);
+	if(success) 
+		await fse.writeFile(path.join(paths.data, '.version'), version);
 }
 
 export { needsUpdate, updateLabels, updateGameParams, update };
