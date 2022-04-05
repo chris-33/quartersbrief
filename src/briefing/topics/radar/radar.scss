@@ -84,7 +84,7 @@ $stealthwarn-color-fallback: slategray;
 		// over a golden background. This will keep transparent
 		// parts of the image transparent and color anything that
 		// is opaque in the mask image in the background color.
-		mask-image: url(img/crosshair_indicator_visibility.png);
+		mask-image: url(img/visilibility-indicator.png);
 		mask-size: $stealthwarn-indicator-size $stealthwarn-indicator-size;
 		// Position absolutely with respect to the surround div.
 		// Position to the top and then put it to the right of
