@@ -6,7 +6,32 @@ This project is intended as an information tool for the popular video game [Worl
 
 ### Installing
 
-TBC
+#### On Linux (as a package)
+
+The easiest way to install is through the .deb package provided with each release. Provided you already have added `i386` as a foreign architecture, and NodeJS is available in your package repositories in version 17 or higher, all you need to do is run 
+```
+sudo apt install ~/Downloads/quartersbrief_<x.y.z>_amd64.deb
+```
+replacing x.y.z with the version you downloaded.
+
+To add `i386` as a foreign architecture, run:
+```
+sudo dpkg --add-architecture i386 && sudo apt update
+```
+before installing. 
+
+NodeJS is available in the distro repositories, but usually in a version that is quite old. A newer PPA is maintained among others at [nodesource](https://github.com/nodesource/distributions/blob/master/README.md). To use it, run:
+```
+curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
+```
+
+#### On Linux (from source)
+
+Quartersbrief depends on wine to perform automatic updates of its data whenever the game updates. Unfortunately, this makes the disk footprint quite large. If you don't want this, you can install from source and disable automatic updates. You will still need NodeJS v17 or higher. 
+
+Download the source of the release and unzip it. Then run `npm install --production && npm link`. After that, run quartersbrief with the `--update-policy=never` option.
+
+Fairly current game data can be downloaded from the [World of Warships Fitting Tool repository](https://github.com/EdibleBug/WoWSFT-Kotlin/tree/master/WoWSFT-Data/src/main/resources/json/live). Usually game updates are reflected here within a few days. Save these files to `~/.local/share/quartersbrief`. 
 
 ### Configuring (program)
 
@@ -21,7 +46,7 @@ See (TBC)
 
 ### Running 
 
-TBC
+Just run `quartersbrief`.
 
 ## Development
 
@@ -71,7 +96,7 @@ There are also commands for using the built-in Node.js debugger. Append `-local`
 
 ### Releases
 
-This project uses [grunt-release](https://www.npmjs.com/package/grunt-release) for handling releases. See there for usage instructions. 
+This project uses [grunt-bump](https://www.npmjs.com/package/grunt-bump) for handling releases. See there for usage instructions. 
 
 Releasing involves operations on this repo, which require an access token. See [Creating a personal access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use) for how to generate one. To use it, either
 
@@ -82,4 +107,4 @@ Releasing involves operations on this repo, which require an access token. See [
 
 I am developing this project as a one-man show at the moment. If you have suggestions, feedback, or want to contribute, reach out through the issues. Pull requests are welcome, but expected to be fully tested and (obviously) passing.
 
-In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Contributions are expected to be robust and coded to the standards of the industry. In particular, that means no hacky solutions!
+In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality.
