@@ -5,13 +5,8 @@ import fse from 'fs-extra';
 import gettext from 'gettext-parser';
 import os from 'os';
 import rootlog from 'loglevel';
-import { fileURLToPath } from 'url';
 import { execa } from 'execa';
-import { exec as _exec } from 'child_process';
-import { promisify } from 'util';
-const exec = promisify(_exec);
 
-const basepath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../');
 const dedicatedlog = rootlog.getLogger('Updater');
 
 async function getGameVersion() {
@@ -179,7 +174,7 @@ async function updateGameParams(buildno) {
 		let cmd = '';
 		if (os.type() === 'Linux') cmd += 'wine ';
 
-		cmd += `${path.resolve(path.join(basepath, 'tools/wowsunpack/wowsunpack.exe'))}`;
+		cmd += `${path.resolve(path.join(paths.base, 'tools/wowsunpack/wowsunpack.exe'))}`;
 
 		let args = [
 			idxPath,
@@ -212,7 +207,7 @@ async function updateGameParams(buildno) {
 		// 	path.join(basepath, 'tools/gameparams2json/GameParams.data'));
 		// Run the converter from the World of Warships Fitting Tool
 		// It will convert the GameParams.data into GameParams.json
-		await execa(`python3 ${path.join(basepath, 'tools/gameparams2json/OneFileToRuleThemAll.py')}`, { cwd: path.join(paths.temp, 'content') });
+		await execa(`python3 ${path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py')}`, { cwd: path.join(paths.temp, 'content') });
 		// Move the converted file and drop the '-0' that the converter always tags on
 		await fse.move(
 			path.join(paths.temp, 'content/GameParams-0.json'), 
@@ -222,6 +217,7 @@ async function updateGameParams(buildno) {
 		return true;
 	} catch (err) {
 		rootlog.error(`There was an error while updating the game data: ${err.code} ${err.message}`);
+		dedicatedlog.trace(err.stack);
 	} finally {
 		// If the operation was unsuccessful, use what we had before.
 		if (!fse.existsSync(path.join(paths.data, 'GameParams.json'))) {

@@ -17,7 +17,8 @@ describe('update', function() {
 	const paths = {
 		config: '/config',
 		data: '/data',
-		temp: '/tmp'
+		temp: '/tmp',
+		base: '/'
 	}
 
 	let execa;
@@ -38,6 +39,7 @@ describe('update', function() {
 
 	afterEach(function() {
 		mockfs.restore();
+		execa.reset();
 	});
 
 	describe('.needsUpdate', function() {		

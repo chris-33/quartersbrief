@@ -3,6 +3,7 @@ import path from 'path';
 import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
+import { fileURLToPath } from 'url';
 import { existsSync, readFileSync } from 'fs';
 import log from 'loglevel';
 
@@ -16,7 +17,10 @@ const name = process.env.npm_package_name ?? 'quartersbrief';
 // Get OS-specific paths for config, data, temp and cache.
 // Use no suffix (default would be '-nodejs') because I think it's ugly and I foresee no name clashes.
 // The documentation warns against this, though.
-const paths = envpaths(name, { suffix: '' });
+const paths = {
+	...envpaths(name, { suffix: '' }),
+	base: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
+};
 
 const config = {
 	// Defaults:
@@ -70,7 +74,9 @@ const config = {
 		})
 		.option('debug', {
 			coerce: function(value) {
-				if (typeof value === 'boolean') 
+				if (typeof value === 'undefined')
+					return null;
+				else if (typeof value === 'boolean') 
 					value = value ? [] : null;
 				else if (value !== 'all')
 					value = value.split(',');
@@ -78,16 +84,8 @@ const config = {
 			},
 			description: 'Output debug information. It can also be used in an alternate form --debug <dedicatedlogs>, where <dedicatedlogs> is a comma-separated list of dedicated loggers to switch on. Use --debug all to turn on all dedicated loggers. Available dedicated loggers are: GameObjectFactory, assertInvariants'
 		})
-		.config('config', function loadConfig(filename) {
-			// Do not expect the default config file to exist. If it doesn't, we will treat it as if it was empty.
-			// Config files passed explicitly using --config are still expected to exist though, and it is an
-			// error if they don't.
-			if (!existsSync(filename) && !process.argv.includes('--config')) {
-				log.warn(`Could not find default config file ${filename}.`)
-				return {};
-			}
-			return JSON.parse(readFileSync(filename));
-		}).default('config', 
+		.config()
+		.default('config', 
 			path.format({ 
 				dir: paths.config, 
 				name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,

@@ -17,6 +17,8 @@ import path from 'path';
 import pug from 'pug';
 import sass from 'sass';
 
+process.chdir(paths.base);
+
 // Make sure that the replays directory we will be watching actually exists
 // If it doesn't, this is a non-recoverable error, because this program is pointless without it.
 if (!existsSync(path.join(config.wowsdir, 'replays'))) {
