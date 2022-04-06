@@ -33,6 +33,10 @@ Download the source of the release and unzip it. Then run `npm install --product
 
 Fairly current game data can be downloaded from the [World of Warships Fitting Tool repository](https://github.com/EdibleBug/WoWSFT-Kotlin/tree/master/WoWSFT-Data/src/main/resources/json/live). Usually game updates are reflected here within a few days. Save these files to `~/.local/share/quartersbrief`. 
 
+#### On Windows (from source)
+
+You need to have NodeJS 17 or newer and Python 3 installed. Download and unzip the source of the release, then run `npm install --production` followed by `npm link`. 
+
 ### Configuring (program)
 
 While all ways to configure quartersbrief are available as command-line options (run `quartersbrief --help`), the easiest way to configure is by editing the `quartersbrief.json` configuration file in the `quartersbrief` sub-folder of your user configuration directory. Most options are set to sensible defaults, but two in particular will probably require your attention:
