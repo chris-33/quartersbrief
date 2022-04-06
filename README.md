@@ -96,12 +96,12 @@ There are also commands for using the built-in Node.js debugger. Append `-local`
 
 ### Releases
 
-This project uses [grunt-bump](https://www.npmjs.com/package/grunt-bump) for handling releases. See there for usage instructions. 
+This project uses [grunt-bump](https://www.npmjs.com/package/grunt-bump) for handling releases. See there for detailed usage instructions. 
 
-Releasing involves operations on this repo, which require an access token. See [Creating a personal access token](https://help.github.com/articles/creating-an-access-token-for-command-line-use) for how to generate one. To use it, either
-
-1. set it as an environment variable `GITHUB_ACCESS_TOKEN`, or
-2. put it into a file called `github-access-token-secret` in the project's root folder. The environment variable will then automatically be set any time you do `vagrant up`.
+- `grunt bump:major` for a major release
+- `grunt bump:minor` for a minor release
+- `grunt bump:patch` for a patch release
+- `grunt bump:prerelease` for a pre-release. (See also `prereleaseName` in [grunt task file](blob/master/grunt/bump.grunt.js).)
 
 ### Contributing and style guide
 

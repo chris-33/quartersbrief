@@ -57,7 +57,7 @@ Vagrant.configure("2") do |config|
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
     sudo apt-get update
-    sudo apt-get install docker-ce docker-ce-cli containerd.io
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
     sudo groupadd docker
     sudo usermod -aG docker vagrant
 
@@ -74,11 +74,6 @@ Vagrant.configure("2") do |config|
     echo "export NODE_ENV=development" > /etc/profile.d/node-env.sh
   SHELL
 
-  # Make the contents of github-access-token.secret available as environment variable
-  config.vm.provision "shell", name: "Export github access token from .secret file", run: "always", inline: <<-SHELL
-    echo 'export GITHUB_ACCESS_TOKEN=$(cat /vagrant/github-access-token.secret)' > /etc/profile.d/gh-token.sh
-  SHELL
-
   # Share data directory as per XDG Base Directory Specification
   # https://specifications.freedesktop.org/basedir-spec/latest/index.html
   config.vm.synced_folder "data/", "/home/vagrant/.local/share/quartersbrief"
@@ -88,6 +83,10 @@ Vagrant.configure("2") do |config|
   # Share "Fake WoWS" directory to simulate the game actually being installed
   config.vm.synced_folder "wows/", "/opt/World_of_Warships", fsnotify: true
 
+  # Use SSH forwarding to allow git to use the host's private key from inside the VM
+  config.ssh.forward_agent = true
+  # Forward X11
+  config.ssh.forward_x11 = true
   # cd to the /vagrant directory upon login
   config.ssh.extra_args = ["-t", "cd /vagrant; bash --login"]
 
