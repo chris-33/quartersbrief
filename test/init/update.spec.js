@@ -45,9 +45,7 @@ describe('update', function() {
 	describe('.needsUpdate', function() {		
 		function fakeCurrent(version) {
 			return {
-				[config.wowsdir]: {
-					'preferences.xml': `<preferences.xml><clientVersion>${version}</clientVersion></preferences.xml>`
-				}
+				[`${config.wowsdir}/bin/${version}`]: {}
 			}
 		}
 		function fakeRemembered(version) {
@@ -59,8 +57,8 @@ describe('update', function() {
 		}
 
 		it('should return true when the remembered version is lower than the current detected one', function() {
-			const currentVersion = '1,0,0,0';
-			const rememberedVersion = '0,11,1,0';
+			const currentVersion = '2';
+			const rememberedVersion = '1';
 			mockfs({
 				...fakeCurrent(currentVersion),
 				...fakeRemembered(rememberedVersion)
@@ -69,8 +67,8 @@ describe('update', function() {
 		});
 
 		it('should return false when the remembered version is equal to the current detected one', function() {
-			const currentVersion = '1,0,0,0';
-			const rememberedVersion = '1,0,0,0';
+			const currentVersion = '2';
+			const rememberedVersion = '2';
 			mockfs({
 				...fakeCurrent(currentVersion),
 				...fakeRemembered(rememberedVersion)
@@ -79,7 +77,7 @@ describe('update', function() {
 		});
 
 		it('should return true if the remembered version is unknown', function() {
-			const currentVersion = '1,0,0,0';
+			const currentVersion = '1';
 			mockfs({
 				...fakeCurrent(currentVersion),
 				// No remembered version
@@ -88,8 +86,8 @@ describe('update', function() {
 		});
 
 		it('should return true when the update-policy config option is set to "force"', function() {
-			const currentVersion = '1,0,0,0';
-			const rememberedVersion = '1,0,0,0';
+			const currentVersion = '1';
+			const rememberedVersion = '1';
 			mockfs({
 				...fakeCurrent(currentVersion),
 				...fakeRemembered(rememberedVersion)
@@ -99,8 +97,8 @@ describe('update', function() {
 		});
 
 		it('should return false when the update-policy config option is set to "prohibit"', function() {
-			const currentVersion = '1,0,0,0';
-			const rememberedVersion = '1,0,0,0';
+			const currentVersion = '2';
+			const rememberedVersion = '1';
 			mockfs({
 				...fakeCurrent(currentVersion),
 				...fakeRemembered(rememberedVersion)
@@ -119,14 +117,7 @@ describe('update', function() {
 		let prepopulated;
 		before(function() {
 			prepopulated = {
-				[path.join(config.wowsdir, 'preferences.xml')]: `
-						<preferences.xml>
-							<scriptsPreferences>
-								<net_credentials>
-									<last_server_version>1,0,0,${buildno}</last_server_version>
-								</net_credentials>
-							</scriptsPreferences>
-						</preferences.xml>`,
+				[path.join(config.wowsdir, 'bin', buildno)]: {},
 				[paths.data]: {},
 				[paths.config]: {}
 			};
@@ -249,20 +240,8 @@ describe('update', function() {
 
 	describe('update', function() {
 		const buildno = '1';
-		const version = '1,0,0,0';
 		beforeEach(function() {
 			mockfs({
-				[config.wowsdir]: {
-					'preferences.xml': `
-						<preferences.xml>
-							<scriptsPreferences>
-								<net_credentials>
-									<last_server_version>1,0,0,${buildno}</last_server_version>
-								</net_credentials>
-							</scriptsPreferences>							
-							<clientVersion>${version}</clientVersion>
-						</preferences.xml>`,
-				},
 				[path.join(config.wowsdir, `bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`)]: mockfs.load('test/init/testdata/global.mo'),
 			});
 		});
@@ -276,7 +255,7 @@ describe('update', function() {
 			await fse.ensureDir(paths.data);
 			await fse.ensureFile(path.join(paths.temp, 'content/GameParams-0.json'));
 			await update();
-			expect(path.join(paths.data, '.version')).to.be.a.file().with.contents(version);
+			expect(path.join(paths.data, '.version')).to.be.a.file().with.contents(buildno);
 		});
 
 		it('should not change the remembered version after an unsuccessful update', async function() {

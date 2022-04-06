@@ -9,105 +9,40 @@ import { execa } from 'execa';
 
 const dedicatedlog = rootlog.getLogger('Updater');
 
-async function getGameVersion() {
-	return (await readPreferences())?.clientVersion;
-}
-
 async function getBuildNo() {	
-	let result = await readPreferences();
-	if (result) {
-		result = result.scriptsPreferences.net_credentials.last_server_version;
-		result = result
-			.substring(result.lastIndexOf(',') + 1);
-		dedicatedlog.debug(`Build number read as ${result}`);
-		if (result && await fse.pathExists(path.join(config.wowsdir, 'bin', result))) {
-			dedicatedlog.debug(`Folder ${path.join(config.wowsdir, 'bin', result)} found, resuming with build number ${result}.`)
-			return result;
-		}
-	}
-	dedicatedlog.debug(`No valid build number read, attempting to deduce`);
-
-	// Reading the buildno either failed outright or the number we got did not exist in wows/bin
-	// So instead return highest-numbered subdirectory of wows/bin
-	let builds = await fse.readdir(path.join(config.wowsdir, 'bin/*/'));
-	dedicatedlog(`Available build numbers ${builds}`);
-	result = Math.max(...builds.filter(name => name.matches(/\d+/)));
-	dedicatedlog(`Build number deduced to be ${result}`);
+	// Find the highest-numbered subdirectory of wows/bin
+	let builds = (await fse.readdir(path.join(config.wowsdir, 'bin'), { encoding: 'utf8', withFileTypes: true }))
+		.filter(dirent => dirent.isDirectory())
+		.map(dirent => dirent.name)
+		.filter(name => name.match(/\d+/));
+	dedicatedlog.debug(`Available game versions: ${builds}`);
+	let result = Math.max(...builds);
+	dedicatedlog.debug(`Resuming with game version ${result}`);
 	return result;
 }
 
-let _preferences;
-async function readPreferences() {
-	if (_preferences !== undefined) return _preferences;
-
-	try {
-		let data = await fse.readFile(path.join(config.wowsdir, 'preferences.xml'), 'utf8');
-		data = await xml.parseStringPromise(
-			data,
-			{ 
-				trim: true, // Remove leading and trailing whitespaces from text nodes
-				explicitArray: false // Only create arrays for nodes appearing more than once
-
-			});
-		_preferences = data['preferences.xml'];
-	} catch (err) {
-		if (err.code === 'ENOENT') {
-			dedicatedlog.error(`Could not find expected file preferences.xml at ${config.wowsdir}`);
-			_preferences = null;
-		} else throw err;
-	}
-	return _preferences;
-}
-
 async function needsUpdate() {
-	function compareVersions(current, remembered) {
-		remembered = remembered.split(',').map(x => Number(x));
-		current = current.split(',').map(x => Number(x));
-
-		for (let i = 0; i < current.length; i++)
-			if (remembered[i] !== current[i])
-				return current[i] - remembered[i];
-		return 0;		
-	}
-
 	if (config.updatePolicy === 'prohibit') return false;
 	if (config.updatePolicy === 'force') return true;	
 
 	// Read and parse wowsdir/preferences.xml
-	let current = await getGameVersion();
-	if (!current) {
-		rootlog.warn(`Could not read current game version. Skipping update check.`);
-		return false;
-	}
-	dedicatedlog.debug(`Current game version detected as ${current}`);
+	let current = await getBuildNo();
 
 	// Read the last remembered version from the .version file in the quartersbrief data directory. 
 	// This is the version of the game that the last used data was extracted from.
 	// If that file does not exist, make the last remembered version "0,0,0,0" which will force an update.
 	let remembered;
 	try {
-		remembered = await fse.readFile(path.join(paths.data, '.version'), 'utf8');
+		remembered = Number(await fse.readFile(path.join(paths.data, '.version'), 'utf8'));
 		dedicatedlog.debug(`Last known data version detected as ${remembered}`);
 	} catch (err) {
 		if (err.code === 'ENOENT') {
-			remembered = '0,0,0,0';
+			remembered = 0;
 			dedicatedlog.debug(`Last data version unknown, assuming ${remembered}`);
 		} else throw err;
 	}
-	return compareVersions(current, remembered) > 0;
+	return remembered < current;
 }
-
-// function checkTools() {
-// 	let result;
-// 	if (!shell.test('-e', path.join(basepath, 'tools/wowsunpack/wowsunpack.exe')))
-// 		result = (result ?? []).push('wowsunpack.exe');
-
-// 	if (!shell.test('-e', path.join(basepath, 'tools/gameparams2json/OneFileToRuleThemAll.py')))
-// 		result = (result ?? []).push('EdibleBug/WoWS-GameParams');
-
-// 	return result;
-// }
-
 
 async function updateLabels(buildno) {
 	async function moToJSON(src, dest) {
@@ -142,7 +77,7 @@ async function updateLabels(buildno) {
 	// Turn global.mo file for the current version into global-en.json
 	try {
 		await moToJSON(
-			path.join(config.wowsdir, 'bin', buildno, 'res/texts/en/LC_MESSAGES/global.mo'), 
+			path.join(config.wowsdir, 'bin', String(buildno), 'res/texts/en/LC_MESSAGES/global.mo'), 
 			path.join(paths.data, 'global-en.json'));
 		return true;
 	} catch (err) {
@@ -168,7 +103,7 @@ async function updateGameParams(buildno) {
 		const idxPath = path.join(
 			config.wowsdir, 
 			'bin',
-			buildno, 
+			String(buildno), 
 			'idx');
 
 		let cmd = '';
@@ -231,20 +166,12 @@ async function updateGameParams(buildno) {
 async function update() {
 	await fse.ensureDir(paths.data);
 
-	const version = await getGameVersion();
-
-	rootlog.info(`Updating game data to version ${version}`);
-
-	// if !(checkTools()) {
-	// 	rootlog.error(``);
-	// }
-
 	const buildno = await getBuildNo();
 
 	let success = (await Promise.all([ updateLabels(buildno), updateGameParams(buildno) ]))
 						.reduce((prev, curr) => prev && curr, true);
 	if(success) 
-		await fse.writeFile(path.join(paths.data, '.version'), version);
+		await fse.writeFile(path.join(paths.data, '.version'), String(buildno));
 }
 
 export { needsUpdate, updateLabels, updateGameParams, update };
