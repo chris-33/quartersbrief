@@ -42,7 +42,11 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", name: "Install Node.JS", inline: <<-SHELL
     curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
     sudo apt-get install -y nodejs
-    sudo npm install -g grunt-cli
+  SHELL
+
+  # Install some development tools
+  config.vm.provision "shell", name: "Install development tools", inline: <<-SHELL
+      sudo npm install --global grunt-cli 0x
   SHELL
 
   # act is a tool to run github actions locally for debugging purposes. 
