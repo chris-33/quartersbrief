@@ -1,5 +1,6 @@
 module.exports = {
 	options: {
-		prereleaseName: 'alpha'
+		prereleaseName: 'alpha',
+		pushTo: 'origin'
 	}
 }
