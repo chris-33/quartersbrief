@@ -106,7 +106,7 @@ jobs:
       - name: Build Setup.exe
         id: package
         run: |
-          makensis -DVERSION ${{ needs.getversion.outputs.version }} ${{ github.workspace }}\tmp\installer\install.nsi
+          makensis -DVERSION=${{ needs.getversion.outputs.version }} ${{ github.workspace }}\tmp\installer\install.nsi
           echo "::set-output name=file_name::${{ github.workspace }}\tmp\installer\Setup Quartersbrief v${{ needs.getversion.outputs.version }}.exe"
 
       - uses: actions/upload-artifact@v3
