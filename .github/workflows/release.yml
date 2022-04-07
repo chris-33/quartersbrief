@@ -99,6 +99,7 @@ jobs:
       # Download NodeJS and Python 3 installers to bundle with the install
       - name: Download NodeJS and Python 3
         run: |
+          mkdir ${{ github.workspace }}\tmp\installer\redist
           bitsadmin /transfer DownloadNode /download /priority normal https://nodejs.org/dist/v17.8.0/node-v17.8.0-x64.msi ${{ github.workspace }}\tmp\installer\redist\nodejs.msi
           bitsadmin /transfer DownloadNode /download /priority normal https://www.python.org/ftp/python/3.10.4/python-3.10.4-amd64.exe ${{ github.workspace }}\tmp\installer\redist\python3.exe
       
