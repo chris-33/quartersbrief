@@ -14,21 +14,25 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  getversion:
     runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    outputs: 
+      version: ${{steps.version.outputs.non-prefixed}}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v3
-
       - name: Get version from tag name
         id: version
         uses: LykkeBusiness/get-semver-from-tag-action@v1.0.2
         with:
           tag: ${{ github.ref }}
+
+  build-deb:
+    runs-on: ubuntu-latest
+    needs: getversion
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
 
       # Create the package contents directory structure
       - name: Assemble package contents
@@ -64,13 +68,60 @@ jobs:
         with:
           package: quartersbrief
           package_root: ${{ steps.assemble.outputs.pkgroot }}
-          version: ${{ steps.version.outputs.non-prefixed }}
+          version: ${{ needs.getversion.outputs.version }}
           maintainer: 'BadIdeaException'
           arch: 'amd64'
           depends: 'nodejs (>= 17.0.0), wine, wine32, python3'
 
-      - name: Release and upload package
-        uses: softprops/action-gh-release@v1
+      - uses: actions/upload-artifact@v3
+        with: 
+          name: deb
+          path: ${{ steps.package.outputs.file_name }}
+          retention-days: 1
+
+  build-exe:
+    needs: getversion
+    runs-on: windows-latest
+    steps:
+      # Checks-out the repository under $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+
+      - name: Assemble installer contents
+        runs: |
+          mkdir $GITHUB_WORKSPACE\tmp\installer\app
+          xcopy /s /e $GITHUB_WORKSPACE\src $GITHUB_WORKSPACE\tmp\installer\app\src\
+          xcopy /s /e $GITHUB_WORKSPACE\assets $GITHUB_WORKSPACE\tmp\installer\app\assets\
+          xcopy /s /e $GITHUB_WORKSPACE\scripts $GITHUB_WORKSPACE\tmp\installer\app\scripts\
+          xcopy $GITHUB_WORKSPACE\package.json $GITHUB_WORKSPACE\tmp\installer\app\
+          xcopy $GITHUB_WORKSPACE\README.md $GITHUB_WORKSPACE\tmp\installer\app\
+          xcopy $GITHUB_WORKSPACE\.github\workflows\res\windows\install.nsi $GITHUB_WORKSPACE\tmp\installer\
+
+      # Download NodeJS and Python 3 installers to bundle with the install
+      - name: Download NodeJS and Python 3
+        runs: |
+          bitsadmin /transfer DownloadNode /download /priority normal https://nodejs.org/dist/v17.8.0/node-v17.8.0-x64.msi $GITHUB_WORKSPACE\tmp\installer\redist\nodejs.msi
+          bitsadmin /transfer DownloadNode /download /priority normal https://www.python.org/ftp/python/3.10.4/python-3.10.4-amd64.exe $GITHUB_WORKSPACE\tmp\installer\redist\python3.exe
+      
+      - name: Build Setup.exe
+        id: package
+        runs: |
+          makensis -DVERSION ${{ needs.getversion.outputs.version }} $GITHUB_WORKSPACE\tmp\installer\install.nsi
+          echo "::set-output name=file_name::$GITHUB_WORKSPACE\tmp\installer\Setup Quartersbrief v${{ needs.getversion.outputs.version }}.exe"
+          
+      - uses: actions/upload-artifact@v3
+        with:
+          name: exe
+          path: ${{ steps.package.outputs.file_name }}
+
+  release:  
+    runs-on: ubuntu-latest
+    needs: [build-deb, build-exe]
+    steps:
+      - uses: actions/download-artifact@v3
+      
+      - uses: softprops/action-gh-release@v1
         with:
           prerelease: true
-          files: ${{ steps.package.outputs.file_name }}
+          files: |
+            deb
+            exe
