@@ -88,13 +88,13 @@ jobs:
 
       - name: Assemble installer contents
         run: |
-          mkdir $GITHUB_WORKSPACE\tmp\installer\app
-          xcopy /s /e $GITHUB_WORKSPACE\src $GITHUB_WORKSPACE\tmp\installer\app\src\
-          xcopy /s /e $GITHUB_WORKSPACE\assets $GITHUB_WORKSPACE\tmp\installer\app\assets\
-          xcopy /s /e $GITHUB_WORKSPACE\scripts $GITHUB_WORKSPACE\tmp\installer\app\scripts\
-          xcopy $GITHUB_WORKSPACE\package.json $GITHUB_WORKSPACE\tmp\installer\app\
-          xcopy $GITHUB_WORKSPACE\README.md $GITHUB_WORKSPACE\tmp\installer\app\
-          xcopy $GITHUB_WORKSPACE\.github\workflows\res\windows\install.nsi $GITHUB_WORKSPACE\tmp\installer\
+          mkdir ${{ github.workspace }}\tmp\installer\app
+          xcopy /s /e ${{ github.workspace }}\src ${{ github.workspace }}\tmp\installer\app\src\
+          xcopy /s /e ${{ github.workspace }}\assets ${{ github.workspace }}\tmp\installer\app\assets\
+          xcopy /s /e ${{ github.workspace }}\scripts ${{ github.workspace }}\tmp\installer\app\scripts\
+          xcopy ${{ github.workspace }}\package.json ${{ github.workspace }}\tmp\installer\app\
+          xcopy ${{ github.workspace }}\README.md ${{ github.workspace }}\tmp\installer\app\
+          xcopy ${{ github.workspace }}\.github\workflows\res\windows\install.nsi ${{ github.workspace }}\tmp\installer\
 
       # Download NodeJS and Python 3 installers to bundle with the install
       - name: Download NodeJS and Python 3
@@ -105,8 +105,8 @@ jobs:
       - name: Build Setup.exe
         id: package
         run: |
-          makensis -DVERSION ${{ needs.getversion.outputs.version }} $GITHUB_WORKSPACE\tmp\installer\install.nsi
-          echo "::set-output name=file_name::$GITHUB_WORKSPACE\tmp\installer\Setup Quartersbrief v${{ needs.getversion.outputs.version }}.exe"
+          makensis -DVERSION ${{ needs.getversion.outputs.version }} ${{ github.workspace }}\tmp\installer\install.nsi
+          echo "::set-output name=file_name::${{ github.workspace }}\tmp\installer\Setup Quartersbrief v${{ needs.getversion.outputs.version }}.exe"
 
       - uses: actions/upload-artifact@v3
         with:
