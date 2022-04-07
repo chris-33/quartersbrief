@@ -87,7 +87,7 @@ jobs:
       - uses: actions/checkout@v3
 
       - name: Assemble installer contents
-        runs: |
+        run: |
           mkdir $GITHUB_WORKSPACE\tmp\installer\app
           xcopy /s /e $GITHUB_WORKSPACE\src $GITHUB_WORKSPACE\tmp\installer\app\src\
           xcopy /s /e $GITHUB_WORKSPACE\assets $GITHUB_WORKSPACE\tmp\installer\app\assets\
@@ -98,16 +98,16 @@ jobs:
 
       # Download NodeJS and Python 3 installers to bundle with the install
       - name: Download NodeJS and Python 3
-        runs: |
+        run: |
           bitsadmin /transfer DownloadNode /download /priority normal https://nodejs.org/dist/v17.8.0/node-v17.8.0-x64.msi $GITHUB_WORKSPACE\tmp\installer\redist\nodejs.msi
           bitsadmin /transfer DownloadNode /download /priority normal https://www.python.org/ftp/python/3.10.4/python-3.10.4-amd64.exe $GITHUB_WORKSPACE\tmp\installer\redist\python3.exe
       
       - name: Build Setup.exe
         id: package
-        runs: |
+        run: |
           makensis -DVERSION ${{ needs.getversion.outputs.version }} $GITHUB_WORKSPACE\tmp\installer\install.nsi
           echo "::set-output name=file_name::$GITHUB_WORKSPACE\tmp\installer\Setup Quartersbrief v${{ needs.getversion.outputs.version }}.exe"
-          
+
       - uses: actions/upload-artifact@v3
         with:
           name: exe
