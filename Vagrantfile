@@ -74,8 +74,10 @@ Vagrant.configure("2") do |config|
   SHELL
 
   # Set NODE_ENV to 'development' by default
-  config.vm.provision "shell", name: "Set NODE_ENV to \"development\"", inline: <<-SHELL
+  # Shut up wine
+  config.vm.provision "shell", name: "Set environment variables", inline: <<-SHELL
     echo "export NODE_ENV=development" > /etc/profile.d/node-env.sh
+    echo "export WINEDEBUG=-all" > /etc/profile.d/winedebug.sh
   SHELL
 
   # Share data directory as per XDG Base Directory Specification
