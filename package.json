@@ -11,7 +11,9 @@
     "debug-test": "node_modules/mocha/bin/mocha --loader=esmock --inspect-brk=0.0.0.0:9229 --debug-brk --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
     "debug-local": "node inspect quartersbrief.js",
     "debug-local-test": "node_modules/mocha/bin/mocha inspect --loader=esmock --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
-    "postinstall": "./scripts/postinstall.sh"
+    "postinstall": "run-script-os",
+    "postinstall:linux": "./scripts/postinstall.sh",
+    "postinstall:windows": "./scripts/postinstall.ps1"
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
@@ -30,6 +32,7 @@
     "node-watch": "^0.7.3",
     "pug": "^3.0.2",
     "pupa": "^3.1.0",
+    "run-script-os": "^1.1.6",
     "sass": "^1.49.8",
     "socket.io": "^4.4.1",
     "xml2js": "^0.4.23",
