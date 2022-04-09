@@ -110,12 +110,11 @@ jobs:
         run: |
           makensis -DVERSION="${{ needs.getversion.outputs.version }}" ${{ github.workspace }}\tmp\installer\install.nsi
           echo "::set-output name=file_name::Setup Quartersbrief v${{ needs.getversion.outputs.version }}.exe"
-          move ${{ github.workspace }}\tmp\installer\${{ steps.build-exe.outputs.file_name }} ${{ github.workspace }}
 
       - uses: actions/upload-artifact@v3
         with:
           name: exe
-          path: ${{ steps.package.outputs.file_name }}
+          path: ${{ github.workspace }}\tmp\installer\${{ steps.package.outputs.file_name }}
 
   release:  
     runs-on: ubuntu-latest
