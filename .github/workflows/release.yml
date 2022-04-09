@@ -28,8 +28,7 @@ jobs:
   build-deb:
     runs-on: ubuntu-latest
     needs: getversion
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    outputs: ${{ steps.package.outputs.file_name }}
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
@@ -82,6 +81,8 @@ jobs:
   build-exe:
     needs: getversion
     runs-on: windows-latest
+    outputs: 
+      file_name: ${{ steps.package.outputs.file_name }}
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
@@ -124,5 +125,5 @@ jobs:
         with:
           prerelease: true
           files: |
-            deb
-            exe
+            ${{ needs.build-deb.outputs.file_name }}
+            ${{ needs.build-exe.outputs.file_name }}
