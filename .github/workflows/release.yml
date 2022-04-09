@@ -121,10 +121,11 @@ jobs:
     needs: [build-deb, build-exe]
     steps:
       - uses: actions/download-artifact@v3
-      
+        with:
+
       - uses: softprops/action-gh-release@v1
         with:
           prerelease: true
           files: |
-            ${{ needs.build-deb.outputs.file_name }}
-            ${{ needs.build-exe.outputs.file_name }}
+            deb/${{ needs.build-deb.outputs.file_name }}
+            exe/${{ needs.build-exe.outputs.file_name }}
