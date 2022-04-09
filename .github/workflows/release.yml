@@ -28,7 +28,8 @@ jobs:
   build-deb:
     runs-on: ubuntu-latest
     needs: getversion
-    outputs: ${{ steps.package.outputs.file_name }}
+    outputs: 
+      file_name: ${{ steps.package.outputs.file_name }}
     steps:
       # Checks-out the repository under $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
