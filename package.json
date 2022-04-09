@@ -5,7 +5,7 @@
   "version": "0.1.0-alpha.6",
   "bin": "./src/quartersbrief.js",
   "scripts": {
-    "start": "node quartersbrief.js",
+    "start": "node src/quartersbrief.js",
     "test": "node_modules/mocha/bin/mocha --loader=esmock --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
     "debug": "node --inspect-brk=0.0.0.0:9229 quartersbrief.js",
     "debug-test": "node_modules/mocha/bin/mocha --loader=esmock --inspect-brk=0.0.0.0:9229 --debug-brk --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
