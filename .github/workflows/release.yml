@@ -121,7 +121,6 @@ jobs:
     needs: [build-deb, build-exe]
     steps:
       - uses: actions/download-artifact@v3
-        with:
 
       - uses: softprops/action-gh-release@v1
         with:
