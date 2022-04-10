@@ -68,11 +68,6 @@ Vagrant.configure("2") do |config|
     cd /usr/local/ && curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
   SHELL
 
-  # Install required packages for grunt-debian-package
-  config.vm.provision "shell", inline: <<-SHELL
-    sudo apt-get install -y devscripts debhelper
-  SHELL
-
   # Set NODE_ENV to 'development' by default
   # Shut up wine
   config.vm.provision "shell", name: "Set environment variables", inline: <<-SHELL
