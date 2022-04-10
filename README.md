@@ -25,6 +25,10 @@ NodeJS is available in the distro repositories, but usually in a version that is
 curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
 ```
 
+#### On Windows (with installer)
+
+The easiest way to install on Windows is through the installer provided with each release. Make sure that NodeJS and Python are added to your path.
+
 #### On Linux (from source)
 
 Quartersbrief depends on wine to perform automatic updates of its data whenever the game updates. Unfortunately, this makes the disk footprint quite large. If you don't want this, you can install from source and disable automatic updates. You will still need NodeJS v17 or higher. 
