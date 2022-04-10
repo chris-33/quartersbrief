@@ -5,7 +5,7 @@ import { Server } from 'socket.io';
 
 function createServers(host, port) {
 	const srv = express();
-	srv.use(express.static('assets'));
+	srv.use(express.static('res/www'));
 	
 	const httpServer = createServer(srv);
 	const io = new Server(httpServer);

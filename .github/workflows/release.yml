@@ -41,7 +41,7 @@ jobs:
           mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/DEBIAN
           mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp -r $GITHUB_WORKSPACE/src $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/assets $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/res $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp -r $GITHUB_WORKSPACE/scripts $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp $GITHUB_WORKSPACE/package.json $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
           cp $GITHUB_WORKSPACE/README.md $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
@@ -92,7 +92,7 @@ jobs:
         run: |
           mkdir ${{ github.workspace }}\tmp\installer\app
           xcopy /s /e ${{ github.workspace }}\src ${{ github.workspace }}\tmp\installer\app\src\
-          xcopy /s /e ${{ github.workspace }}\assets ${{ github.workspace }}\tmp\installer\app\assets\
+          xcopy /s /e ${{ github.workspace }}\res ${{ github.workspace }}\tmp\installer\app\res\
           xcopy /s /e ${{ github.workspace }}\scripts ${{ github.workspace }}\tmp\installer\app\scripts\
           xcopy ${{ github.workspace }}\package.json ${{ github.workspace }}\tmp\installer\app\
           xcopy ${{ github.workspace }}\README.md ${{ github.workspace }}\tmp\installer\app\
