@@ -4,8 +4,8 @@ import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
 import { fileURLToPath } from 'url';
-import { existsSync, readFileSync } from 'fs';
 import log from 'loglevel';
+import fse from 'fs-extra';
 
 // Assume production environment if nothing is specified
 process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
@@ -21,6 +21,18 @@ const paths = {
 	...envpaths(name, { suffix: '' }),
 	base: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
 };
+const configfile = path.format({ 
+	dir: paths.config, 
+	name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
+	ext: '.json' 
+});
+
+// Create default configuration if the config directory does not exist
+if (!(await fse.pathExists(paths.config))) {
+	log.info(`Could not find config directory at ${paths.config}, creating default config`);
+	fse.mkdirp(paths.config)
+	await fse.copy('res/defaultconfig/', paths.config);
+}
 
 const config = {
 	// Defaults:
@@ -85,12 +97,7 @@ const config = {
 			description: 'Output debug information. It can also be used in an alternate form --debug <dedicatedlogs>, where <dedicatedlogs> is a comma-separated list of dedicated loggers to switch on. Use --debug all to turn on all dedicated loggers. Available dedicated loggers are: GameObjectFactory, assertInvariants'
 		})
 		.config()
-		.default('config', 
-			path.format({ 
-				dir: paths.config, 
-				name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
-				ext: '.json' 
-			}))
+		.default('config', configfile)
 		.help()
 		.version()
 		.wrap(yargs.terminalWidth())
