@@ -1,4 +1,3 @@
-import xml from 'xml2js';
 import config, { paths } from './config.js';
 import path from 'path';
 import fse from 'fs-extra';
@@ -15,9 +14,7 @@ async function getBuildNo() {
 		.filter(dirent => dirent.isDirectory())
 		.map(dirent => dirent.name)
 		.filter(name => name.match(/\d+/));
-	dedicatedlog.debug(`Available game versions: ${builds}`);
 	let result = Math.max(...builds);
-	dedicatedlog.debug(`Resuming with game version ${result}`);
 	return result;
 }
 
@@ -25,23 +22,26 @@ async function needsUpdate() {
 	if (config.updatePolicy === 'prohibit') return false;
 	if (config.updatePolicy === 'force') return true;	
 
-	// Read and parse wowsdir/preferences.xml
-	let current = await getBuildNo();
-
 	// Read the last remembered version from the .version file in the quartersbrief data directory. 
 	// This is the version of the game that the last used data was extracted from.
 	// If that file does not exist, make the last remembered version "0,0,0,0" which will force an update.
 	let remembered;
 	try {
-		remembered = Number(await fse.readFile(path.join(paths.data, '.version'), 'utf8'));
-		dedicatedlog.debug(`Last known data version detected as ${remembered}`);
+		remembered = Number(await fse.readFile(`${paths.data}/.version`), 'utf8');
+		dedicatedlog.debug(`Last known data version was ${remembered}`);
 	} catch (err) {
 		if (err.code === 'ENOENT') {
 			remembered = 0;
 			dedicatedlog.debug(`Last data version unknown, assuming ${remembered}`);
 		} else throw err;
 	}
-	return remembered < current;
+
+	let current = await getBuildNo();
+	dedicatedlog.debug(`Current version is ${current}`);
+
+	let result = remembered < current;
+	dedicatedlog.debug(`${result ? 'An' : 'No'} update is needed`);
+	return result;
 }
 
 async function updateLabels(buildno) {
@@ -63,34 +63,37 @@ async function updateLabels(buildno) {
 		return fse.writeFile(dest, data);
 	}
 
-	// Keep a backup in case the update goes wrong
-	try {
-		await fse.rename(
-				path.join(paths.data, 'global-en.json'), 
-				path.join(paths.data, 'global-en.json.bak'))
-	} catch(err) {
-		if (err.code === 'ENOENT') {
-			dedicatedlog.warn(`Could not find existing file global-en.json to keep as a backup.`);
-		} else throw err;		
-	}
+	// Step 1: Keep a backup in case the update goes wrong
+	let existed = await fse.pathExists(`${paths.data}/global-en.json`);
+	if (existed) {
+		await fse.rename(`${paths.data}/global-en.json`, `${paths.data}/global-en.json.bak`);
+	} else
+		dedicatedlog.warn(`Could not find an existing file global-en.json to keep as a backup.`);
 
-	// Turn global.mo file for the current version into global-en.json
+	// Step 2: Turn global.mo file for the current version into global-en.json
 	try {
 		await moToJSON(
-			path.join(config.wowsdir, 'bin', String(buildno), 'res/texts/en/LC_MESSAGES/global.mo'), 
-			path.join(paths.data, 'global-en.json'));
-		return true;
+			`${config.wowsdir}/bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`,
+			`${paths.data}/global-en.json`);
 	} catch (err) {
 		rootlog.error(`There was an error while updating the labels: ${err.code ? err.code + ' ' : ''}${err.message}`);
-	} finally {
-		// If the operation was unsuccessful, use what we had before.
-		if (!await fse.pathExists(path.join(paths.data, 'global-en.json'))) {
-			rootlog.warn(`Update of labels unsuccesful, reverting to previous version`);
-			fse.rename(
-				path.join(paths.data, 'global-en.json.bak'), 
-				path.join(paths.data, 'global-en.json'));
-		}
+		dedicatedlog.debug(err.stack);
 	}
+
+	// Step 3: Check that the file exists now. If it does, this was a successful update, otherwise revert to previous.
+	if (await fse.pathExists(`${paths.data}/global-en.json`)) {
+		return true;
+	} else if (existed) {
+		// If the operation was unsuccessful, use what we had before.
+		rootlog.warn(`Update of labels unsuccesful, reverting to previous version`);
+		try {
+			fse.rename(`${paths.data}/global-en.json.bak`, `${paths.data}/global-en.json`);
+		} catch (err) {
+			rootlog.error(`Reverting to previous version failed: ${err.code ? err.code + ' ' : ''}${err.message}`);
+			dedicatedlog.debug(err.stack);
+		}	
+	}
+
 	return false;
 }
 
@@ -100,6 +103,8 @@ async function updateGameParams(buildno) {
 		// number, and appears to be the last component of the server version (presumably this is the build number). 
 		// Fortunately, preferences.xml also contains the last known server version. Extract the build number from it,
 		// then construct the path to wowsdir/bin/<buildno>/idx
+		// 
+		// Need to actually use path.join here to make sure we're passing valid input into the command line call.
 		const idxPath = path.join(
 			config.wowsdir, 
 			'bin',
@@ -119,47 +124,48 @@ async function updateGameParams(buildno) {
 			`--include ${res}`
 		];
 
-		dedicatedlog.debug(`Runnning ${cmd} ${args.join(' ')}`);
+		dedicatedlog.debug(`Running ${cmd} ${args.join(' ')}`);
 		return execa(cmd, args);
 	}
 
-	// Keep a backup in case the update goes wrong
-	try {
-		await fse.rename(
-				path.join(paths.data, 'GameParams.json'), 
-				path.join(paths.data, 'GameParams.json.bak'))
-	} catch(err) {
-		if (err.code === 'ENOENT') {
-			dedicatedlog.warn(`Could not find existing file GameParams.json to keep as a backup.`);
-		} else throw err;		
-	}
+	// Step 1: Keep a backup in case the update goes wrong
+	let existed = await fse.pathExists(`${paths.data}/GameParams.json`);
+	if (existed) {
+		await fse.rename(`${paths.data}/GameParams.json`, `${paths.data}/GameParams.json.bak`);
+	} else
+		dedicatedlog.warn(`Could not find an existing file GameParams.json to keep as a backup`);
 
+	// Step 2: Extract GameParams.data to OS's temp dir, then convert it to JSON and move the result to the data directory.
 	try {
 		// Extract GameParams.data to OS's temp dir
 		await wowsunpack('content/GameParams.data', paths.temp, buildno);
-		// await fse.move(
-		// 	path.join(basepath, 'tools/gameparams2json/content/GameParams.data'),
-		// 	path.join(basepath, 'tools/gameparams2json/GameParams.data'));
 		// Run the converter from the World of Warships Fitting Tool
 		// It will convert the GameParams.data into GameParams.json
 		await execa(`python3 ${path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py')}`, { cwd: path.join(paths.temp, 'content') });
 		// Move the converted file and drop the '-0' that the converter always tags on
-		await fse.move(
-			path.join(paths.temp, 'content/GameParams-0.json'), 
-			path.join(paths.data, 'GameParams.json'));
+		await fse.move(`${paths.temp}/content/GameParams-0.json`, `${paths.data}/GameParams.json`);
 		// Clean up after ourselves
-		await fse.remove(path.join(paths.temp, 'content'));
-		return true;
+		await fse.remove(`${paths.temp}/content`);
 	} catch (err) {
-		rootlog.error(`There was an error while updating the game data: ${err.code} ${err.message}`);
-		dedicatedlog.trace(err.stack);
-	} finally {
-		// If the operation was unsuccessful, use what we had before.
-		if (!fse.existsSync(path.join(paths.data, 'GameParams.json'))) {
-			rootlog.warn(`Update of game data was unsuccesful, reverting to previous version`);
+		rootlog.error(`There was an error while updating the game data: ${err.code ? err.code + ' ' : ''}${err.message}`);
+		dedicatedlog.debug(err.stack);
+	}
+
+	// Step 3: Check that the file exists now. If it does, this was a successful update, otherwise revert to previous.
+
+	// If the operation was unsuccessful, use what we had before.
+	if (await fse.pathExists(`${paths.data}/GameParams.json`)) {
+		return true;
+	} else if (existed) {
+		rootlog.warn(`Update of game data was unsuccesful, reverting to previous version`);
+		try {
 			fse.rename(path.join(paths.data, 'GameParams.json.bak'), path.join(paths.data, 'GameParams.json'));
+		} catch (err) {
+			rootlog.error(`Reverting to previous version failed: ${err.code ? err.code + ' ' : ''}${err.message}`);
+			dedicatedlog.debug(err.stack);
 		}
 	}
+
 	return false;
 }
 
@@ -167,10 +173,11 @@ async function update() {
 	await fse.ensureDir(paths.data);
 
 	const buildno = await getBuildNo();
+	dedicatedlog.debug(`Updating to build number ${buildno}`);
 
 	let success = (await Promise.all([ updateLabels(buildno), updateGameParams(buildno) ]))
-						.reduce((prev, curr) => prev && curr, true);
-	if(success) 
+						.every(res => res);
+	if (success)
 		await fse.writeFile(path.join(paths.data, '.version'), String(buildno));
 }
 

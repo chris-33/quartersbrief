@@ -23,18 +23,23 @@ describe('update', function() {
 
 	let execa;
 
+	before(function() {
+		// Add required parameter so yargs doesn't kill us
+		process.argv.push('--wowsdir');		
+	});
+
 	beforeEach(async function() {
 		execa = sinon.stub().resolves();
 		// Do a dynamic import with a dynamic query parameter to cache-bust
 		// This is so we can get a fresh import for each test, as the module
 		// stores the contents of preferences.xml after the first read.		
-		({ needsUpdate, updateLabels, updateGameParams, update } = await esmock('../../src/init/update.js', {}, {
+		({ needsUpdate, updateLabels, updateGameParams, update } = await esmock('../../src/init/update.js', {
 			execa: { execa },
 			'../../src/init/config.js': {
 				default: config,
 				paths
-			}
-		}));
+			},			
+		}, {}));
 	});
 
 	afterEach(function() {
