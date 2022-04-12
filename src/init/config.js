@@ -5,7 +5,6 @@ import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
 import { fileURLToPath } from 'url';
 import log from 'loglevel';
-import fse from 'fs-extra';
 
 // Assume production environment if nothing is specified
 process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
@@ -26,13 +25,6 @@ const configfile = path.format({
 	name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
 	ext: '.json' 
 });
-
-// Create default configuration if the config directory does not exist
-if (!(await fse.pathExists(paths.config))) {
-	log.info(`Could not find config directory at ${paths.config}, creating default config`);
-	fse.mkdirp(paths.config)
-	await fse.copy('res/defaultconfig/', paths.config);
-}
 
 const config = {
 	// Defaults:

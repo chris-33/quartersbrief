@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import config, { paths } from './init/config.js';
+import createconfig from './init/createconfig.js';
 import './init/log.js';
 import { needsUpdate, update } from './init/update.js';
 import log from 'loglevel';
@@ -18,6 +19,8 @@ import pug from 'pug';
 import sass from 'sass';
 
 process.chdir(paths.base);
+
+await createconfig();
 
 // Make sure that the replays directory we will be watching actually exists
 // If it doesn't, this is a non-recoverable error, because this program is pointless without it.
@@ -88,4 +91,3 @@ battleController.on('battlestart', function() {
 battleController.on('battleend', function() {
 	io.emit('battleend');
 });
-
