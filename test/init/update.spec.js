@@ -28,7 +28,9 @@ describe('update', function() {
 		process.argv.push('--wowsdir');		
 	});
 
-	beforeEach(async function() {
+	beforeEach(async function() {		
+		this.timeout(3000); // Loading of the modules sometimes takes a while, so increase the timeout to 3s
+		
 		execa = sinon.stub().resolves();
 		// Do a dynamic import with a dynamic query parameter to cache-bust
 		// This is so we can get a fresh import for each test, as the module
