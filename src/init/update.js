@@ -173,7 +173,7 @@ async function update() {
 	await fse.ensureDir(paths.data);
 
 	const buildno = await getBuildNo();
-	dedicatedlog.debug(`Updating to build number ${buildno}`);
+	rootlog.info(`Updating to build number ${buildno}. This might take a few minutes.`);
 
 	let success = (await Promise.all([ updateLabels(buildno), updateGameParams(buildno) ]))
 						.every(res => res);
