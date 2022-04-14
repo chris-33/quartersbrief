@@ -125,7 +125,7 @@ async function updateGameParams(buildno) {
 		];
 
 		dedicatedlog.debug(`Running ${cmd} ${args.join(' ')}`);
-		return execa(cmd, args);
+		return execa(cmd, args, { shell: true });
 	}
 
 	// Step 1: Keep a backup in case the update goes wrong
@@ -141,7 +141,7 @@ async function updateGameParams(buildno) {
 		await wowsunpack('content/GameParams.data', paths.temp, buildno);
 		// Run the converter from the World of Warships Fitting Tool
 		// It will convert the GameParams.data into GameParams.json
-		await execa(`python3 ${path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py')}`, { cwd: path.join(paths.temp, 'content') });
+		await execa(`python3 ${path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py')}`, { cwd: path.join(paths.temp, 'content'), shell: true });
 		// Move the converted file and drop the '-0' that the converter always tags on
 		await fse.move(`${paths.temp}/content/GameParams-0.json`, `${paths.data}/GameParams.json`);
 		// Clean up after ourselves
