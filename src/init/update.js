@@ -137,9 +137,12 @@ async function updateGameParams(buildno) {
 		else if (os.type() === 'Windows_NT') 
 			cmd = 'py';
 
+		let args = [ path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py') ];
+		
+		dedicatedlog.debug(`Running ${cmd} ${args.join(' ')}`);
 		return execa(
 			cmd,
-			[ path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py') ], 
+			args, 
 			{ cwd: gameparamsdir });
 	}
 
