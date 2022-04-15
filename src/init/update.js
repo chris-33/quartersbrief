@@ -99,10 +99,7 @@ async function updateLabels(buildno) {
 
 async function updateGameParams(buildno) {
 	function wowsunpack(res, dest, buildno) {
-		// Construct the path of the current version's idx subdirectory. This sits in a subdirectory of bin that is a
-		// number, and appears to be the last component of the server version (presumably this is the build number). 
-		// Fortunately, preferences.xml also contains the last known server version. Extract the build number from it,
-		// then construct the path to wowsdir/bin/<buildno>/idx
+		// Construct the path of the current version's idx subdirectory. 
 		// 
 		// Need to actually use path.join here to make sure we're passing valid input into the command line call.
 		const idxPath = path.join(
@@ -111,21 +108,39 @@ async function updateGameParams(buildno) {
 			String(buildno), 
 			'idx');
 
-		let cmd = '';
-		if (os.type() === 'Linux') cmd += 'wine ';
+		let cmd;
+		let args;
+		if (os.type() === 'Linux') {
+			cmd = 'wine';
+			args = [ path.resolve(path.join(paths.base, 'tools/wowsunpack/wowsunpack.exe')) ];
+		} else if (os.type() === 'Windows_NT') {
+			cmd = path.resolve(path.join(paths.base, 'tools/wowsunpack/wowsunpack.exe'));
+			args = [];
+		} 
 
-		cmd += `${path.resolve(path.join(paths.base, 'tools/wowsunpack/wowsunpack.exe'))}`;
-
-		let args = [
+		args = args.concat([
 			idxPath,
-			`--packages ${path.join(config.wowsdir, 'res_packages')}`,
-			`--output ${dest}`,
-			`--extract`,
-			`--include ${res}`
-		];
+			'--packages', path.join(config.wowsdir, 'res_packages'),
+			'--output', dest,
+			'--extract',
+			'--include', res
+		]);
 
 		dedicatedlog.debug(`Running ${cmd} ${args.join(' ')}`);
-		return execa(cmd, args, { shell: true });
+		return execa(cmd, args);
+	}
+
+	async function convert(gameparamsdir) {
+		let cmd;
+		if (os.type() === 'Linux')
+			cmd = 'python3';
+		else if (os.type() === 'Windows_NT') 
+			cmd = 'py';
+
+		return execa(
+			cmd,
+			[ path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py') ], 
+			{ cwd: gameparamsdir });
 	}
 
 	// Step 1: Keep a backup in case the update goes wrong
@@ -141,7 +156,7 @@ async function updateGameParams(buildno) {
 		await wowsunpack('content/GameParams.data', paths.temp, buildno);
 		// Run the converter from the World of Warships Fitting Tool
 		// It will convert the GameParams.data into GameParams.json
-		await execa(`python3 ${path.join(paths.base, 'tools/gameparams2json/OneFileToRuleThemAll.py')}`, { cwd: path.join(paths.temp, 'content'), shell: true });
+		await convert(path.join(paths.temp, 'content'));
 		// Move the converted file and drop the '-0' that the converter always tags on
 		await fse.move(`${paths.temp}/content/GameParams-0.json`, `${paths.data}/GameParams.json`);
 		// Clean up after ourselves
