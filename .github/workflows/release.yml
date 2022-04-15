@@ -1,6 +1,6 @@
-# This workflow builds a .deb package when a version is pushed.
+# This workflow builds a .deb package and a Windows installer when a version is pushed.
 
-name: build-deb
+name: release
 
 # Controls when the workflow will run
 on:
