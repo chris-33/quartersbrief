@@ -2,14 +2,16 @@ import { GameObject } from '../../src/model/gameobject.js';
 import clone from 'clone';
 import sinon from 'sinon';
 
-describe('GameObject', function() {
+describe.only('GameObject', function() {
 	const TEST_DATA = { 
 		prop1: 'string', 
-		prop2: 0,
-		nested: { prop3: 'prop3' },
-		arr: [ 'prop4' ],
+		prop2: 1,
+		prop3: 1,
+		nested: { prop1: 2, prop2: 3 },
+		nested2: { prop1: 3 },
+		arr: [ 3, 4 ],
 		go: {
-			prop: 'gameobject',
+			prop1: 1,
 			typeinfo: {
 				type: "Type1",
 				species: null,
@@ -38,58 +40,54 @@ describe('GameObject', function() {
 		gameObject = new GameObject(clone(TEST_DATA));
 	});
 
-	it('should copy all properties from the source', function() {
-		expect(gameObject).to
-			.have.property('_data')
-			.that.deep.equals(TEST_DATA);
+	describe('.get', function() {
+		it('should return a scalar if the key contains no wildcards and collate is not set specifically', function() {
+			for (let key in TEST_DATA)
+				expect(gameObject.get(key), key).to.deep.equal(TEST_DATA[key]);
+		});
+
+		it('should return an array if the key contains wildcards and collate is not set specifically', function() {
+			expect(gameObject.get('prop*')).to.be.an('array').with.members([ TEST_DATA.prop1, TEST_DATA.prop2, TEST_DATA.prop3 ]);
+		});
+
+		it('should return a scalar if collate is true and an array if collate is false', function() {
+			expect(gameObject.get('nested2*', { collate: true })).to.deep.equal(TEST_DATA.nested2);
+			expect(gameObject.get('nested', { collate: false })).to.be.an('array').with.deep.members([ TEST_DATA.nested ]);
+		});
+
+		it('should throw if collate is true but not all results are equal', function() {
+			expect(gameObject.get.bind('prop*', { collate: true })).to.throw();
+		});
 	});
 
-	describe('.freshCopy', function() {
-		beforeEach(function() {
-			const data = clone(TEST_DATA);
-			data.inner.go = new GameObject(data.inner.go);
-			data.go = new GameObject(data.go);
-			
-			gameObject = new GameObject(data);
+	describe('.multiply', function() {
+		it('should multiply the correct own, nested, or array property', function() {
+			const coeff = 2;
+			gameObject.multiply('prop2', coeff);
+			gameObject.multiply('nested.prop1', coeff);
+			gameObject.multiply('arr.0', coeff);
+			expect(gameObject._data.prop2, 'own property').to.equal(TEST_DATA.prop2 * coeff);			
+			expect(gameObject._data.nested.prop1, 'nested property').to.equal(TEST_DATA.nested.prop1 * coeff);
+			expect(gameObject._data.arr[0], 'array property').to.equal(TEST_DATA.arr[0] * coeff);
+			// Make sure the coefficient doesn't just get registered across the board:
+			expect(gameObject._data.prop3, 'other own property').to.equal(TEST_DATA.prop3);
+			expect(gameObject._data.nested.prop2, 'other nested property').to.equal(TEST_DATA.nested.prop2);
+			expect(gameObject._data.arr[1], 'other array property').to.equal(TEST_DATA.arr[1]);
 		});
 
-		it('should make a deep copy of the source', function() {
-			const other = gameObject.freshCopy();
-			expect(gameObject).to.not.equal(other);
-			expect(gameObject).to.deep.equal(other);			
+		it('should multiply all properties matching a wildcard key', function() {
+			const coeff = 2;
+			gameObject.multiply('nested*.prop1', coeff);
+			gameObject.multiply('arr.*', coeff);
+			expect(gameObject._data.nested.prop1).to.equal(TEST_DATA.nested.prop1 * coeff);
+			expect(gameObject._data.nested2.prop1).to.equal(TEST_DATA.nested2.prop1 * coeff);
+			expect(gameObject._data.arr).to.have.members(TEST_DATA.arr.map(i => i * coeff));
 		});
 
-		it('should not invoke getters', function() {
-			const spy = sinon.spy();
-			// Invoking getters would force lazily expanded references to expand
-			Object.defineProperty(gameObject._data, 'reference', {
-				get: spy,
-				enumerable: true,
-				configurable: true
-			});
-			gameObject.freshCopy();
-			expect(spy).to.not.have.been.called;
-		});
-
-		it('should make copies of nested properties that are not game objects', function() {
-			const data = gameObject._data;
-			const other = gameObject.freshCopy();
-			for (let key in data)
-				if (typeof data[key] === 'object' && data[key] !== null && !(data[key] instanceof GameObject)) {
-					expect(data[key]).to.not.equal(other._data[key]);
-					expect(data[key]).to.deep.equal(other._data[key]);
-				}
-		});
-
-		it('should contain fresh copies of all nested game objects', function() {
-			const other = gameObject.freshCopy();
-			expect(gameObject._data.go).to.exist.and.be.an.instanceof(GameObject);
-			expect(gameObject._data.go).to.not.equal(other._data.go);
-			expect(gameObject._data.go).to.deep.equal(other._data.go);
-
-			expect(gameObject._data.inner.go).to.exist.and.be.an.instanceof(GameObject);
-			expect(gameObject._data.inner.go).to.not.equal(other._data.inner.go);
-			expect(gameObject._data.inner.go).to.deep.equal(other._data.inner.go);
+		it('should multiply into nested GameObjects', function() {
+			const coeff = 2;
+			gameObject.multiply('go.prop1', coeff);
+			expect(gameObject._data.go.prop1).to.equal(TEST_DATA.go.prop1 * coeff);
 		});
 	});
 });

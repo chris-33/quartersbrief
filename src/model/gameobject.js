@@ -1,3 +1,6 @@
+import DotNotation from '../util/dot-notation.js';
+import deepequal from 'deep-equal';
+
 /**
  * This is a thin wrapper around game object definitions as they can be read from
  * `GameParams.data`. 
@@ -9,12 +12,6 @@
  * object. (This is checked at application startup through invariant assertion checking.)
  */
 class GameObject {
-	/**
-	 * Definitions for autocreated getters
-	 */
-	static LOOKUP_DEFINITIONS = {
-	};
-
 	/**
 	 * Regex to find game object reference codes.
 	 * References all start with the capital letter P, followed
@@ -44,35 +41,26 @@ class GameObject {
 		this._data = data;
 	}
 
-	get(key, options) {
-		return this._data.get(key, options);
+	get(key, options) {		
+		options ??= {};
+		options.collate ??= !new DotNotation.Key(key).isComplex();
+		let dotnotation = new DotNotation(this._data);		
+		let result = dotnotation.resolveToParents(key);
+		result = result.flatMap(item => dotnotation.resolveStep(new DotNotation.Key(key).prop, item));
+
+		if (options.collate) {
+			if (!result.every(target => deepequal(target, result[0])))
+				throw new Error(`Expected all values to be equal while collating but they were not: ${result}`);
+			// We can just project to the first item, since we just checked that they're all equal anyway
+			result = result[0];
+		}
+		return result;
 	}
 
-	multiply(key, factor, options) {
-		return this._data.multiply(key, factor, options);
-	}
-
-	clear() {
-		this._data.clear();
-	}
-
-	/**
-	 * Returns a fresh copy of this `GameObject`.  
-	 *
-	 * The purpose of this method is to allow getting a fresh instance of an already present `GameObject` 
-	 * without needing go through the (relatively expensive) process of having to retrieve it from a `GameObjectFactory`.
-	 *
-	 * `freshCopy` performs a deep copy of this `GameObject`, where
-	 * - any primitive properties of the data are copied to the destination,
-	 * - any object properties that are themselves `GameObject`s are fresh-copied,
-	 * - any object properties that are _not_ `GameObject`s are copied,
-	 * - lazily-expanding references are not forced to expand.
-	 * 
-	 * @return {GameObject} A new object that has the same class as this one, and whose
-	 * data is a _copy_ of the data of this one.
-	 */
-	freshCopy() {
-		return new this.constructor(this._data.freshCopy());
+	multiply(key, factor) {
+		let dotnotation = new DotNotation(this._data);
+		let targets = dotnotation.resolveToParents(key);
+		targets.forEach(target => dotnotation.applyFn(new DotNotation.Key(key).prop, x => factor * x, target));
 	}
 
 	getID() { return this._data.id;	}
