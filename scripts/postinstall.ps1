@@ -5,7 +5,9 @@ if (Test-Path "$basepath\tools\wowsunpack\wowsunpack.exe") {
 } else {
     echo "Installing wowsunpack.exe..."
     New-Item -Path "$basepath\tools\wowsunpack" -ItemType "directory" -ErrorAction Ignore | Out-Null
-    Invoke-WebRequest "https://dl-wows-gc.wargaming.net/projects/mods/wowsunpack.exe" -outfile "$basepath\tools\wowsunpack\wowsunpack.exe" | Out-Null
+    # Primary download link https://dl-wows-gc.wargaming.net/projects/mods/wowsunpack.exe appears to be broken - wowsunpack always errors.
+    # Using alternate download link.
+    Invoke-WebRequest "https://gitlab.com/AutoSpy/wowsut/raw/master/wowsunpack.exe" -outfile "$basepath\tools\wowsunpack\wowsunpack.exe" | Out-Null
 }
 
 if (Test-Path "$basepath\tools\gameparams2json\OneFileToRuleThemAll.py") {
