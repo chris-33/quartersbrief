@@ -6,7 +6,7 @@ import { paths } from './config.js';
 export default async function createconfig() {
 	if (!(await fse.pathExists(paths.config))) {
 		log.info(`Could not find config directory at ${paths.config}, creating default config`);
-		fse.mkdirp(paths.config)
+		await fse.mkdirp(paths.config)
 		await fse.copy('res/defaultconfig/', paths.config);
 	}	
 }
