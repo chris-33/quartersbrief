@@ -63,7 +63,13 @@ describe('Ship', function() {
 			// Manually create a lazily-expanding reference
 			const val = clone(CONSUMABLE_DATA.PCY001_Consumable1);
 			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
-				get: function() { return new Consumable(val); },
+				get: function() {
+					let consumable = new Consumable(val); 
+					Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
+						value: consumable, enumerable: true
+					});
+					return consumable;
+				},
 				enumerable: true,
 				configurable: true
 			});
@@ -433,6 +439,22 @@ describe('Ship', function() {
 					.have.property(consumable.consumableType)
 					.that.deep.equals(consumable);
 			}
+		});
+	});
+
+	describe('.multiply', function() {
+		it('should multiply into modules', function() {
+			const coeff = 2;
+			let val = ship.engine.value;
+			ship.multiply('engine.value', coeff);
+			expect(ship.engine.value).to.equal(val * coeff);
+		});
+
+		it('should multiply into consumables', function() {
+			const coeff = 2;
+			ship.multiply('consumables.consumable1.value');
+
+			expect(ship.consumables.consumable1.value).to.equal(CONSUMABLE_DATA.PCY001_Consumable1.Flavor1.value * coeff);
 		});
 	});
 });
