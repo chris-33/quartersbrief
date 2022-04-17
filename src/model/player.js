@@ -1,10 +1,8 @@
-import { cdo } from './cdo.js';
-
 class Player {
 	bot = false;
 
 	constructor(data) {
-		this._data = cdo(data);
+		this._data = data;
 	}
 
 	get hidden() { return this._data.hidden_profile; }
