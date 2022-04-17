@@ -6,6 +6,10 @@ import { GameObject } from './gameobject.js';
  * @see Ability.gamedata
  */
 class Consumable extends GameObject {
+	static EXPOSED_FLAVOR_PROPERTIES = [
+		'distShip',
+		'workTime'
+	];
 
 	#flavor;
 
@@ -17,6 +21,21 @@ class Consumable extends GameObject {
 	setFlavor(flavor) {
 		if (typeof this._data[flavor] !== 'object')
 			throw new Error(`Trying to set unknown flavor ${flavor} on consumable ${this.getName()}`);
+
+		for (let key of Consumable.EXPOSED_FLAVOR_PROPERTIES) {
+			// Delete any previously set exposed properties
+			if (key in this) 
+				delete this[key];
+			// Expose any properties that are in the set flavor
+			if (key in this._data[flavor]) {
+				Object.defineProperty(this, key, {
+					get: () => this._data[this.#flavor][key],
+					set: val => { this._data[this.#flavor][key] = val },
+					enumerable: true,
+					configurable: true
+				});
+			}
+		}
 				
 		this.#flavor = flavor;
 	}
@@ -39,7 +58,7 @@ class Consumable extends GameObject {
 			if (!this.#flavor)
 				throw new Error(`Trying to get property ${key} on consumable ${this.getName()} while no flavor is set`);
 			else
-				key = this.#flavor + '.' + key;
+				key = `${this.#flavor}.${key}`;
 
 		return super.get(key, options);
 	}
