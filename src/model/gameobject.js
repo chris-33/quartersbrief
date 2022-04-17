@@ -1,5 +1,3 @@
-import { cdo } from './cdo.js';
-
 /**
  * This is a thin wrapper around game object definitions as they can be read from
  * `GameParams.data`. 
@@ -43,7 +41,7 @@ class GameObject {
 	 * @param  {Object} data The source to copy from
 	 */
 	constructor(data) {
-		this._data = cdo(data);
+		this._data = data;
 	}
 
 	get(key, options) {
