@@ -165,7 +165,7 @@ Section "-NPM"
 	IfErrors Errors Done
 
 	Errors:
-	MessageBox MB_ICONSTOP|MB_OK 'Running NPM commands failed. You may be able to recover from this by running "npm install --production" manually from the Quartersbrief directory with administrator rights.' 
+	MessageBox MB_ICONSTOP|MB_OK 'Running NPM commands failed. You may be able to recover from this by running "npm install --production --no-package-lock" manually from the Quartersbrief directory with administrator rights.' 
 
 	Done:
 SectionEnd
