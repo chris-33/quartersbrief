@@ -2,7 +2,7 @@ import { GameObject } from '../../src/model/gameobject.js';
 import DotNotation from '../../src/util/dot-notation.js';
 import clone from 'clone';
 
-describe.only('DotNotation', function() {
+describe('DotNotation', function() {
 	const TEST_DATA = {
 			prop1: 1,
 			prop2: 0,
@@ -130,6 +130,14 @@ describe.only('DotNotation', function() {
 				expect(new DotNotation.Key('nested.prop1').path).to.equal('nested');
 				expect(new DotNotation.Key('nested.innernested.prop').path).to.equal('nested.innernested');
 				expect(new DotNotation.Key('nodot').path).to.equal('');
+			});		
+		});
+
+		describe('root', function() {
+			it('should return everything up to the first dot', function() {
+				expect(new DotNotation.Key('nested.prop1').root).to.equal('nested');
+				expect(new DotNotation.Key('nested.innernested.prop').root).to.equal('nested');
+				expect(new DotNotation.Key('nodot').root).to.equal('');
 			});		
 		});
 
