@@ -30,7 +30,13 @@ export default class DotNotation {
 		if (base instanceof GameObject) base = base._data;
 		return Object.keys(base)
 			.filter(key => keyRegex.test(key))
-			.map(key => base[key] = fn(base[key])); // Assignments are expressions in JavaScript
+			.map(key => {
+				const val = fn(base[key]);
+				// Avoid unnecessary assignments to avoid errors on read-only properties
+				if (base[key] !== val)
+					return base[key] = fn(base[key]) // Assignments are expressions in JavaScript
+				else return val;
+			}); 
 	}
 
 	/**
@@ -71,6 +77,13 @@ export default class DotNotation {
 DotNotation.Key = class {
 	constructor(key) {
 		this.key = key;
+	}
+
+	get root() {
+		let firstdot = this.key.indexOf('.');
+		if (firstdot > -1)
+			return this.key.substring(0, firstdot);
+		else return '';
 	}
 
 	get path() { 
