@@ -1,7 +1,7 @@
 {
 	"PCY001_Consumable1": { 
-		"Flavor1": { "prop": "Flavor01", "consumableType": "consumable1" }, 
-		"Flavor2": { "prop": "Flavor02", "consumableType": "consumable1" }, 
+		"Flavor1": { "prop": "Flavor01", "value": 1, "consumableType": "consumable1" }, 
+		"Flavor2": { "prop": "Flavor02", "value": 2, "consumableType": "consumable1" }, 
 		"name": "PCY001_Consumable1",
 		"index": "PCY001",
 		"id": 100,
