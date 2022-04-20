@@ -1,6 +1,4 @@
-import DotNotation from '../util/dot-notation.js';
-import deepequal from 'deep-equal';
-
+import DataObject from './dataobject.js';
 /**
  * This is a thin wrapper around game object definitions as they can be read from
  * `GameParams.data`. 
@@ -11,7 +9,7 @@ import deepequal from 'deep-equal';
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
  * object. (This is checked at application startup through invariant assertion checking.)
  */
-class GameObject {
+class GameObject extends DataObject {
 	/**
 	 * Regex to find game object reference codes.
 	 * References all start with the capital letter P, followed
@@ -31,37 +29,6 @@ class GameObject {
 	 * @type {RegExp}
 	 */
 	static REFERENCE_NAME_REGEX = new RegExp(GameObject.REFERENCE_CODE_REGEX.source.slice(0,-1) + '(?:_\\w+)?$');
-
-	/**
-	 * Creates a new GameObject and copies all properties
-	 * from data to it.
-	 * @param  {Object} data The source to copy from
-	 */
-	constructor(data) {
-		this._data = data;
-	}
-
-	get(key, options) {		
-		options ??= {};
-		options.collate ??= !new DotNotation.Key(key).isComplex();
-		let dotnotation = new DotNotation(this._data);		
-		let result = dotnotation.resolveToParents(key);
-		result = result.flatMap(item => dotnotation.resolveStep(new DotNotation.Key(key).prop, item));
-
-		if (options.collate) {
-			if (!result.every(target => deepequal(target, result[0])))
-				throw new Error(`Expected all values to be equal while collating but they were not: ${result}`);
-			// We can just project to the first item, since we just checked that they're all equal anyway
-			result = result[0];
-		}
-		return result;
-	}
-
-	multiply(key, factor) {
-		let dotnotation = new DotNotation(this._data);
-		let targets = dotnotation.resolveToParents(key);
-		targets.forEach(target => dotnotation.applyFn(new DotNotation.Key(key).prop, x => factor * x, target));
-	}
 
 	getID() { return this._data.id;	}
 	getName() { return this._data.name; }
