@@ -13,7 +13,7 @@ describe('Consumable', function() {
 
 	before(function() {
 		exposedFlavorProperties = Consumable.EXPOSED_FLAVOR_PROPERTIES;
-		Consumable.EXPOSED_FLAVOR_PROPERTIES = [ 'value', 'arbitraryothervalue' ];
+		Consumable.EXPOSED_FLAVOR_PROPERTIES = [ 'consumableType', 'value', 'arbitraryothervalue' ];
 	});
 
 	after(function() {
@@ -25,13 +25,13 @@ describe('Consumable', function() {
 	});
 
 	describe('.setFlavor', function() {
-		it('should expose properties of the flavor', function() {
+		it('should expose virtual properties of the flavor', function() {
 			expect(consumable).to.not.have.property('value');
 			consumable.setFlavor('Flavor1');
 			expect(consumable).to.have.property('value');
 		});
 
-		it('should unset previously exposed properties when setting flavors', function() {
+		it('should unset previously exposed virtual properties when setting flavors', function() {
 			consumable.setFlavor('Flavor1');
 			// Pretend that the set flavor set the key "arbitraryothervalue"
 			consumable.arbitraryothervalue = 42;
@@ -40,21 +40,30 @@ describe('Consumable', function() {
 		});
 	});
 
-	it('should error when trying to get properties other than typeinfo, name, index and id without a set flavor', function() {
-		for (let prop of ['typeinfo', 'name', 'index', 'id'])
+	it('should error when trying to get virtual properties without a set flavor', function() {
+		// It should not error on non-virtual properties
+		for (let prop in consumable)
 			expect(consumable.get.bind(consumable, prop)).to.not.throw();
-		expect(consumable.get.bind(consumable, 'prop')).to.throw();
+		
+		// It should error on virtual properties if no flavor is set
+		for (let prop of Consumable.EXPOSED_FLAVOR_PROPERTIES)
+			expect(consumable.get.bind(consumable, prop)).to.throw();
+		
+		// After setting a flavor, it should no longer error on virtual properties,
+		// if they were set on the consumable
 		consumable.setFlavor('Flavor1');
-		expect(consumable.get.bind(consumable, 'prop')).to.not.throw();
+		for (let prop of Object.keys(consumable))
+			expect(consumable.get.bind(consumable, prop)).to.not.throw();
 	});
 
-	it('should get properties typeinfo, name, index and id on itself and refer others to the set flavor', function() {
+	it('should refer exposed virtual properties to the set flavor, and get all others on itself', function() {
 		consumable.setFlavor('Flavor1');
-		for (let key of ['id', 'index', 'name'])
-			expect(consumable.get(key)).to.equal(TEST_DATA[key]);
+		for (let key in consumable) {
+			expect(consumable.get(key), key).to.deep.equal(Consumable.EXPOSED_FLAVOR_PROPERTIES.includes(key) ?
+				TEST_DATA.Flavor1[key] : 
+				TEST_DATA[key]);
+		}
 		for (let key of ['type','nation','species'])
 			expect(consumable.get(`typeinfo.${key}`)).to.equal(TEST_DATA.typeinfo[key]);
-
-		expect(consumable.get('prop')).to.equal(TEST_DATA.Flavor1.prop);
 	});
-})
+});

@@ -1,4 +1,5 @@
 import { GameObject } from './gameobject.js';
+import DotNotation from '../util/dotnotation.js';
 
 /**
  * This class models a ship ability - called "consumable" in game.
@@ -7,8 +8,9 @@ import { GameObject } from './gameobject.js';
  */
 class Consumable extends GameObject {
 	static EXPOSED_FLAVOR_PROPERTIES = [
+		'consumableType',
 		'distShip',
-		'workTime'
+		'workTime',
 	];
 
 	#flavor;
@@ -51,16 +53,14 @@ class Consumable extends GameObject {
 	 * @override
 	 */
 	get(key, options) {
-		// key might be in dot notation, so we need check against only the first part
-		// If the first part is typeinfo, name, index or id, read it from this object
-		// Otherwise read through to the flavor
-		if (!['typeinfo', 'name', 'index', 'id'].includes(key.split('.')[0]))
+		let path = DotNotation.elements(key);
+		if (Consumable.EXPOSED_FLAVOR_PROPERTIES.includes(path[0])) {
 			if (!this.#flavor)
 				throw new Error(`Trying to get property ${key} on consumable ${this.getName()} while no flavor is set`);
-			else
-				key = `${this.#flavor}.${key}`;
+			path.unshift(this.#flavor);
+		}
 
-		return super.get(key, options);
+		return super.get(DotNotation.join(path), options);
 	}
 
 	multiply(key, factor, options) {
