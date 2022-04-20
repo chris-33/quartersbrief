@@ -8,15 +8,27 @@ describe('Ship @integration', function() {
 	let TEST_DATA;
 	let SHIP_DATA;
 	let CONSUMABLE_DATA;
+	let exposedFlavorProperties;
+
 	let gameObjectFactory;
 	let ship;
 
 	before(function() {
 		SHIP_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 		CONSUMABLE_DATA = JSON.parse(readFileSync('test/model/testdata/consumable.json'));
-		TEST_DATA = {};
-		TEST_DATA[SHIP_DATA.name] = SHIP_DATA;
-		Object.assign(TEST_DATA, CONSUMABLE_DATA);
+		TEST_DATA = {
+			[SHIP_DATA.name]: SHIP_DATA,
+			...CONSUMABLE_DATA
+		};
+	});
+
+	before(function() {
+		exposedFlavorProperties = Consumable.EXPOSED_FLAVOR_PROPERTIES;
+		Consumable.EXPOSED_FLAVOR_PROPERTIES = Object.keys(CONSUMABLE_DATA.PCY001_Consumable1.Flavor1);
+	});
+
+	after(function() {
+		Consumable.EXPOSED_FLAVOR_PROPERTIES = exposedFlavorProperties;
 	});
 
 	beforeEach(function() {
@@ -81,9 +93,11 @@ describe('Ship @integration', function() {
 		it('should be a hash of all consumables, with the consumableType as the key', function() {
 			for (let consumableName in CONSUMABLE_DATA) {
 				let consumable = CONSUMABLE_DATA[consumableName];
+				const expected = new Consumable(consumable);
+				expected.setFlavor('Flavor1');
 				expect(ship.consumables, consumable.Flavor1.consumableType).to
 					.have.property(consumable.Flavor1.consumableType)
-					.that.deep.equals(new Consumable(consumable));
+					.that.deep.equals(expected);
 			}
 		});
 	});
