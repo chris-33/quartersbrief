@@ -1,4 +1,4 @@
-import DotNotation from '../util/dot-notation.js';
+import DotNotation from '../util/dotnotation.js';
 import { GameObject } from './gameobject.js';
 import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
