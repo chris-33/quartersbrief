@@ -40,8 +40,8 @@ describe('DataObject', function() {
 	});
 
 	describe('.get', function() {
-		it('should return its data when key is empty', function() {
-			expect(obj.get('')).to.deep.equal(TEST_DATA);
+		it('should return itself when key is empty', function() {
+			expect(obj.get('')).to.equal(obj);
 		});
 
 		it('should return a scalar if the key contains no wildcards and collate is not set specifically', function() {
@@ -83,12 +83,19 @@ describe('DataObject', function() {
 		});
 
 		it('should multiply all properties matching a wildcard key', function() {
-			const coeff = 2;
+			const coeff = 2;			
 			obj.multiply('nested*.prop1', coeff);
-			obj.multiply('arr.*', coeff);
 			expect(obj._data.nested.prop1).to.equal(TEST_DATA.nested.prop1 * coeff);
 			expect(obj._data.nested2.prop1).to.equal(TEST_DATA.nested2.prop1 * coeff);
+
+			obj = new DataObject(clone(TEST_DATA));
+			obj.multiply('arr.*', coeff);
 			expect(obj._data.arr).to.have.members(TEST_DATA.arr.map(i => i * coeff));
+
+			obj = new DataObject(clone(TEST_DATA));
+			obj.multiply('nested.*', coeff);
+			expect(obj._data.nested.prop1).to.equal(TEST_DATA.nested.prop1 * coeff);
+			expect(obj._data.nested.prop2).to.equal(TEST_DATA.nested.prop2 * coeff);
 		});
 
 		it('should multiply into nested DataObjects', function() {
