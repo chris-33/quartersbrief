@@ -25,7 +25,13 @@ describe('DotNotation', function() {
 		it('should return the individual elements which are separated by dots', function() {
 			expect(DotNotation.elements('a.b.c')).to.be.an('array').with.members([ 'a', 'b', 'c' ]);
 		});
-	})
+	});
+
+	describe('join', function() {
+		it('should return the elements joined by dots', function() {
+			expect(DotNotation.join(['a','b','c'])).to.be.a('string').that.equals('a.b.c');
+		});
+	});
 
 	describe('resolve', function() {
 		it('should return an array containing only the requested property on a simple key', function() {

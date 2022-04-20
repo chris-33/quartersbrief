@@ -33,6 +33,15 @@ export default class DotNotation {
 	}
 
 	/**
+	 * Constructs a key from `elements`, adjoining them with `.`.
+	 * @param  {String[]} elements The key elements to join. May include wildcards.
+	 * @return {String}      The `elements`, joined by `.`.
+	 */
+	static join(path) {
+		return path.join('.');
+	}
+
+	/**
 	 * Resolves a single step by returning the names of all properties that match `prop` in `base`. 
 	 * Supports wildcards, but not dot notation.
 	 * @param  {String} prop The properties to select. May contain wildcards.
