@@ -63,8 +63,9 @@ class ShipBuilder {
 		// If there are skills to learn...
 		if (build.skills) {
 			// ...and no captain was specified, find the default captain for that ship
-			// First, see if the ship itself defines a default
-			captain = captain ?? (ship.get('defaultCrew') && this.gameObjectFactory.createGameObject(ship.get('defaultCrew'))); 
+			// First, see if the ship itself defines a default.
+			// (If it does, it will have been expanded to a Captain object.)
+			captain = captain ?? ship.get('defaultCrew'); 
 			// If not, use the nation-agnostic default captain
 			// (There are default captains for each nation, but they seem to all be copies of this one)
 			captain = captain ?? this.gameObjectFactory.createGameObject(ShipBuilder.DEFAULT_CAPTAIN);
