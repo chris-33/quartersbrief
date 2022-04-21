@@ -88,7 +88,8 @@ describe('BriefingMaker @integration', function() {
 	beforeEach(function() {
 		let gameObjectFactory = new GameObjectFactory(MOCK_GAME_DATA);
 		let agendaStore = new AgendaStore(path.join(os.tmpdir(), 'agendas'));
-		briefingMaker = new BriefingMaker(os.tmpdir(), gameObjectFactory, agendaStore, new SpecificityStrategy());
+		let strategy = new SpecificityStrategy(gameObjectFactory);
+		briefingMaker = new BriefingMaker(os.tmpdir(), gameObjectFactory, agendaStore, strategy);
 	});
 
 	it('should construct a briefing from tempArenaInfo.json', async function() {

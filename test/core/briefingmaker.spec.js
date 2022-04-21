@@ -101,23 +101,6 @@ describe('BriefingMaker', function() {
 			.that.satisfies(isCss);
 	});
 
-	it('should enrich the battle', async function() {
-		// We check this assertion by creating a fake topic builder which will be passed the battle
-		// We can then sure that the battle was enriched
-		let buildTopic = sinon.stub().returns({});
-		sinon.stub(BriefingBuilder.prototype, 'getTopicBuilder').resolves({ default: buildTopic });
-		try {
-			await briefingMaker.makeBriefing();
-			expect(buildTopic).to.have.been.called;
-			let battle = buildTopic.firstCall.args[0];
-			// Check that battle.vehicles' entries have been enriched with a ship property
-			expect(battle.getVehicles()[0]).to.have.property('ship');
-			expect(battle.getVehicles()[1]).to.have.property('ship');
-		} finally { 
-			BriefingBuilder.prototype.getTopicBuilder.restore(); 
-		}
-	});
-
 	it('should render the "no battle" template when the BattleDataReader returned null', function() {
 		BattleDataReader.prototype.read.returns(null);
 		let expected = pug.renderFile('src/briefing/no-battle.pug');
