@@ -35,13 +35,13 @@ describe('update', function() {
 		// Do a dynamic import with a dynamic query parameter to cache-bust
 		// This is so we can get a fresh import for each test, as the module
 		// stores the contents of preferences.xml after the first read.		
-		({ needsUpdate, updateLabels, updateGameParams, update } = await esmock('../../src/init/update.js', {
+		({ needsUpdate, updateLabels, updateGameParams, update } = await esmock('../../src/init/update.js', {}, {
 			execa: { execa },
 			'../../src/init/config.js': {
 				default: config,
 				paths
 			},			
-		}, {}));
+		}));
 	});
 
 	afterEach(function() {
@@ -166,52 +166,83 @@ describe('update', function() {
 			}
 		});
 
-		it('should call wowsunpack.exe to extract GameParams.data', async function() {
-			const checker = {
-				wowsunpack: {
-					cmd: function(cmd) {						
-						return /wowsunpack.exe/i.test(cmd)
-							&& (os.type() === 'Linux' ? /wine/i.test(cmd) : true)
-					},
-					args: function(args) {
-						args = Array.from(args);
-						return args.some(arg => /extract/i.test(arg))
-							&& args.some(arg => /packages/i.test(arg) && new RegExp(path.join(config.wowsdir, 'res_packages')).test(arg))
-							&& args.some(arg => /output/i.test(arg) && new RegExp(paths.temp).test(arg))
-							&& args.some(arg => /include/i.test(arg) && /content\/GameParams.data/.test(arg));
-					}
-				},
-			}
-			mockfs({
-				[path.join(paths.data, 'GameParams.json')]: '',
-				...dirs
-			});
+		// eslint-disable-next-line mocha/no-setup-in-describe
+		[ 'Linux', 'Windows_NT' ].forEach(sys => {
+			it(`should call wowsunpack.exe ${sys === 'Linux' ? 'with wine ' : ''}to extract GameParams.data on ${sys}`, async function() {
+				const checker = {
+					wowsunpack: {
+						cmd: function(cmd) {
+							switch (sys) {
+								case 'Linux': return /wine/i.test(cmd);
+								case 'Windows_NT': return /wowsunpack.exe/i.test(cmd);
+							}
+						},
+						args: function(args) {
+							args = Array.from(args);
 
-			await updateGameParams(buildno);			
-			
-			// Check commands and arguments of the execa calls
-			expect(execa, 'called wowsunpack.exe').to
-				.have.been.calledWith(sinon.match(checker.wowsunpack.cmd), sinon.match(checker.wowsunpack.args));
-		});
-		
-		it('should call OneFileToRuleThemAll.py to turn extracted GameParams.data into GameParams.json', async function() {
-			const checker = {
-				gameparams2json: {
-					cmd: function(cmd) {
-						return /python/i.test(cmd) && /OneFileToRuleThemAll.py/.test(cmd);
+							return (sys !== 'Linux' || /wowsunpack.exe/i.test(args.shift()))
+								&& new RegExp(path.join(config.wowsdir, 'bin', buildno, 'idx')).test(args[0])
+								&& args.some(arg => /extract/i.test(arg))
+								&& args.some((arg, index) => /packages/i.test(arg) && new RegExp(path.join(config.wowsdir, 'res_packages')).test(args[index + 1]))
+								&& args.some((arg, index) => /output/i.test(arg) && new RegExp(paths.temp).test(args[index + 1]))
+								&& args.some((arg, index) => /include/i.test(arg) && /content\/GameParams.data/.test(args[index + 1]));
+						}
 					},
 				}
-			}
-			mockfs({
-				[path.join(paths.data, 'GameParams.json')]: '',
-				...dirs
-			});
+				mockfs({
+					[path.join(paths.data, 'GameParams.json')]: '',
+					...dirs	
+				});
 
-			await updateGameParams(buildno);			
+				sinon.stub(os, 'type').returns(sys);
+				try {
+					await updateGameParams(buildno);			
+				} finally {
+					os.type.restore();
+				}	
+				// Check commands and arguments of the execa calls
+				expect(execa, 'called wowsunpack.exe').to
+					.have.been.calledWith(sinon.match(checker.wowsunpack.cmd), sinon.match(checker.wowsunpack.args));
+			});
+		});
 			
-			// Check commands and arguments of the execa calls
-			expect(execa, 'called OneFileToRuleThemAll.py').to
-				.have.been.calledWith(sinon.match(checker.gameparams2json.cmd));			
+		// eslint-disable-next-line mocha/no-setup-in-describe
+		[ 'Linux', 'Windows_NT' ].forEach(sys => {
+			it(`should call OneFileToRuleThemAll.py to turn extracted GameParams.data into GameParams.json on ${sys}`, async function() {
+				const checker = {
+					gameparams2json: {
+						cmd: function(cmd) {							
+							switch(sys) {
+								case 'Linux': return /python3/.test(cmd);
+								case 'Windows_NT': return /py/i.test(cmd);
+							}
+						},
+						args: function(args) {
+							return /OneFileToRuleThemAll.py/.test(args[0]);
+						},
+						opts: function(opts) {
+							return opts.cwd === path.join(paths.temp, 'content');
+						}
+					}
+				}
+				mockfs({
+					[path.join(paths.data, 'GameParams.json')]: '',
+					...dirs
+				});
+
+				sinon.stub(os, 'type').returns(sys);
+				try {
+					await updateGameParams(buildno);			
+				} finally {
+					os.type.restore();
+				}
+
+				// Check commands and arguments of the execa calls
+				expect(execa, 'called OneFileToRuleThemAll.py').to.have.been.calledWith(
+						sinon.match(checker.gameparams2json.cmd), 
+						sinon.match(checker.gameparams2json.args),
+						sinon.match(checker.gameparams2json.opts));			
+			});
 		});
 
 		it('should copy converted data to the data directory', async function() {
