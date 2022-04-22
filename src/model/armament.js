@@ -1,4 +1,3 @@
-import { cdo } from './cdo.js';
 import clone from 'clone';
 
 /**

@@ -1,8 +1,6 @@
-import { cdo } from './cdo.js';
-
 class Battle {
 	constructor(data) {
-		this._data = cdo(data);
+		this._data = data;
 	}
 
 	getPlayer() {

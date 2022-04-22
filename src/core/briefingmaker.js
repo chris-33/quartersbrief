@@ -126,28 +126,13 @@ class BriefingMaker {
 	 * @return {Object} An object with two string properties `html` and `css` containing the complete HTML and CSS for the briefing, respectively.
 	 */
 	async makeBriefing() {
-		// Helper function to enrich the passed battle with game objects like ships and players
-		async function enrichBattle(battle, gameObjectFactory) {
-			return await Promise.allSettled(battle.getVehicles().map(vehicle => 
-				// Artificial promisification to
-				// a) unify the interface with player enrichment, which HAS to be asynchronous, and 
-				// b) allow for lazy loading in the future, if intended
-				Promise.resolve(gameObjectFactory.createGameObject(vehicle.shipId))
-					.then(function(ship) {
-						vehicle.ship = ship;
-					})
-				));
-			// @todo Enrich with player data - possibly lazily using proxy objects if the WoWS API is call limited
-		}
-
 		let t0 = Date.now();
-
+debugger
 		let battle = await this.battleDataReader.read();
 		if (battle === null) {
 			return BriefingBuilder.buildNoBattle();
 		}
 		battle = new Battle(battle);
-		await enrichBattle(battle, this.gameObjectFactory);
 		let agendas = await this.errorHandlingAgendaStore.getAgendas();
 		let agenda = this.strategy.chooseAgenda(battle, agendas);
 		if (agenda === null) {

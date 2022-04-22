@@ -1,5 +1,4 @@
-import { cdo } from './cdo.js';
-
+import DataObject from './dataobject.js';
 /**
  * This is a thin wrapper around game object definitions as they can be read from
  * `GameParams.data`. 
@@ -10,13 +9,7 @@ import { cdo } from './cdo.js';
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
  * object. (This is checked at application startup through invariant assertion checking.)
  */
-class GameObject {
-	/**
-	 * Definitions for autocreated getters
-	 */
-	static LOOKUP_DEFINITIONS = {
-	};
-
+class GameObject extends DataObject {
 	/**
 	 * Regex to find game object reference codes.
 	 * References all start with the capital letter P, followed
@@ -36,46 +29,6 @@ class GameObject {
 	 * @type {RegExp}
 	 */
 	static REFERENCE_NAME_REGEX = new RegExp(GameObject.REFERENCE_CODE_REGEX.source.slice(0,-1) + '(?:_\\w+)?$');
-
-	/**
-	 * Creates a new GameObject and copies all properties
-	 * from data to it.
-	 * @param  {Object} data The source to copy from
-	 */
-	constructor(data) {
-		this._data = cdo(data);
-	}
-
-	get(key, options) {
-		return this._data.get(key, options);
-	}
-
-	multiply(key, factor, options) {
-		return this._data.multiply(key, factor, options);
-	}
-
-	clear() {
-		this._data.clear();
-	}
-
-	/**
-	 * Returns a fresh copy of this `GameObject`.  
-	 *
-	 * The purpose of this method is to allow getting a fresh instance of an already present `GameObject` 
-	 * without needing go through the (relatively expensive) process of having to retrieve it from a `GameObjectFactory`.
-	 *
-	 * `freshCopy` performs a deep copy of this `GameObject`, where
-	 * - any primitive properties of the data are copied to the destination,
-	 * - any object properties that are themselves `GameObject`s are fresh-copied,
-	 * - any object properties that are _not_ `GameObject`s are copied,
-	 * - lazily-expanding references are not forced to expand.
-	 * 
-	 * @return {GameObject} A new object that has the same class as this one, and whose
-	 * data is a _copy_ of the data of this one.
-	 */
-	freshCopy() {
-		return new this.constructor(this._data.freshCopy());
-	}
 
 	getID() { return this._data.id;	}
 	getName() { return this._data.name; }

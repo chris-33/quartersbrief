@@ -1,3 +1,4 @@
+import DotNotation from '../util/dotnotation.js';
 import { GameObject } from './gameobject.js';
 import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
@@ -5,9 +6,9 @@ import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
-import clone from 'clone';
 import { conversions } from '../util/conversions.js';
-
+import rootlog from 'loglevel';
+const dedicatedlog = rootlog.getLogger('Ship');
 /**
  * This class represents a ship within the game. Ships have some core characteristics (e.g. their tier or nation), but the
  * bulk of their performance characteristics are defined in the form of equippable modules. These characteristics are then
@@ -123,41 +124,73 @@ class Ship extends GameObject {
 		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false }).forEach(ability => {
 			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
 			const consumableProperty = Object.getOwnPropertyDescriptor(ability, '0');
-			if (consumableProperty.get)
+			if (consumableProperty.get) {
 				Object.defineProperty(ability, '0', {
 					get: function() {
 						// Pass 'this' through to the original accessor
 						// (Otherwise it would get called with 'this' set to this property descriptor)
 						const consumable = consumableProperty.get.call(this);
+						dedicatedlog.debug(`Set flavor ${ability[1]} on consumable ${consumable.getName()} on first read`);
 						consumable.setFlavor(ability[1]);
 						return consumable;
 					},
 					enumerable: true,
 					configurable: true,
 				});
-			else if (consumableProperty.value)
+			} else if (consumableProperty.value)
 				// If this is for whatever reason already a value property, 
 				// call setFlavor if it exists, or do nothing if setFlavor doesn't exist
 				consumableProperty.value.setFlavor?.call(consumableProperty.value, ability[1]);
 		});
 	}
 
-	multiply(key, factor) {
+	/**
+	 * If `key` starts with a "virtual" property, replaces it with a reference to the corresponding key
+	 * in this ship's data. A virtual property is one that does not have a direct corresponding property in the
+	 * ship's data, e.g. `ship.hull`, or `ship.consumables.rls`.	 
+	 * @param  {String} key The key to devirtualize. Wildcards are not supported for virtual properties, i.e. 
+	 * any key containing a wildcard will be seen as a non-virtual property.
+	 * @return {String}     The key within `ship._data` that corresponds to `key`.
+	 */
+	_devirtualize(key) {
+		// Find the key for the consumable within ShipAbilities.AbilitySlot*.abils
+		const abilityPath = consumable => {
+			let abilitySlots = Object.keys(this._data.ShipAbilities).filter(key => key.startsWith('AbilitySlot'));
+			for (let abilitySlot of abilitySlots) {
+				for (let i = 0; i < this._data.ShipAbilities[abilitySlot].abils.length; i++) {
+					if (this._data.ShipAbilities[abilitySlot].abils[i][0] === consumable) {
+						return `ShipAbilities.${abilitySlot}.abils.${i}.0`;
+					}
+				}
+			}
+			throw new Error(`Could not find consumable ${consumable.getName()} in ShipAbilities.`);
+		}
+
 		let path = key.split('.');
-		let key0 = path.shift();
-		if (key0 in this)
-			return this[key0].multiply(path.join('.'), factor);
-		else
-			return super.multiply(key, factor);		
+		// Replace the root of the key for properties that are virtual: that they don't directly exist on the data.
+		// This is the case with:
+		// - consumables, when referenced through ship.consumables, e.g. ship.consumables.sonar
+		// - modules, when referenced through e.g. ship.hull, ship.engine, etc.. 
+		// 
+		// Replace these with the target paths they are referring to.
+		if (path[0] === 'consumables') {			
+			const p = abilityPath(this.consumables[path[1]]);
+			dedicatedlog.debug(`Devirtualized virtual property ${path[0]}.${path[1]} to ${p}`);
+			path.splice(0, 2, p);
+		} else if (path[0] in this._configuration) {
+			const p = this._configuration[path[0]];
+			dedicatedlog.debug(`Devirtualized virtual property ${path[0]} to ${p}`);
+			path[0] = p;
+		} 
+		return path.join('.');
+	}
+
+	multiply(key, factor) {
+		return super.multiply(this._devirtualize(key), factor);
 	}
 
 	get(key, options) {
-		let path = key.split('.');
-		let key0 = path.shift();
-		if (key0 in this)
-			return path.length > 0 ? this[key0].get(path.join('.'), options) : this[key0];
-		else
-			return super.get(key, options);		
+		return super.get(this._devirtualize(key), options);
 	}
 
 	/**
@@ -403,17 +436,19 @@ class Ship extends GameObject {
 			}
 		}
 		// Now all components in configuration should be arrays of length <= 1
-		// Project each down to its only item and expand the reference
-		// (Any components that had length 0 will be 'undefined' after this.)
+		// Project each down to its only item and create a virtual property for it
+		// that reads through to the appropriate module.
 		for (let componentKey in configuration) {
-			let reference = configuration[componentKey][0];
-			configuration[componentKey] = reference ? self.get(reference) : null;
+			configuration[componentKey] = configuration[componentKey][0];
+			Object.defineProperty(this, componentKey, {
+				get: function() {
+					return this._data[configuration[componentKey]];
+				},
+				configurable: true,
+				enumerable: true
+			});
 		}
-
-		// Make a deep copy, because otherwise if any values are modified in the configuration further on
-		// (e.g. by applying modernizations), it will change the original values, too.
-		// This would lead to unexpected behavior when switching configurations back and forth.
-		Object.assign(this, configuration);
+		this._configuration = configuration;
 
 		// Remember the equipped modernizations, re-initialize to no equipped,
 		// and re-apply them all
@@ -436,12 +471,9 @@ class Ship extends GameObject {
 
 	/**
 	 * Get the module lines for this ship. Building the ship's module lines tends to be an 
-	 * expensive operation, so this method will return a cached result on subsequent calls. You
-	 * can override this by passing `forceRebuild = true`.
-	 * @param {boolean} forceRebuild Whether to build the module lines from scratch, regardless
-	 * of whether a cached version exists or not. Default is `false`.
+	 * expensive operation, so this method will return a cached result on subsequent calls. 
 	 */
-	getModuleLines(forceRebuild = false) {
+	getModuleLines() {
 		/*
 			This algorithm works as follows:
 			It puts all the module definitions from ShipUpgradeInfo into
@@ -467,7 +499,7 @@ class Ship extends GameObject {
 		// Building module lines is a relatively expensive operation (~50-100ms).
 		// Therefore, only build once and then cache.
 		// On subsequent calls, read from cache if available and not forced to rebuild.
-		if (self.#moduleLines && !forceRebuild)
+		if (self.#moduleLines)
 			return self.#moduleLines;
 
 		// Helper function that returns true if the argument is an 
@@ -480,7 +512,7 @@ class Ship extends GameObject {
 		}		
 
 		// Get everything in ShipUpgradeInfo
-		let modules = self.get('ShipUpgradeInfo');
+		let modules = this._data.ShipUpgradeInfo;
 		
 		// Initialize metadata to be kept for each module.
 		// We need this for the algorithm to work: For one thing,
@@ -602,14 +634,14 @@ class Ship extends GameObject {
 		this.get('ShipAbilities.AbilitySlot*.abils.*.0', { collate: false }).forEach(consumable =>
 			result[consumable.consumableType] = consumable
 		);
-		Object.defineProperty(result, 'multiply', {
-			value: function(key, factor, options) {
-				let key0 = key.substring(0, key.indexOf('.'));
-				let rest = key.substring(key0.length + 1);
-				return this[key0].multiply(rest, factor, options);
-			},
-			enumerable: false
-		})
+		// Object.defineProperty(result, 'multiply', {
+		// 	value: function(key, factor, options) {
+		// 		let key0 = key.substring(0, key.indexOf('.'));
+		// 		let rest = key.substring(key0.length + 1);
+		// 		return this[key0].multiply(rest, factor, options);
+		// 	},
+		// 	enumerable: false
+		// })
 		return result;
 	}
 

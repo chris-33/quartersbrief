@@ -15,10 +15,10 @@ const CONCEALMENT_BUILD = {
 function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
 	let ships = battle.getVehicles()
-		.map(vehicle => vehicle.ship)
-		.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD))		
+		.map(vehicle => vehicle.shipId)
 		// Filter out duplicates
-		.filter((ship, index, ships) => ships.findIndex((otherShip, currIndex) => ship.getID() === otherShip.getID() && currIndex > index) === -1)
+		.filter((ship, index, ships) => ships.findIndex((otherShip, currIndex) => ship === otherShip && currIndex > index) === -1)
+		.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD))
 		// Sort by concealment
 		.sort((ship1, ship2) => ship1.getConcealment() - ship2.getConcealment());	
 
@@ -29,11 +29,11 @@ function buildHtml(battle, gameObjectFactory, options) {
 
 	let locals = {
 		ships: ships,
-		player: battle.getPlayer().ship,
-		allies: battle.getAllies().map(vehicle => vehicle.ship.getID()),
-		enemies: battle.getEnemies().map(vehicle => vehicle.ship.getID())		
+		player: battle.getPlayer().shipId,
+		allies: battle.getAllies().map(vehicle => vehicle.shipId),
+		enemies: battle.getEnemies().map(vehicle => vehicle.shipId)
 	}
-	locals.allies.push(locals.player.getID()); // The player is an ally
+	locals.allies.push(locals.player); // The player is an ally
 	locals.both = arrayIntersect(locals.allies, locals.enemies);
 	return render(locals);
 }

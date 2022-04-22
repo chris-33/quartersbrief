@@ -53,7 +53,8 @@ if (!config.skipInvariants) {
 const gameObjectFactory = new GameObjectFactory(data, labels);
 const agendaStore = new AgendaStore(config.agendasdir);
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
-const briefingMaker = new BriefingMaker(path.join(config.wowsdir, 'replays'), gameObjectFactory, agendaStore, new SpecificityStrategy());
+const strategy = new SpecificityStrategy(gameObjectFactory);
+const briefingMaker = new BriefingMaker(path.join(config.wowsdir, 'replays'), gameObjectFactory, agendaStore, strategy);
 
 const { srv, io } = createServers(config.host, config.port);
 

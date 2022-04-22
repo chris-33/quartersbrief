@@ -20,7 +20,8 @@ const RADAR_BUILD = {
 async function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
 	let ships = battle.getVehicles()
-		.map(vehicle => vehicle.ship)
+		.map(vehicle => vehicle.shipId)
+		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'rls' in ship.consumables)
 
 	ships.forEach(ship => shipBuilder.build(ship, BASE_BUILD));
@@ -41,9 +42,9 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		ships, 
 		radars,
 		teams: {
-			allies: battle.getAllies().map(vehicle => vehicle.ship),
-			enemies: battle.getEnemies().map(vehicle => vehicle.ship),
-			player: battle.getPlayer().ship
+			allies: battle.getAllies().map(vehicle => vehicle.shipId),
+			enemies: battle.getEnemies().map(vehicle => vehicle.shipId),
+			player: battle.getPlayer().shipId
 		} 
 	};
 	return render(locals);
