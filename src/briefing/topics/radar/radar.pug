@@ -11,9 +11,9 @@
 		- const radar = radars[ship.getName()];
 		- const stealthwarnClass = warningClass(ship, radar.distance);
 		.ship(class = {
-			"player": ship === teams.player,
-			"ally": teams.allies.includes(ship),
-			"enemy": teams.enemies.includes(ship)
+			"player": teams.player === ship.getID(),
+			"ally": teams.allies.includes(ship.getID()),
+			"enemy": teams.enemies.includes(ship.getID())
 		})
 			div.name #{ship.getLabel()}
 			div.line.range
