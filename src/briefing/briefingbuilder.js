@@ -103,7 +103,7 @@ class BriefingBuilder {
 						// This is by no means the cleanest solution in the world, but we are "borrowing"
 						// GameObject's freshCopy method here and calling it on the battle. This will 
 						// create a fresh copy of the battle, including fresh copies of all ships.
-						GameObject.prototype.freshCopy.call(battle), 
+						battle, 
 						this.gameObjectFactory, 
 						agenda.topics[topicName]))
 					.then(x => (
