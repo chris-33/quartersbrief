@@ -5,6 +5,7 @@ import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
 import { fileURLToPath } from 'url';
 import log from 'loglevel';
+import { existsSync, readFileSync } from 'fs';
 
 // Assume production environment if nothing is specified
 process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
@@ -20,12 +21,6 @@ const paths = {
 	...envpaths(name, { suffix: '' }),
 	base: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
 };
-const configfile = path.format({ 
-	dir: paths.config, 
-	name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
-	ext: '.json' 
-});
-
 const config = {
 	// Defaults:
 	host: '127.0.0.1',
@@ -42,7 +37,7 @@ const config = {
 			alias: 'd',
 			type: 'string',
 			normalize: true,
-			demandOption: 'Either pass it using --wowsdir or set it in your quartersbrief.conf. Exiting.',
+			demandOption: 'Either pass it using --wowsdir or set it in your quartersbrief.json. Exiting.',
 			description: 'The base directory of World of Warship. This is the directory that WorldOfWarships.exe is in.'
 		})
 		.option('host', {
@@ -88,8 +83,21 @@ const config = {
 			},
 			description: 'Output debug information. It can also be used in an alternate form --debug <dedicatedlogs>, where <dedicatedlogs> is a comma-separated list of dedicated loggers to switch on. Use --debug all to turn on all dedicated loggers. Available dedicated loggers are: GameObjectFactory, assertInvariants'
 		})
-		.config()
-		.default('config', configfile)
+		.config('config', function loadConfig(filename) {
+			// Do not expect the default config file to exist. If it doesn't, we will treat it as if it was empty.
+			// Config files passed explicitly using --config are still expected to exist though, and it is an
+			// error if they don't.
+			if (!existsSync(filename) && !process.argv.includes('--config')) {
+				log.warn(`Could not find default config file ${filename}.`)
+				return {};
+			}
+			return JSON.parse(readFileSync(filename));
+		})
+		.default('config', path.format({ 
+			dir: paths.config, 
+			name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
+			ext: '.json' 
+		}))
 		.help()
 		.version()
 		.wrap(yargs.terminalWidth())
