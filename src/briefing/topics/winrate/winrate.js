@@ -2,7 +2,6 @@ import { readFile } from 'fs/promises';
 import { PlayerFactory } from '../../../model/playerfactory.js';
 import config from '../../../../src/init/config.js';
 import pug from 'pug';
-import clone from 'clone';
 
 const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');
 
@@ -40,9 +39,9 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	let ships = battle.getVehicles()
 		.map(vehicle => gameObjectFactory.createGameObject(vehicle.shipId));
 
-	const allies = clone(battle.getAllies());
-	allies.push(clone(battle.getPlayer()));
-	const enemies = clone(battle.getEnemies());
+	const allies = battle.getAllies();
+	allies.push(battle.getPlayer());
+	const enemies = battle.getEnemies();
 	
 	allies.forEach(enrich);
 	enemies.forEach(enrich);

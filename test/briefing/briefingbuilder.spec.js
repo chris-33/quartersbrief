@@ -60,6 +60,26 @@ describe('BriefingBuilder', function() {
 			// No need to do buildTopic.restore() because it's an isolated stub, not an object method			
 		});
 
+		it('should pass separate copies of the battle to each topic builder', async function() {
+			const buildTopic1 = sinon.stub().resolves({ html: '' });
+			const buildTopic2 = sinon.stub().resolves({ html: '' });
+			builder.getTopicBuilder.onFirstCall().resolves({ default: buildTopic1 });
+			builder.getTopicBuilder.onSecondCall().resolves({ default: buildTopic2 });
+
+			agenda.topics = { topic1: {}, topic2: {}};
+
+			// Expect both topic builders to have been called:
+			await builder.build(battle, agenda);
+			expect(buildTopic1).to.have.been.called;
+			expect(buildTopic2).to.have.been.called;
+
+			// Expect the "battle" argument of each topic builder to have been deeply equal, but not strictly equal:			
+			const battle1 = buildTopic1.firstCall.firstArg;
+			const battle2 = buildTopic2.firstCall.firstArg;
+			expect(battle1).to.not.equal(battle2);
+			expect(battle1).to.deep.equal(battle2);
+		});
+
 		it('should return a promise that resolves to a briefing object with valid HTML', async function() {
 			const buildTopic = sinon.stub().resolves({ html: '<p>topic</p>'});
 			builder.getTopicBuilder.resolves({ default: buildTopic });

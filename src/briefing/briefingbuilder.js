@@ -2,7 +2,7 @@ import pug from 'pug';
 import sass from 'sass';
 import rootlog from 'loglevel';
 import { readFileSync } from 'fs';
-import { GameObject } from '../model/gameobject.js';
+import clone from 'clone';
 
 /**
  * The `BriefingBuilder` constructs a briefing for a given battle and agenda. It dynamically imports the 
@@ -100,10 +100,8 @@ class BriefingBuilder {
 				return this
 					.getTopicBuilder(topicName)
 					.then(dynimport => dynimport.default(
-						// This is by no means the cleanest solution in the world, but we are "borrowing"
-						// GameObject's freshCopy method here and calling it on the battle. This will 
-						// create a fresh copy of the battle, including fresh copies of all ships.
-						battle, 
+						// Pass a separate copy of the battle to each topic builder
+						clone(battle), 
 						this.gameObjectFactory, 
 						agenda.topics[topicName]))
 					.then(x => (
