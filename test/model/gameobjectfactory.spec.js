@@ -180,14 +180,6 @@ describe('GameObjectFactory', function() {
 				.have.nested.property('_data.nested.arr[0]._data.reference')
 				.that.deep.equals(new GameObject(clone(TEST_DATA.PAAA001_Test1)));
 		});
-
-		it.skip('should change the original data', function() {
-			let data = clone(TEST_DATA);
-			gameObjectFactory = new GameObjectFactory(data);
-			let expanded = gameObjectFactory._expandReferences(TEST_DATA.PAAA002_Test2);
-			// Expect that the expanded reference is now present on the SOURCE DATA as well:
-			expect(data.PAAA002_Test2).to.deep.equal(expanded);
-		});
 	});
 
 	describe('._convert', function() {
@@ -195,21 +187,6 @@ describe('GameObjectFactory', function() {
 			for (let key in TEST_DATA)
 				expect(gameObjectFactory._convert(clone(TEST_DATA[key])), key).to.be.an.instanceof(GameObject);
 
-		});
-
-		it.skip('should convert nested and array objects', function() {
-			let data = clone(TEST_DATA);
-			// Manually create some expanded references:
-			data.PAAA002_Test2.reference = data.PAAA001_Test1;
-			data.PAAA002_Test2.nested = { reference: data.PAAA001_Test1 };
-			data.PAAA002_Test2.arr = [ data.PAAA001_Test1 ];
-			
-			let gameObject = gameObjectFactory._convert(data.PAAA002_Test2);
-
-			expect(gameObject._data, 'own property').to.have.property('reference').that.is.an.instanceof(GameObject);
-			expect(gameObject._data, 'nested property').to.have.nested.property('nested.reference').that.is.an.instanceof(GameObject);
-			expect(gameObject._data).to.have.property('arr').that.is.an('array');
-			expect(gameObject._data.arr[0], 'array property').to.be.an.instanceof(GameObject);
 		});
 
 		it('should convert into the correct class as per typeinfo.type', function() {
