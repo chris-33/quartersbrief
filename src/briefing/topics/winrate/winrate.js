@@ -4,7 +4,7 @@ import config from '../../../../src/init/config.js';
 import pug from 'pug';
 import clone from 'clone';
 
-// const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');
+const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');
 
 async function buildHtml(battle, gameObjectFactory, options) {
 	function enrich(partipant) {
@@ -24,6 +24,18 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		let v2 = classValue[p2.ship.getClass()] + p2.ship.getTier();
 		return v2 - v1; // Reverse sort order
 	}
+
+	// Check that required options api-key and realm are set, and create a more readable error message if they are not.
+	// Otherwise, we will get something cryptic from the PlayerFactory.
+	if (!config.apiKey || !config.realm) {
+		let msg = '';
+		let missingBoth = !config.apiKey && !config.realm;
+		if (!config.apiKey) msg += 'Wargaming API key ';
+		if (!config.apiKey && !config.realm) msg += 'and ';
+		if (!config.realm) msg += 'realm ';
+		msg += `not set. You can set ${missingBoth ? 'them' : 'it'} in your quartersbrief config file or pass ${missingBoth ? 'them' : 'it'} on the command line.`;
+		throw new Error(msg);
+	}
 	let players = await new PlayerFactory(config.apiKey, config.realm).getPlayers(battle.getVehicles().map(vehicle => vehicle.name));
 	let ships = battle.getVehicles()
 		.map(vehicle => gameObjectFactory.createGameObject(vehicle.shipId));
@@ -39,7 +51,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	enemies.sort(sortLikeLoadScreen);
 
 	const locals = { allies, enemies, player: battle.getPlayer() };
-	return pug.renderFile('src/briefing/topics/winrate/winrate.pug', locals);
+	return render(locals);
 }
 
 async function buildScss() {
