@@ -127,7 +127,7 @@ class BriefingBuilder {
 					caption: dynimport.value.caption ?? inferCaption(agenda.getTopicNames()[i])
 				}				
 			} else {
-				rootlog.error(`Error while building topic ${agenda.topics[i]}: ${dynimport.reason}`);
+				rootlog.error(`Error while building topic ${agenda.getTopicNames()[i]}: ${dynimport.reason}`);
 				briefing.topics[i] = {
 					html: this.buildErrorTopic(dynimport.reason)
 				}
