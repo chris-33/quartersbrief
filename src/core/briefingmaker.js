@@ -127,7 +127,7 @@ class BriefingMaker {
 	 */
 	async makeBriefing() {
 		let t0 = Date.now();
-debugger
+
 		let battle = await this.battleDataReader.read();
 		if (battle === null) {
 			return BriefingBuilder.buildNoBattle();
