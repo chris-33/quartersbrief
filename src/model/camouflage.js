@@ -1,5 +1,5 @@
 import { GameObject } from './gameobject.js';
-import { Modifier } from '../util/modifier.js';
+import { Modifier } from './modifier.js';
 import { Ship } from './ship.js';
 
 /**

@@ -1,6 +1,6 @@
 import { Captain } from '../../src/model/captain.js';
 import { Ship } from '../../src/model/ship.js';
-import { Modifier } from '../../src/util/modifier.js';
+import { Modifier } from '../../src/model/modifier.js';
 import { readFileSync } from 'fs';
 import clone from 'clone';
 
