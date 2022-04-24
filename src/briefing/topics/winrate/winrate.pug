@@ -24,39 +24,38 @@ div
 		colgroup
 			col.ally.name
 			col.ally.winrate
-			//col.ally.pr
 			col.enemy.winrate
-			//col.enemy.pr
 			col.enemy.name
-		tr
-			th.ally Player
-			th.ally %
-			//th.ally PR
-			th.enemy %
-			//th.enemy PR
-			th.enemy Player
 		- for (let i = 0; i < rows; i++) {
-		- const ally = allies[i].player;
-		- const enemy = enemies[i].player;
+			- const ally = allies[i];
+			- const enemy = enemies[i];
 			tr
-				td.name(class=ally.name === player.name ? 'player' : '') #{ally.name}
-				td 
-					if ally.bot
-						span.notification Bot
-					else if ally.hidden
-						span.notification private
-					else
-						span.winrate(class=winrateClass(ally.winrate)) #{(100 * ally.winrate).toFixed(1)} 
-						span.unit %
-				//	td.pr
+				td(class=ally.player.name === player.name ? 'player' : '') 
+					span.name #{ally.player.name}
+					| <br>
+					span.ship 
+						img(src=`img/icon_${ally.ship.getClass().toLowerCase()}.png`)
+						| &nbsp;#{ally.ship.getLabel()}
 				td
-					if enemy.bot
+					if ally.player.bot
 						span.notification Bot
-					else if enemy.hidden
+					else if ally.player.hidden
 						span.notification private
 					else
-						span.winrate(class=winrateClass(enemy.winrate)) #{(100 * enemy.winrate).toFixed(1)}
+						span.winrate(class=winrateClass(ally.player.winrate)) #{(100 * ally.player.winrate).toFixed(1)} 
 						span.unit %
-				//td.pr
-				td.name #{enemy.name}
-		- }
+				td
+					if enemy.player.bot
+						span.notification Bot
+					else if enemy.player.hidden
+						span.notification private
+					else
+						span.winrate(class=winrateClass(enemy.player.winrate)) #{(100 * enemy.player.winrate).toFixed(1)}
+						span.unit %
+				td
+					span.name #{enemy.player.name}
+					| <br>
+					span.ship
+						| #{enemy.ship.getLabel()}&nbsp;
+						img(src=`img/icon_${enemy.ship.getClass().toLowerCase()}_mirrored.png`)
+		- }		

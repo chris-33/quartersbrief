@@ -5,11 +5,16 @@ $background-color-enemy: hsl(0deg,65%,50%);
 $background-color-player: #fbd770;
 $color-player: #fbd770;
 
+$tiny: 50%;
+$smaller: 80%;
+$larger: 120%;
+$huge: 200%;
+
 .unit {
 	color: #757575;
-	font-size: 80%
+	font-size: $smaller;
 }
 
 .aside {
-	font-size: 80%
+	font-size: $smaller;
 }

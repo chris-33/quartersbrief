@@ -6,43 +6,23 @@ table {
 	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
 	font-weight: inherit;
 	font-size: inherit;
-}
-
-th {
-	color: white;
-	font-weight: bold;
-
-	&.ally {
-		background-color: $background-color-ally;
-	}
-
-	&.enemy {
-		background-color: $background-color-enemy;
-	}
+	border-image-source: linear-gradient(to right, $background-color-ally, white 15%, white 85%, $background-color-enemy);
+	border-image-slice: 10;
+	border-image-width: 2px;
+	padding: 1ex 1ch;
 }
 
 col {
 	&.name {
-		width: 26%;
+		width: 34%;
 	}
 	&.winrate {
-		width: 12%;
-	}
-	&.pr {
-		width: 12%;
-	}
-	&.ally {
-		// Reduce opacity to 5%
-		background-color: color.adjust($background-color-ally, $alpha: -0.98);
-	}
-	&.enemy {
-		// Reduce opacity to 5%
-		background-color: color.adjust($background-color-enemy, $alpha: -0.98);
+		width: 16%;
 	}
 }
 
 td {
-	text-align: right;
+	text-align: center;
 	padding: 0.33ex 0.2ch;
 	white-space: nowrap;
 	overflow: hidden;
@@ -59,20 +39,32 @@ td {
 		color: $color-player;
 		font-weight: 600;
 	}
+
+	&:last-of-type {
+		text-align: right;
+		padding-left: 0;
+		padding-right: 0.5ch;
+	}
+	.ship {
+		font-size: $smaller;
+		font-style: italic;
+		img {
+			filter: brightness(80%);
+			font-size: $smaller;
+			height: 1em;
+		}
+	}
+}
+
+.winrate {	
+	font-weight: bold;
+	font-size: $larger;
 }
 
 .notification {
 	color: darkgrey;
 	font-style: italic;
-	// Make the content appear centered:
-	display: inline-block;
-	width: 100%;
-	text-align: center;
-}
-
-.winrate {
-	font-weight: bold;
-	font-size: 105%;
+	font-size: $smaller;
 }
 
 .superunicum {
