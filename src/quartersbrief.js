@@ -22,6 +22,11 @@ process.chdir(paths.base);
 
 await createconfig();
 
+// Make sure the game directory is specified.
+if (!config.wowsdir) {
+	log.error(`Missing required parameters wowsdir. Either pass it using --wowsdir or set it in your quartersbrief.json. Exiting.`);
+	process.exit(1);
+}
 // Make sure that the replays directory we will be watching actually exists
 // If it doesn't, this is a non-recoverable error, because this program is pointless without it.
 if (!existsSync(path.join(config.wowsdir, 'replays'))) {

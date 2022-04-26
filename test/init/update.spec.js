@@ -23,11 +23,6 @@ describe('update', function() {
 
 	let execa;
 
-	before(function() {
-		// Add required parameter so yargs doesn't kill us
-		process.argv.push('--wowsdir');		
-	});
-
 	beforeEach(async function() {		
 		this.timeout(3000); // Loading of the modules sometimes takes a while, so increase the timeout to 3s
 		

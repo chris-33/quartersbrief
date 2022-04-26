@@ -37,7 +37,6 @@ const config = {
 			alias: 'd',
 			type: 'string',
 			normalize: true,
-			demandOption: 'Either pass it using --wowsdir or set it in your quartersbrief.json. Exiting.',
 			description: 'The base directory of World of Warship. This is the directory that WorldOfWarships.exe is in.'
 		})
 		.option('host', {
