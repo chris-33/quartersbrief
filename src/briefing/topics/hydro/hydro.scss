@@ -1,0 +1,42 @@
+$zoom: 0.496;
+
+svg text {
+	font-size: calc($zoom * 100%);
+}
+
+.hydro {
+	fill: transparent;
+	stroke: cornflowerblue;
+	stroke-width: $zoom;
+}
+
+.ship {
+	stroke: none;
+}
+
+.ally {
+	fill: $background-color-ally;
+}
+
+// By having .enemy after .ally, ships that are both will be displayed as enemy
+.enemy {
+	fill: $background-color-enemy;	
+}
+
+.axis {	
+	stroke: black;
+	stroke-width: $zoom;
+	
+	text {
+		text-anchor: middle;
+		dominant-baseline: hanging;
+		fill: black;
+		stroke: none;
+		font-size: calc($smaller * $zoom);
+	}
+}
+
+.no-hydros {
+	color: slategray;
+	font-size: 12pt;
+}

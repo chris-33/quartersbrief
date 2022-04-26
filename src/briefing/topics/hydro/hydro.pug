@@ -1,0 +1,33 @@
+- 
+	const maxDistance = 6500;
+	const reduction = 2500;
+	function x(range) {
+		return (range - reduction) * 100/(maxDistance - reduction);
+	}
+if ships.length > 0
+	svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox="-100 -100 200 200")
+		g.axis
+			line(x1=x(3000) y1="0" x2="100" y2="0")
+			each range in [3000, 4000, 5000, 6000]
+				line(x1=x(range) y1="-2" x2=x(range) y2="+2")
+				text(x=x(range) y="3") #{range / 1000}km
+		each range in Object.keys(hydros)
+			circle.hydro(r=x(range))
+			text(y=-Math.sin(1/4 * Math.PI) * x(range)) 
+				each ship in hydros[range].map(hydro => hydro.ship)
+					tspan.ship(class={
+						"ally": teams.allies.includes(ship.getID()),
+						"enemy": teams.enemies.includes(ship.getID()),
+						"player": teams.player === ship.getID()
+					}, x=Math.cos(1/4 * Math.PI) * x(range), dy="1.2em")
+						| #{ship.getLabel()}
+				// move the ship names up so they are vertically centered on the 45 degree line
+				script
+					| { 
+					|	let element = document.currentScript.parentElement;
+					|	let bbox = element.getBBox();
+					|	element.setAttribute("y", bbox.y - bbox.height / 2)
+					| }
+else
+	.no-hydros
+		| There are no ships with hydroacoustic search in this battle.
