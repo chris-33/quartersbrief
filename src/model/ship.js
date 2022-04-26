@@ -163,7 +163,9 @@ class Ship extends GameObject {
 					}
 				}
 			}
-			throw new Error(`Could not find consumable ${consumable.getName()} in ShipAbilities.`);
+			// Return null if not found. For example, this can happen when a modernization or skill has multiple effects, 
+			// not all of which apply to this ship.
+			return null;
 		}
 
 		let path = key.split('.');
