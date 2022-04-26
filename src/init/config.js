@@ -91,7 +91,18 @@ const config = {
 				log.warn(`Could not find default config file ${filename}.`)
 				return {};
 			}
-			return JSON.parse(readFileSync(filename));
+			let config;
+			try {
+				config = readFileSync(filename, 'utf8');
+				// config file may contain backslashes, e.g. in Windows paths.
+				// readFileSync does not escape these, so we need to manually do it.
+				config = config.replaceAll(/\\/g, '\\\\');
+				config = JSON.parse(config);
+			} catch (err) {
+				log.error(`Error reading config file ${filename}: ${err}. Ignoring config file.`);
+				config = {};
+			}
+			return config;
 		})
 		.default('config', path.format({ 
 			dir: paths.config, 
