@@ -1,20 +1,20 @@
 - 
 	const maxDistance = 6500;
 	const reduction = 2500;
-	function x(range) {
+	function length(range) {
 		return (range - reduction) * 100/(maxDistance - reduction);
 	}
 if ships.length > 0
 	svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox="-100 -100 200 200")
 		g.axis
-			line(x1=x(3000) y1="0" x2="100" y2="0")
+			line(x1=length(3000) y1="0" x2="100" y2="0")
 			each range in [3000, 4000, 5000, 6000]
-				line(x1=x(range) y1="-2" x2=x(range) y2="+2")
-				text(x=x(range) y="3") #{range / 1000}km
+				line(x1=length(range) y1="-2" x2=length(range) y2="+2")
+				text(x=length(range) y="3") #{range / 1000}km
 		each range in Object.keys(hydros)
-			circle.hydro(r=x(range))
+			circle.hydro(r=length(range))
 	each range in Object.keys(hydros)
-		div.label(style=`left: ${(100 + Math.cos(1/4 * Math.PI) * x(range)) / 2}%; top: ${(100 - Math.sin(1/4 * Math.PI) * x(range)) / 2}%`)
+		div.label(style=`left: ${(100 + Math.cos(1/4 * Math.PI) * length(range)) / 2}%; top: ${(100 - Math.sin(1/4 * Math.PI) * length(range)) / 2}%`)
 			each ship in hydros[range].map(range => range.ship)
 				span.ship(class={
 					"ally": teams.allies.includes(ship.getID()),
