@@ -3,8 +3,6 @@ import { readFile } from 'fs/promises';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
 
-const render = pug.compileFile('src/briefing/topics/radar/radar.pug');
-
 const BASE_BUILD = {
 	modules: 'top'	
 }
@@ -24,18 +22,18 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'rls' in ship.consumables)
 
-	ships.forEach(ship => shipBuilder.build(ship, BASE_BUILD));
 	let radars = {};
-	for (let ship of ships)
-		radars[ship.getName()] = { 
-			distance: conversions.BWToMeters(ship.consumables.rls.get('distShip')),
-			base: ship.consumables.rls.get('workTime') 
-		}
-
-	ships.forEach(ship => shipBuilder.build(ship, RADAR_BUILD));
-	for (let ship of ships)
-		radars[ship.getName()].max = ship.consumables.rls.get('workTime');
-
+	ships.forEach(ship => {
+		ship = shipBuilder.build(ship, BASE_BUILD);
+		let range = 10 * Math.round(conversions.BWToMeters(ship.consumables.rls.distShip) / 10);
+		radars[range] ??= {};
+		radars[range][ship.consumables.rls.workTime] ??= [];
+		radars[range][ship.consumables.rls.workTime].push({
+			ship,
+			baseTime: ship.consumables.rls.workTime,
+			maxTime: shipBuilder.build(ship, RADAR_BUILD).consumables.rls.workTime
+		});
+	});
 	ships.forEach(ship => shipBuilder.build(ship, CONCEALMENT_BUILD));
 
 	const locals = { 
@@ -47,7 +45,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 			player: battle.getPlayer().shipId
 		} 
 	};
-	return render(locals);
+	return pug.renderFile('src/briefing/topics/radar/radar.pug', locals);
 }
 
 async function buildScss() {
