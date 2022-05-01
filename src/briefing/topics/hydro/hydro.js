@@ -3,12 +3,6 @@ import { readFile } from 'fs/promises';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
 
-let render;
-if (process.NODE_ENV === 'development')
-	render = locals => pug.renderFile('src/briefing/topics/hydro/hydro.pug', locals);
-else 
-	render = pug.compileFile('src/briefing/topics/hydro/hydro.pug');
-
 const BASE_BUILD = {
 	modules: 'top'	
 }
