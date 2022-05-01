@@ -5,29 +5,28 @@
 		return (range - reduction) * 100/(maxDistance - reduction);
 	}
 if ships.length > 0
-	.content(style="position: relative")
-		svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox="-100 -100 200 200")
-			g.axis
-				line(x1=x(3000) y1="0" x2="100" y2="0")
-				each range in [3000, 4000, 5000, 6000]
-					line(x1=x(range) y1="-2" x2=x(range) y2="+2")
-					text(x=x(range) y="3") #{range / 1000}km
-			each range in Object.keys(hydros)
-				circle.hydro(r=x(range))
+	svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox="-100 -100 200 200")
+		g.axis
+			line(x1=x(3000) y1="0" x2="100" y2="0")
+			each range in [3000, 4000, 5000, 6000]
+				line(x1=x(range) y1="-2" x2=x(range) y2="+2")
+				text(x=x(range) y="3") #{range / 1000}km
 		each range in Object.keys(hydros)
-			div.label(style=`left: ${(100 + Math.cos(1/4 * Math.PI) * x(range)) / 2}%; top: ${(100 - Math.sin(1/4 * Math.PI) * x(range)) / 2}%`)
-				each ship in hydros[range].map(range => range.ship)
-					span.ship(class={
-						"ally": teams.allies.includes(ship.getID()),
-						"enemy": teams.enemies.includes(ship.getID())
-					}) #{ship.getLabel()}
-					br
-				script
-					| {
-					|	const div = document.currentScript.parentElement;
-					|	const computedStyle = window.getComputedStyle(div);
-					|	div.style.top = `${Number.parseFloat(computedStyle.top) - Number.parseFloat(computedStyle.height) / 2}px`;
-					| }
+			circle.hydro(r=x(range))
+	each range in Object.keys(hydros)
+		div.label(style=`left: ${(100 + Math.cos(1/4 * Math.PI) * x(range)) / 2}%; top: ${(100 - Math.sin(1/4 * Math.PI) * x(range)) / 2}%`)
+			each ship in hydros[range].map(range => range.ship)
+				span.ship(class={
+					"ally": teams.allies.includes(ship.getID()),
+					"enemy": teams.enemies.includes(ship.getID())
+				}) #{ship.getLabel()}
+				br
+			script
+				| {
+				|	const div = document.currentScript.parentElement;
+				|	const computedStyle = window.getComputedStyle(div);
+				|	div.style.top = `${Number.parseFloat(computedStyle.top) - Number.parseFloat(computedStyle.height) / 2}px`;
+				| }
 
 else
 	.no-hydros
