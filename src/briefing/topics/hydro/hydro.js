@@ -28,7 +28,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		.map(vehicle => vehicle.shipId)
 		// Filter to those teams set in options.teams
 		.filter(shipId => {
-			let displayed = options?.teams?.flatMap(team => teams[team]) ?? [];
+			let displayed = options?.filter?.teams?.flatMap(team => teams[team]) ?? [];
 			return displayed.length === 0 || displayed.includes(shipId);
 		})
 		// Filter out duplicates
@@ -39,7 +39,9 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	let hydros = {};	
 	ships.forEach(ship => {
 		ship = shipBuilder.build(ship, BASE_BUILD)
-		let range = Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip));
+		// Round range to 10m precision, to avoid drawing separate circles for what is effectively the same range
+		// if ships' consumables' distShip is slightly different (which will be magnified by the conversion to meters)
+		let range = 10 * Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip) / 10);
 		hydros[range] ??= [];
 		hydros[range].push({
 			ship: ship,
