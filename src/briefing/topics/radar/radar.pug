@@ -13,10 +13,12 @@
 	const shiftTime = 0; // Turned off
 
 	function warningClass(ship, dist) {
-		if (1000 * ship.getConcealment() < dist)
-			return "severe";
-		else if (1000 * ship.getConcealment() < dist + 1000)
-			return "moderate";
+		let concealment = 1000 * ship.getConcealment(); // in meters
+		if (concealment < dist)
+			return "stealthwarn-severe";
+		else if (concealment < dist + 1000)
+			return "stealthwarn-moderate";
+		else return "";
 	}
 	function length(range) {
 		return (range - shiftDistance) * 100/(maxDistance - shiftDistance);
@@ -24,16 +26,22 @@
 	function angle(time) {
 		return (time - shiftTime) / (maxTime - shiftTime) * 1/2 * Math.PI;
 	}
+	function polarToCartesian(angle, length) {
+		return {
+			x: Math.cos(angle) * length,
+			y: -Math.sin(angle) * length
+		}
+	}
 if ships.length > 0
 	svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox="0 -100 100 105")
 		g.grid
 			each range in [6000, 8000, 10000, 12000]
 				path(d=`M ${length(range)} 0 A ${length(range)} ${length(range)} 0 0 0 0 ${-length(range)}`)
 			each time in [10, 20, 30, 40, 50, 70, 80, 90]
-				line(x1=Math.cos(angle(time)) * length(minDistance),
-						y1=-Math.sin(angle(time)) * length(minDistance),
-						x2=Math.cos(angle(time)) * length(maxDistance),
-						y2=-Math.sin(angle(time)) * length(maxDistance))
+				line(x1=polarToCartesian(angle(time), length(minDistance)).x,
+						y1=polarToCartesian(angle(time), length(minDistance)).y,
+						x2=polarToCartesian(angle(time), length(maxDistance)).x,
+						y2=polarToCartesian(angle(time), length(maxDistance)).y)
 
 		g.axis.range
 			line(x1=length(minDistance), y1=0, x2=100, y2=0)
@@ -43,14 +51,8 @@ if ships.length > 0
 		g.axis.time
 			each time in [20, 40, 60]
 				- 
-					let start = {
-						x: Math.cos(angle(time)) * length(minDistance),
-						y: -Math.sin(angle(time)) * length(minDistance)
-					}
-					let end = {
-						x: Math.cos(angle(time)) * length(maxDistance),
-						y: -Math.sin(angle(time)) * length(maxDistance)
-					}
+					let start = polarToCartesian(angle(time), length(minDistance));
+					let end = polarToCartesian(angle(time), length(maxDistance));
 	
 				line(x1=start.x, y1=start.y, x2=end.x, y2=end.y)
 				text(x=end.x + 1, y=end.y) #{time}s
@@ -59,18 +61,12 @@ if ships.length > 0
 			- let n = Object.keys(radars[range]).length; // Number of different workTimes for this range
 			each workTime, index in Object.keys(radars[range])
 				- 
-					let start = {
-						// Offset arcs to the left and right of the actual value if there is more than one
-						// workTime for the range.
-						// I.e. if there are three different workTimes for a 10km radar,
-						// the first one will be 1 width inward of 10km, the second right on, the third 1 width outward
-						x: length(range) + index - (n-1)/2,
-						y: 0
-					};
-					let end = {
-						x: Math.cos(angle(workTime)) * length(range) + index - (n-1)/2,
-						y: -Math.sin(angle(workTime)) * length(range) + index - (n-1)/2
-					}
+					// Offset arcs to the left and right of the actual value if there is more than one
+					// workTime for the range.
+					// I.e. if there are three different workTimes for a 10km radar,
+					// the first one will be 1 width inward of 10km, the second right on, the third 1 width outward
+					let start = polarToCartesian(0, length(range) + index - (n-1)/2);
+					let end = polarToCartesian(angle(workTime), length(range) + index - (n-1)/2);
 					let radius = start.x;
 				g.radar(class={
 					ally: radars[range][workTime].map(entry => entry.ship).some(ship => teams.allies.includes(ship.getID())),
@@ -82,14 +78,14 @@ if ships.length > 0
 
 	each range in Object.keys(radars)
 		- const maxTime = Math.max(...Object.keys(radars[range]));
-		div.label(style=`top: ${(100 - Math.sin(angle(maxTime/2)) * length(range))}%; left: ${Math.cos(angle(maxTime/2)) * length(range)}%;`)
+		div.label(style=`top: ${100 + polarToCartesian(angle(maxTime/2), length(range)).y}%; left: ${polarToCartesian(angle(maxTime/2), length(range)).x}%;`)
 			each workTime in Object.keys(radars[range])
 				each ship in radars[range][workTime].map(entry => entry.ship)
 					span.ship(class={
 						ally: teams.allies.includes(ship.getID()),
 						enemy: teams.enemies.includes(ship.getID()),
-						player: teams.player === ship.getID()
-					}) #{ship.getLabel()}
+						player: teams.player === ship.getID()						
+					}, class=warningClass(ship, range)) #{ship.getLabel()}
 					br
 
 else

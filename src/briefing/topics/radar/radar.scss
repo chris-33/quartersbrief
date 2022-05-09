@@ -58,33 +58,28 @@ $zoom: 0.25;
 
 .ship {
 	background-color: white;
+	padding: 0.1ex 0.1ch;
 }
 // Styling for the stealth warning indicator and details
 // $stealthwarn-color: goldenrod;
 $stealthwarn-color-moderate: goldenrod;
 $stealthwarn-color-severe: red;
-$stealthwarn-color-fallback: slategray;
 
-.enemy .stealthwarn.moderate {
-	background-color: $stealthwarn-color-moderate;
+.enemy[class*="stealthwarn"]::after {
+	content: "\e063"; // warning
+	font-family: "dripicons-v2";
+	margin-left: 0.25ch;
 }
 
-.enemy .stealthwarn.severe {
-	background-color: $stealthwarn-color-severe;
-}
-
-.enemy .stealthdetails.moderate {
+.enemy.stealthwarn-moderate::after {
 	color: $stealthwarn-color-moderate;
-	border-color: $stealthwarn-color-moderate;
 }
 
-.enemy .stealthdetails.severe {
+.enemy.stealthwarn-severe::after {
 	color: $stealthwarn-color-severe;
-	border-color: $stealthwarn-color-severe;
 }
-
 
 .no-radars {
 	color: slategray;
-	font-size: 12pt;
+	font-size: $large;
 }
