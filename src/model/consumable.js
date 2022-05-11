@@ -11,6 +11,7 @@ class Consumable extends GameObject {
 		'consumableType',
 		'distShip',
 		'workTime',
+		'reloadTime'
 	];
 
 	#flavor;
