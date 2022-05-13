@@ -9,6 +9,8 @@ ul
 			| #{(range / 1000).toFixed(1)}
 			span.unit km
 
+	hr
+
 	li
 		span.caption Duration (base):
 		span.value
@@ -28,6 +30,8 @@ ul
 			| #{ship.consumables.rls.reloadTime}
 			span.unit s
 
+	hr
+	
 	li
 		span.caption Stealth radar capability: 
 		span.value(class=warningClass(ship, range))
@@ -40,8 +44,7 @@ ul
 	li
 		span
 			| Seen 
-			span(class=warningClass(ship, range)) #{10 * Math.abs(Math.ceil(stealthRadarWindow / 10))}
-				span.unit m
+			span(class=warningClass(ship, range)) #{10 * Math.abs(Math.ceil(stealthRadarWindow / 10))}m
 			if stealthRadarWindow < 0 
 				|  before
 			else
