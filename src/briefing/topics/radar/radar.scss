@@ -44,102 +44,72 @@ $zoom: 0.25;
 		stroke-dasharray: 0.75 1.25;
 		stroke-dashoffset: 1.25;
 	}
+
+	&.ally {
+		stroke: $background-color-ally;
+	}
+
+	&.enemy {
+		stroke: $background-color-enemy;
+	}
+
+	&.player {
+		stroke: $background-color-player;	
+	}	
 }
 
-.ally {
-	stroke: $background-color-ally;
-	color: $background-color-ally;
-}
-
-.enemy {
-	stroke: $background-color-enemy;
-	color: $background-color-enemy;
-}
-
-.player {
-	stroke: $background-color-player;	
-	color: $background-color-player;
-}
-
-.label {
-	position: absolute;
-}
-
-.ship {
-	background-color: white;
-	padding: 0.1ex 0.1ch;
-}
 // Styling for the stealth warning indicator and details
 // $stealthwarn-color: goldenrod;
 $stealthwarn-color-moderate: goldenrod;
 $stealthwarn-color-severe: red;
 
-.enemy[class*="stealthwarn"]::after {
-	content: "\e063"; // warning
-	font-family: "dripicons-v2";
-	margin-left: 0.25ch;
+.label {
+	position: absolute;
+
+	.ship {
+		background-color: white;
+		padding: 0.1ex 0.1ch;
+		
+		&.ally {
+			color: $background-color-ally;
+		}
+
+		&.enemy {
+			color: $background-color-enemy;
+
+			&[class*="stealthwarn"]::after {
+				content: "\e063"; // warning
+				font-family: "dripicons-v2";
+				margin-left: 0.25ch;
+			}
+
+			&.stealthwarn-moderate::after {
+				color: $stealthwarn-color-moderate;
+			}
+
+			&.stealthwarn-severe::after {
+				color: $stealthwarn-color-severe;
+			}
+		}
+
+		&.player {
+			color: $background-color-player;
+		}	
+	}
 }
 
-.enemy.stealthwarn-moderate::after {
-	color: $stealthwarn-color-moderate;
-}
-
-.enemy.stealthwarn-severe::after {
-	color: $stealthwarn-color-severe;
+aside.details.enemy {
+	.stealthwarn-moderate {
+		color: $stealthwarn-color-moderate;
+		font-weight: bold;
+	}
+	.stealthwarn-severe {
+		color: $stealthwarn-color-severe;
+		font-weight: bold;
+	}
 }
 
 .no-radars {
 	color: slategray;
 	font-size: $large;
-}
-
-aside.details {
-	color: black;
-
-	.details-title {
-		font-weight: bold;
-	}
-
-	&.ally .details-title {
-		color: $background-color-ally;
-	}
-	&.enemy .details-title {
-		color: $background-color-enemy;
-
-		.stealthwarn-moderate {
-			color: $stealthwarn-color-moderate;
-			font-weight: bold;
-		}
-		.stealthwarn-severe {
-			color: $stealthwarn-color-severe;
-			font-weight: bold;
-		}
-
-	}
-	&.player .details-title {
-		color: $background-color-player;
-	}
-
-	ul {
-		list-style: none;
-		padding: 0;
-	}
-
-	li {
-		white-space: nowrap;
-		margin-bottom: 0.5ex;
-
-		// These two lines take care of justifying captions to the left and values to the right:
-		display: flex;
-		justify-content: space-between;
-
-		span.caption {
-			margin-right: 1ch;
-		}
-
-		span.value {
-			text-align: right;
-		}
-
-	}
 }
