@@ -23,8 +23,11 @@ class BriefingBuilder {
 	#briefingHTML;
 	#briefingCSS(briefing) {
 		// @todo Cache contents of briefing.scss to avoid synchronous reads on every refresh
-		let src = `${readFileSync('src/briefing/briefing.scss').toString()}${briefing.topics.map(topic => topic.scss).join('')}`;
-		return sass.compileString(src).css;
+		let src = `${readFileSync('src/briefing/briefing.scss', 'utf8')}${briefing.topics.map(topic => topic.scss).join('')}`;
+		return sass.compileString(src, {
+			// Since we're compiling from a string, we need to manually provide the base path for imports:
+			loadPaths: [ 'src/briefing' ]
+		}).css;
 	}
 
 	/**
