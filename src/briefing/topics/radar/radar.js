@@ -43,7 +43,10 @@ async function buildHtml(battle, gameObjectFactory, options) {
 			allies: battle.getAllies().map(vehicle => vehicle.shipId),
 			enemies: battle.getEnemies().map(vehicle => vehicle.shipId),
 			player: battle.getPlayer().shipId
-		} 
+		},
+		options: {
+			almostThreshold: options.almostThreshold
+		}
 	};
 	return pug.renderFile('src/briefing/topics/radar/radar.pug', locals);
 }

@@ -11,13 +11,19 @@
 	const minTime = 10;
 	// A constant shift for duration, to increase scale and avoid a lot of white space
 	const shiftTime = 0; // Turned off
+	// Distance at which a ship is considered to "almost" have a stealth radar capability
+	// This is the distance at which it will generally be too late to turn away, even though the
+	// ship was technically spotted beyond its radar range.
+	// By default it is turned off, i.e. it will only distinguish between stealth radar capability 
+	// yes or no.
+	const STEALTH_RADAR_ALMOST = options?.almostThreshold || 0;
 
 	function warningClass(ship, dist) {
 		let concealment = 1000 * ship.getConcealment(); // in meters
 		dist = Number(dist);
 		if (concealment < dist)
 			return "stealthwarn-severe";
-		else if (concealment < dist + 1000)
+		else if (concealment < dist + STEALTH_RADAR_ALMOST)
 			return "stealthwarn-moderate";
 		else return "";
 	}
