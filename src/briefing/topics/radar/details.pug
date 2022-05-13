@@ -25,13 +25,13 @@ ul
 	li
 		span.caption Cooldown:
 		span.value
-			| #{ship.consumables.sonar.reloadTime}
+			| #{ship.consumables.rls.reloadTime}
 			span.unit s
 
 	li
 		span.caption Stealth radar capability: 
 		span.value(class=warningClass(ship, range))
-			if stealthRadarWindow < -1 * STEALTH_RADAR_ALMOST
+			if stealthRadarWindow < -STEALTH_RADAR_ALMOST
 				| no
 			else if stealthRadarWindow < 0
 				| almost
