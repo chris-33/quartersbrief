@@ -1,0 +1,26 @@
+.details-title #{hydro.ship.getLabel()}
+
+ul
+	li
+		span.caption Range:
+		span.value 
+			| #{range}
+			span.unit m
+
+	li
+		span.caption Duration (base):
+		span.value
+			| #{hydro.baseTime}
+			span.unit s
+
+	li
+		span.caption Duration (max):
+		span.value
+			| #{Math.ceil(hydro.maxTime)}
+			span.unit s
+
+	li
+		span.caption Cooldown:
+		span.value
+			| #{hydro.cooldown}
+			span.unit s

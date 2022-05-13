@@ -36,12 +36,15 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		// Round range to 10m precision, to avoid drawing separate circles for what is effectively the same range
 		// if ships' consumables' distShip is slightly different (which will be magnified by the conversion to meters)
 		let range = 10 * Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip) / 10);
-		hydros[range] ??= [];
-		hydros[range].push({
+		const hydro = {
 			ship: ship,
 			baseTime: ship.consumables.sonar.workTime,
-			maxTime: shipBuilder.build(ship, HYDRO_BUILD).consumables.sonar.workTime
-		});
+			maxTime: shipBuilder.build(ship, HYDRO_BUILD).consumables.sonar.workTime,
+			cooldown: ship.consumables.sonar.reloadTime
+		};
+
+		hydros[range] ??= [];
+		hydros[range].push(hydro);
 	});
 	const locals = { 
 		ships, 

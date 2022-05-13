@@ -13,15 +13,15 @@ $zoom: 0.496;
 
 .ship {
 	background-color: white;
-}
 
-.ally {
-	color: $background-color-ally;
-}
-
-// By having .enemy after .ally, ships that are both will be displayed as enemy
-.enemy {
-	color: $background-color-enemy;	
+	&.ally {
+		color: $background-color-ally;
+	}
+	
+	// By having .enemy after .ally, ships that are both will be displayed as enemy
+	&.enemy {
+		color: $background-color-enemy;	
+	}
 }
 
 .axis {	

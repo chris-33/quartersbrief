@@ -15,12 +15,17 @@ if ships.length > 0
 			circle.hydro(r=length(range))
 	each range in Object.keys(hydros)
 		div.label(style=`left: ${(100 + Math.cos(1/4 * Math.PI) * length(range)) / 2}%; top: ${(100 - Math.sin(1/4 * Math.PI) * length(range)) / 2}%`)
-			each ship in hydros[range].map(range => range.ship)
+			each hydro in hydros[range]
 				span.ship(class={
-					"ally": teams.allies.includes(ship.getID()),
-					"enemy": teams.enemies.includes(ship.getID())
-				}) #{ship.getLabel()}
+					"ally": teams.allies.includes(hydro.ship.getID()),
+					"enemy": teams.enemies.includes(hydro.ship.getID())
+				}, data-details=hydro.ship.getName()) #{hydro.ship.getLabel()}
 				br
+				aside.details(class={
+					ally: teams.allies.includes(hydro.ship.getID()),
+					enemy: teams.enemies.includes(hydro.ship.getID())
+				}, data-details-for=hydro.ship.getName())
+					include details
 			script
 				| {
 				|	const div = document.currentScript.parentElement;
