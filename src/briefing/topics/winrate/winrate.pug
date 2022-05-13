@@ -32,7 +32,7 @@ div
 			- const ally = allies[i];
 			- const enemy = enemies[i];
 			tr
-				td(class=ally.player.name === player.name ? 'player' : '') 
+				td(class=ally.player.name === player.name ? 'player' : '', data-details=ally.player.name) 
 					span.name #{ally.player.name}
 					| <br>
 					span.ship 
@@ -60,7 +60,7 @@ div
 							span.unit %
 						aside.details.ally(data-details-for=enemy.player.name)
 							+details(enemy.player)
-				td
+				td(data-details=enemy.player.name)
 					span.name #{enemy.player.name}
 					| <br>
 					span.ship
