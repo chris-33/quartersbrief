@@ -1,0 +1,48 @@
+- const stealthRadarWindow = range - ship.getConcealment() * 1000;
+.ship
+	| #{ship.getLabel()}
+
+ul
+	li
+		span.caption Range:
+		span.value
+			| #{(range / 1000).toFixed(1)}
+			span.unit km
+
+	li
+		span.caption Duration (base):
+		span.value
+			| #{workTime}
+			span.unit s
+
+	li
+		span.caption Duration (max):
+		span.value
+			//- maxTime is a function of workTime, so we can just always use the first element here
+			| #{Math.ceil(radars[range][workTime][0].maxTime)} 
+			span.unit s
+
+	li
+		span.caption Cooldown:
+		span.value
+			| #{ship.consumables.sonar.reloadTime}
+			span.unit s
+
+	li
+		span.caption Stealth radar capability:
+		span.value(class=warningClass(ship, range))
+			if stealthRadarWindow < -1 * STEALTH_RADAR_ALMOST
+				| no
+			else if stealthRadarWindow < 0
+				| almost
+			else
+				| yes
+	li
+		| Seen 
+		span(class=warningClass(ship, range)) #{10 * Math.abs(Math.ceil(stealthRadarWindow / 10))}
+		span.unit m
+		if stealthRadarWindow < 0 
+			|  before
+		else
+			|  after
+		|  radar range.

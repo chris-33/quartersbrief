@@ -14,11 +14,22 @@
 
 	function warningClass(ship, dist) {
 		let concealment = 1000 * ship.getConcealment(); // in meters
+		dist = Number(dist);
 		if (concealment < dist)
 			return "stealthwarn-severe";
 		else if (concealment < dist + 1000)
 			return "stealthwarn-moderate";
 		else return "";
+	}
+	function teamClasses(ship) {
+		let result = [];
+		if (teams.allies.includes(ship.getID()))
+			result.push('ally');
+		if (teams.enemies.includes(ship.getID()))
+			result.push('enemy');
+		if (teams.player === ship.getID())
+			result.push('player');
+		return result;
 	}
 	function length(range) {
 		return (range - shiftDistance) * 100/(maxDistance - shiftDistance);
@@ -65,14 +76,10 @@ if ships.length > 0
 					// workTime for the range.
 					// I.e. if there are three different workTimes for a 10km radar,
 					// the first one will be 1 width inward of 10km, the second right on, the third 1 width outward
-					let start = polarToCartesian(0, length(range) + index - (n-1)/2);
-					let end = polarToCartesian(angle(workTime), length(range) + index - (n-1)/2);
-					let radius = start.x;
-				g.radar(class={
-					ally: radars[range][workTime].map(entry => entry.ship).some(ship => teams.allies.includes(ship.getID())),
-					enemy: radars[range][workTime].map(entry => entry.ship).some(ship => teams.enemies.includes(ship.getID())),
-					player: radars[range][workTime].map(entry => entry.ship).some(ship => teams.player === ship.getID())
-				})
+					let radius = length(range) + index - (n-1)/2;
+					let start = polarToCartesian(0, radius);
+					let end = polarToCartesian(angle(workTime), radius);
+				g.radar(class=radars[range][workTime].flatMap(entry => teamClasses(entry.ship)))
 					path(d=`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`)
 					text(x=end.x + 0.25, y=end.y - 0.25) #{workTime}s
 
@@ -81,12 +88,10 @@ if ships.length > 0
 		div.label(style=`top: ${100 + polarToCartesian(angle(maxTime/2), length(range)).y}%; left: ${polarToCartesian(angle(maxTime/2), length(range)).x}%;`)
 			each workTime in Object.keys(radars[range])
 				each ship in radars[range][workTime].map(entry => entry.ship)
-					span.ship(class={
-						ally: teams.allies.includes(ship.getID()),
-						enemy: teams.enemies.includes(ship.getID()),
-						player: teams.player === ship.getID()						
-					}, class=warningClass(ship, range)) #{ship.getLabel()}
+					span.ship(class=teamClasses(ship), class=warningClass(ship, range), data-details=ship.getName()) #{ship.getLabel()}
 					br
+					aside.details(class=teamClasses(ship), data-details-for=ship.getName())
+						include details
 
 else
 	.no-radars

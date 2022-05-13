@@ -1,4 +1,5 @@
 $zoom: 0.25;
+//@use 'details';
 
 .axis {
 	stroke: black;
@@ -82,4 +83,54 @@ $stealthwarn-color-severe: red;
 .no-radars {
 	color: slategray;
 	font-size: $large;
+}
+
+aside.details {
+	color: black;
+
+	details-title {
+		all: unset;
+	}
+
+	ul {
+		list-style: none;
+		padding: 0;
+	}
+
+	li {
+		white-space: nowrap;
+		margin-bottom: 0.5ex;
+
+		span.caption {
+		}
+		span.value {
+			text-align: right;
+			float:right;
+		}
+	}
+
+	table {
+	// Set font-weight and -size specifically.
+	// Otherwise Firefox's default styling screws us over.
+	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
+	font-weight: inherit;
+	font-size: inherit;
+	}
+
+	&.enemy .stealthwarn-moderate {
+		color: $stealthwarn-color-moderate;
+		font-weight: bold;
+	}
+
+	&.enemy .stealthwarn-sever {
+		color: $stealthwarn-color-severe;
+		font-weight: bold;
+	}
+
+	td {
+		white-space: nowrap;
+	}
+	td:last-of-type {
+		text-align: right;
+	}
 }
