@@ -1,5 +1,5 @@
 // The effect that makes the bar appear lighter at the start
-$bareffect: linear-gradient(to right, #fffffff0, #ffffff60 30%, transparent 50%);
+$bareffect: linear-gradient(to right, #f0f0f0, transparent 2.5em);
 
 // A line in the ship graph
 .ship {
@@ -37,20 +37,12 @@ $bareffect: linear-gradient(to right, #fffffff0, #ffffff60 30%, transparent 50%)
 	color: black;
 }
 
-// .label.player, .value.player {
-// 	color: $color-player;
-// 	font-weight: bold;
-// 	text-shadow: 0 0 1px color.scale($color-player, $lightness: 50%);
-// }
-
 // The ship's label (human-readable name)
 .label {
-	font-style: italic;
 	text-align: right;
 	color: white;
 }
 
 // The ship's concealment value
 .value {
-	font-style: normal;
 }
