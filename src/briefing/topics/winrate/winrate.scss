@@ -1,3 +1,6 @@
+@use '../colors';
+@use '../fontsizes';
+
 table {
 	width: 100%;
 	table-layout: fixed;
@@ -6,7 +9,7 @@ table {
 	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
 	font-weight: inherit;
 	font-size: inherit;
-	border-image-source: linear-gradient(to right, $background-color-ally, white 15%, white 85%, $background-color-enemy);
+	border-image-source: linear-gradient(to right, colors.$ally, white 15%, white 85%, colors.$enemy);
 	border-image-slice: 10;
 	border-image-width: 2px;
 	padding: 1ex 1ch;
@@ -36,7 +39,7 @@ td {
 		padding-left: 0.5ch;
 	}
 	&.player {
-		color: $color-player;
+		color: colors.$player;
 		font-weight: 600;
 	}
 
@@ -46,11 +49,11 @@ td {
 		padding-right: 0.5ch;
 	}
 	.ship {
-		font-size: $small;
+		font-size: fontsizes.$small;
 		font-style: italic;
 		img {
 			filter: brightness(80%);
-			font-size: $small;
+			font-size: fontsizes.$small;
 			height: 1em;
 		}
 	}
@@ -58,13 +61,13 @@ td {
 
 .winrate {	
 	font-weight: bold;
-	font-size: $large;
+	font-size: fontsizes.$large;
 }
 
 .notification {
-	color: darkgrey;
+	color: colors.$aside;
 	font-style: italic;
-	font-size: $small;
+	font-size: fontsizes.$small;
 }
 
 .superunicum {

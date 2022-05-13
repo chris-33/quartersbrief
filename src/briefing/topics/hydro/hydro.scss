@@ -1,8 +1,11 @@
+@use '../colors';
+@use '../fontsizes';
+
 $zoom: 0.496;
 
 .hydro {
 	fill: transparent;
-	stroke: cornflowerblue;
+	stroke: colors.$neutral;
 	stroke-width: $zoom;
 }
 
@@ -15,12 +18,12 @@ $zoom: 0.496;
 	background-color: white;
 
 	&.ally {
-		color: $background-color-ally;
+		color: colors.$ally;
 	}
 	
 	// By having .enemy after .ally, ships that are both will be displayed as enemy
 	&.enemy {
-		color: $background-color-enemy;	
+		color: colors.$enemy;	
 	}
 }
 
@@ -33,12 +36,12 @@ $zoom: 0.496;
 		dominant-baseline: hanging;
 		fill: black;
 		stroke: none;
-		font-size: calc($small * $zoom);
+		font-size: calc(fontsizes.$small * $zoom);
 	}
 }
 
 .no-hydros {
-	color: slategray;
-	font-size: 12pt;
+	color: colors.$aside;
+	font-size: fontsizes.$large;
 	text-align: center;
 }

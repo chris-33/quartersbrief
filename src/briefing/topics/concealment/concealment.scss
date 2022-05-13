@@ -1,3 +1,5 @@
+@use '../colors';
+
 // The effect that makes the bar appear lighter at the start
 $bareffect: linear-gradient(to right, #f0f0f0, transparent 2.5em);
 
@@ -16,24 +18,24 @@ $bareffect: linear-gradient(to right, #f0f0f0, transparent 2.5em);
 
 // The bar for an enemy ship
 .shipbar.enemy {
-	background-color: $background-color-enemy;
+	background-color: colors.$enemy;
 }
 
 // The bar for an allied ship
 .shipbar.ally {
-	background-color: $background-color-ally;
+	background-color: colors.$ally;
 }
 
 // The bar for a ship that appears both on the allied and on the enemy team
 .shipbar.ally.enemy {
 	background: 
 		$bareffect,
-		linear-gradient(20deg, $background-color-ally 30%, $background-color-enemy 70%)
+		linear-gradient(20deg, colors.$ally 30%, colors.$enemy 70%)
 }
 
 // The bar for the player's ship
 .shipbar.player {
-	background-color: $background-color-player;
+	background-color: colors.$player;
 	color: black;
 }
 

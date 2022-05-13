@@ -1,0 +1,13 @@
+@use "sass:color";
+
+$ally: hsl(170deg,50%,50%);
+$enemy: hsl(0deg,65%,50%);
+$player: #fbd770;
+$neutral: cornflowerblue;
+
+$aside: slategray;
+$minor: lightgray;
+
+$warning-moderate: goldenrod;
+$warning-severe: red;
+$warning: $warning-moderate;

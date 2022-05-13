@@ -1,3 +1,6 @@
+@use '../colors';
+@use '../fontsizes';
+
 $zoom: 0.25;
 //@use 'details';
 
@@ -6,7 +9,7 @@ $zoom: 0.25;
 	stroke-width: $zoom;
 
 	text {
-		font-size: calc($zoom * $small);
+		font-size: calc($zoom * fontsizes.$small);
 		fill: black;
 		stroke: none;
 	}
@@ -25,7 +28,7 @@ $zoom: 0.25;
 .grid {
 	fill: none;
 	stroke-width: $zoom;	
-	stroke: lightgray;
+	stroke: colors.$minor;
 	stroke-dasharray: 2 1;
 }
 
@@ -34,7 +37,7 @@ $zoom: 0.25;
 	text {
 		stroke: none;
 		fill: black;
-		font-size: calc($small * $zoom);
+		font-size: calc(fontsizes.$small * $zoom);
 	}
 
 	.base {
@@ -46,22 +49,21 @@ $zoom: 0.25;
 	}
 
 	&.ally {
-		stroke: $background-color-ally;
+		stroke: colors.$ally;
 	}
 
 	&.enemy {
-		stroke: $background-color-enemy;
+		stroke: colors.$enemy;
 	}
 
 	&.player {
-		stroke: $background-color-player;	
+		stroke: colors.$player;	
 	}	
 }
 
 // Styling for the stealth warning indicator and details
-// $stealthwarn-color: goldenrod;
-$stealthwarn-color-moderate: goldenrod;
-$stealthwarn-color-severe: red;
+$stealthwarn-color-moderate: colors.$warning-moderate;
+$stealthwarn-color-severe: colors.$warning-severe;
 
 .label {
 	position: absolute;
@@ -71,11 +73,11 @@ $stealthwarn-color-severe: red;
 		padding: 0.1ex 0.1ch;
 		
 		&.ally {
-			color: $background-color-ally;
+			color: colors.$ally;
 		}
 
 		&.enemy {
-			color: $background-color-enemy;
+			color: colors.$enemy;
 
 			&[class*="stealthwarn"]::after {
 				content: "\e063"; // warning
@@ -93,7 +95,7 @@ $stealthwarn-color-severe: red;
 		}
 
 		&.player {
-			color: $background-color-player;
+			color: colors.$player;
 		}	
 	}
 }
@@ -110,7 +112,7 @@ aside.details.enemy {
 }
 
 .no-radars {
-	color: slategray;
-	font-size: $large;
+	color: colors.$aside;
+	font-size: fontsizes.$large;
 	text-align: center;
 }

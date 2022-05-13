@@ -1,24 +1,13 @@
-@use "sass:color";
-
-$background-color-ally: hsl(170deg,50%,50%);
-$background-color-enemy: hsl(0deg,65%,50%);
-$background-color-player: #fbd770;
-$color-player: #fbd770;
-
-$tiny: 50%;
-$verysmall: 60%;
-$small: 80%;
-$large: 120%;
-$verylarge: 160%;
-$huge: 200%;
+@use 'topics/colors';
+@use 'topics/fontsizes';
 
 .unit {
 	color: #757575;
-	font-size: $small;
+	font-size: fontsizes.$small;
 }
 
 aside.details {
-	padding: 0.5ex 0.5ch;
+	padding: 0.5em;
 	color: black;
 	background-color: white;
 	border: 1px solid black;
@@ -27,38 +16,43 @@ aside.details {
 	display: none;
 
 	&.ally {
-		border-color: $background-color-ally;
+		border-color: colors.$ally;
 	}
 	&.enemy {
-		border-color: $background-color-enemy;
+		border-color: colors.$enemy;
 	}
 	&.player {
-		border-color: $background-color-player;
+		border-color: colors.$player;
 	}
 
 	.details-title {
 		font-weight: bold;
+		margin-bottom: 2ex;
 	}
 
 	&.ally .details-title {
-		color: $background-color-ally;
+		color: colors.$ally;
 	}
 	&.enemy .details-title {
-		color: $background-color-enemy;
+		color: colors.$enemy;
 	}
 	
 	&.player .details-title {
-		color: $background-color-player;
+		color: colors.$player;
 	}
 
 	ul {
 		list-style: none;
 		padding: 0;
+		margin: 0;
 	}
 
 	li {
 		white-space: nowrap;
-		margin-bottom: 0.5ex;
+		
+		&:not(:last-of-type) {
+			margin-bottom: 0.5ex;
+		}
 
 		// These two lines take care of justifying captions to the left and values to the right:
 		display: flex;
@@ -72,6 +66,11 @@ aside.details {
 			text-align: right;
 		}
 	}	
+
+	hr {
+		border: none;
+		border-top: 0.5px solid colors.$aside;
+	}
 }
 
 aside.details[data-show] {
