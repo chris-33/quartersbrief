@@ -8,3 +8,7 @@ filter = { limit = 10 }
 [topics.winrate]
 
 [topics.radar]
+almostThreshold = 500
+
+[topics.hydro]
+filter = { teams = [ "enemies" ] }
