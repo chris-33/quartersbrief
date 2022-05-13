@@ -1,3 +1,5 @@
+include details
+
 - const rows = Math.max(allies.length, enemies.length);
 - 
 	function winrateClass(wr) {
@@ -42,16 +44,22 @@ div
 					else if ally.player.hidden
 						span.notification private
 					else
-						span.winrate(class=winrateClass(ally.player.winrate)) #{(100 * ally.player.winrate).toFixed(1)} 
-						span.unit %
+						span.winrate(class=winrateClass(ally.player.winrate), data-details=ally.player.name) 
+							| #{(100 * ally.player.winrate).toFixed(1)} 
+							span.unit %
+						aside.details.ally(data-details-for=ally.player.name)
+							+details(ally.player)
 				td
 					if enemy.player.bot
 						span.notification Bot
 					else if enemy.player.hidden
 						span.notification private
 					else
-						span.winrate(class=winrateClass(enemy.player.winrate)) #{(100 * enemy.player.winrate).toFixed(1)}
-						span.unit %
+						span.winrate(class=winrateClass(enemy.player.winrate), data-details=enemy.player.name) 
+							| #{(100 * enemy.player.winrate).toFixed(1)}
+							span.unit %
+						aside.details.ally(data-details-for=enemy.player.name)
+							+details(enemy.player)
 				td
 					span.name #{enemy.player.name}
 					| <br>
