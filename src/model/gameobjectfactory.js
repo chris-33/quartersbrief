@@ -56,7 +56,7 @@ class GameObjectFactory {
 	// So we use a templating engine (pupa) here, and interpolate at runtime in the _attachLabel method.
 	// These are regular strings, and there is no $ in front of the expressions to be interpolated.
 	static LABEL_KEYS = {
-		'Ship': 'IDS_{index}_FULL',
+		'Ship': 'IDS_{index}',
 		'Modernization': 'IDS_TITLE_{name}',
 		'Crew': 'IDS_{CrewPersonality.personName}',
 		'Projectile': 'IDS_{name}',
