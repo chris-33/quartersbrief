@@ -2,7 +2,9 @@ $('[data-details]').each(function(index, element) {
 	element = $(element);
 	// Scope search to topic
 	const scope = element.closest('.topic');
-	const details = $(`aside[data-details-for=${element.attr('data-details')}]`, scope);
+	const details = $(`aside[data-details-for="${element.attr('data-details')}"]`, scope);
+
+	if (details.length === 0) return;
 	if (details.length > 1) throw new Error(`Expected to find at most one details element for ${element.attr('data-details')} but found ${details.length}`);
 
 	const popper = Popper.createPopper(element.get(0), details.get(0), {
