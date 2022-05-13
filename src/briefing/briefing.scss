@@ -17,12 +17,9 @@ $huge: 200%;
 	font-size: $small;
 }
 
-.aside {
-	font-size: $small;
-}
-
 aside.details {
 	padding: 0.5ex 0.5ch;
+	color: black;
 	background-color: white;
 	border: 1px solid black;
 	box-shadow: 0 0 5px black;
@@ -38,6 +35,43 @@ aside.details {
 	&.player {
 		border-color: $background-color-player;
 	}
+
+	.details-title {
+		font-weight: bold;
+	}
+
+	&.ally .details-title {
+		color: $background-color-ally;
+	}
+	&.enemy .details-title {
+		color: $background-color-enemy;
+	}
+	
+	&.player .details-title {
+		color: $background-color-player;
+	}
+
+	ul {
+		list-style: none;
+		padding: 0;
+	}
+
+	li {
+		white-space: nowrap;
+		margin-bottom: 0.5ex;
+
+		// These two lines take care of justifying captions to the left and values to the right:
+		display: flex;
+		justify-content: space-between;
+
+		span.caption {
+			margin-right: 1ch;
+		}
+
+		span.value {
+			text-align: right;
+		}
+	}	
 }
 
 aside.details[data-show] {
