@@ -26,6 +26,7 @@ class Modifier {
 		GSShotDelay: 'atba.mounts.shotDelay', // PCM019_SecondaryGun_Mod_III
 		planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
 		visibilityDistCoeff: 'hull.visibilityFactor', // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
+		sonarWorkTimeCoeff: 'consumables.sonar.workTime', // PCM041_SonarSearch_Mod_I, Skill 6 ConsumablesDuration
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
 		// Everything up to PCM035_SteeringGear_Mod_III
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
