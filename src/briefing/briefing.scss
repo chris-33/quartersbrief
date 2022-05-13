@@ -17,12 +17,15 @@ aside.details {
 
 	&.ally {
 		border-color: colors.$ally;
+		box-shadow: 0 0 5px colors.$ally;
 	}
 	&.enemy {
 		border-color: colors.$enemy;
+		box-shadow: 0 0 5px colors.$enemy;
 	}
 	&.player {
 		border-color: colors.$player;
+		box-shadow: 0 0 5px colors.$player;
 	}
 
 	.details-title {
