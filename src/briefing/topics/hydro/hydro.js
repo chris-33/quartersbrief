@@ -1,7 +1,7 @@
 import { ShipBuilder } from '../../../util/shipbuilder.js';
-import { readFile } from 'fs/promises';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
+import sass from 'sass';
 
 const BASE_BUILD = {
 	modules: 'top'	
@@ -55,7 +55,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 }
 
 async function buildScss() {
-	return readFile('src/briefing/topics/hydro/hydro.scss');
+	return sass.compile('src/briefing/topics/hydro/hydro.scss').css;
 }
 
 export default async function buildTopic(battle, gameObjectFactory, options) {

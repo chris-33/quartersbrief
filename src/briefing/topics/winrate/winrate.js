@@ -1,7 +1,7 @@
-import { readFile } from 'fs/promises';
 import { PlayerFactory } from '../../../model/playerfactory.js';
 import config from '../../../../src/init/config.js';
 import pug from 'pug';
+import sass from 'sass';
 
 const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');
 
@@ -54,7 +54,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 }
 
 async function buildScss() {
-	return readFile('src/briefing/topics/winrate/winrate.scss');
+	return sass.compile('src/briefing/topics/winrate/winrate.scss').css;
 }
 
 export default async function buildTopic(battle, gameObjectFactory, options) {

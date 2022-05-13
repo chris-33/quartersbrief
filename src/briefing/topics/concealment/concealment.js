@@ -1,5 +1,5 @@
 import pug from 'pug';
-import { readFile } from 'fs/promises';
+import sass from 'sass';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { arrayIntersect } from '../../../util/util.js';
 
@@ -39,7 +39,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 }
 
 async function buildScss() {
-	return readFile('src/briefing/topics/concealment/concealment.scss');
+	return sass.compile('src/briefing/topics/concealment/concealment.scss').css;
 }
 
 export default async function buildTopic(battle, gameObjectFactory, options) {
