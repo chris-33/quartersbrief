@@ -20,3 +20,26 @@ $huge: 200%;
 .aside {
 	font-size: $small;
 }
+
+aside.details {
+	padding: 0.5ex 0.5ch;
+	background-color: white;
+	border: 1px solid black;
+	box-shadow: 0 0 5px black;
+	z-index: 1000;
+	display: none;
+
+	&.ally {
+		border-color: $background-color-ally;
+	}
+	&.enemy {
+		border-color: $background-color-enemy;
+	}
+	&.player {
+		border-color: $background-color-player;
+	}
+}
+
+aside.details[data-show] {
+	display: block;
+}
