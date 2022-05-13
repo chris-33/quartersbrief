@@ -79,9 +79,12 @@ if ships.length > 0
 					let radius = length(range) + index - (n-1)/2;
 					let start = polarToCartesian(0, radius);
 					let end = polarToCartesian(angle(workTime), radius);
+					let maxEnd = polarToCartesian(angle(radars[range][workTime][0].maxTime), radius);
 				g.radar(class=radars[range][workTime].flatMap(entry => teamClasses(entry.ship)))
-					path(d=`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`)
+					path.base(d=`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`)
 					text(x=end.x + 0.25, y=end.y - 0.25) #{workTime}s
+					path.max(d=`M ${end.x} ${end.y} A ${radius} ${radius} 0 0 0 ${maxEnd.x} ${maxEnd.y}`)
+					text(x=maxEnd.x + 0.25, y=maxEnd.y - 0.25) #{Math.ceil(radars[range][workTime][0].maxTime)}s
 
 	each range in Object.keys(radars)
 		- const maxTime = Math.max(...Object.keys(radars[range]));

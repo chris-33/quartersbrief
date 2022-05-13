@@ -36,6 +36,14 @@ $zoom: 0.25;
 		fill: black;
 		font-size: calc($small * $zoom);
 	}
+
+	.base {
+
+	}
+	.max {
+		stroke-dasharray: 0.75 1.25;
+		stroke-dashoffset: 1.25;
+	}
 }
 
 .ally {
@@ -88,8 +96,28 @@ $stealthwarn-color-severe: red;
 aside.details {
 	color: black;
 
-	details-title {
-		all: unset;
+	.details-title {
+		font-weight: bold;
+	}
+
+	&.ally .details-title {
+		color: $background-color-ally;
+	}
+	&.enemy .details-title {
+		color: $background-color-enemy;
+
+		.stealthwarn-moderate {
+			color: $stealthwarn-color-moderate;
+			font-weight: bold;
+		}
+		.stealthwarn-severe {
+			color: $stealthwarn-color-severe;
+			font-weight: bold;
+		}
+
+	}
+	&.player .details-title {
+		color: $background-color-player;
 	}
 
 	ul {
@@ -101,36 +129,17 @@ aside.details {
 		white-space: nowrap;
 		margin-bottom: 0.5ex;
 
+		// These two lines take care of justifying captions to the left and values to the right:
+		display: flex;
+		justify-content: space-between;
+
 		span.caption {
+			margin-right: 1ch;
 		}
+
 		span.value {
 			text-align: right;
-			float:right;
 		}
-	}
 
-	table {
-	// Set font-weight and -size specifically.
-	// Otherwise Firefox's default styling screws us over.
-	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
-	font-weight: inherit;
-	font-size: inherit;
-	}
-
-	&.enemy .stealthwarn-moderate {
-		color: $stealthwarn-color-moderate;
-		font-weight: bold;
-	}
-
-	&.enemy .stealthwarn-sever {
-		color: $stealthwarn-color-severe;
-		font-weight: bold;
-	}
-
-	td {
-		white-space: nowrap;
-	}
-	td:last-of-type {
-		text-align: right;
 	}
 }
