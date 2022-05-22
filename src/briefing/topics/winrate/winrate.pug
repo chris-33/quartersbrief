@@ -58,7 +58,7 @@ div
 						span.winrate(class=winrateClass(enemy.player.winrate), data-details=enemy.player.name) 
 							| #{(100 * enemy.player.winrate).toFixed(1)}
 							span.unit %
-						aside.details.ally(data-details-for=enemy.player.name)
+						aside.details.enemy(data-details-for=enemy.player.name)
 							+details(enemy.player)
 				td(data-details=enemy.player.name)
 					span.name #{enemy.player.name}
