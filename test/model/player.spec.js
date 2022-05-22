@@ -14,7 +14,7 @@ describe('Player', function() {
 		it('should return undefined for all statistics for a hidden profile', function() {
 			let player = new Player({ hidden_profile: true });
 			for (let prop of statistics)
-				expect(player[prop]()).to.be.undefined;
+				expect(player[prop](), prop).to.be.undefined;
 		});
 	});
 
