@@ -32,36 +32,36 @@ div
 			- const ally = allies[i];
 			- const enemy = enemies[i];
 			tr
-				td(class=ally.player.name === player.name ? 'player' : '', data-details=ally.player.name) 
-					span.name #{ally.player.name}
+				td(class=ally.player.name === player.name ? 'player' : '', data-details=ally.player.getName())
+					span.name #{ally.player.getName()}
 					| <br>
 					span.ship 
 						img(src=`img/icon_${ally.ship.getClass().toLowerCase()}.png`)
 						| &nbsp;#{ally.ship.getLabel()}
 				td
-					if ally.player.bot
+					if ally.player.isBot()
 						span.notification Bot
-					else if ally.player.hidden
+					else if ally.player.isHidden()
 						span.notification private
 					else
-						span.winrate(class=winrateClass(ally.player.winrate), data-details=ally.player.name) 
-							| #{(100 * ally.player.winrate).toFixed(1)} 
+						span.winrate(class=winrateClass(ally.player.getWinrate()), data-details=ally.player.getName()) 
+							| #{(100 * ally.player.getWinrate()).toFixed(1)} 
 							span.unit %
-						aside.details.ally(data-details-for=ally.player.name)
+						aside.details.ally(data-details-for=ally.player.getName())
 							+details(ally.player)
 				td
-					if enemy.player.bot
+					if enemy.player.isBot()
 						span.notification Bot
-					else if enemy.player.hidden
+					else if enemy.player.isHidden()
 						span.notification private
 					else
-						span.winrate(class=winrateClass(enemy.player.winrate), data-details=enemy.player.name) 
-							| #{(100 * enemy.player.winrate).toFixed(1)}
+						span.winrate(class=winrateClass(enemy.player.getWinrate()), data-details=enemy.player.getName())
+							| #{(100 * enemy.player.getWinrate()).toFixed(1)}
 							span.unit %
-						aside.details.enemy(data-details-for=enemy.player.name)
+						aside.details.enemy(data-details-for=enemy.player.getName())
 							+details(enemy.player)
-				td(data-details=enemy.player.name)
-					span.name #{enemy.player.name}
+				td(data-details=enemy.player.getName())
+					span.name #{enemy.player.getName()}
 					| <br>
 					span.ship
 						| #{enemy.ship.getLabel()}&nbsp;

@@ -5,16 +5,17 @@ class Player {
 		this._data = data;
 	}
 
-	get hidden() { return this._data.hidden_profile; }
+	isHidden() { return this._data.hidden_profile; }
 
-	get name() { return this._data.nickname; }
-	get battles() { return this.bot ? NaN : this._data.statistics?.pvp?.battles; }
-	get victories() { return this.bot ? NaN : this._data.statistics?.pvp?.wins; }
-	get winrate() { 
+	getName() { return this._data.nickname; }
+	getBattles() { return this.bot ? NaN : this._data.statistics?.pvp?.battles; }
+	getVictories() { return this.bot ? NaN : this._data.statistics?.pvp?.wins; }
+	getWinrate() { 
 		if (this.hidden) return undefined; // Because undefined/undefined === NaN
 		// Treat someone who hasn't played any battles as 0% winrate
-		return this.battles === 0 ? 0 : this.victories / this.battles;
+		return this.getBattles() === 0 ? 0 : this.getVictories() / this.getBattles();
 	}
+	isBot() { return Boolean(this.bot); }
 
 	static createBot(name) {
 		let player = new Player({ nickname: name });
