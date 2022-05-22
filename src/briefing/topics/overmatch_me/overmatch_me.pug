@@ -1,14 +1,18 @@
 - const overmatchThreshold = Math.ceil(ownPlating * 14.3);
-
+- let overmatched = false;
 ul
 	each ship in ships
 		if ship.artillery.getCaliber() >= overmatchThreshold					
+			- overmatched = true;
 			li
 				span.ship.enemy #{ship.getLabel()}
 				span.caliber
 					| #{ship.artillery.getCaliber()}
 					span.unit mm
-
+if !overmatched
+	.no-overmatch
+		| No one in this battle overmatches your armor.
+		
 .own-plating
 	| Own plating 
 	span.info
