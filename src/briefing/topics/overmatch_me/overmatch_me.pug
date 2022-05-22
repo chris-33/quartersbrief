@@ -1,0 +1,21 @@
+- const overmatchThreshold = Math.ceil(ownPlating * 14.3);
+
+ul
+	each ship in ships
+		if ship.artillery.getCaliber() >= overmatchThreshold					
+			li
+				span.ship.enemy #{ship.getLabel()}
+				span.caliber
+					| #{ship.artillery.getCaliber()}
+					span.unit mm
+
+.own-plating
+	| Own plating 
+	span.info
+		| #{ownPlating}
+		span.unit mm
+	|  is overmatched by guns 
+	span.info 
+		| #{overmatchThreshold}
+		span.unit mm
+	|  and larger.

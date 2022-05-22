@@ -1,0 +1,40 @@
+@use '../colors';
+@use '../fontsizes';
+
+.own-plating {
+	border: 1px solid colors.$player;
+	margin-top: 5ex;
+	padding: 1ex;
+	font-size: fontsizes.$small;
+	text-align: center;
+
+	.info {
+		font-size: fontsizes.$normal;
+		margin: 0 1ch;
+	}
+}
+
+ul {
+	list-style: none;
+	padding: 0;
+	margin: 0 15%;
+	width: 66%;
+	
+	li {
+		display: flex;
+		justify-content: space-between;
+		white-space: nowrap;
+
+		&:not(:last-of-type) {
+			margin-bottom: 0.5ex;
+		}
+
+		span.caliber {
+			text-align: right;
+		}
+	}
+
+	.enemy {
+		color: colors.$enemy;
+	}
+}
