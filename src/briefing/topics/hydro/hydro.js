@@ -17,11 +17,8 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	teams.allies.push(teams.player);
 	let ships = battle.getVehicles()		
 		.map(vehicle => vehicle.shipId)
-		// Filter to those teams set in options.teams
-		.filter(shipId => {
-			let displayed = options?.filter?.teams?.flatMap(team => teams[team]) ?? [];
-			return displayed.length === 0 || displayed.includes(shipId);
-		})
+		// Filter to those teams set in options.teams, default to everyone
+		.filter(filters.teams(teams, options.filter?.teams ?? []))
 		.filter(filters.duplicates)
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'sonar' in ship.consumables)
