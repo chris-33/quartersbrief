@@ -1,5 +1,4 @@
 import { ShipBuilder } from '../../../util/shipbuilder.js';
-import { readFile } from 'fs/promises';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
 import sass from 'sass';
@@ -22,6 +21,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		.map(vehicle => vehicle.shipId)
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'rls' in ship.consumables)
+		.filter((ship, index, ships) => ships.findIndex((otherShip, currIndex) => ship === otherShip && currIndex > index) === -1)
 
 	let radars = {};
 	ships.forEach(ship => {
