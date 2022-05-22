@@ -1,12 +1,8 @@
-import DotNotation from '../util/dotnotation.js';
 import { GameObject } from './gameobject.js';
-import { Armament, Artillery, Torpedoes } from './armament.js';
 import { Modernization } from './modernization.js';
-import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
-import { conversions } from '../util/conversions.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
 /**
@@ -82,10 +78,6 @@ class Ship extends GameObject {
 	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
 	 */
 	#moduleLines;
-	/**
-	 * The currently equipped module configuration.
-	 */
-	#configuration;
 	/**
 	 * The already equipped upgrades
 	 */
