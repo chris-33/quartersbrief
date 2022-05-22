@@ -8,10 +8,10 @@ class Player {
 	isHidden() { return this._data.hidden_profile; }
 
 	getName() { return this._data.nickname; }
-	getBattles() { return this.bot ? NaN : this._data.statistics?.pvp?.battles; }
-	getVictories() { return this.bot ? NaN : this._data.statistics?.pvp?.wins; }
+	getBattles() { return this.isBot() ? NaN : this._data.statistics?.pvp?.battles; }
+	getVictories() { return this.isBot() ? NaN : this._data.statistics?.pvp?.wins; }
 	getWinrate() { 
-		if (this.hidden) return undefined; // Because undefined/undefined === NaN
+		if (this.isHidden()) return undefined; // Because undefined/undefined === NaN
 		// Treat someone who hasn't played any battles as 0% winrate
 		return this.getBattles() === 0 ? 0 : this.getVictories() / this.getBattles();
 	}
