@@ -2,6 +2,7 @@ import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
 import sass from 'sass';
+import { filters, teams as _teams } from '../common.js';
 
 const BASE_BUILD = {
 	modules: 'top'	
@@ -12,11 +13,7 @@ const HYDRO_BUILD = {
 }
 async function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
-	const teams = {
-			allies: battle.getAllies().map(vehicle => vehicle.shipId),
-			enemies: battle.getEnemies().map(vehicle => vehicle.shipId),
-			player: battle.getPlayer().shipId
-	}
+	const teams = _teams(battle);
 	teams.allies.push(teams.player);
 	let ships = battle.getVehicles()		
 		.map(vehicle => vehicle.shipId)
@@ -25,8 +22,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 			let displayed = options?.filter?.teams?.flatMap(team => teams[team]) ?? [];
 			return displayed.length === 0 || displayed.includes(shipId);
 		})
-		// Filter out duplicates
-		.filter((ship, index, ships) => ships.findIndex((otherShip, currIndex) => ship === otherShip && currIndex > index) === -1)
+		.filter(filters.duplicates)
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'sonar' in ship.consumables)
 

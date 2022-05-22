@@ -2,6 +2,7 @@ import pug from 'pug';
 import sass from 'sass';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { arrayIntersect } from '../../../util/util.js';
+import { filters, teams } from '../common.js';
 
 const render = pug.compileFile('src/briefing/topics/concealment/concealment.pug');
 
@@ -16,8 +17,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
 	let ships = battle.getVehicles()
 		.map(vehicle => vehicle.shipId)
-		// Filter out duplicates
-		.filter((ship, index, ships) => ships.findIndex((otherShip, currIndex) => ship === otherShip && currIndex > index) === -1)
+		.filter(filters.duplicates)
 		.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD))
 		// Sort by concealment
 		.sort((ship1, ship2) => ship1.getConcealment() - ship2.getConcealment());	
@@ -29,9 +29,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 
 	let locals = {
 		ships: ships,
-		player: battle.getPlayer().shipId,
-		allies: battle.getAllies().map(vehicle => vehicle.shipId),
-		enemies: battle.getEnemies().map(vehicle => vehicle.shipId)
+		...teams(battle),
 	}
 	locals.allies.push(locals.player); // The player is an ally
 	locals.both = arrayIntersect(locals.allies, locals.enemies);

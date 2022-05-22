@@ -2,6 +2,7 @@ import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { conversions } from '../../../util/conversions.js';
 import pug from 'pug';
 import sass from 'sass';
+import { filters, teams } from '../common.js';
 
 const BASE_BUILD = {
 	modules: 'top'	
@@ -21,7 +22,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		.map(vehicle => vehicle.shipId)
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'rls' in ship.consumables)
-		.filter((ship, index, ships) => ships.findIndex((otherShip, currIndex) => ship === otherShip && currIndex > index) === -1)
+		.filter(filters.duplicates)
 
 	let radars = {};
 	ships.forEach(ship => {
@@ -40,11 +41,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	const locals = { 
 		ships, 
 		radars,
-		teams: {
-			allies: battle.getAllies().map(vehicle => vehicle.shipId),
-			enemies: battle.getEnemies().map(vehicle => vehicle.shipId),
-			player: battle.getPlayer().shipId
-		},
+		teams: teams(battle),
 		options: {
 			almostThreshold: options.almostThreshold
 		}
