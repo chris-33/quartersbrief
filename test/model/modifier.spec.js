@@ -85,15 +85,15 @@ describe('Modifier', function() {
 			let modifier = new Modifier('engine.value', 2);
 			let ship = new Ship(clone(SHIPDATA));
 
-			let val = ship.engine.value;
+			let val = ship.engine.get('value');
 			modifier.applyTo(ship);
-			expect(ship.engine.value, 'applying a primitive value').to.equal(val * modifier.value);
+			expect(ship.engine.get('value'), 'applying a primitive value').to.equal(val * modifier.value);
 
 			modifier = new Modifier('artillery.value', {});
 			modifier.value[ship.getSpecies()] = 2;
-			val = ship.artillery.value;
+			val = ship.artillery.get('value');
 			modifier.applyTo(ship);
-			expect(ship.artillery.value, 'applying an object value').to.equal(val * modifier.value[ship.getSpecies()]);
+			expect(ship.artillery.get('value'), 'applying an object value').to.equal(val * modifier.value[ship.getSpecies()]);
 		});
 	});
 
