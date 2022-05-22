@@ -1,4 +1,5 @@
 import { Ship } from '../model/ship.js';
+import clone from 'clone';
 
 /**
  * This class describes a single modification to be carried out on a ship's characteristic. 
@@ -58,7 +59,14 @@ class Modifier {
 	 * called on.
 	 */
 	invert() {
-		return new Modifier(this.target, 1 / this.value);
+		// Clone the value to avoid changing the original of object values.
+		// This might have side effects on other modifiers otherwise.
+		let value = clone(this.value);
+		if (typeof value === 'object') {
+			for (let key in value) value[key] = 1 / value[key];
+		} else if (typeof value === 'number')
+			value = 1 / value;
+		return new Modifier(this.target, value);
 	}
 
 	/**

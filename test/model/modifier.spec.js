@@ -25,10 +25,23 @@ describe('Modifier', function() {
 	});
 
 	describe('.invert', function() {
-		it('should have 1 / value as its value', function() {
+		it('should have 1 / value as its value for a simple numeric modifier', function() {
 			const value = 5;
 			let modifier = new Modifier('target', value);
 			expect(modifier.invert().value).to.equal(1 / value);
+		});
+
+		it('should have 1 / value for every value in an object modifier', function() {
+			const value = {
+				Destroyer: 1,
+				Cruiser: 2,
+				Battleship: 3
+			}
+			let modifier = new Modifier('target', value);
+			modifier = modifier.invert();
+			for (let key in value) {
+				expect(modifier.value[key]).to.equal(1 / value[key]);
+			}
 		});
 
 		it('should negate the effects of the original modifier when applying', function() {
