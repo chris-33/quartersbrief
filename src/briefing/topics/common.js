@@ -26,6 +26,20 @@ const filters = {
 	}
 }
 
+function sortLikeLoadScreen(ship1, ship2) {
+	const classValue = {
+		'AirCarrier': 500,
+		'Battleship': 400,
+		'Cruiser': 300,
+		'Destroyer': 200,
+		'Submarine': 100
+	}
+	let v1 = classValue[ship1.getClass()] + ship1.getTier();
+	let v2 = classValue[ship2.getClass()] + ship2.getTier();
+	return v2 - v1; // Reverse sort order
+}
+
+
 function teams(battle) {
 	const result = {
 		allies: battle.getAllies().map(vehicle => vehicle.shipId),
@@ -36,4 +50,4 @@ function teams(battle) {
 	return result;
 }
 
-export { filters, teams }
+export { filters, sortLikeLoadScreen, teams }

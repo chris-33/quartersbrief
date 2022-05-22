@@ -2,26 +2,16 @@ import { PlayerFactory } from '../../../model/playerfactory.js';
 import config from '../../../../src/init/config.js';
 import pug from 'pug';
 import sass from 'sass';
-
-const render = pug.compileFile('src/briefing/topics/winrate/winrate.pug');
+import { sortLikeLoadScreen } from '../common.js';
 
 async function buildHtml(battle, gameObjectFactory, options) {
-	function enrich(partipant) {
-		partipant.player = players[partipant.name];
-		partipant.ship = ships.find(ship => ship.getID() === partipant.shipId);
-	}
+	function enrich(participant) {
+		participant.player = players[participant.name];
+		participant.ship = ships.find(ship => ship.getID() === participant.shipId);
 
-	function sortLikeLoadScreen(p1, p2) {
-		const classValue = {
-			'AirCarrier': 500,
-			'Battleship': 400,
-			'Cruiser': 300,
-			'Destroyer': 200,
-			'Submarine': 100
-		}
-		let v1 = classValue[p1.ship.getClass()] + p1.ship.getTier();
-		let v2 = classValue[p2.ship.getClass()] + p2.ship.getTier();
-		return v2 - v1; // Reverse sort order
+		// Pass getClass and getTier through to ship to allow sorting:
+		participant.getClass = participant.ship.getClass.bind(participant.ship);
+		participant.getTier = participant.ship.getTier.bind(participant.ship);
 	}
 
 	// Check that required options api-key and realm are set, and create a more readable error message if they are not.
@@ -50,7 +40,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	enemies.sort(sortLikeLoadScreen);
 
 	const locals = { allies, enemies, player: battle.getPlayer() };
-	return render(locals);
+	return pug.renderFile('src/briefing/topics/winrate/winrate.pug', locals);
 }
 
 async function buildScss() {

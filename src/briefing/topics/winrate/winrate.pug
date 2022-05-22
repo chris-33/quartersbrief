@@ -32,7 +32,7 @@ div
 			- const ally = allies[i];
 			- const enemy = enemies[i];
 			tr
-				td(class=ally.player.name === player.name ? 'player' : '', data-details=ally.player.getName())
+				td(class=ally.player.getName() === player.name ? 'player' : '', data-details=ally.player.getName())
 					span.name #{ally.player.getName()}
 					| <br>
 					span.ship 
@@ -47,7 +47,9 @@ div
 						span.winrate(class=winrateClass(ally.player.getWinrate()), data-details=ally.player.getName()) 
 							| #{(100 * ally.player.getWinrate()).toFixed(1)} 
 							span.unit %
-						aside.details.ally(data-details-for=ally.player.getName())
+						aside.details.ally(
+							class=ally.player.getName() === player.name ? 'player' : '', 
+							data-details-for=ally.player.getName())
 							+details(ally.player)
 				td
 					if enemy.player.isBot()
