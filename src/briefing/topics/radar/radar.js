@@ -20,9 +20,9 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
 	let ships = battle.getVehicles()
 		.map(vehicle => vehicle.shipId)
+		.filter(filters.duplicates)
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'rls' in ship.consumables)
-		.filter(filters.duplicates)
 
 	let radars = {};
 	ships.forEach(ship => {
