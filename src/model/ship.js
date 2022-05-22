@@ -3,8 +3,11 @@ import { Modernization } from './modernization.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
+import DotNotation from '../util/dotnotation.js';
+import createModule from './module.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
+
 /**
  * This class represents a ship within the game. Ships have some core characteristics (e.g. their tier or nation), but the
  * bulk of their performance characteristics are defined in the form of equippable modules. These characteristics are then
@@ -136,55 +139,44 @@ class Ship extends GameObject {
 		});
 	}
 
-	/**
-	 * If `key` starts with a "virtual" property, replaces it with a reference to the corresponding key
-	 * in this ship's data. A virtual property is one that does not have a direct corresponding property in the
-	 * ship's data, e.g. `ship.hull`, or `ship.consumables.rls`.	 
-	 * @param  {String} key The key to devirtualize. Wildcards are not supported for virtual properties, i.e. 
-	 * any key containing a wildcard will be seen as a non-virtual property.
-	 * @return {String}     The key within `ship._data` that corresponds to `key`.
-	 */
-	_devirtualize(key) {
-		// Find the key for the consumable within ShipAbilities.AbilitySlot*.abils
-		const abilityPath = consumable => {
-			let abilitySlots = Object.keys(this._data.ShipAbilities).filter(key => key.startsWith('AbilitySlot'));
-			for (let abilitySlot of abilitySlots) {
-				for (let i = 0; i < this._data.ShipAbilities[abilitySlot].abils.length; i++) {
-					if (this._data.ShipAbilities[abilitySlot].abils[i][0] === consumable) {
-						return `ShipAbilities.${abilitySlot}.abils.${i}.0`;
-					}
-				}
-			}
-			// Return null if not found. For example, this can happen when a modernization or skill has multiple effects, 
-			// not all of which apply to this ship.
-			return null;
-		}
-
-		let path = key.split('.');
-		// Replace the root of the key for properties that are virtual: that they don't directly exist on the data.
-		// This is the case with:
-		// - consumables, when referenced through ship.consumables, e.g. ship.consumables.sonar
-		// - modules, when referenced through e.g. ship.hull, ship.engine, etc.. 
-		// 
-		// Replace these with the target paths they are referring to.
-		if (path[0] === 'consumables') {			
-			const p = abilityPath(this.consumables[path[1]]);
-			dedicatedlog.debug(`Devirtualized virtual property ${path[0]}.${path[1]} to ${p}`);
-			path.splice(0, 2, p);
-		} else if (path[0] in this._configuration) {
-			const p = this._configuration[path[0]];
-			dedicatedlog.debug(`Devirtualized virtual property ${path[0]} to ${p}`);
-			path[0] = p;
-		} 
-		return path.join('.');
-	}
-
 	multiply(key, factor) {
-		return super.multiply(this._devirtualize(key), factor);
+		let path = DotNotation.elements(key);
+
+		// If multiplying into a consumable, hand it off to that consumable
+		if (path[0] === 'consumables') {
+			const consumable = this.consumables[path[1]];
+			path = path.slice(2);
+			return consumable?.multiply(DotNotation.join(path), factor)
+		
+		// If multiplying into a module, hand it off to that module
+		} else if (path[0] in this._configuration) {
+			const module = this[path[0]];
+			path = path.slice(1);
+			return module?.multiply(DotNotation.join(path), factor)
+		
+		// Otherwise, multiply directly
+		} else
+			return super.multiply(key, factor);
 	}
 
 	get(key, options) {
-		return super.get(this._devirtualize(key), options);
+		let path = DotNotation.elements(key);
+		
+		// If getting a value from a consumable, hand it off to that consumable
+		if (path[0] === 'consumables') {
+			const consumable = this.consumables[path[1]];
+			path = path.slice(2);
+			return consumable?.get(DotNotation.join(path), options)
+
+		// If getting a value from a module, hand it off to that module
+		} else if (path[0] in this._configuration) {
+			const module = this[path[0]];
+			path = path.slice(1);
+			return module?.get(DotNotation.join(path), options)
+		
+		// Otherwise, get directly
+		} else
+			return super.get(key, options);
 	}
 
 	/**
@@ -435,9 +427,8 @@ class Ship extends GameObject {
 		for (let componentKey in configuration) {
 			configuration[componentKey] = configuration[componentKey][0];
 			Object.defineProperty(this, componentKey, {
-				get: function() {
-					return this._data[configuration[componentKey]];
-				},
+				value: createModule(componentKey, this, this._data[configuration[componentKey]]),
+				writable: false,
 				configurable: true,
 				enumerable: true
 			});

@@ -7,6 +7,7 @@ import { Modifier } from '../../src/model/modifier.js';
 import sinon from 'sinon';
 import clone from 'clone';
 import { readFileSync } from 'fs';
+import createModule from '../../src/model/module.js';
 
 describe('Ship', function() {
 	let TEST_DATA;
@@ -171,6 +172,9 @@ describe('Ship', function() {
 				hull: TEST_DATA.A_Hull,
 				fireControl: TEST_DATA.AB1_FireControl
 			};
+			for (let key in expected) 
+				expected[key] = createModule(key, ship, expected[key]);
+
 			ship.equipModules('stock');
 			let result = ship;
 
@@ -189,6 +193,9 @@ describe('Ship', function() {
 				hull: TEST_DATA.B_Hull,
 				fireControl: TEST_DATA.AB3_FireControl
 			};
+			for (let key in expected) 
+				expected[key] = createModule(key, ship, expected[key]);
+
 			ship.equipModules('top');
 			let result = ship;
 
@@ -212,11 +219,20 @@ describe('Ship', function() {
 				hull: TEST_DATA.B_Hull,
 				fireControl: TEST_DATA.AB2_FireControl
 			};
+			for (let key in expected) 
+				expected[key] = createModule(key, ship, expected[key]);
+
 			ship.equipModules('engine: stock, suo: 1, others: top');
 			let result = ship;
 
 			for (let key in expected) 
 				expect(result[key]).to.deep.equal(expected[key]);
+		});
+
+		it('should have equipped the correct subclasses of Module for each component', function() {
+			ship.equipModules('top');
+			[ 'artillery', 'engine', 'atba', 'directors', 'finders', 'hull', 'fireControl' ].forEach(component => 
+				expect(ship[component], component).to.be.an.instanceof(createModule(component).constructor));
 		});
 
 		it('should re-equip modernizations after changing module configuration', function() {
@@ -451,9 +467,9 @@ describe('Ship', function() {
 	describe('.multiply', function() {
 		it('should multiply into modules', function() {
 			const coeff = 2;
-			let val = ship.engine.value;
+			let val = ship.engine.get('value');
 			ship.multiply('engine.value', coeff);
-			expect(ship.engine.value).to.equal(val * coeff);
+			expect(ship.engine.get('value')).to.equal(val * coeff);
 		});
 
 		it('should multiply into consumables', function() {
