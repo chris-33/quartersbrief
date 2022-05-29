@@ -94,10 +94,17 @@ if ships.length > 0
 
 	each range in Object.keys(radars)
 		- const maxTime = Math.max(...Object.keys(radars[range]));
-		div.label(style=`top: ${100 + polarToCartesian(angle(maxTime/2), length(range)).y}%; left: ${polarToCartesian(angle(maxTime/2), length(range)).x}%;`)
+		div.label(style=`
+				top: ${100 - 5 + polarToCartesian(angle(maxTime/2), length(range)).y}%; 
+				left: ${polarToCartesian(angle(maxTime/2), length(range)).x}%;`)
 			each workTime in Object.keys(radars[range])
 				each ship in radars[range][workTime].map(entry => entry.ship)
-					span.ship(class=teamClasses(ship), class=warningClass(ship, range), data-details=ship.getName()) #{ship.getLabel()}
+					span.ship(
+						class=teamClasses(ship), 
+						class=warningClass(ship, range), 
+						data-details=ship.getName()) 
+						
+						| #{ship.getLabel()}
 					br
 					aside.details(class=teamClasses(ship), data-details-for=ship.getName())
 						include details
