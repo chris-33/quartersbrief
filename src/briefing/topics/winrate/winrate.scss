@@ -3,8 +3,13 @@
 
 @mixin classMargin {
 	$border-width: 0.5ch;
-	&.ally { border-left: $border-width solid; }
-	&.enemy { border-right: $border-width solid; }
+	$padding: 1.5ch;
+	@if option("hideSidebars") {
+		$border-width: 0;
+		$padding: 0;
+	}
+	&.ally { border-left: $border-width solid; padding-left: $padding; }
+	&.enemy { border-right: $border-width solid; padding-right: $padding; }
 	&.aircarrier { border-color: colors.$aircarrier; }
 	&.battleship { border-color: colors.$battleship; }
 	&.cruiser {	border-color: colors.$cruiser; }
@@ -35,15 +40,14 @@ td {
 	@include classMargin;
 
 	text-align: center;
-	padding: 0.33ex 0.2ch;
+	padding-top: 0.33ex;
+	padding-bottom: 0.33ex;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 
 	&:first-of-type {
 		text-align: left;
-		padding-right: 0;
-		padding-left: 1ch;
 	}
 	&.player {
 		color: colors.$player;
@@ -52,8 +56,6 @@ td {
 
 	&:last-of-type {
 		text-align: right;
-		padding-left: 0;
-		padding-right: 1ch;
 	}
 	.secondary {
 		font-size: fontsizes.$small;

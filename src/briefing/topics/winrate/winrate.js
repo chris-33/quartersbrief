@@ -2,7 +2,7 @@ import { PlayerFactory } from '../../../model/playerfactory.js';
 import config from '../../../../src/init/config.js';
 import pug from 'pug';
 import sass from 'sass';
-import { sortLikeLoadScreen } from '../common.js';
+import { sortLikeLoadScreen, sassFunctions } from '../common.js';
 
 async function buildHtml(battle, gameObjectFactory, options) {
 	function enrich(participant) {
@@ -43,8 +43,12 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	return pug.renderFile('src/briefing/topics/winrate/winrate.pug', locals);
 }
 
-async function buildScss() {
-	return sass.compile('src/briefing/topics/winrate/winrate.scss').css;
+async function buildScss(battle, gameObjectFactory, options) {
+	return sass.compile('src/briefing/topics/winrate/winrate.scss', {
+		functions: {
+			...sassFunctions.options(options)
+		}
+	}).css;
 }
 
 export default async function buildTopic(battle, gameObjectFactory, options) {

@@ -1,3 +1,5 @@
+import sass from 'sass';
+
 const filters = {
 	// Filters out duplicate ids from ids.
 	// Useful for use with ship ids
@@ -50,4 +52,26 @@ function teams(battle) {
 	return result;
 }
 
-export { filters, sortLikeLoadScreen, teams }
+const sassFunctions = {
+	options: function(options) {
+		return {
+			"option($name)": args => {				
+				let name = args[0];
+				// Make sure name is actually a SassString. This will throw if it isn't. 
+				name.assertString();
+				// name is a SassString, get its contents (i.e., convert from a SassString object to a Javascript string)
+				name = name.text;
+				// Get the value of that option, if any
+				let val = options?.[name];
+				// Convert back to a Sass value
+				switch (typeof val) {
+					case 'boolean': return val ? sass.sassTrue : sass.sassFalse; // new sass.SassBoolean isn't allowed
+					case 'number': return new sass.SassNumber(val);
+					case 'undefined': return sass.sassNull;
+				}
+			}			
+		}
+	}
+}
+
+export { filters, sortLikeLoadScreen, teams, sassFunctions }
