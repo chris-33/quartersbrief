@@ -2,6 +2,7 @@ import { GameObject } from './gameobject.js';
 import { Modernization } from './modernization.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
+import { Consumable } from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import DotNotation from '../util/dotnotation.js';
 import createModule from './module.js';
@@ -619,6 +620,22 @@ class Ship extends GameObject {
 		this.get('ShipAbilities.AbilitySlot*.abils.*.0', { collate: false }).forEach(consumable =>
 			result[consumable.consumableType] = consumable
 		);
+		Object.defineProperty(result, 'slotOf', {
+			value: consumable => {
+				if (consumable instanceof Consumable)
+					consumable = consumable.consumableType;
+				let result = this
+					.get('ShipAbilities.AbilitySlot*', { collate: false })
+					.find(abilitySlot => abilitySlot.abils.some(abil => {
+						return abil[0].consumableType === consumable;
+					}));
+				if (result)
+					return result.slot;
+				else
+					return -1;
+			},
+			enumerable: false,
+		})
 		// Object.defineProperty(result, 'multiply', {
 		// 	value: function(key, factor, options) {
 		// 		let key0 = key.substring(0, key.indexOf('.'));

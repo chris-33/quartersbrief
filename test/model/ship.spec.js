@@ -462,6 +462,27 @@ describe('Ship', function() {
 					.that.deep.equals(consumable);
 			}
 		});
+
+		describe('.slotOf', function() {
+			it('should exist and be a function', function() {
+				expect(ship.consumables.slotOf).to.exist.and.be.a('function');
+			});
+
+			it('should return -1 for a consumable the ship does not have', function() {
+				expect(ship.consumables.slotOf('unknown_consumable_type'), 'with consumable type').to.equal(-1);
+				let consumable = new Consumable({ 
+					flavor: { consumableType: 'unknown_consumable_type' }
+				});
+				consumable.setFlavor('flavor');
+				expect(ship.consumables.slotOf(consumable), 'with consumable object').to.equal(-1);
+			});
+
+			it('should return the slot of the consumable', function() {
+				expect(ship.consumables.slotOf('consumable1'), 'with consumable type').to.equal(0);
+				let consumable = ship.consumables.consumable1;
+				expect(ship.consumables.slotOf(consumable), 'with consumable object').to.equal(0);
+			});
+		});
 	});
 
 	describe('.multiply', function() {
