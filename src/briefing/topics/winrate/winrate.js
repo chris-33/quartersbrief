@@ -39,7 +39,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	allies.sort(sortLikeLoadScreen);
 	enemies.sort(sortLikeLoadScreen);
 
-	const locals = { allies, enemies, player: battle.getPlayer() };
+	const locals = { allies, enemies, player: battle.getPlayer(), options };
 	return pug.renderFile('src/briefing/topics/winrate/winrate.pug', locals);
 }
 

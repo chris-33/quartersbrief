@@ -1,6 +1,17 @@
 @use '../colors';
 @use '../fontsizes';
 
+@mixin classMargin {
+	$border-width: 0.5ch;
+	&.ally { border-left: $border-width solid; }
+	&.enemy { border-right: $border-width solid; }
+	&.aircarrier { border-color: colors.$aircarrier; }
+	&.battleship { border-color: colors.$battleship; }
+	&.cruiser {	border-color: colors.$cruiser; }
+	&.destroyer { border-color: colors.$destroyer; }
+	&.submarine { border-color: colors.$submarine; }
+}	
+
 table {
 	width: 100%;
 	table-layout: fixed;
@@ -9,10 +20,6 @@ table {
 	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
 	font-weight: inherit;
 	font-size: inherit;
-	border-image-source: linear-gradient(to right, colors.$ally, white 15%, white 85%, colors.$enemy);
-	border-image-slice: 10;
-	border-image-width: 2px;
-	padding: 1ex 1ch;
 }
 
 col {
@@ -25,18 +32,18 @@ col {
 }
 
 td {
+	@include classMargin;
+
 	text-align: center;
 	padding: 0.33ex 0.2ch;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
 
-	padding-right: 0.5ch;
-
 	&:first-of-type {
 		text-align: left;
 		padding-right: 0;
-		padding-left: 0.5ch;
+		padding-left: 1ch;
 	}
 	&.player {
 		color: colors.$player;
@@ -46,15 +53,18 @@ td {
 	&:last-of-type {
 		text-align: right;
 		padding-left: 0;
-		padding-right: 0.5ch;
+		padding-right: 1ch;
 	}
-	.ship {
+	.secondary {
 		font-size: fontsizes.$small;
 		font-style: italic;
+	}
+	.ship {
 		img {
+			vertical-align: baseline;
 			filter: brightness(80%);
-			font-size: fontsizes.$small;
-			height: 1em;
+			height: 0.7em;
+			width: auto;
 		}
 	}
 }
@@ -64,7 +74,7 @@ aside.details {
 }
 
 .winrate {	
-	font-weight: bold;
+	font-weight: 600;
 	font-size: fontsizes.$large;
 }
 

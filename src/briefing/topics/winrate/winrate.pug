@@ -1,6 +1,29 @@
 include details
 
-- const rows = Math.max(allies.length, enemies.length);
+mixin playerName(participant) 
+	span.name&attributes(attributes) #{participant.player.getName()}	
+
+mixin playerShip(participant)
+	- 
+		let team;
+		if (allies.some(ally => ally.player.getName() === participant.player.getName()))
+			team = "ally";
+		else if (enemies.some(enemy => enemy.player.getName() === participant.player.getName()))
+			team = "enemy";
+	span.ship&attributes(attributes)
+		if team === "ally"
+			img(src=`img/icon_${participant.ship.getClass().toLowerCase()}.png`)
+			| &nbsp;
+		| #{participant.ship.getLabel()}
+		if team === "enemy"
+			| &nbsp;
+			img(src=`img/icon_${participant.ship.getClass().toLowerCase()}_mirrored.png`)
+
+
+- 
+	const rows = Math.max(allies.length, enemies.length);
+	const primary = options?.primary === "ship" ? 'playerShip' : 'playerName';
+	const secondary = options?.primary === "ship" ? 'playerName' : 'playerShip';
 - 
 	function winrateClass(wr) {
 		wr *= 100;
@@ -32,12 +55,14 @@ div
 			- const ally = allies[i];
 			- const enemy = enemies[i];
 			tr
-				td(class=ally.player.getName() === player.name ? 'player' : '', data-details=ally.player.getName())
-					span.name #{ally.player.getName()}
+				td.ally(class=ally.player.getName() === player.name ? 'player' : '', 
+					class=ally.ship.getClass().toLowerCase(),
+					data-details=ally.player.getName())
+					//- +#{}: Dynamically determine mixin name and call it
+					+#{primary}(ally).primary
 					| <br>
-					span.ship 
-						img(src=`img/icon_${ally.ship.getClass().toLowerCase()}.png`)
-						| &nbsp;#{ally.ship.getLabel()}
+					//- +#{}: Dynamically determine mixin name and call it
+					+#{secondary}(ally).secondary
 				td
 					if ally.player.isBot()
 						span.notification Bot
@@ -62,10 +87,11 @@ div
 							span.unit %
 						aside.details.enemy(data-details-for=enemy.player.getName())
 							+details(enemy.player)
-				td(data-details=enemy.player.getName())
-					span.name #{enemy.player.getName()}
+				td.enemy(class=enemy.ship.getClass().toLowerCase(), 
+					data-details=enemy.player.getName())
+					//- +#{}: Dynamically determine mixin name and call it
+					+#{primary}(enemy).primary
 					| <br>
-					span.ship
-						| #{enemy.ship.getLabel()}&nbsp;
-						img(src=`img/icon_${enemy.ship.getClass().toLowerCase()}_mirrored.png`)
+					//- +#{}: Dynamically determine mixin name and call it
+					+#{secondary}(enemy).secondary
 		- }		
