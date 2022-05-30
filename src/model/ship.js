@@ -696,6 +696,14 @@ Ship.Consumables = class extends DataObject {
 		
 		return new Ship.Consumables(result);
 	}
+
+	/**
+	 * Returns all the consumables exposed by this `Ship.Consumables` as an array.
+	 * @return {Consumable[]} The consumables in this `Ship.Consumables`.
+	 */
+	asArray() {
+		return this.get('AbilitySlot*.abils.*.0');
+	}
 }
 
 

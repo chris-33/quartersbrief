@@ -506,6 +506,21 @@ describe.only('Ship', function() {
 				).to.be.empty;
 			});
 		});
+
+		describe('.asArray', function() {
+			it('should return an array of all consumables', function() {
+				let expected = Object.values(consumables).filter(val => val instanceof Consumable);
+				expect(consumables.asArray()).to.be.an('array').with.deep.members(expected);
+			});
+
+			it('should return an empty array if there are no consumables', function() {
+				let consumables = new Ship.Consumables({ 
+					AbilitySlot0: {},
+					AbilitySlot1: {}
+				});
+				expect(consumables.asArray()).to.be.empty;
+			});
+		});
 	});
 
 	describe('.multiply', function() {
