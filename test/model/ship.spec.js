@@ -9,7 +9,7 @@ import clone from 'clone';
 import { readFileSync } from 'fs';
 import createModule from '../../src/model/module.js';
 
-describe('Ship', function() {
+describe.only('Ship', function() {
 	let TEST_DATA;
 	let CONSUMABLE_DATA;
 	let knownTargets;
@@ -440,47 +440,70 @@ describe('Ship', function() {
 		});
 	});
 
-	describe('.consumables', function() {
+	it('should have property consumables which is a Ship.Consumables', function() {
+		expect(ship).to.have.property('consumables');
+		expect(ship.consumables).to.be.an('object');
+		expect(ship.consumables).to.be.an.instanceof(Ship.Consumables);
+	});
+
+	describe('Ship.Consumables', function() {
+		let consumables;
+		
+		beforeEach(function() {
+			consumables = new Ship.Consumables(ship.get('ShipAbilities'));
+		});
+
 		it('should be a hash of all consumables, with the consumableType as the key', function() {
 			// Generator function that yields all the ships consumables one by one
 			function* abilities() {
-				const abils = Object.values(ship.get('ShipAbilities'))
-					.flatMap(abilityslot => abilityslot.abils)
-					.map(ability => ability[0]);
+				const abils = consumables.get('AbilitySlot*.abils.0')
 				let i = 0;
 				while (i < abils.length)
-					yield abils[i++];
+					yield abils[i++][0];
 				return;
 			}
 
-			expect(ship).to.have.property('consumables');
-			expect(ship.consumables).to.be.an('object');
-
 			for (let consumable of abilities()) {
-				expect(ship.consumables, consumable.consumableType).to
+				expect(consumables, consumable.consumableType).to
 					.have.property(consumable.consumableType)
 					.that.deep.equals(consumable);
 			}
 		});
 
 		describe('.slotOf', function() {
-			it('should exist and be a function', function() {
-				expect(ship.consumables.slotOf).to.exist.and.be.a('function');
-			});
-
 			it('should return -1 for a consumable the ship does not have', function() {
-				expect(ship.consumables.slotOf('unknown_consumable_type'), 'with consumable type').to.equal(-1);
+				expect(consumables.slotOf('unknown_consumable_type'), 'with consumable type').to.equal(-1);
 				let consumable = new Consumable({ 
 					flavor: { consumableType: 'unknown_consumable_type' }
 				});
 				consumable.setFlavor('flavor');
-				expect(ship.consumables.slotOf(consumable), 'with consumable object').to.equal(-1);
+				expect(consumables.slotOf(consumable), 'with consumable object').to.equal(-1);
 			});
 
 			it('should return the slot of the consumable', function() {
-				expect(ship.consumables.slotOf('consumable1'), 'with consumable type').to.equal(0);
-				let consumable = ship.consumables.consumable1;
-				expect(ship.consumables.slotOf(consumable), 'with consumable object').to.equal(0);
+				expect(consumables.slotOf('consumable1'), 'with consumable type').to.equal(0);
+				let consumable = consumables.consumable1;
+				expect(consumables.slotOf(consumable), 'with consumable object').to.equal(0);
+			});
+		});
+
+		describe('.getSlot', function() {
+			it('should be a Ship.Consumables', function() {
+				expect(consumables.getSlot(0)).to.be.an.instanceof(Ship.Consumables);
+			});
+			
+			it('should return all consumables in the given slot', function() {
+				let slot = consumables.getSlot(0);
+				expect(slot).to.have.property('consumable1').that.deep.equals(consumables.consumable1);
+				expect(slot).to.have.property('consumable2').that.deep.equals(consumables.consumable2);
+			});
+
+			it('should be empty if there are no consumables in that slot', function() {
+				let slot = consumables.getSlot(5);
+				expect(
+					// Filter to only those properties that are consumables
+					Object.values(slot).filter(val => val instanceof Consumable)
+				).to.be.empty;
 			});
 		});
 	});

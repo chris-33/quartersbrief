@@ -1,3 +1,4 @@
+import DataObject from './dataobject.js';
 import { GameObject } from './gameobject.js';
 import { Modernization } from './modernization.js';
 import { Captain } from './captain.js';
@@ -608,43 +609,15 @@ class Ship extends GameObject {
 	}
 
 	/**
-	 * Gets a hash of all consumables the ship has. Hash keys are the consumable's type, 
+	 * Gets a `Ship.Consumables` hash of all consumables the ship has. Hash keys are the consumable's type, 
 	 * the value is the `Consumable`.
 	 *
 	 * Note that this forces expansion of all lazy references, because there is no other way to 
 	 * determine the consumable's `consumableType`.
 	 * @return {Object} A hash from consumable type to consumable.
 	 */
-	get consumables() {
-		const result = {};
-		this.get('ShipAbilities.AbilitySlot*.abils.*.0', { collate: false }).forEach(consumable =>
-			result[consumable.consumableType] = consumable
-		);
-		Object.defineProperty(result, 'slotOf', {
-			value: consumable => {
-				if (consumable instanceof Consumable)
-					consumable = consumable.consumableType;
-				let result = this
-					.get('ShipAbilities.AbilitySlot*', { collate: false })
-					.find(abilitySlot => abilitySlot.abils.some(abil => {
-						return abil[0].consumableType === consumable;
-					}));
-				if (result)
-					return result.slot;
-				else
-					return -1;
-			},
-			enumerable: false,
-		})
-		// Object.defineProperty(result, 'multiply', {
-		// 	value: function(key, factor, options) {
-		// 		let key0 = key.substring(0, key.indexOf('.'));
-		// 		let rest = key.substring(key0.length + 1);
-		// 		return this[key0].multiply(rest, factor, options);
-		// 	},
-		// 	enumerable: false
-		// })
-		return result;
+	get consumables() {		
+		return new Ship.Consumables(this.get('ShipAbilities'));
 	}
 
 	getClass() { return this.get('typeinfo.species'); }
@@ -674,8 +647,56 @@ class Ship extends GameObject {
 	static errorIfNotShip(ship) { if (!(ship instanceof Ship)) throw new TypeError(`Expected a Ship but got ${ship}`); }
 }
 
+/**
+ * Helper class that exposes a ship's consumables as a hash from consumable type to the `Consumable` object.
+ */
+Ship.Consumables = class extends DataObject {
+	constructor(data) {
+		super(data);
+		this
+			.get('AbilitySlot*.abils.*.0', { collate: false })
+			.forEach(consumable => this[consumable.consumableType] = consumable);
+	}
 
+	/**
+	 * Returns the slot that the given consumable occupies in this ship's consumables.
+	 * @param  {Consumable|String} consumable The consumable to find. Can be either a `Consumable`
+	 * object or the consumable's `consumableType`.
+	 * @return {Number}            The slot that holds that consumable, or -1 if the ship does not have
+	 * that consumable.
+	 */
+	slotOf(consumable) {
+		if (consumable instanceof Consumable)
+			consumable = consumable.consumableType;
+		let result = this
+			.get('AbilitySlot*')
+			.find(abilitySlot => abilitySlot.abils.some(abil => abil[0].consumableType === consumable));
+		if (result)
+			return result.slot;
+		else
+			return -1;
+	}
 
+	/**
+	 * Returns a `Ship.Consumables` that contains only those consumables that are in the given slot.
+	 * @param  {Number} slot The slot for which to get the consumables.
+	 * @return {`Ship.Consumables`}      A new `Ship.Consumables` that is a hash from consumable type
+	 * to `Consumable` containing only those consumables that are in the given slot. If the ship does
+	 * not have any consumables in that slot, the hash contains no such entries.
+	 */
+	getSlot(slot) {
+		let result = this
+			.get('AbilitySlot*')
+			.find(abilitySlot => abilitySlot.slot === slot);
+
+		if (result)
+			result = { [`AbilitySlot${result.slot}`] : result };
+		else
+			result = { AbilitySlot0: {} };
+		
+		return new Ship.Consumables(result);
+	}
+}
 
 
 export { Ship }
