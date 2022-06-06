@@ -111,6 +111,23 @@ aside.details.enemy {
 	}
 }
 
+aside.details .details-line.contenders {
+	display: block;
+
+	ul {
+		text-align: left;
+		padding: 0;
+		margin: 0;
+		// Without setting this, the text will be left-aligned to the aside, making the consumable icon sit outside:
+		list-style-position: inside;
+	}
+
+	.no-contenders {
+		color: colors.$aside;
+		font-style: italic;
+	}
+}
+
 .no-radars {
 	color: colors.$aside;
 	font-size: fontsizes.$large;

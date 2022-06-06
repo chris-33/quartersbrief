@@ -50,3 +50,15 @@ hr
 		else
 			|  after
 		|  radar range.
+
+hr
+
+.details-line.contenders
+	| In the same slot:
+	- const sameSlot = ship.consumables.getContending('rls').asArray().filter(consumable => consumable.consumableType !== 'rls');
+	ul
+		each contender in sameSlot
+			li(style=`list-style-image: url(img/consumables/consumable_${contender.getName()}.png);`)
+				| #{contender.getLabel()}
+		else
+			span.no-contenders none
