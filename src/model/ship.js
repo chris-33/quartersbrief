@@ -427,6 +427,11 @@ class Ship extends GameObject {
 		// Project each down to its only item and create a virtual property for it
 		// that reads through to the appropriate module.
 		for (let componentKey in configuration) {
+			// For ships whose modules DON'T resolve unambiguously such as Midway (i.e., known violators of the 
+			// assertModuleComponentsResolveUnambiguously invariant), this will still work provided that the 
+			// violating components are at least ordered in such a way that the "correct" module comes first.
+			if (configuration[componentKey].length > 1)
+				dedicatedlog.warn(`Module descriptor descriptor ${descriptor} did not resolve unambiguously for ${componentKey} of ${this.getName()}. Choosing the first module that fits.`)
 			configuration[componentKey] = configuration[componentKey][0];
 			Object.defineProperty(this, componentKey, {
 				value: createModule(componentKey, this, this._data[configuration[componentKey]]),

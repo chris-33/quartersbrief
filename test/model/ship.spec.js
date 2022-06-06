@@ -9,7 +9,7 @@ import clone from 'clone';
 import { readFileSync } from 'fs';
 import createModule from '../../src/model/module.js';
 
-describe.only('Ship', function() {
+describe('Ship', function() {
 	let TEST_DATA;
 	let CONSUMABLE_DATA;
 	let knownTargets;

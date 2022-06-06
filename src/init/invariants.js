@@ -144,6 +144,9 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 	 */
 	let dedicatedlog = rootlog.getLogger('assertInvariants');
 	let counterexamples = [];
+	// An array of ship IDs that the "ignored known violator" warning was already given for. Otherwise we get a bunch of duplicate warnings -
+	// one for every component involved in the violation.
+	let ignoredWarnings = [];
 	let ships = Object.values(data).filter(obj => obj.typeinfo.type === 'Ship');
 	for (let ship of ships) {
 		dedicatedlog.debug(`Checking invariant assertModuleComponentsResolveUnambiguously for ${ship.name}`);
@@ -239,13 +242,21 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 				}
 			}
 			if (problematicComponent.length > 1) {
-				counterexamples.push(`${ship.name}.ShipUpgradeInfo.${problem.quartersbrief_name}.${problematicComponentKey}`);
+				if (assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE.includes(ship.name)) {
+					if (!ignoredWarnings.includes(ship.id)) {
+						ignoredWarnings.push(ship.id);
+						rootlog.warn(`Ignored failed invariant 'all modules' components must resolve unambiguously' for known violator ${ship.name}`);
+					}
+				} else
+					counterexamples.push(`${ship.name}.ShipUpgradeInfo.${problem.quartersbrief_name}.${problematicComponentKey}`);
 			}
 		}
 	}
 	if (counterexamples.length > 0) 
 		throw new InvariantError('all modules\' components must be resolvable unambiguously', counterexamples);
 }
+// Known violators to be ignored
+assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE = [ 'PASA110_Midway' ];
 
 assertInvariants.assertWeaponAmmosAreOrdered = function(data) {
 	/*

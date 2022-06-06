@@ -150,6 +150,19 @@ describe('assertInvariants', function() {
 				.not.throw();
 		});
 
+		it('should ignore failed invariant checks for ships listed in assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE', function() {
+			data.PAAA001_Battleship.ShipUpgradeInfo.A_Hull.components['torpedoes'] = [ 'AB1_Torpedoes', 'AB2_Torpedoes' ];
+			let ignoreList = assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE;
+			assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE = [ data.PAAA001_Battleship.name ];
+			
+			try {
+				expect(assertInvariants.assertModuleComponentsResolveUnambiguously.bind(null, data)).to
+					.not.throw();				
+			} finally {
+				assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE = ignoreList;
+			}
+		});
+
 		it('should throw an InvariantError when there is a component with length > 1, but the remedy requires two modules of the same type', function() {
 			let modules = data.PAAA001_Battleship.ShipUpgradeInfo;
 			modules.A_Hull.components['artillery'] = [ 'AB1_Artillery', 'AB2_Artillery', 'AB3_Artillery' ];
