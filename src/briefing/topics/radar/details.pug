@@ -2,51 +2,51 @@
 .details-title
 	| #{ship.getLabel()}
 
-ul
-	li
-		span.caption Range:
-		span.value
-			| #{(range / 1000).toFixed(1)}
-			span.unit km
+.details-line
+	span.caption Range:
+	span.value
+		| #{(range / 1000).toFixed(1)}
+		span.unit km
 
-	hr
+hr
 
-	li
-		span.caption Duration (base):
-		span.value
-			| #{workTime}
-			span.unit s
+.details-line
+	span.caption Duration (base):
+	span.value
+		| #{workTime}
+		span.unit s
 
-	li
-		span.caption Duration (max):
-		span.value
-			//- maxTime is a function of workTime, so we can just always use the first element here
-			| #{Math.ceil(radars[range][workTime][0].maxTime)}
-			span.unit s
+.details-line
+	span.caption Duration (max):
+	span.value
+		//- maxTime is a function of workTime, so we can just always use the first element here
+		| #{Math.ceil(radars[range][workTime][0].maxTime)}
+		span.unit s
 
-	li
-		span.caption Cooldown:
-		span.value
-			| #{ship.consumables.rls.reloadTime}
-			span.unit s
+.details-line
+	span.caption Cooldown:
+	span.value
+		| #{ship.consumables.rls.reloadTime}
+		span.unit s
 
-	hr
-	
-	li
-		span.caption Stealth radar capability: 
-		span.value(class=warningClass(ship, range))
-			if stealthRadarWindow < -STEALTH_RADAR_ALMOST
-				| no
-			else if stealthRadarWindow < 0
-				| almost
-			else
-				| yes
-	li
-		span
-			| Seen 
-			span(class=warningClass(ship, range)) #{10 * Math.abs(Math.ceil(stealthRadarWindow / 10))}m
-			if stealthRadarWindow < 0 
-				|  before
-			else
-				|  after
-			|  radar range.
+hr
+
+.details-line
+	span.caption Stealth radar capability: 
+	span.value(class=warningClass(ship, range))
+		if stealthRadarWindow < -STEALTH_RADAR_ALMOST
+			| no
+		else if stealthRadarWindow < 0
+			| almost
+		else
+			| yes
+
+.details-line
+	span
+		| Seen 
+		span(class=warningClass(ship, range)) #{10 * Math.abs(Math.ceil(stealthRadarWindow / 10))}m
+		if stealthRadarWindow < 0 
+			|  before
+		else
+			|  after
+		|  radar range.
