@@ -9,6 +9,7 @@ import DotNotation from '../util/dotnotation.js';
 class Consumable extends GameObject {
 	static EXPOSED_FLAVOR_PROPERTIES = [
 		'consumableType',
+		'label',
 		'distShip',
 		'workTime',
 		'reloadTime'
@@ -73,6 +74,8 @@ class Consumable extends GameObject {
 	}
 
 	get consumableType() { return this.get('consumableType'); }
+
+	getLabel() { return this.get('label'); }
 }
 
 export { Consumable }
