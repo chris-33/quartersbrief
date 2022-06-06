@@ -11,12 +11,12 @@ import { screamingSnakeCase } from '../util/util.js';
  *
  * Falls back to the consumable type if no label could be found.
  */
-function labelConsumable(data) {
+function labelConsumable(data) {debugger
 	let flavors = Object.values(data).filter(obj => typeof obj === 'object' && obj !== null && 'consumableType' in obj);
 	for (let flavor of flavors) {
 		let templateData = {
 			...flavor,
-			index: data.index
+			name: data.name
 		}
 		let key = flavor.titleIDs ? labelConsumable.LABEL_KEYS.flavored : labelConsumable.LABEL_KEYS.default;
 		key = template(key, templateData).toUpperCase();
@@ -26,8 +26,8 @@ function labelConsumable(data) {
 }
 // See note above
 labelConsumable.LABEL_KEYS = {
-	flavored: 'IDS_DOCK_CONSUME_{titleIDs}',
-	default: 'IDS_DOCK_CONSUME_{index}_{consumableType}'
+	flavored: 'IDS_DOCK_CONSUME_TITLE_{titleIDs}',
+	default: 'IDS_DOCK_CONSUME_TITLE_{name}'
 }
 
 function labelCaptain(data) {

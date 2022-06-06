@@ -6,8 +6,8 @@ describe('Labeler', function() {
 	const TEST_DATA = {
 		LABEL_CONSTANT: 'constant label',
 		LABEL_INTERPOLATED: 'interpolated label',
-		IDS_DOCK_CONSUME_PCY001_WITHTITLEID: 'title ID',
-		IDS_DOCK_CONSUME_PCY001_TYPE1: 'consumable type',
+		IDS_DOCK_CONSUME_TITLE_PCY001_WITHTITLEID: 'title ID',
+		IDS_DOCK_CONSUME_TITLE_PCY001_CONSUMABLE: 'consumable type',
 		IDS_SKILL_NORMAL_SKILL_A: 'skill A',
 		IDS_SKILL_NORMAL_SKILL_B: 'skill B',
 	}
@@ -100,7 +100,7 @@ describe('Labeler', function() {
 				titleIDs: '',
 				consumableType: 'Type1'
 			},
-			index: 'PCY001',
+			name: 'PCY001_Consumable',
 			typeinfo: {
 				type: 'Ability'
 			}
@@ -121,12 +121,12 @@ describe('Labeler', function() {
 
 		it('should attach the label based on the flavor\'s title id if present', function() {
 			data = Labeler.LABELERS.Ability.call(labeler, data);
-			expect(data.WithTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_PCY001_WITHTITLEID);
+			expect(data.WithTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_TITLE_PCY001_WITHTITLEID);
 		});
 
 		it('should attach the label based on consumable type if no title id is present', function() {
 			data = Labeler.LABELERS.Ability.call(labeler, data);
-			expect(data.WithoutTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_PCY001_TYPE1);
+			expect(data.WithoutTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_TITLE_PCY001_TYPE1);
 		});
 
 		it('should fall back to the consumableType if no label is found', function() {
@@ -135,7 +135,7 @@ describe('Labeler', function() {
 					titleIDs: '',
 					consumableType: 'UnknownType'					
 				},
-				index: 'PCY001',
+				name: 'PCY002_OtherConsumable',
 				typeinfo: { type: 'Ability' }
 			}
 			data = Labeler.LABELERS.Ability.call(labeler, data);
