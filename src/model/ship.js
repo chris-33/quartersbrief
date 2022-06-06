@@ -685,7 +685,7 @@ Ship.Consumables = class extends DataObject {
 	/**
 	 * Returns a `Ship.Consumables` that contains only those consumables that are in the given slot.
 	 * @param  {Number} slot The slot for which to get the consumables.
-	 * @return {`Ship.Consumables`}      A new `Ship.Consumables` that is a hash from consumable type
+	 * @return {Ship.Consumables}      A new `Ship.Consumables` that is a hash from consumable type
 	 * to `Consumable` containing only those consumables that are in the given slot. If the ship does
 	 * not have any consumables in that slot, the hash contains no such entries.
 	 */
@@ -700,6 +700,19 @@ Ship.Consumables = class extends DataObject {
 			result = { AbilitySlot0: {} };
 		
 		return new Ship.Consumables(result);
+	}
+
+	/**
+	 * Returns a `Ship.Consumables` of the consumables that contend for the same slot as `consumable`.
+	 * The result includes `consumable`.
+	 *
+	 * Is equivalent to calling `consumables.getSlot(consumables.slotOf(consumable))`.
+	 * @param  {Consumable|String} consumable The consumable for which to get contenders. Can be either
+	 * a `Consumable` or a string, in which case it is interpreted as the consumable type.
+	 * @return {Ship.Consumables}     A `Ship.Consumables` of all consumables in the same slot as `consumable`.
+	 */
+	getContending(consumable) {
+		return this.getSlot(this.slotOf(consumable));
 	}
 
 	/**
