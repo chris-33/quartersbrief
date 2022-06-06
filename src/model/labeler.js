@@ -11,7 +11,7 @@ import { screamingSnakeCase } from '../util/util.js';
  *
  * Falls back to the consumable type if no label could be found.
  */
-function labelConsumable(data) {debugger
+function labelConsumable(data) {
 	let flavors = Object.values(data).filter(obj => typeof obj === 'object' && obj !== null && 'consumableType' in obj);
 	for (let flavor of flavors) {
 		let templateData = {

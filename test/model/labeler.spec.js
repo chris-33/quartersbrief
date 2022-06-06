@@ -126,7 +126,7 @@ describe('Labeler', function() {
 
 		it('should attach the label based on consumable type if no title id is present', function() {
 			data = Labeler.LABELERS.Ability.call(labeler, data);
-			expect(data.WithoutTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_TITLE_PCY001_TYPE1);
+			expect(data.WithoutTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_TITLE_PCY001_CONSUMABLE);
 		});
 
 		it('should fall back to the consumableType if no label is found', function() {
