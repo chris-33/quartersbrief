@@ -90,7 +90,7 @@ describe('Labeler', function() {
 		});
 	});
 
-	describe('Labeler.LABELERS.Consumable', function() {
+	describe('Labeler.LABELERS.Ability', function() {
 		const CONSUMABLE_DATA = {
 			WithTitleID: {
 				titleIDs: 'PCY001_WITHTITLEID',
@@ -113,19 +113,19 @@ describe('Labeler', function() {
 		});
 
 		it('should attach a label to each flavor but not to the consumable itself', function() {
-			data = Labeler.LABELERS.Consumable.call(labeler, data);
+			data = Labeler.LABELERS.Ability.call(labeler, data);
 			expect(data.WithTitleID).to.have.property('label');
 			expect(data.WithoutTitleID).to.have.property('label');
 			expect(data).to.not.have.property('label');
 		});
 
 		it('should attach the label based on the flavor\'s title id if present', function() {
-			data = Labeler.LABELERS.Consumable.call(labeler, data);
+			data = Labeler.LABELERS.Ability.call(labeler, data);
 			expect(data.WithTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_PCY001_WITHTITLEID);
 		});
 
 		it('should attach the label based on consumable type if no title id is present', function() {
-			data = Labeler.LABELERS.Consumable.call(labeler, data);
+			data = Labeler.LABELERS.Ability.call(labeler, data);
 			expect(data.WithoutTitleID.label).to.equal(TEST_DATA.IDS_DOCK_CONSUME_PCY001_TYPE1);
 		});
 
@@ -138,7 +138,7 @@ describe('Labeler', function() {
 				index: 'PCY001',
 				typeinfo: { type: 'Ability' }
 			}
-			data = Labeler.LABELERS.Consumable.call(labeler, data);
+			data = Labeler.LABELERS.Ability.call(labeler, data);
 			expect(data.UnknownFlavor).to.have.property('label').that.equals(data.UnknownFlavor.consumableType);
 		});
 	});

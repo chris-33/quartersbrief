@@ -75,7 +75,7 @@ class Labeler {
 	 * Which labeling function to use for a given `typeinfo.type`.
 	 */
 	static LABELERS = {
-		'Consumable': labelConsumable,
+		'Ability': labelConsumable,
 		'Captain': labelCaptain
 	}
 	/**
