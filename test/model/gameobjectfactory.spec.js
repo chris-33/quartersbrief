@@ -88,39 +88,6 @@ describe('GameObjectFactory', function() {
 		});
 	});
 
-	describe('._attachLabel', function() {
-		let labelKeys;
-		before(function() {
-			labelKeys = GameObjectFactory.LABEL_KEYS;
-			GameObjectFactory.LABEL_KEYS = {
-				'Type1': 'CONSTANT_LABEL', // Simple lookup
-				'Type2': 'LABEL_{typeinfo.type}' // Lookup with interpolation
-			}
-		});
-
-		after(function() {
-			GameObjectFactory.LABEL_KEYS = labelKeys;
-		});
-
-		it('should attach a human-readable label by simple lookup', function() {
-			gameObjectFactory = new GameObjectFactory(clone(TEST_DATA), { CONSTANT_LABEL: 'constant label' });
-			expect(gameObjectFactory._attachLabel(TEST_DATA.PAAA001_Test1)).to.have.property('label', 'constant label');
-		});
-
-		it('should attach a human-readable label by interpolated lookup', function() {
-			gameObjectFactory = new GameObjectFactory(clone(TEST_DATA), { LABEL_TYPE2: 'interpolated label' });
-			expect(gameObjectFactory._attachLabel(TEST_DATA.PAAA003_Test3)).to.have.property('label', 'interpolated label');
-		});
-
-		it('should attach labels recursively', function() {
-			let data = clone(TEST_DATA);
-			data.PAAA002_Test2.reference = data.PAAA001_Test1;
-			gameObjectFactory = new GameObjectFactory(data, { CONSTANT_LABEL: 'constant label'});
-			let obj = gameObjectFactory._attachLabel(data.PAAA002_Test2);
-			expect(obj.reference).to.have.property('label');
-		});
-	});
-
 	describe('._expandReferences', function() {
 		let data;
 		beforeEach(function() {

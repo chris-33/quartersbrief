@@ -9,6 +9,7 @@ import loadData from './init/load.js';
 import assertInvariants, { InvariantError } from './init/invariants.js';
 import { BattleController } from './core/battlecontroller.js';
 import { GameObjectFactory } from './model/gameobjectfactory.js';
+import Labeler from './model/labeler.js';
 import { AgendaStore } from './briefing/agendastore.js';
 import { SpecificityStrategy } from './briefing/specificitystrategy.js';
 import createServers from './init/servers.js';
@@ -55,7 +56,7 @@ if (!config.skipInvariants) {
 	log.warn(`Skipped invariant checking.`);
 }
 
-const gameObjectFactory = new GameObjectFactory(data, labels);
+const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
 const agendaStore = new AgendaStore(config.agendasdir);
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
 const strategy = new SpecificityStrategy(gameObjectFactory);

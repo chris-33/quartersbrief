@@ -5,7 +5,6 @@ import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
-import template from 'pupa';
 import clone from 'clone';
 
 /**
@@ -51,18 +50,6 @@ class GameObjectFactory {
 			'label'
 		];
 
-	// We can't use template literals (`${foo}`) here, because their interpolation cannot be deferred,
-	// and right now there is no context to allow their interpolation.
-	// So we use a templating engine (pupa) here, and interpolate at runtime in the _attachLabel method.
-	// These are regular strings, and there is no $ in front of the expressions to be interpolated.
-	static LABEL_KEYS = {
-		'Ship': 'IDS_{index}',
-		'Modernization': 'IDS_TITLE_{name}',
-		'Crew': 'IDS_{CrewPersonality.personName}',
-		'Projectile': 'IDS_{name}',
-		'Gun': 'IDS_{name}'
-	}
-	
 	/**
 	 * This property controls what specific classes will be instantiated for a given `typeinfo.type`
 	 * by `createGameObject` (or, more specifically, `_convert`). 
@@ -92,16 +79,9 @@ class GameObjectFactory {
 	 */
 	#data;
 
-	/**
-	 * Private property that holds the loaded
-	 * human-readable label strings.
-	 * @private
-	 */
-	#labels;
-
-	constructor(data, labels) {
+	constructor(data, labeler) {		
 		this.setData(data);
-		this.#labels = labels ?? {};
+		this.labeler = labeler;
 	}
 
 	/**
@@ -175,28 +155,6 @@ class GameObjectFactory {
 			else if (typeof data[key] === 'object' && data[key] !== null) {
 				data[key] = self._expandReferences(data[key]);
 			}
-		}
-		return data;
-	}
-
-	/** 
-	 * Attaches a human-readable label to the provided `data` object and any contained objects. The label is looked up depending
-	 * on ``data.typeinfo.type`. If this `GameObjectFactory` instance was created without the second parameter, 
-	 * or if `data` does not have a `typeinfo.type` property, it does nothing.
-	 * @param {*} data The `data` to attach the label to.
-	 * @returns {Object} Returns `data`, with a label attached under `label`.
-	 */
-	_attachLabel(data) {
-		if (this.#labels) {
-			let key = GameObjectFactory.LABEL_KEYS[data?.typeinfo?.type];
-			if (!key) return data;
-			key = template(key, data).toUpperCase();
-			data.label = this.#labels[key] ?? data.name;
-
-			// for (let key in data)
-			// 	if (typeof data[key] === 'object' && data[key] !== null)
-			// 		data[key] = this._attachLabel(data[key]);
-			// @todo Find a way to attach labels to captain skills and consumable flavors (flavors may be different than the base - e.g. Crawling Smoke Generator is a flavor of Smoke Generator)
 		}
 		return data;
 	}
@@ -281,7 +239,7 @@ class GameObjectFactory {
 			gameObject = self._expandReferences(gameObject);
 			dedicatedlog.debug(`Expanded references for ${designator} in ${Date.now() - t0}ms`);
 		}
-		gameObject = self._attachLabel(gameObject);
+		gameObject = this.labeler?.label(gameObject) ?? gameObject;
 		gameObject = self._convert(gameObject);
 
 		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.getName()} in ${Date.now() - t0}ms`);
