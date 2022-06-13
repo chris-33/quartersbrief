@@ -29,7 +29,8 @@
 			<!-- Remove tools sub folder in install directory -->
 			<util:RemoveFolderEx Property='TOOLS_FOLDER' On='uninstall'/>
 			<!-- Remove Quartersbrief.cmd that we created during installation -->
-			<RemoveFile Id='RemoveQuartersbrief.cmd' Name='[APPLICATIONFOLDER][ProductName].cmd' On='uninstall'/>
+			<!-- Cannot use Name='[ProductName].cmd' because it does not expand properties -->
+			<RemoveFile Id='RemoveCmdFile' Name='Quartersbrief.cmd' On='uninstall'/>
 			<!-- Remove main installation directory now, but only if it is empty. -->
 			<!-- That's why we're using RemoveFolder instead of RemoveFolderEx here. -->
 			<RemoveFolder Id='RemoveMainFolder' Property='APPLICATIONFOLDER' On='uninstall'/>
