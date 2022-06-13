@@ -1,0 +1,54 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Wix
+	xmlns='http://schemas.microsoft.com/wix/2006/wi'
+	xmlns:util='http://schemas.microsoft.com/wix/UtilExtension'
+>
+		<Product
+			Id='*'
+			Name='Quartersbrief'
+			Language='1033'
+			Version='0.0.1'
+			Manufacturer='BadIdeaException'
+			UpgradeCode='21d094e7-590c-4f4a-9dc8-957ae7842575'
+		>
+				<Package
+					InstallerVersion='200'
+					InstallScope='perMachine'
+					Compressed='yes'
+					Comments='Windows Installer Package'
+				/>
+				<Media Id='1' Cabinet='quartersbrief.cab' EmbedCab='yes'/>
+
+				<Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR'/>				
+				<UIRef Id='WixUI_InstallDir'/>
+				
+				<WixVariable Id='WixUILicenseRtf' Value='c:\temp\LICENSE.rtf'/>
+				
+				<?include prerequisites.wxi?>
+
+				<Directory Id='TARGETDIR' Name='SourceDir'>
+					<Directory Id='ProgramFiles64Folder' Name='PFiles'>
+						<Directory Id='INSTALLDIR' Name='Quartersbrief'>
+						</Directory>
+					</Directory>
+				</Directory>
+
+				<Feature Id='Complete' Level='1' ConfigurableDirectory='INSTALLDIR'>
+					<ComponentGroupRef Id='QuartersbriefFiles'/>
+					<ComponentRef Id='RemoveFolders'/>
+				</Feature>
+
+				<CustomAction 
+					Id='NpmInstall' 
+					Directory='INSTALLDIR' 
+					ExeCommand='npm.cmd install --no-package-lock --production'
+					Execute='deferred'
+					Impersonate='no'
+				/>
+
+				<InstallExecuteSequence>
+					<Custom Action='NpmInstall' After='InstallFiles'>NOT Installed</Custom>
+					<Custom Action='CreateQuartersbrief.cmd' Before='CreateShortcuts'>NOT Installed</Custom>
+				</InstallExecuteSequence>
+		</Product>		
+</Wix>

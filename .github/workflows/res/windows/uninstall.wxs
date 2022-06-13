@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<Wix
+	xmlns='http://schemas.microsoft.com/wix/2006/wi'
+	xmlns:util='http://schemas.microsoft.com/wix/UtilExtension'
+>
+	<Fragment>
+		<Property Id='APPLICATIONFOLDER'>
+			<RegistrySearch 
+				Id='ApplicationFolder' 
+				Root='HKLM' 
+				Key='Software\[ProductName]' 
+				Name='InstallDir' 
+				Type='directory' 
+				Win64='yes'/>
+		</Property>
+				
+		<SetProperty Id='NODE_MODULES_FOLDER' Value='[APPLICATIONFOLDER]node_modules\' Before='CostInitialize'/>
+		<SetProperty Id='TOOLS_FOLDER' Value='[APPLICATIONFOLDER]tools\' Before='CostInitialize'/>
+		<SetProperty Id='QUARTERSBRIEF_CONFIG_FOLDER' Value='[AppDataFolder][ProductName]\' Before='CostInitialize'/>
+		<SetProperty Id='QUARTERSBRIEF_DATA_FOLDER' Value='[LocalAppDataFolder][ProductName]\' Before='CostInitialize'/>
+
+		<Component Id='RemoveFolders' Guid='*' Directory='INSTALLDIR'>
+			<!-- Remove quartersbrief folder in user's AppData\Roaming folder -->
+			<util:RemoveFolderEx Property='QUARTERSBRIEF_CONFIG_FOLDER' On='uninstall'/>
+			<!-- Remove quartersbrief folder in user's AppData\Local folder -->
+			<util:RemoveFolderEx Property='QUARTERSBRIEF_DATA_FOLDER' On='uninstall'/>
+			<!-- Remove node_modules sub folder in install directory -->
+			<util:RemoveFolderEx Property='NODE_MODULES_FOLDER' On='uninstall'/>
+			<!-- Remove tools sub folder in install directory -->
+			<util:RemoveFolderEx Property='TOOLS_FOLDER' On='uninstall'/>
+			<!-- Remove Quartersbrief.cmd that we created during installation -->
+			<RemoveFile Id='RemoveQuartersbrief.cmd' Name='[APPLICATIONFOLDER][ProductName].cmd' On='uninstall'/>
+			<!-- Remove main installation directory now, but only if it is empty. -->
+			<!-- That's why we're using RemoveFolder instead of RemoveFolderEx here. -->
+			<RemoveFolder Id='RemoveMainFolder' Property='APPLICATIONFOLDER' On='uninstall'/>
+			<RegistryValue 
+				Root='HKLM' 
+				Key='Software\[ProductName]' 
+				Name='InstallDir' 
+				Type='string' 
+				Value='[INSTALLDIR]' 
+				KeyPath='yes'/>
+		</Component>
+	</Fragment>
+</Wix>
