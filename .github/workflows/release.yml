@@ -143,7 +143,7 @@ jobs:
         id: msi-version
         shell: pwsh
         run: |
-          $Version = ${{ needs.getversion.outputs.version }}
+          $Version = "${{ needs.getversion.outputs.version }}"
           if ($Version -match "(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?") {
             $Major = $Matches[1]
             $Minor = $Matches[2]
