@@ -7,10 +7,11 @@
 			Id='*'
 			Name='Quartersbrief'
 			Language='1033'
-			Version='0.0.1'
+			Version='$(var.Version)'
 			Manufacturer='BadIdeaException'
 			UpgradeCode='21d094e7-590c-4f4a-9dc8-957ae7842575'
 		>
+
 				<Package
 					InstallerVersion='200'
 					InstallScope='perMachine'
@@ -19,10 +20,9 @@
 				/>
 				<Media Id='1' Cabinet='quartersbrief.cab' EmbedCab='yes'/>
 
+				<Property Id='FullVersion' Value='$(var.FullVersion)'/>
 				<Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR'/>				
 				<UIRef Id='WixUI_InstallDir'/>
-				
-				<WixVariable Id='WixUILicenseRtf' Value='c:\temp\LICENSE.rtf'/>
 				
 				<?include prerequisites.wxi?>
 
@@ -31,9 +31,19 @@
 						<Directory Id='INSTALLDIR' Name='Quartersbrief'>
 						</Directory>
 					</Directory>
+					<Component Id='WriteToRegistry'>
+						<RegistryValue 
+							Root='HKLM' 
+							Key='Software\[ProductName]' 
+							Name='Version' 
+							Type='string' 
+							Value='$(var.FullVersion)' 
+							KeyPath='yes'/>
+					</Component>
 				</Directory>
 
 				<Feature Id='Complete' Level='1' ConfigurableDirectory='INSTALLDIR'>
+					<ComponentRef Id='WriteToRegistry'/>
 					<ComponentGroupRef Id='QuartersbriefFiles'/>
 					<ComponentRef Id='RemoveFolders'/>
 				</Feature>
