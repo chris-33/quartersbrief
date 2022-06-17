@@ -50,11 +50,11 @@ jobs:
       - name: Create maintainer scripts
         run: |
           # preinst
-          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/preinst > $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/preinst
+          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/preinst $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/preinst
           # postinst
-          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/postinst > $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/postinst
+          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/postinst $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/postinst
           # prerm
-          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/prerm > $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/prerm
+          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/prerm $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/prerm
  
       - name: Build .deb package
         uses: jiro4989/build-deb-action@v2
@@ -142,8 +142,10 @@ jobs:
       - name: Set version for Windows Installer
         id: msi-version
         shell: pwsh
+        env:
+          Version: ${{ needs.getversion.outputs.non-prefixed }}
         run: |
-          $Version = ${{ needs.getversion.outputs.non-prefixed }}
+          $Version = $env:Version
           if ($Version -match "(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?") {
             $Major = $Matches[1]
             $Minor = $Matches[2]
