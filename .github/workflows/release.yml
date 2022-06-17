@@ -142,10 +142,8 @@ jobs:
       - name: Set version for Windows Installer
         id: msi-version
         shell: pwsh
-        env:
-          Version: ${{ needs.getversion.outputs.non-prefixed }}
         run: |
-          $Version = $env:Version
+          $Version = ${{ needs.getversion.outputs.version }}
           if ($Version -match "(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?") {
             $Major = $Matches[1]
             $Minor = $Matches[2]
@@ -202,7 +200,7 @@ jobs:
             -arch x64 \
             -dSourceDir="${{ env.releasedir }}" \
             -dVersion=${{ steps.msi-version.outputs.msi-version }} \
-            -dFullVersion=${{ needs.getversion.outputs.non-prefixed }} \
+            -dFullVersion=${{ needs.getversion.outputs.version }} \
             "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}\QuartersbriefFiles.wxs"
 
       # Link all .wixobj files. This will create quartersbrief.msi
@@ -218,7 +216,7 @@ jobs:
             -cultures:en-US \
             ${{ env.workdir }}\*.wixobj \
             -out ${{ env.workdir }}\Quartersbrief_${{ needs.getversion.outputs.version }}.msi 
-          echo "::set-output name=file_name::Quartersbrief_${{ needs.getversion.outputs.version }}.msi"
+          echo "::set-output name=file_name::Quartersbrief_v${{ needs.getversion.outputs.version }}.msi"
 
       # Upload the .msi file
       - uses: actions/upload-artifact@v3
