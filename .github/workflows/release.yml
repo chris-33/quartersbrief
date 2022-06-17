@@ -1,10 +1,8 @@
-# This workflow builds a .deb package and a Windows installer when a version is pushed.
+# This workflow builds a .deb package and a .msi installer when a version is pushed.
 
 name: release
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
     tags: 
       - 'v*'
@@ -12,7 +10,6 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   getversion:
     runs-on: ubuntu-latest
@@ -28,24 +25,27 @@ jobs:
   build-deb:
     runs-on: ubuntu-latest
     needs: getversion
+    env:
+      workdir: ${{ github.workspace }}/tmp/debpkg
+      releasedir: ${{ github.workspace }}/tmp/debpkg/opt
     outputs: 
       file_name: ${{ steps.package.outputs.file_name }}
     steps:
-      # Checks-out the repository under $GITHUB_WORKSPACE
+      # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
 
       # Create the package contents directory structure
       - name: Assemble package contents
         id: assemble
         run: |
-          mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/DEBIAN
-          mkdir -p $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/src $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/res $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/scripts $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          cp $GITHUB_WORKSPACE/package.json $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          cp $GITHUB_WORKSPACE/README.md $GITHUB_WORKSPACE/tmp/debpkg/opt/quartersbrief
-          echo "::set-output name=pkgroot::$GITHUB_WORKSPACE/tmp/debpkg"
+          mkdir -p ${{ jobs.build-deb.env.releasedir }}/DEBIAN
+          mkdir -p ${{ jobs.build-deb.env.releasedir }}/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/src ${{ jobs.build-deb.env.releasedir }}/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/res ${{ jobs.build-deb.env.releasedir }}/opt/quartersbrief
+          cp -r $GITHUB_WORKSPACE/scripts ${{ jobs.build-deb.env.releasedir }}/opt/quartersbrief
+          cp $GITHUB_WORKSPACE/package.json ${{ jobs.build-deb.env.releasedir }}/opt/quartersbrief
+          cp $GITHUB_WORKSPACE/README.md ${{ jobs.build-deb.env.releasedir }}/opt/quartersbrief
+          echo "::set-output name=pkgroot::${{ jobs.build-deb.env.releasedir }}"
 
       # Create .deb control scripts
       - name: Create maintainer scripts
@@ -85,10 +85,10 @@ jobs:
     outputs: 
       file_name: ${{ steps.package.outputs.file_name }}
     steps:
-      # Checks-out the repository under $GITHUB_WORKSPACE
+      # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
 
-      - name: Assemble installer contents
+      - name: Assemble package contents
         run: |
           mkdir ${{ github.workspace }}\tmp\installer\app
           xcopy /s /e ${{ github.workspace }}\src ${{ github.workspace }}\tmp\installer\app\src\
@@ -116,9 +116,101 @@ jobs:
           name: exe
           path: ${{ github.workspace }}\tmp\installer\${{ steps.package.outputs.file_name }}
 
+  build-msi:
+    needs: getversion
+    runs-on: windows-latest
+    env:
+      workdir: ${{ github.workspace }}\tmp
+      releasedir: ${{ github.workspace }}\tmp\installer\app
+    outputs: 
+      file_name: ${{ steps.package.outputs.file_name }}
+    steps:
+      # Check out the repository into $GITHUB_WORKSPACE
+      - uses: actions/checkout@v3
+
+      # Windows Installer can't handle version tags of the form a.b.c-alpha.d.
+      # So instead, we will construct a version number a.b.c.x, where x is the
+      # number of days that have passed since January 1, 2020.
+      # This will be unique, as long as not more than one version is released per day.
+      - name: Set version for Windows Installer
+        id: msi-version
+        shell: pwsh
+        run: |
+          $STARTDATE = '01-01-2020'
+          $Version = ${{ needs.getversion.outputs.non-prefixed }}
+          if ($Version -match "(\d+\.\d+\.\d+)") {
+            $ShortVersion = $Matches[0]
+            $x = (New-TimeSpan -Start $STARTDATE -End $(Get-Date)).days
+            echo "::set-output name=msi-version::$ShortVersion.$x"
+          } else {
+            echo "$Version is not a valid version string"
+            exit(1) 
+          }
+
+      # Assemble the files to be put into the installer in $RELEASEDIR
+      - name: Assemble package contents
+        run: |
+          mkdir ${{ jobs.build-msi.env.workdir }}
+          mkdir ${{ jobs.build-msi.env.releasedir }}
+          xcopy /s /e ${{ github.workspace }}\src ${{ jobs.build-msi.env.releasedir }}\src\
+          xcopy /s /e ${{ github.workspace }}\res ${{ jobs.build-msi.env.releasedir }}\res\
+          xcopy /s /e ${{ github.workspace }}\scripts ${{ jobs.build-msi.env.releasedir }}\scripts\
+          xcopy ${{ github.workspace }}\package.json ${{ jobs.build-msi.env.releasedir }}\
+          xcopy ${{ github.workspace }}\README.md ${{ jobs.build-msi.env.releasedir }}\
+          xcopy ${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf ${{ jobs.build-msi.env.workdir }}
+
+      # Harvest the release dir, creating QuartersbriefFiles.wxs that includes all files to install
+      - name: Harvest package contents
+        id: heat
+        run: |
+          ${{ env.wix }}\heat.exe \
+            dir \
+            "${{ jobs.build-msi.env.releasedir }}" \
+            -ag \
+            -cg QuartersbriefFiles \
+            -var var.SourceDir \
+            -dr INSTALLDIR \
+            -srd \
+            -out "${{ jobs.build-msi.env.workdir }}\QuartersbriefFiles.wxs"
+          
+      # Compile all .wxs files to .wixobj files
+      - name: Compile *.wxs to *.wixobj
+        id: candle
+        run: |
+          ${{ env.wix }}\candle.exe \
+            -out "${{ jobs.build-msi.env.workdir }}" \
+            -v \
+            -ext WixUtilExtension \
+            -arch x64 \
+            -dSourceDir="${{ jobs.build-msi.env.releasedir }}" \
+            -dVersion=${{ steps.msi-version.outputs.msi-version }} \
+            -dFullVersion=${{ needs.getversion.outputs.non-prefixed }}
+            "${{ github.workspace}\.github\workflows\res\windows\*.wxs" "${{ jobs.build-msi.env.workdir }}\QuartersbriefFiles.wxs"
+
+      # Link all .wixobj files. This will create quartersbrief.msi
+      - name: Link *.wixobj to quartersbrief.msi
+        id: light
+        run: |
+          ${{ env.wix }}\light.exe \
+            -ext WixUIExtension \
+            -ext WixUtilExtension \
+            -dWixUILicenseRtf="${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf" \
+            -b "${{ github.workspace }}\.github\workflows\res\windows" \
+            -loc "${{ github.workspace }}\.github\workflows\res\windows\quartersbrief.wxl" \
+            -cultures:en-US
+            ${{ jobs.build-msi.env.workdir }}\*.wixobj \
+            -out ${{ jobs.build-msi.env.workdir }}\Quartersbrief_${{ needs.getversion.outputs.version }}.msi 
+          echo "::set-output name=file_name::Quartersbrief_${{ needs.getversion.outputs.version }}.msi"
+
+      # Upload the .msi file
+      - uses: actions/upload-artifact@v3
+        with:
+          name: msi
+          path: ${{ jobs.build-msi.env.workdir }}\${{ steps.package.outputs.file_name }}
+
   release:  
     runs-on: ubuntu-latest
-    needs: [build-deb, build-exe]
+    needs: [build-deb, build-exe, build-msi]
     steps:
       - uses: actions/download-artifact@v3
 
@@ -128,3 +220,4 @@ jobs:
           files: |
             deb/${{ needs.build-deb.outputs.file_name }}
             exe/${{ needs.build-exe.outputs.file_name }}
+            msi/${{ needs.build-msi.outputs.file_name }}
