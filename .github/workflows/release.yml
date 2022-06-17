@@ -201,7 +201,7 @@ jobs:
             -dSourceDir="${{ env.releasedir }}" \
             -dVersion=${{ steps.msi-version.outputs.msi-version }} \
             -dFullVersion=${{ needs.getversion.outputs.non-prefixed }} \
-            "${{ github.workspace}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}\QuartersbriefFiles.wxs"
+            "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}\QuartersbriefFiles.wxs"
 
       # Link all .wixobj files. This will create quartersbrief.msi
       - name: Link *.wixobj to quartersbrief.msi
