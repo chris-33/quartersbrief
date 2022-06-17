@@ -1,0 +1,4 @@
+#!/bin/sh
+if dpkg --print-foreign-architectures | grep i386; then
+  echo 'quartersbrief depends on wine32 for automatic updates, but i386 is not set as a foreign architecture. Run dpkg --add-architecture i386 so wine32 can be installed.' >&2
+fi
