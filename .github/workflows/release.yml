@@ -206,7 +206,7 @@ jobs:
             -arch x64 \
             -dSourceDir="${{ jobs.build-msi.env.releasedir }}" \
             -dVersion=${{ steps.msi-version.outputs.msi-version }} \
-            -dFullVersion=${{ needs.getversion.outputs.non-prefixed }}
+            -dFullVersion=${{ needs.getversion.outputs.non-prefixed }} \
             "${{ github.workspace}\.github\workflows\res\windows\*.wxs" "${{ jobs.build-msi.env.workdir }}\QuartersbriefFiles.wxs"
 
       # Link all .wixobj files. This will create quartersbrief.msi
@@ -219,7 +219,7 @@ jobs:
             -dWixUILicenseRtf="${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf" \
             -b "${{ github.workspace }}\.github\workflows\res\windows" \
             -loc "${{ github.workspace }}\.github\workflows\res\windows\quartersbrief.wxl" \
-            -cultures:en-US
+            -cultures:en-US \
             ${{ jobs.build-msi.env.workdir }}\*.wixobj \
             -out ${{ jobs.build-msi.env.workdir }}\Quartersbrief_${{ needs.getversion.outputs.version }}.msi 
           echo "::set-output name=file_name::Quartersbrief_${{ needs.getversion.outputs.version }}.msi"
