@@ -1,5 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
-<WixLocalization Culture="en-US" Codepage="1252" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="WelcomeDlg_Title">[ProductName] [FullVersion] Setup</String>
-	<String Id="WelcomeDlgTitle">{\WixUI_Font_Bigger}Welcome to the [ProductName] [FullVersion] Setup Wizard</String>
+<?xml version='1.0' encoding='utf-8'?>
+<WixLocalization Culture='en-US' Codepage='1252' xmlns='http://schemas.microsoft.com/wix/2006/localization'>
+	<String Id='NodeJSMissing'>Quartersbrief requires Node.js 17.5 or higher. Please install or upgrade Node.js and then run this installer again.</String>
+	<String Id='PythonMissing'>Quartersbrief requires Python. Please install Python and then run this installer again.</String>
+	<String Id='WelcomeDlgDescription'>The Setup Wizard will install [ProductName] [FullVersion] on your computer. Click Next to continue or Cancel to exit the Setup Wizard.</String>
 </WixLocalization>

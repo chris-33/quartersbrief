@@ -2,14 +2,14 @@
 	<Property Id='NODEJS_VERSION'>
 		<RegistrySearch Id='NodeJSVersion' Root='HKLM' Key='Software\Node.js' Name='Version' Type='raw' Win64='yes'/>
 	</Property>
-	<Condition Message='Quartersbrief requires Node.js 17.5 or higher. Please install or upgrade Node.js and then run this installer again.'>
+	<Condition Message='!(loc.NodeJSMissing)'>
 		<![CDATA[Installed OR NODEJS_VERSION >= "17.5"]]>
 	</Condition>
 
 	<Property Id='PYTHON_INSTALLED'>
 		<RegistrySearch Id='PythonInstalled' Root='HKCU' Key='Software\Python\PythonCore' Name='DisplayName' Type='raw' Win64='yes'/>
 	</Property>
-	<Condition Message='Quartersbrief requires Python. Please install Python and then run this installer again.'>
+	<Condition Message='!(loc.PythonMissing)'>
 		<![CDATA[Installed OR PYTHON_INSTALLED]]>
 	</Condition>
 </Include>
