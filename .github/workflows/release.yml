@@ -128,20 +128,42 @@ jobs:
       # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
 
-      # Windows Installer can't handle version tags of the form a.b.c-alpha.d.
-      # So instead, we will construct a version number a.b.c.x, where x is the
-      # number of days that have passed since January 1, 2020.
-      # This will be unique, as long as not more than one version is released per day.
+      # Windows Installer can't handle version tags with suffixed pre-release identifiers.
+      # So instead, we need to construct a version number that will encode all the relevant
+      # information into its last digit.
+      # The actual version numbers are always in a format a.b.c or a.b.c-d.e, where
+      # - a,b,c are numbers
+      # - d is one of "alpha", "beta", "rc"
+      # - e is a number
+      # We will turn this into a.b.x, where x is formed as follows:
+      # - x is 1500 * c
+      # - if d and e are set, add e to x
+      # - id d is
+      #     "alpha", add to x 0
+      #     "beta", add to x 500
+      #     "rc", add to x 1000
+      #     not set, add to x 1100
+      # (The last bit ensures that release versions are always considered higher than prerelease ones.)
+      # As a corollary, there can be 500 alpha and beta prereleases each, and 100 release candidates.
       - name: Set version for Windows Installer
         id: msi-version
         shell: pwsh
         run: |
-          $STARTDATE = '01-01-2020'
           $Version = ${{ needs.getversion.outputs.non-prefixed }}
-          if ($Version -match "(\d+\.\d+\.\d+)") {
-            $ShortVersion = $Matches[0]
-            $x = (New-TimeSpan -Start $STARTDATE -End $(Get-Date)).days
-            echo "::set-output name=msi-version::$ShortVersion.$x"
+          if ($Version -match "(\d+)\.(\d+)\.(\d+)(?:-(\w+)\.(\d+))?") {
+            $Major = $Matches[1]
+            $Minor = $Matches[2]
+            $Patch = $Matches[3]
+            $PrereleaseIdentifier = $Matches[4]
+            $PrereleaseNumber = $Matches[5] 
+            $Range = switch ($PrereleaseIdentifier) {
+              "alpha" { 0 }
+              "beta" { 500 }
+              "rc" { 1000 }
+              default { 1100 }
+            }
+            $Composite = 1500 * $Patch + $Range + $PrereleaseNumber
+            echo "$Major.$Minor.$Composite"
           } else {
             echo "$Version is not a valid version string"
             exit(1) 
