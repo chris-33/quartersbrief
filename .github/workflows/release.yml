@@ -179,42 +179,42 @@ jobs:
       - name: Harvest package contents
         id: heat
         run: |
-          ${{ env.wix }}\heat.exe \
-            dir \
-            "${{ env.releasedir }}" \
-            -ag \
-            -cg QuartersbriefFiles \
-            -var var.SourceDir \
-            -dr INSTALLDIR \
-            -srd \
+          ${{ env.wix }}\heat.exe ^
+            dir ^
+            "${{ env.releasedir }}" ^
+            -ag ^
+            -cg QuartersbriefFiles ^
+            -var var.SourceDir ^
+            -dr INSTALLDIR ^
+            -srd ^
             -out "${{ env.workdir }}\QuartersbriefFiles.wxs"
           
       # Compile all .wxs files to .wixobj files
       - name: Compile *.wxs to *.wixobj
         id: candle
         run: |
-          ${{ env.wix }}\candle.exe \
-            -out "${{ env.workdir }}" \
-            -v \
-            -ext WixUtilExtension \
-            -arch x64 \
-            -dSourceDir="${{ env.releasedir }}" \
-            -dVersion=${{ steps.msi-version.outputs.msi-version }} \
-            -dFullVersion=${{ needs.getversion.outputs.version }} \
+          ${{ env.wix }}\candle.exe ^
+            -out "${{ env.workdir }}" ^
+            -v ^
+            -ext WixUtilExtension ^
+            -arch x64 ^
+            -dSourceDir="${{ env.releasedir }}" ^
+            -dVersion=${{ steps.msi-version.outputs.msi-version }} ^
+            -dFullVersion=${{ needs.getversion.outputs.version }} ^
             "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}\QuartersbriefFiles.wxs"
 
       # Link all .wixobj files. This will create quartersbrief.msi
       - name: Link *.wixobj to quartersbrief.msi
         id: light
         run: |
-          ${{ env.wix }}\light.exe \
-            -ext WixUIExtension \
-            -ext WixUtilExtension \
-            -dWixUILicenseRtf="${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf" \
-            -b "${{ github.workspace }}\.github\workflows\res\windows" \
-            -loc "${{ github.workspace }}\.github\workflows\res\windows\quartersbrief.wxl" \
-            -cultures:en-US \
-            ${{ env.workdir }}\*.wixobj \
+          ${{ env.wix }}\light.exe ^
+            -ext WixUIExtension ^
+            -ext WixUtilExtension ^
+            -dWixUILicenseRtf="${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf" ^
+            -b "${{ github.workspace }}\.github\workflows\res\windows" ^
+            -loc "${{ github.workspace }}\.github\workflows\res\windows\quartersbrief.wxl" ^
+            -cultures:en-US ^
+            ${{ env.workdir }}\*.wixobj ^
             -out ${{ env.workdir }}\Quartersbrief_${{ needs.getversion.outputs.version }}.msi 
           echo "::set-output name=file_name::Quartersbrief_v${{ needs.getversion.outputs.version }}.msi"
 
