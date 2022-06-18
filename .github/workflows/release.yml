@@ -114,8 +114,8 @@ jobs:
     needs: getversion
     runs-on: windows-latest
     env:
-      workdir: ${{ github.workspace }}\tmp
-      releasedir: ${{ github.workspace }}\tmp\installer\app
+      workdir: ${{ github.workspace }}\tmp\
+      releasedir: ${{ github.workspace }}\tmp\installer\app\
     outputs: 
       file_name: ${{ steps.package.outputs.file_name }}
     steps:
@@ -171,11 +171,11 @@ jobs:
         run: |
           mkdir ${{ env.workdir }}
           mkdir ${{ env.releasedir }}
-          xcopy /s /e ${{ github.workspace }}\src ${{ env.releasedir }}\src\
-          xcopy /s /e ${{ github.workspace }}\res ${{ env.releasedir }}\res\
-          xcopy /s /e ${{ github.workspace }}\scripts ${{ env.releasedir }}\scripts\
-          xcopy ${{ github.workspace }}\package.json ${{ env.releasedir }}\
-          xcopy ${{ github.workspace }}\README.md ${{ env.releasedir }}\
+          xcopy /s /e ${{ github.workspace }}\src ${{ env.releasedir }}src\
+          xcopy /s /e ${{ github.workspace }}\res ${{ env.releasedir }}res\
+          xcopy /s /e ${{ github.workspace }}\scripts ${{ env.releasedir }}scripts\
+          xcopy ${{ github.workspace }}\package.json ${{ env.releasedir }}
+          xcopy ${{ github.workspace }}\README.md ${{ env.releasedir }}
           xcopy ${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf ${{ env.workdir }}
 
       # Harvest the release dir, creating QuartersbriefFiles.wxs that includes all files to install
@@ -190,7 +190,7 @@ jobs:
             -var var.SourceDir `
             -dr INSTALLDIR `
             -srd `
-            -out "${{ env.workdir }}\QuartersbriefFiles.wxs"
+            -out "${{ env.workdir }}QuartersbriefFiles.wxs"
           
       # Compile all .wxs files to .wixobj files
       - name: Compile *.wxs to *.wixobj
@@ -204,7 +204,7 @@ jobs:
             -dSourceDir="${{ env.releasedir }}" `
             -dVersion="${{ steps.msi-version.outputs.msi-version }}" `
             -dFullVersion="${{ needs.getversion.outputs.version }}" `
-            "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}\QuartersbriefFiles.wxs"
+            "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}QuartersbriefFiles.wxs"
 
       # Link all .wixobj files. This will create quartersbrief.msi
       - name: Link *.wixobj to quartersbrief.msi
@@ -217,15 +217,15 @@ jobs:
             -b "${{ github.workspace }}\.github\workflows\res\windows" `
             -loc "${{ github.workspace }}\.github\workflows\res\windows\quartersbrief.wxl" `
             -cultures:en-US `
-            "${{ env.workdir }}\*.wixobj" `
-            -out "${{ env.workdir }}\Quartersbrief_${{ needs.getversion.outputs.version }}.msi" 
+            "${{ env.workdir }}*.wixobj" `
+            -out "${{ env.workdir }}Quartersbrief_${{ needs.getversion.outputs.version }}.msi" 
           echo "::set-output name=file_name::Quartersbrief_v${{ needs.getversion.outputs.version }}.msi"
 
       # Upload the .msi file
       - uses: actions/upload-artifact@v3
         with:
           name: msi
-          path: ${{ env.workdir }}\${{ steps.package.outputs.file_name }}
+          path: ${{ env.workdir }}${{ steps.package.outputs.file_name }}
 
   release:  
     runs-on: ubuntu-latest
