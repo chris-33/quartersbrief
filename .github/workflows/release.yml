@@ -218,7 +218,7 @@ jobs:
             -loc "${{ github.workspace }}\.github\workflows\res\windows\quartersbrief.wxl" `
             -cultures:en-US `
             "${{ env.workdir }}*.wixobj" `
-            -out "${{ env.workdir }}Quartersbrief_${{ needs.getversion.outputs.version }}.msi" 
+            -out "${{ env.workdir }}Quartersbrief_v${{ needs.getversion.outputs.version }}.msi" 
           echo "::set-output name=file_name::Quartersbrief_v${{ needs.getversion.outputs.version }}.msi"
 
       # Upload the .msi file
