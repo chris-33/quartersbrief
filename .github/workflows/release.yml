@@ -122,7 +122,10 @@ jobs:
       # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
 
-      # Windows Installer can't handle version tags with suffixed pre-release identifiers.
+      # Windows Installer can't handle version tags with suffixed pre-release identifiers. To make matters 
+      # worse, although it handles four-digit version numbers (a.b.c.d), it will only consider the first three
+      # when deciding whether an installer is an upgrade over an existing installed product.
+      # 
       # So instead, we need to construct a version number that will encode all the relevant
       # information into its last digit.
       # The actual version numbers are always in a format a.b.c or a.b.c-d.e, where
@@ -179,7 +182,7 @@ jobs:
       - name: Harvest package contents
         id: heat
         run: |
-          & "$(env:WIX)\heat.exe" `
+          & "$env:WIX\heat.exe" `
             dir `
             "${{ env.releasedir }}" `
             -ag `
