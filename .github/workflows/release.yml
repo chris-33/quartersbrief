@@ -157,7 +157,7 @@ jobs:
               default { 1100 }
             }
             $Composite = 1500 * $Patch + $Range + $PrereleaseNumber
-            echo "$Major.$Minor.$Composite"
+            echo  "::set-output name=msi-version::$Major.$Minor.$Composite"
           } else {
             echo "$Version is not a valid version string"
             exit(1) 
@@ -179,10 +179,10 @@ jobs:
       - name: Harvest package contents
         id: heat
         run: |
-          ${{ env.wix }}\heat.exe `
+          & "$(env:WIX)\heat.exe" `
             dir `
             "${{ env.releasedir }}" `
-            -ag ^
+            -ag `
             -cg QuartersbriefFiles `
             -var var.SourceDir `
             -dr INSTALLDIR `
