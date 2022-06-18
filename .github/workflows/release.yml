@@ -225,7 +225,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: msi
-          path: ${{ env.workdir }}${{ steps.package.outputs.file_name }}
+          path: ${{ env.workdir }}${{ steps.light.outputs.file_name }}
 
   release:  
     runs-on: ubuntu-latest
