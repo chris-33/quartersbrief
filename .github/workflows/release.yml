@@ -117,7 +117,7 @@ jobs:
       workdir: ${{ github.workspace }}\tmp\
       releasedir: ${{ github.workspace }}\tmp\installer\app\
     outputs: 
-      file_name: ${{ steps.package.outputs.file_name }}
+      file_name: ${{ steps.light.outputs.file_name }}
     steps:
       # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
