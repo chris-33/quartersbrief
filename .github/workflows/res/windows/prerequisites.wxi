@@ -3,7 +3,7 @@
 		<RegistrySearch Id='NodeJSVersion' Root='HKLM' Key='Software\Node.js' Name='Version' Type='raw' Win64='yes'/>
 	</Property>
 	<Condition Message='!(loc.NodeJSMissing)'>
-		<![CDATA[Installed OR NODEJS_VERSION >= "17.5"]]>
+		<![CDATA[Installed OR NODEJS_VERSION >= "17.0"]]>
 	</Condition>
 
 	<Property Id='PYTHON_INSTALLED'>
