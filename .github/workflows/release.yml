@@ -182,7 +182,7 @@ jobs:
       - name: Harvest package contents
         id: heat
         run: |
-          & "$env:WIX\heat.exe" `
+          & "${env:WIX}heat.exe" `
             dir `
             "${{ env.releasedir }}" `
             -ag `
@@ -196,7 +196,7 @@ jobs:
       - name: Compile *.wxs to *.wixobj
         id: candle
         run: |
-          ${{ env.wix }}\candle.exe `
+          & "${env:WIX}candle.exe" `
             -out "${{ env.workdir }}" `
             -v `
             -ext WixUtilExtension `
@@ -210,7 +210,7 @@ jobs:
       - name: Link *.wixobj to quartersbrief.msi
         id: light
         run: |
-          ${{ env.wix }}\light.exe `
+          & "${env:WIX}light.exe" `
             -ext WixUIExtension `
             -ext WixUtilExtension `
             -dWixUILicenseRtf="${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf" `
