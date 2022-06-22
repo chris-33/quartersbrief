@@ -23,12 +23,12 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		.map(shipId => gameObjectFactory.createGameObject(shipId))
 		.filter(ship => 'sonar' in ship.consumables)
 
-	let hydros = {};	
+	let hydros = {};
 	ships.forEach(ship => {
 		ship = shipBuilder.build(ship, BASE_BUILD)
-		// Round range to 10m precision, to avoid drawing separate circles for what is effectively the same range
+		// Round range to 50m precision, to avoid drawing separate circles for what is effectively the same range
 		// if ships' consumables' distShip is slightly different (which will be magnified by the conversion to meters)
-		let range = 10 * Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip) / 10);
+		let range = 50 * Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip) / 50);
 		const hydro = {
 			ship: ship,
 			baseTime: ship.consumables.sonar.workTime,
