@@ -1,16 +1,6 @@
-import { ShipBuilder } from '../../../util/shipbuilder.js';
 import pug from 'pug';
 import sass from 'sass';
 import { filters, teams } from '../common.js';
-
-function median(arr) {
-	arr.sort((a1, a2) => a1-a2);
-	let half = Math.floor(arr.length / 2);
-	if (arr.length % 2)
-		return arr[half];
-	else
-		return (arr[half - 1] + arr[half]) / 2;
-}
 
 async function buildHtml(battle, gameObjectFactory, options) {
 	const locals = {
@@ -20,12 +10,8 @@ async function buildHtml(battle, gameObjectFactory, options) {
 			.filter(filters.duplicates)
 			.map(shipId => gameObjectFactory.createGameObject(shipId))
 			.filter(filters.classes([ 'Cruiser', 'Battleship' ])),
-		ownPlating: median(
-			Object.values(gameObjectFactory.createGameObject(battle.getPlayer().shipId).get('hull.armor'))
-				.filter(thickness => 19 < thickness && thickness <= 50)) // Expect plating to be in this range. This will fail for extremely poorly armored ships as well as exceptionally well-armored, obviously.
+		ownPlating: gameObjectFactory.createGameObject(battle.getPlayer().shipId).get('hull.armor.65584')
 	}
-
-
 
 	return pug.renderFile('src/briefing/topics/overmatch_me/overmatch_me.pug', locals);
 }
