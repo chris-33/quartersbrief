@@ -2,5 +2,8 @@
 <WixLocalization Culture='en-US' Codepage='1252' xmlns='http://schemas.microsoft.com/wix/2006/localization'>
 	<String Id='NodeJSMissing'>Quartersbrief requires Node.js 17.5 or higher. Please install or upgrade Node.js and then run this installer again.</String>
 	<String Id='PythonMissing'>Quartersbrief requires Python. Please install Python and then run this installer again.</String>
+	
 	<String Id='WelcomeDlgDescription'>The Setup Wizard will install [ProductName] [FullVersion] on your computer. Click Next to continue or Cancel to exit the Setup Wizard.</String>
+
+	<String Id='DowngradeErrorMessage'>This installer is for version [FullVersion], but you already have newer version [EXISTING_VERSION] installed. Exiting.</String>
 </WixLocalization>

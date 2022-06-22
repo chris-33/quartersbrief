@@ -21,6 +21,19 @@
 				<Media Id='1' Cabinet='quartersbrief.cab' EmbedCab='yes'/>
 
 				<Property Id='FullVersion' Value='$(var.FullVersion)'/>
+				
+				<Property Id='EXISTING_VERSION'>
+					<RegistrySearch 
+						Id='ExistingVersionSearch' 
+						Root='HKLM' 
+						Key='Software\[ProductName]' 
+						Name='Version' 
+						Type='raw' 
+						Win64='yes'/>					
+				</Property>
+
+				<MajorUpgrade AllowDowngrades='no' DowngradeErrorMessage='!(loc.DowngradeErrorMessage)'/>
+
 				<Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR'/>				
 				<UIRef Id='WixUI_InstallDir'/>
 				
