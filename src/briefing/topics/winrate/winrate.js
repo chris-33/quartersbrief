@@ -25,7 +25,7 @@ async function buildHtml(battle, gameObjectFactory, options) {
 		msg += `not set. You can set ${missingBoth ? 'them' : 'it'} in your quartersbrief config file or pass ${missingBoth ? 'them' : 'it'} on the command line.`;
 		throw new Error(msg);
 	}
-	let players = await new PlayerFactory(config.apiKey, config.realm).getPlayers(battle.getVehicles().map(vehicle => vehicle.name));
+	let players = await new PlayerFactory(config.apiKey, config.realm).getPlayers(battle.getVehicles().map(vehicle => vehicle.name));	
 	let ships = battle.getVehicles()
 		.map(vehicle => gameObjectFactory.createGameObject(vehicle.shipId));
 
