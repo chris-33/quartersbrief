@@ -9,8 +9,7 @@ const render = pug.compileFile('src/briefing/topics/concealment/concealment.pug'
 const CONCEALMENT_BUILD = {
 	modules: 'top',
 	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
-	skills: [ 12 ],
-	camouflage: 'PCEC001'
+	skills: [ 12 ]
 }
 
 function buildHtml(battle, gameObjectFactory, options) {

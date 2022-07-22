@@ -9,8 +9,7 @@ const BASE_BUILD = {
 }
 const CONCEALMENT_BUILD = {
 	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
-	skills: [ 12 ],
-	camouflage: 'PCEC001'
+	skills: [ 12 ]
 }
 const RADAR_BUILD = {
 	modernizations: [ 'PCM042_RLSSearch_Mod_I' ],
