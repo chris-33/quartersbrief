@@ -46,7 +46,7 @@ export default class DotNotation {
 	 * Supports wildcards, but not dot notation.
 	 * @param  {String} prop The properties to select. May contain wildcards.
 	 * @param  {Object} base The object against which to resolve.
-	 * @return {Array} An array of all property names in `base` that matched `prop`. Even if `prop` was a simple
+	 * @return {String[]} An array of all property names in `base` that matched `prop`. Even if `prop` was a simple
 	 * key, the result is still an array.
 	 */
 	static resolve(key, base) {
