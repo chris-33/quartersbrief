@@ -161,8 +161,9 @@ class GameObjectFactory {
 
 	/**
 	 * Converts the passed data into a corresponding game object as per the `data`'s
-	 * `typeinfo.type` field. If no `typeinfo` property exists on `data`, it is
-	 * returned as-is, albeit with any nested object properties converted. 
+	 * `typeinfo.type` field. If there are several known game objects for that `type`, 
+	 * the exact one is determined by the `typeinfo.species` field.
+	 * If no `typeinfo` property exists on `data`, it is returned as-is. 
 	 * 
 	 * Any nested game objects are converted as well.
 	 * @param  {Object} data The data to convert.
@@ -170,19 +171,27 @@ class GameObjectFactory {
 	 * Otherwise returns the raw `data`, with any nested objects converted if appropriate.
 	 */
 	_convert(data) {
-		// for (let key in data)
-		// 	if (typeof data[key] === 'object' && data[key] !== null)
-		// 		data[key] = this._convert(data[key]);
+		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 
-		if (!(data?.typeinfo?.type))
+		if (!(data?.typeinfo?.type)) {
+			dedicatedlog.debug(`Returning object ${data?.name ?? data} as-is because it has no typeinfo.type`);
 			return data;
+		}
+
+		let logstr = `Converting object ${data.name} of type ${data.typeinfo.type}`;
 
 		let Constructor = GameObjectFactory.KNOWN_TYPES[data.typeinfo.type];
+
+		if (typeof Constructor === 'object') {
+			logstr += ` and species ${data.typeinfo.species}`;
+			Constructor = Constructor[data.typeinfo.species];
+		}
+
 		if (!Constructor) Constructor = GameObject;
 
-		rootlog
-			.getLogger(this.constructor.name)
-			.debug(`Converting object ${data.name} of type ${data.typeinfo.type} into a ${Constructor.name}`);
+		logstr += ` into a ${Constructor.name}`;
+		dedicatedlog.debug(logstr);
+
 		return new Constructor(data);
 	}
 

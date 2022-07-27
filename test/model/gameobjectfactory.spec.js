@@ -10,7 +10,8 @@ describe('GameObjectFactory', function() {
 			index: 'PAAA001',
 			name: 'PAAA001_Test1',
 			typeinfo: {
-				type: 'Type1'
+				type: 'Type1',
+				species: 'Species1'
 			}
 		},
 		PAAA002_Test2: {
@@ -19,7 +20,8 @@ describe('GameObjectFactory', function() {
 			name: 'PAAA002_Test2',
 			reference: 'PAAA001_Test1',
 			typeinfo: {
-				type: 'Type1'
+				type: 'Type1',
+				species: 'Species2'
 			}
 		},
 		PAAA003_Test3: {
@@ -179,6 +181,34 @@ describe('GameObjectFactory', function() {
 				expect(gameObjectFactory._convert({
 					typeinfo: { type: 'unknown' }
 				}), 'default to GameObject if type unknown').to.be.an.instanceof(GameObject);
+			} finally {
+				GameObjectFactory.KNOWN_TYPES = knownTypes;
+			}
+		});
+
+		it('should convert into the correct class as per typeinfo.species if there are several known types for the typeinfo.type', function() {
+			let knownTypes = GameObjectFactory.KNOWN_TYPES;
+			const Species1 = class extends GameObject {};
+			const Species2 = class extends GameObject {};
+			GameObjectFactory.KNOWN_TYPES = {
+				'Type1': {
+					'Species1': Species1,
+					'Species2': Species2
+				}
+			};
+			try {					
+				for (let obj of Object.values(clone(TEST_DATA)).filter(obj => obj.typeinfo.type === 'Type1')) {
+					let expected;
+					switch (obj.typeinfo.species) {
+							case 'Species1': expected = Species1; break;
+							case 'Species2': expected = Species2; break;
+							default: expected = GameObject;							
+					}
+					expect(gameObjectFactory._convert(obj), `${obj.typeinfo.species}`).to.be.an.instanceof(expected);
+					expect(gameObjectFactory._convert({
+						typeinfo: { type: 'Type1', species: 'unknown' }
+					}, 'default to GameObject if species unknown')).to.be.an.instanceof(GameObject);
+				}
 			} finally {
 				GameObjectFactory.KNOWN_TYPES = knownTypes;
 			}
