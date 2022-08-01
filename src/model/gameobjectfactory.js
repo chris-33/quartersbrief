@@ -5,6 +5,7 @@ import { Modernization } from './modernization.js';
 import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
+import { Signal } from './signal.js';
 import clone from 'clone';
 
 /**
@@ -60,7 +61,12 @@ class GameObjectFactory {
 		'Modernization': Modernization,
 		'Ability': Consumable,
 		'Crew': Captain,
-		'Exterior': Camouflage
+		'Exterior': { 
+			'Camouflage': Camouflage,
+			'Permoflage': Camouflage,
+			'Skin': Camouflage,
+			'Flags': Signal
+		}
 	}
 
 	/**

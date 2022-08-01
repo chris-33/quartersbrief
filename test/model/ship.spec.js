@@ -3,13 +3,14 @@ import { Modernization } from '../../src/model/modernization.js';
 import { Captain } from '../../src/model/captain.js';
 import { Camouflage } from '../../src/model/camouflage.js';
 import { Consumable } from '../../src/model/consumable.js';
+import { Signal } from '../../src/model/signal.js';
 import { Modifier } from '../../src/model/modifier.js';
 import sinon from 'sinon';
 import clone from 'clone';
 import { readFileSync } from 'fs';
 import createModule from '../../src/model/module.js';
 
-describe('Ship', function() {
+describe.only('Ship', function() {
 	let TEST_DATA;
 	let CONSUMABLE_DATA;
 	let knownTargets;
@@ -268,6 +269,15 @@ describe('Ship', function() {
 			ship.equipModules('top');
 			expect(ship.get('engine.value')).to.equal(camouflage.get('modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);
 		});
+
+		it('should re-hoist signals after changing module configuration', function() {
+			ship.equipModules('stock');
+			let signal = new Signal(JSON.parse(readFileSync('test/model/testdata/signal.json')));
+			ship.hoist(signal);
+			expect(ship.get('engine.value')).to.equal(signal.get('modifiers.EngineValue') * TEST_DATA.AB1_Engine.value);
+			ship.equipModules('top');
+			expect(ship.get('engine.value')).to.equal(signal.get('modifiers.EngineValue') * TEST_DATA.AB2_Engine.value);			
+		});
 	});
 
 	describe('.equipModernization', function() {
@@ -440,6 +450,76 @@ describe('Ship', function() {
 		});
 	});
 
+	describe('.hoist', function() {
+		let SIGNAL_DATA;
+		let signal;
+	
+		before(function() {
+			SIGNAL_DATA = JSON.parse(readFileSync('test/model/testdata/signal.json'));
+		});
+
+		beforeEach(function() {
+			signal = new Signal(SIGNAL_DATA);
+		});
+
+		it('should throw if trying to set something that is not a Signal', function() {
+			expect(ship.hoist.bind(ship, {})).to.throw();
+			expect(ship.hoist.bind(ship, signal)).to.not.throw();
+		});
+
+		it('should apply the effects of the signal', function() {
+			ship.equipModules('stock');
+			ship.hoist(signal);
+			expect(ship.get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * signal.get('modifiers.EngineValue'));
+			expect(ship.get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * signal.get('modifiers.ArtilleryValue'));
+		});		
+
+		it('should not hoist the signal more than once', function() {
+			ship.equipModules('stock');
+			ship.hoist(signal);
+			ship.hoist(signal);
+			expect(ship.get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * signal.get('modifiers.EngineValue'));
+			expect(ship.get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * signal.get('modifiers.ArtilleryValue'));
+		});
+	});
+
+	describe('.lower', function() {
+		let SIGNAL_DATA;
+		let signal;
+		
+		before(function() {
+			SIGNAL_DATA = JSON.parse(readFileSync('test/model/testdata/signal.json'));
+		});
+
+		beforeEach(function() {
+			signal = new Signal(SIGNAL_DATA);
+			ship.equipModules('stock');
+			ship.hoist(signal);
+		});
+
+		it('should revert the effects of the signal', function() {
+			ship.lower(signal);
+			expect(ship.get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value);
+		});
+
+		it('should not lower a signal that was not hoisted', function() {
+			signal = new Signal({
+				id: 999,
+				index: 'PCEF999',
+				name: 'PCEF999_OtherSignal',
+				modifiers: {
+					'ArtilleryValue': 5,
+					'EngineValue': 4
+				}
+			});
+			let engineValue = ship.get('engine.value');
+			let artilleryValue = ship.get('artillery.value');
+			ship.lower(signal);
+			expect(ship.get('engine.value')).to.equal(engineValue);
+			expect(ship.get('artillery.value')).to.equal(artilleryValue);
+		});
+	});
+
 	it('should have property consumables which is a Ship.Consumables', function() {
 		expect(ship).to.have.property('consumables');
 		expect(ship.consumables).to.be.an('object');
@@ -519,6 +599,47 @@ describe('Ship', function() {
 					AbilitySlot1: {}
 				});
 				expect(consumables.asArray()).to.be.empty;
+			});
+		});
+
+		describe('.multiply', function() {
+			it('should multiply by name', function() {
+				const coeff = 2;
+				let expected = {};
+				Object.keys(consumables)
+					.filter(key => 'value' in consumables[key])
+					.forEach(key => expected[key] = consumables[key].value);
+				expected.consumable1 *= coeff;
+
+				consumables.multiply('consumable1.value', coeff);
+				for (let key in expected) 
+					expect(consumables[key].value).to.equal(expected[key]);			
+			});
+
+			it('should multiply with wildcards', function() {
+				const coeff = 2;
+				let expected = {};
+				Object.keys(consumables)
+					.filter(key => 'value' in consumables[key])
+					.forEach(key => expected[key] = consumables[key].value * coeff);
+				consumables.multiply('*.value', coeff);
+
+				for (let key in expected)
+					expect(consumables[key].value).to.equal(expected[key]);
+			});
+		});
+
+		describe('.get', function() {
+			it('should get by name', function() {
+				let expected = consumables.consumable1.value;
+				expect(consumables.get('consumable1.value')).to.equal(expected);
+			});
+			it('should get with wildcards', function() {
+				let expected = Object.keys(consumables)
+					.filter(key => 'value' in consumables[key])
+					.map(key => consumables[key].value);
+
+				expect(consumables.get('*.value')).to.be.an('array').with.members(expected);
 			});
 		});
 	});

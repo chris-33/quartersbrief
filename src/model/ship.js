@@ -1,8 +1,9 @@
-import DataObject from './dataobject.js';
+import DataObject, { collate } from './dataobject.js';
 import { GameObject } from './gameobject.js';
 import { Modernization } from './modernization.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
+import { Signal } from './signal.js';
 import { Consumable } from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import DotNotation from '../util/dotnotation.js';
@@ -69,12 +70,13 @@ const dedicatedlog = rootlog.getLogger('Ship');
  *
  * ### Camouflage
  *
- * Camouflages modify a ship's visuals, but also have some impact on the ship's characteristics. 
+ * Camouflages modify a ship's visuals, but also have some impact on the ship's characteristics. Since 0.11.6,
+ * camouflages are visual only. Setting them is now deprecated and will be removed at some point in the future.
  *
  * ### Signal flags
  *
  * Much as camouflages, signal flags provide some bonuses to a ship that mounts them. While only one camouflage
- * can be set on a ship, everal signal flags can be mounted at the same time.
+ * can be set on a ship, several signal flags can be mounted at the same time.
  *
  * @see Ship.gamedata
  */
@@ -89,12 +91,16 @@ class Ship extends GameObject {
 	#modernizations;
 	/**
 	 * The captain that is commanding this ship
-	 */
+	 */	
 	#captain;
 	/**
 	 * The camouflage that is set on this ship
 	 */
 	#camouflage;
+	/**
+	 * The signal flags that are hoisted on this ship.
+	 */
+	#signals;
 
 	/**
 	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
@@ -108,6 +114,7 @@ class Ship extends GameObject {
 		let self = this;
 
 		self.#modernizations = [];
+		self.#signals = [];
 		self.equipModules(descriptor);
 
 		// Set the flavors of all consumables this ship has
@@ -144,12 +151,9 @@ class Ship extends GameObject {
 	multiply(key, factor) {
 		let path = DotNotation.elements(key);
 
-		// If multiplying into a consumable, hand it off to that consumable
+		// If multiplying into a consumable, hand it off to the consumables object
 		if (path[0] === 'consumables') {
-			const consumable = this.consumables[path[1]];
-			path = path.slice(2);
-			return consumable?.multiply(DotNotation.join(path), factor)
-		
+			return this.consumables.multiply(DotNotation.join(path.slice(1)), factor);
 		// If multiplying into a module, hand it off to that module
 		} else if (path[0] in this._configuration) {
 			const module = this[path[0]];
@@ -166,9 +170,7 @@ class Ship extends GameObject {
 		
 		// If getting a value from a consumable, hand it off to that consumable
 		if (path[0] === 'consumables') {
-			const consumable = this.consumables[path[1]];
-			path = path.slice(2);
-			return consumable?.get(DotNotation.join(path), options)
+			return this.consumables.get(DotNotation.join(path.slice(1)), options);
 
 		// If getting a value from a module, hand it off to that module
 		} else if (path[0] in this._configuration) {
@@ -238,6 +240,43 @@ class Ship extends GameObject {
 
 		this.#camouflage = camouflage;
 		return true;
+	}
+
+	/**
+	 * Hoists the signal on this ship and applies its effects. If the signal was already hoisted, nothing will be done.
+	 * @param  {Signal} signal The signal to hoist.
+	 */
+	hoist(signal) {
+		if (signal && !(signal instanceof Signal)) throw new TypeError(`Expected a Signal but got a ${signal}`);
+
+		// Don't hoist if already hoisted
+		if (this.#signals.some(s => s.getID() === signal.getID())) {
+			rootlog.debug(`Did not hoist signal ${signal.getName()} on ship ${this.getName()} because it was already hoisted`);
+			return;
+		}
+
+		for (let modifier of signal.getModifiers())
+			modifier.applyTo(this);
+
+		this.#signals.push(signal);
+		rootlog.debug(`Hoisted signal ${signal.getName()} on ship ${this.getName()}`);
+	}
+
+	/**
+	 * Lowers a previously hoisted signal and removes its effects. If the signal was not previously hoisted,
+	 * nothing will be done.
+	 * @param  {Signal} signal The signal to lower.
+	 */
+	lower(signal) {		
+		let index = this.#signals.findIndex(s => s.getID() === signal.getID());
+		if (index > -1) {			
+			for (let modifier of signal.getModifiers())
+				modifier.invert().applyTo(this);
+
+			this.#signals.splice(index, 1);
+
+			rootlog.debug(`Lowered signal ${signal.getName()} on ship ${this.getName()}`);
+		}
 	}
 
 	/**
@@ -459,6 +498,10 @@ class Ship extends GameObject {
 			self.#camouflage = null;
 			self.setCamouflage(camouflage);
 		}
+		// Re-apply the effects of the hoisted signals
+		let signals = this.#signals;
+		this.#signals = [];
+		signals.forEach(signal => this.hoist(signal));
 	}
 
 	/**
@@ -721,6 +764,38 @@ Ship.Consumables = class extends DataObject {
 	 */
 	asArray() {
 		return this.get('AbilitySlot*.abils.*.0');
+	}
+
+	/*
+		Override to allow getting from/multiplying into consumables in the form consumables.*
+		This otherwise isn't possible, because that's not how they are in the underlying
+		data structure (AbilitySlot*.abils.*.0).
+	 */
+	get(key, options) {
+		let path = DotNotation.elements(key);
+		let targets = DotNotation
+			.resolve(path[0], this)
+			.filter(target => this[target] instanceof Consumable);
+		path = path.slice(1);
+		options ??= {};
+		options.collate ??= DotNotation.isComplex(key);
+
+		targets = targets.map(target => target.get(DotNotation.join(path)));
+		if (options.collate) targets = collate(targets);
+		return targets;
+	}
+
+	multiply(key, factor) {
+		let path = DotNotation.elements(key);
+		let targets = DotNotation
+			// Resolve first path element to appropriate keys
+			.resolve(path[0], this)
+			// Filter to those keys that actually reference consumables
+			// (Otherwise we also get the _data property, for instance.)
+			.filter(target => this[target] instanceof Consumable);
+		
+		path = path.slice(1);
+		return targets.map(target => this[target].multiply(DotNotation.join(path), factor));
 	}
 }
 
