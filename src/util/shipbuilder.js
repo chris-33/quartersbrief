@@ -34,6 +34,8 @@ class ShipBuilder {
 	 * or numeric ids of modernizations to equip. 
 	 * @param {string|number} [build.camouflage] The reference name, reference code or numeric id of a camouflage
 	 * to equip on the ship.
+	 * @param {Array} [build.signals] An array of (possibly mixed) reference codes, reference names or numeric ids
+	 * of signals to hoist.
 	 * @param {string|number} [build.captain] The reference name, reference code or numeric id of a captain
 	 * to command the ship.
 	 * @param {number[]} [build.skills] An array of skill numbers for captain skills to train on the captain
@@ -55,7 +57,8 @@ class ShipBuilder {
 		if (build.modules)
 			ship.equipModules(build.modules);
 
-		build.modernizations?.map(modernization => this.gameObjectFactory.createGameObject(modernization))
+		build.modernizations
+			?.map(designator => this.gameObjectFactory.createGameObject(designator))
 			.forEach(modernization => ship.equipModernization(modernization));
 
 		// If a captain is specified as part of the build, use that
@@ -77,7 +80,10 @@ class ShipBuilder {
 		if (build.camouflage)			
 			ship.setCamouflage(this.gameObjectFactory.createGameObject(build.camouflage));
 		
-
+		build.signals
+			?.map(designator => this.gameObjectFactory.createGameObject(designator))
+			.forEach(signal => ship.hoist(signal));
+		
 		return ship;
 	}
 }
