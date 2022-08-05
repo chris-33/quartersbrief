@@ -64,7 +64,24 @@ describe('DataObject', function() {
 
 		it('should get from nested DataObjects', function() {
 			expect(obj.get('dataobject.prop1')).to.equal(TEST_DATA.dataobject.prop1);
-		})
+		});
+
+		it('should include own properties when includeOwnProperties is set to true', function() {
+			let key = 'ownProperty';
+			obj[key] = 'ownproperty';
+			// Make sure own properties are picked up when includeOwnProperties is true
+			expect(obj.get(key, { includeOwnProperties: true })).to.equal(obj[key]);
+			// Make sure they are NOT picked up otherwise
+			expect(obj.get(key, { includeOwnProperties: false })).to.not.exist;
+
+			// Make sure that own properties don't shadow data properties
+			key = 'prop1';
+			obj[key] = 'ownprop1';
+			expect(obj.get('prop1', { 
+				includeOwnProperties: true,
+				collate: false  // explicitly set collate to false, because otherwise get will throw since obj[key] !== obj._data[key]
+			})).to.be.an('array').with.members([ TEST_DATA[key], obj[key] ]);
+		});
 	});
 
 	describe('.multiply', function() {
@@ -102,6 +119,31 @@ describe('DataObject', function() {
 			const coeff = 2;
 			obj.multiply('dataobject.prop1', coeff);
 			expect(obj._data.dataobject.prop1).to.equal(TEST_DATA.dataobject.prop1 * coeff);
+		});
+
+		it('should return a scalar when collate is true', function() {
+			delete obj._data.prop1;
+			const coeff = 2;
+			expect(obj.multiply('prop*', coeff, { collate: true })).to.equal(TEST_DATA.prop2 * coeff);
+		});
+
+		it('should not collate by default even with a complex key', function() {			
+			expect(obj.multiply('nested.*', 2)).to.be.an('array');
+		});
+
+		it('should throw if collate is true but not all multiplication results are equal', function() {
+			expect(obj.multiply.bind(obj, 'nested.prop*', 2, { collate: true })).to.throw();
+		});
+
+		it('should multiply into own properties when includeOwnProperties is set to true', function() {
+			obj.nested = clone(TEST_DATA.nested);
+			const coeff = 2;
+			const expected = Object.values(obj.nested).concat(Object.values(TEST_DATA.nested)).map(x => x * coeff);			
+			expect(obj.multiply('nested.*', coeff, { includeOwnProperties: true })).to.be.an('array').with.members(expected);
+			Object.keys(TEST_DATA.nested).forEach(key => {
+				expect(obj.nested[key]).to.equal(TEST_DATA.nested[key] * coeff);
+				expect(obj._data.nested[key]).to.equal(TEST_DATA.nested[key] * coeff);
+			});			
 		});
 	});
 });

@@ -1,6 +1,13 @@
 import DotNotation from '../util/dotnotation.js';
 import deepequal from 'deep-equal';
 
+export function collate(data) {
+	if (!data.every(item => deepequal(item, data[0])))
+		throw new Error(`Expected all values to be equal while collating but they were not: [${data.join(', ')}]`);
+	// We can just project to the first item, since we just checked that they're all equal anyway
+	return data[0];
+}
+
 export default class DataObject {
 	constructor(data) {
 		this._data = data;		
@@ -11,41 +18,49 @@ export default class DataObject {
 		options.collate ??= !DotNotation.isComplex(key);
 
 		let targets = [ this._data ];
+		if (options?.includeOwnProperties) targets.push(this);
+
 		// If key is an empty string, return the DataObject itself.
 		if (key === '') return options.collate ? this : [ this ];
 		let path = DotNotation.elements(key);
 		while (path.length > 0) {
 			let currKey = path.shift();
-			targets = targets.flatMap(target => target instanceof DataObject ?
+			targets = targets.flatMap(target => target instanceof DataObject && target !== this ?
 				// Hand off the operation to the target if the target is itself a DataObject 
+				// But only if the target isn't this DataObject itself (happens when options.includeOwnProperties === true)
 				target.get(DotNotation.join(path), { collate: false }) : 
 				// Otherwise, select all properties of the target that match the current key
 				DotNotation.resolve(currKey, target).map(key => target[key]));
 		}
 
 		if (options.collate) {
-			if (!targets.every(target => deepequal(target, targets[0])))
-				throw new Error(`Expected all values to be equal while collating but they were not: [${targets.join(', ')}]`);
-			// We can just project to the first item, since we just checked that they're all equal anyway
-			targets = targets[0];
+			targets = collate(targets);
 		}
 		return targets;
 	}
 
-	multiply(key, factor) {
+	multiply(key, factor, options) {
 		let path = DotNotation.elements(key);
 		let prop = path.pop();
 		
 		// Resolve to parent objects for a compound key. 
 		// Otherwise, we are trying to multiply a property that sits directly in this DataObject,
 		// so make the target this._data
+		//
+		// If the includeOwnProperties option is set, we pass this through to the get call, which will
+		// resolve to all parent objects under _data OR under this. If key is not a compound key,
+		// initialize targets to this and this._data
 		let targets = DotNotation.isCompound(key) ? 
-			this.get(DotNotation.join(path), { collate: false }) :
-			[ this._data ]
-		// If target is a DataObject, hand off the multiplication to it. Otherwise,
+			this.get(DotNotation.join(path), { collate: false, includeOwnProperties: options?.includeOwnProperties }) :
+			options?.includeOwnProperties ? [ this._data, this ] : [ this._data ]
+		// If target is a DataObject (and not this DataObject itself), hand off the multiplication to it. Otherwise,
 		// multiply all matching properties.
-		return targets.map(target => target instanceof DataObject ? 
+		targets = targets.flatMap(target => target instanceof DataObject && target !== this ? 
 				target.multiply(prop, factor) :
 				DotNotation.resolve(prop, target).map(key => target[key] = target[key] * factor));
-	}	
+
+		if (options?.collate)
+			targets = collate(targets);
+		return targets;
+	}
 }
