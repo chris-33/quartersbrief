@@ -10,27 +10,12 @@ describe('DataObject', function() {
 		nested2: { prop1: 3 },
 		arr: [ 3, 4 ],
 		dataobject: {
-			prop1: 1,
-			typeinfo: {
-				type: "Type1",
-				species: null,
-				nation: "Common"
-			}
+			prop1: 1
 		},
 		inner: {
 			dataobject: {
-				prop: 'gameobject',
-				typeinfo: {
-					type: "Type1",
-					species: null,
-					nation: "Common"
-				}
+				prop: 'dataobject'
 			}
-		},
-		typeinfo: {
-			type: "Type1",
-			species: null,
-			nation: "Common"
 		}
 	};
 	let obj;
