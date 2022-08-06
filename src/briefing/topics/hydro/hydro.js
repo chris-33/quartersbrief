@@ -8,7 +8,8 @@ const BASE_BUILD = {
 	modules: 'top'	
 }
 const HYDRO_BUILD = {
-	modernizations: [ 'PCM041_SonarSearch_Mod_I' ],
+	modernizations: [ 'PCM041_SonarSearch_Mod_I', 'PCM072_AbilityWorktimeBoost_Mod_I' ],
+	signals: [ 'PCEF029_Sonar_AirDef_SignalFlag' ],
 	skills: [ 6 ],
 }
 async function buildHtml(battle, gameObjectFactory, options) {
