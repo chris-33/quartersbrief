@@ -21,7 +21,10 @@ describe('DataObject', function() {
 	let obj;
 
 	beforeEach(function() {
-		obj = new DataObject(clone(TEST_DATA));
+		let data = clone(TEST_DATA);
+		data.dataobject = new DataObject(data.dataobject);
+		data.inner.dataobject = new DataObject(data.inner.dataobject);
+		obj = new DataObject(data);
 	});
 
 	describe('.get', function() {
@@ -30,8 +33,10 @@ describe('DataObject', function() {
 		});
 
 		it('should return a scalar if the key contains no wildcards and collate is not set specifically', function() {
-			for (let key in TEST_DATA)
-				expect(obj.get(key), key).to.deep.equal(TEST_DATA[key]);
+			Object.keys(TEST_DATA)
+				// Filter out any key that is or contains DataObjects, because they will fail the deep-equal test
+				.filter(key => !['dataobject', 'inner'].includes(key))
+				.forEach(key => expect(obj.get(key), key).to.deep.equal(TEST_DATA[key]));
 		});
 
 		it('should return an array if the key contains wildcards and collate is not set specifically', function() {
@@ -103,7 +108,7 @@ describe('DataObject', function() {
 		it('should multiply into nested DataObjects', function() {
 			const coeff = 2;
 			obj.multiply('dataobject.prop1', coeff);
-			expect(obj._data.dataobject.prop1).to.equal(TEST_DATA.dataobject.prop1 * coeff);
+			expect(obj._data.dataobject._data.prop1).to.equal(TEST_DATA.dataobject.prop1 * coeff);
 		});
 
 		it('should return a scalar when collate is true', function() {
