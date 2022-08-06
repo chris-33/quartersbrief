@@ -47,6 +47,18 @@ describe('DotNotation', function() {
 			expect(DotNotation.resolve('a*', { a1: 1, a2: 2, b: 3 })).to.be.an('array').with.members([ 'a1', 'a2' ]);
 		});
 		
+		it('should include inherited properties', function() {
+			// Dummy class to check against.
+			class C { get accessorProperty() { return 2 }}
+			Object.defineProperty(C.prototype, 'accessorProperty', { enumerable: true });
+			C.prototype.inheritedProperty = 1;
+
+			expect(DotNotation.resolve('inheritedProperty', new C()), 'property on the prototype')
+				.to.be.an('array').with.members(['inheritedProperty']);
+			expect(DotNotation.resolve('accessorProperty', new C()), 'accessor property specifically made enumerable')
+				.to.be.an('array').with.members(['accessorProperty']);
+		});
+
 		it('should error on a compound key', function() {
 			expect(DotNotation.resolve.bind(null, 'a.b')).to.throw();
 		});

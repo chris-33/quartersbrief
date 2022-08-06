@@ -54,6 +54,9 @@ export default class DotNotation {
 			throw new TypeError(`Cannot resolve compound key ${key}`);
 
 		let regex = new RegExp(`^${key.replace('*', '\\w*')}$`);
-		return Object.keys(base).filter(regex.test.bind(regex));
+		let result = [];
+		for (let key in base)
+			if (regex.test(key)) result.push(key);
+		return result;
 	}
 }
