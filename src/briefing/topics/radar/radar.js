@@ -12,7 +12,7 @@ const CONCEALMENT_BUILD = {
 	skills: [ 12 ]
 }
 const RADAR_BUILD = {
-	modernizations: [ 'PCM042_RLSSearch_Mod_I' ],
+	modernizations: [ 'PCM042_RLSSearch_Mod_I', 'PCM072_AbilityWorktimeBoost_Mod_I' ],
 	skills: [ 6 ],
 }
 async function buildHtml(battle, gameObjectFactory, options) {
