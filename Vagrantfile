@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/impish64"
+  config.vm.box = "ubuntu/jammy64"
   
   # Need this plugin to forward file system events from the host to the guest
   # Otherwise watching for file changes is not going to work
@@ -40,7 +40,7 @@ Vagrant.configure("2") do |config|
 
   # Install NodeJS
   config.vm.provision "shell", name: "Install Node.JS", inline: <<-SHELL
-    curl -fsSL https://deb.nodesource.com/setup_17.x | sudo -E bash -
+    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
     sudo apt-get install -y nodejs
   SHELL
 
