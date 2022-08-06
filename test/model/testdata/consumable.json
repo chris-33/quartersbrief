@@ -12,8 +12,8 @@
 		} 
 	},
 	"PCY002_Consumable2": { 
-		"Flavor1": { "prop": "Flavor11", "consumableType": "consumable2" }, 
-		"Flavor2": { "prop": "Flavor12", "consumableType": "consumable2" }, 
+		"Flavor1": { "prop": "Flavor11", "value": 3, "consumableType": "consumable2" }, 
+		"Flavor2": { "prop": "Flavor12", "value": 4, "consumableType": "consumable2" }, 
 		"name": "PCY002_Consumable2",
 		"index": "PCY002",
 		"id": 101,
@@ -24,8 +24,8 @@
 		}	
 	},
 	"PCY003_Consumable3": { 
-		"Flavor1": { "prop": "Flavor21", "consumableType": "consumable3" }, 
-		"Flavor2": { "prop": "Flavor22", "consumableType": "consumable3" },  
+		"Flavor1": { "prop": "Flavor21", "value": 5, "consumableType": "consumable3" }, 
+		"Flavor2": { "prop": "Flavor22", "value": 6, "consumableType": "consumable3" },  
 		"name": "PCY003_Consumable3",
 		"index": "PCY003",
 		"id": 103,

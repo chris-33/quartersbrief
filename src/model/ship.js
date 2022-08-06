@@ -1,4 +1,4 @@
-import DataObject, { collate } from './dataobject.js';
+import DataObject from './dataobject.js';
 import { GameObject } from './gameobject.js';
 import { Modernization } from './modernization.js';
 import { Captain } from './captain.js';
@@ -6,7 +6,6 @@ import { Camouflage } from './camouflage.js';
 import { Signal } from './signal.js';
 import { Consumable } from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
-import DotNotation from '../util/dotnotation.js';
 import createModule from './module.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
@@ -125,7 +124,7 @@ class Ship extends GameObject {
 		// To avoid forcing all lazy references to expand at this point, we wrap the lazy-expansion getter 
 		// in another getter that sets the flavor right after expansion. When the lazy expansion replaces the
 		// property definition, this getter will disappear as well. 
-		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false }).forEach(ability => {
+		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false, includeOwnProperties: false }).forEach(ability => {
 			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
 			const consumableProperty = Object.getOwnPropertyDescriptor(ability, '0');
 			if (consumableProperty.get) {
@@ -148,39 +147,17 @@ class Ship extends GameObject {
 		});
 	}
 
-	multiply(key, factor) {
-		let path = DotNotation.elements(key);
+	multiply(key, factor, options) {
+		options ??= {};
+		options.includeOwnProperties ??= true;
 
-		// If multiplying into a consumable, hand it off to the consumables object
-		if (path[0] === 'consumables') {
-			return this.consumables.multiply(DotNotation.join(path.slice(1)), factor);
-		// If multiplying into a module, hand it off to that module
-		} else if (path[0] in this._configuration) {
-			const module = this[path[0]];
-			path = path.slice(1);
-			return module?.multiply(DotNotation.join(path), factor)
-		
-		// Otherwise, multiply directly
-		} else
-			return super.multiply(key, factor);
+		return super.multiply(key, factor, options);
 	}
 
 	get(key, options) {
-		let path = DotNotation.elements(key);
-		
-		// If getting a value from a consumable, hand it off to that consumable
-		if (path[0] === 'consumables') {
-			return this.consumables.get(DotNotation.join(path.slice(1)), options);
-
-		// If getting a value from a module, hand it off to that module
-		} else if (path[0] in this._configuration) {
-			const module = this[path[0]];
-			path = path.slice(1);
-			return module?.get(DotNotation.join(path), options)
-		
-		// Otherwise, get directly
-		} else
-			return super.get(key, options);
+		options ??= {};
+		options.includeOwnProperties ??= true;
+		return super.get(key, options);
 	}
 
 	/**
@@ -694,6 +671,9 @@ class Ship extends GameObject {
 	 */
 	static errorIfNotShip(ship) { if (!(ship instanceof Ship)) throw new TypeError(`Expected a Ship but got ${ship}`); }
 }
+// Make the consumables property enumerable
+Object.defineProperty(Ship.prototype, 'consumables', { enumerable: true });
+
 
 /**
  * Helper class that exposes a ship's consumables as a hash from consumable type to the `Consumable` object.
@@ -766,38 +746,17 @@ Ship.Consumables = class extends DataObject {
 		return this.get('AbilitySlot*.abils.*.0');
 	}
 
-	/*
-		Override to allow getting from/multiplying into consumables in the form consumables.*
-		This otherwise isn't possible, because that's not how they are in the underlying
-		data structure (AbilitySlot*.abils.*.0).
-	 */
 	get(key, options) {
-		let path = DotNotation.elements(key);
-		let targets = DotNotation
-			.resolve(path[0], this)
-			.filter(target => this[target] instanceof Consumable);
-		path = path.slice(1);
 		options ??= {};
-		options.collate ??= DotNotation.isComplex(key);
-
-		targets = targets.map(target => target.get(DotNotation.join(path)));
-		if (options.collate) targets = collate(targets);
-		return targets;
+		options.includeOwnProperties ??= true;
+		return super.get(key, options);
 	}
 
-	multiply(key, factor) {
-		let path = DotNotation.elements(key);
-		let targets = DotNotation
-			// Resolve first path element to appropriate keys
-			.resolve(path[0], this)
-			// Filter to those keys that actually reference consumables
-			// (Otherwise we also get the _data property, for instance.)
-			.filter(target => this[target] instanceof Consumable);
-		
-		path = path.slice(1);
-		return targets.map(target => this[target].multiply(DotNotation.join(path), factor));
+	multiply(key, factor, options) {
+		options ??= {};
+		options.includeOwnProperties ??= true;
+		return super.multiply(key, factor, options);
 	}
 }
-
 
 export { Ship }

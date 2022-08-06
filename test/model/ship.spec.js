@@ -10,7 +10,7 @@ import clone from 'clone';
 import { readFileSync } from 'fs';
 import createModule from '../../src/model/module.js';
 
-describe.only('Ship', function() {
+describe('Ship', function() {
 	let TEST_DATA;
 	let CONSUMABLE_DATA;
 	let knownTargets;
@@ -602,44 +602,48 @@ describe.only('Ship', function() {
 			});
 		});
 
-		describe('.multiply', function() {
-			it('should multiply by name', function() {
-				const coeff = 2;
-				let expected = {};
-				Object.keys(consumables)
-					.filter(key => 'value' in consumables[key])
-					.forEach(key => expected[key] = consumables[key].value);
-				expected.consumable1 *= coeff;
+		describe('.multiply/.get', function() {
+			// Because the expected behavior of overridden multiply and get is so similar, their respective test case
+			// are auto-generated here
+			// 
+			// eslint-disable-next-line mocha/no-setup-in-describe
+			['multiply', 'get'].forEach(methodName => {
+				it(`${methodName} should set the includeOwnProperties option by default unless specifically disabled`, function() {
+					// Get the "superclass"
+					let proto = Object.getPrototypeOf(Ship.Consumables).prototype;
+					// Spy on the superclass method
+					let method = sinon.spy(proto, methodName);
 
-				consumables.multiply('consumable1.value', coeff);
-				for (let key in expected) 
-					expect(consumables[key].value).to.equal(expected[key]);			
-			});
+					try {
+						const key = 'consumable1.value';
+						const coeff = 2;
+						// Execute the test cases specified below:
+						[ 
+							null, // No options specified
+							{}, // Options specified but not includeOwnProperties
+							{ includeOwnProperties: true }, // includeOwnProperties specifically set to true
+							{ includeOwnProperties: false } // includeOwnProperties specifically set to false
+						].forEach(options => {
+							// Construct arguments array and apply the method to it
+							const args = [ key ];
+							if (methodName === 'multiply') args.push(coeff);
+							args.push(options);
+							consumables[methodName].apply(consumables, args);
+							
+							// Expected value of includeOwnProperties: always true, unless specifically set to false
+							const expected = options?.includeOwnProperties ?? true;
+							
+							// Expected arguments to super[method] call
+							const expectedArgs = [ key ];
+							if (methodName === 'multiply') expectedArgs.push(coeff);
+							expectedArgs.push(sinon.match({ includeOwnProperties: expected }));
 
-			it('should multiply with wildcards', function() {
-				const coeff = 2;
-				let expected = {};
-				Object.keys(consumables)
-					.filter(key => 'value' in consumables[key])
-					.forEach(key => expected[key] = consumables[key].value * coeff);
-				consumables.multiply('*.value', coeff);
-
-				for (let key in expected)
-					expect(consumables[key].value).to.equal(expected[key]);
-			});
-		});
-
-		describe('.get', function() {
-			it('should get by name', function() {
-				let expected = consumables.consumable1.value;
-				expect(consumables.get('consumable1.value')).to.equal(expected);
-			});
-			it('should get with wildcards', function() {
-				let expected = Object.keys(consumables)
-					.filter(key => 'value' in consumables[key])
-					.map(key => consumables[key].value);
-
-				expect(consumables.get('*.value')).to.be.an('array').with.members(expected);
+							expect(method, `options = ${options}`).to.have.been.calledWith(...expectedArgs);
+						});
+					} finally {
+						method.restore();
+					}
+				});
 			});
 		});
 	});
@@ -649,7 +653,7 @@ describe.only('Ship', function() {
 			const coeff = 2;
 			let val = ship.engine.get('value');
 			ship.multiply('engine.value', coeff);
-			expect(ship.engine.get('value')).to.equal(val * coeff);
+			expect(ship.get('engine.value')).to.equal(val * coeff);
 		});
 
 		it('should multiply into consumables', function() {
