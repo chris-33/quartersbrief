@@ -601,51 +601,6 @@ describe('Ship', function() {
 				expect(consumables.asArray()).to.be.empty;
 			});
 		});
-
-		describe('.multiply/.get', function() {
-			// Because the expected behavior of overridden multiply and get is so similar, their respective test case
-			// are auto-generated here
-			// 
-			// eslint-disable-next-line mocha/no-setup-in-describe
-			['multiply', 'get'].forEach(methodName => {
-				it(`${methodName} should set the includeOwnProperties option by default unless specifically disabled`, function() {
-					// Get the "superclass"
-					let proto = Object.getPrototypeOf(Ship.Consumables).prototype;
-					// Spy on the superclass method
-					let method = sinon.spy(proto, methodName);
-
-					try {
-						const key = 'consumable1.value';
-						const coeff = 2;
-						// Execute the test cases specified below:
-						[ 
-							null, // No options specified
-							{}, // Options specified but not includeOwnProperties
-							{ includeOwnProperties: true }, // includeOwnProperties specifically set to true
-							{ includeOwnProperties: false } // includeOwnProperties specifically set to false
-						].forEach(options => {
-							// Construct arguments array and apply the method to it
-							const args = [ key ];
-							if (methodName === 'multiply') args.push(coeff);
-							args.push(options);
-							consumables[methodName].apply(consumables, args);
-							
-							// Expected value of includeOwnProperties: always true, unless specifically set to false
-							const expected = options?.includeOwnProperties ?? true;
-							
-							// Expected arguments to super[method] call
-							const expectedArgs = [ key ];
-							if (methodName === 'multiply') expectedArgs.push(coeff);
-							expectedArgs.push(sinon.match({ includeOwnProperties: expected }));
-
-							expect(method, `options = ${options}`).to.have.been.calledWith(...expectedArgs);
-						});
-					} finally {
-						method.restore();
-					}
-				});
-			});
-		});
 	});
 
 	describe('.multiply', function() {

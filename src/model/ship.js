@@ -1,4 +1,4 @@
-import DataObject from './dataobject.js';
+import DataObject, { includeOwnPropertiesByDefault } from './dataobject.js';
 import { GameObject } from './gameobject.js';
 import { Modernization } from './modernization.js';
 import { Captain } from './captain.js';
@@ -145,19 +145,6 @@ class Ship extends GameObject {
 				// call setFlavor if it exists, or do nothing if setFlavor doesn't exist
 				consumableProperty.value.setFlavor?.call(consumableProperty.value, ability[1]);
 		});
-	}
-
-	multiply(key, factor, options) {
-		options ??= {};
-		options.includeOwnProperties ??= true;
-
-		return super.multiply(key, factor, options);
-	}
-
-	get(key, options) {
-		options ??= {};
-		options.includeOwnProperties ??= true;
-		return super.get(key, options);
 	}
 
 	/**
@@ -673,7 +660,7 @@ class Ship extends GameObject {
 }
 // Make the consumables property enumerable
 Object.defineProperty(Ship.prototype, 'consumables', { enumerable: true });
-
+includeOwnPropertiesByDefault(Ship.prototype);
 
 /**
  * Helper class that exposes a ship's consumables as a hash from consumable type to the `Consumable` object.
@@ -745,18 +732,7 @@ Ship.Consumables = class extends DataObject {
 	asArray() {
 		return this.get('AbilitySlot*.abils.*.0');
 	}
-
-	get(key, options) {
-		options ??= {};
-		options.includeOwnProperties ??= true;
-		return super.get(key, options);
-	}
-
-	multiply(key, factor, options) {
-		options ??= {};
-		options.includeOwnProperties ??= true;
-		return super.multiply(key, factor, options);
-	}
 }
+includeOwnPropertiesByDefault(Ship.Consumables.prototype);
 
 export { Ship }
