@@ -29,7 +29,9 @@ class Modifier {
 		visibilityDistCoeff: 'hull.visibilityFactor', // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
 		sonarWorkTimeCoeff: 'consumables.sonar.workTime', // PCM041_SonarSearch_Mod_I, Skill 6 ConsumablesDuration
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
+		ConsumablesWorkTime: 'consumables.*.workTime', // PCM072_AbilityWorktimeBoost_Mod_I
 		// Everything up to PCM035_SteeringGear_Mod_III
+		// @todo ConsumablesWorkTimeBoost; Find a way to implement one-to-many relationships. (needed for PCM072_AbilityWorktimeBoost_Mod_I)
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 	}
 
