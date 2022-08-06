@@ -9,9 +9,9 @@ describe('DataObject', function() {
 		prop3: 1,
 		nested: { prop1: 2, prop2: 3 },
 		nested2: { prop1: 3 },
-		arr: [ 3, 4 ],
+		arr: [ 5, 6 ],
 		dataobject: {
-			prop1: 1
+			prop1: 7
 		},
 		inner: {
 			dataobject: {

@@ -47,14 +47,13 @@ export default class DataObject {
 		if (key === '') return options.collate ? this : [ this ];
 		let path = DotNotation.elements(key);
 		while (path.length > 0) {
-			let currKey = path[0];			
+			let currKey = path.shift();
 			targets = targets.flatMap(target => target instanceof DataObject && target !== this ?
 				// Hand off the operation to the target if the target is itself a DataObject 
 				// But only if the target isn't this DataObject itself (happens when options.includeOwnProperties === true)
-				target.get(DotNotation.join(path), { collate: false }) : 
+				target.get(currKey, { collate: false }) : 
 				// Otherwise, select all properties of the target that match the current key
-				DotNotation.resolve(currKey, target).map(key => target[key]));
-			path.shift();
+				DotNotation.resolve(currKey, target).map(key => target[key]));			
 		}
 
 		if (options.collate) {
