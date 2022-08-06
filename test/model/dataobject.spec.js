@@ -1,5 +1,6 @@
-import DataObject from '../../src/model/dataobject.js';
+import DataObject, { includeOwnPropertiesByDefault } from '../../src/model/dataobject.js';
 import clone from 'clone';
+import sinon from 'sinon';
 
 describe('DataObject', function() {
 	const TEST_DATA = { 
@@ -134,6 +135,52 @@ describe('DataObject', function() {
 				expect(obj.nested[key]).to.equal(TEST_DATA.nested[key] * coeff);
 				expect(obj._data.nested[key]).to.equal(TEST_DATA.nested[key] * coeff);
 			});			
+		});
+	});
+});
+
+/* eslint-disable mocha/max-top-level-suites */
+describe('includeOwnPropertiesByDefault', function() {
+	let obj;
+	beforeEach(function() {
+		obj = new DataObject({});
+	});
+
+	// Because the expected behavior of overridden multiply and get is so similar, their respective test case
+	// are auto-generated here
+	// 
+	// eslint-disable-next-line mocha/no-setup-in-describe
+	['multiply', 'get'].forEach(methodName => {
+		it(`should set the includeOwnProperties option by default unless specifically disabled for .${methodName}()`, function() {			
+			// Spy on the original method
+			let method = sinon.spy(obj, methodName);
+			includeOwnPropertiesByDefault(obj);
+
+			const key = 'consumable1.value';
+			const coeff = 2;
+			// Execute the test cases specified below:
+			[ 
+				null, // No options specified
+				{}, // Options specified but not includeOwnProperties
+				{ includeOwnProperties: true }, // includeOwnProperties specifically set to true
+				{ includeOwnProperties: false } // includeOwnProperties specifically set to false
+			].forEach(options => {
+				// Construct arguments array and apply the method to it
+				const args = [ key ];
+				if (methodName === 'multiply') args.push(coeff);
+				args.push(options);
+				obj[methodName].apply(obj, args);
+					
+				// Expected value of includeOwnProperties: always true, unless specifically set to false
+				const expected = options?.includeOwnProperties ?? true;
+					
+				// Expected arguments to super[method] call
+				const expectedArgs = [ key ];
+				if (methodName === 'multiply') expectedArgs.push(coeff);
+				expectedArgs.push(sinon.match({ includeOwnProperties: expected }));
+
+				expect(method, `options = ${options}`).to.have.been.calledWith(...expectedArgs);
+			});
 		});
 	});
 });

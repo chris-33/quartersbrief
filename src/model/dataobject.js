@@ -8,6 +8,29 @@ export function collate(data) {
 	return data[0];
 }
 
+/**
+ * Modifies `obj` so that the `includeOwnProperties` option is enabled by default in `get` and `multiply`. 
+ *
+ * Use it on a prototype to enable the option by default for all objects of a class.
+ * @param  {Object} obj The object for which to enable `includeOwnProperties` by default.
+ */
+export function includeOwnPropertiesByDefault(obj) {
+	let get = obj.get;
+	let multiply = obj.multiply;
+
+	obj.get = function(key, options) {
+		options ??= {};
+		options.includeOwnProperties ??= true;
+		return get.call(this, key, options);
+	}
+
+	obj.multiply = function(key, factor, options) {
+		options ??= {};
+		options.includeOwnProperties ??= true;
+		return multiply.call(this, key, factor, options);
+	}
+}
+
 export default class DataObject {
 	constructor(data) {
 		this._data = data;		
