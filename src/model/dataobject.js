@@ -33,7 +33,12 @@ export function includeOwnPropertiesByDefault(obj) {
 
 export default class DataObject {
 	constructor(data) {
-		this._data = data;		
+		Object.defineProperty(this, '_data', {
+			value: data,
+			writable: true,
+			configurable: true,
+			enumerable: false
+		});		
 	}
 
 	get(key, options) {		
