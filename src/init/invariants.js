@@ -245,7 +245,7 @@ assertInvariants.assertModuleComponentsResolveUnambiguously = function(data) {
 				if (assertInvariants.assertModuleComponentsResolveUnambiguously.IGNORE.includes(ship.name)) {
 					if (!ignoredWarnings.includes(ship.id)) {
 						ignoredWarnings.push(ship.id);
-						rootlog.warn(`Ignored failed invariant 'all modules' components must resolve unambiguously' for known violator ${ship.name}`);
+						rootlog.warn(`Ignored failed invariant "all modules' components must resolve unambiguously" for known violator ${ship.name}`);
 					}
 				} else
 					counterexamples.push(`${ship.name}.ShipUpgradeInfo.${problem.quartersbrief_name}.${problematicComponentKey}`);
