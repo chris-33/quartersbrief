@@ -2,5 +2,10 @@ mixin details(player)
 	.details-title #{player.getName()}
 
 	.details-line
-		span.caption Games:
+		span.caption Winrate:
+		span.value
+			| #{(100 * player.getWinrate()).toFixed(1)}
+			span.unit %
+	.details-line
+		span.caption Battles:
 		span.value #{player.getBattles()}

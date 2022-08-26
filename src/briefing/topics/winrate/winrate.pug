@@ -61,18 +61,22 @@ div
 						data-details=ally.player.getName())
 						//- +#{}: Dynamically determine mixin name and call it
 						+#{primary}(ally).primary
-						| <br>
+						br
 						//- +#{}: Dynamically determine mixin name and call it
 						+#{secondary}(ally).secondary
-					td
+					td(data-details=ally.player.getName())
 						if ally.player.isBot()
 							span.notification Bot
 						else if ally.player.isHidden()
 							span.notification private
 						else
-							span.winrate(class=winrateClass(ally.player.getWinrate()), data-details=ally.player.getName()) 
+							span.winrate(class=winrateClass(ally.player.getWinrate())) 
 								| #{(100 * ally.player.getWinrate()).toFixed(1)} 
 								span.unit %
+							br
+							span.battles 
+								| #{ally.player.getBattles()} 
+								span.unit battles
 							aside.details.ally(
 								class=ally.player.getName() === player.name ? 'player' : '', 
 								data-details-for=ally.player.getName())
@@ -82,26 +86,30 @@ div
 					td(colspan=2, style='font-size: 75%; color: red; white-space: normal;')
 						| There was an error getting data for ally #{ally.name}
 				if enemy.player
-					td
+					td(data-details=enemy.player.getName())
 						if enemy.player.isBot()
 							span.notification Bot
 						else if enemy.player.isHidden()
 							span.notification private
 						else
-							span.winrate(class=winrateClass(enemy.player.getWinrate()), data-details=enemy.player.getName())
+							span.winrate(class=winrateClass(enemy.player.getWinrate()))
 								| #{(100 * enemy.player.getWinrate()).toFixed(1)}
 								span.unit %
+							br
+							span.battles 
+								| #{enemy.player.getBattles()} 
+								span.unit battles
 							aside.details.enemy(data-details-for=enemy.player.getName())
 								+details(enemy.player)
 					td.enemy(class=enemy.ship.getClass().toLowerCase(), 
 						data-details=enemy.player.getName())
 						//- +#{}: Dynamically determine mixin name and call it
 						+#{primary}(enemy).primary
-						| <br>
+						br
 						//- +#{}: Dynamically determine mixin name and call it
 						+#{secondary}(enemy).secondary
 				else
-					- console.error(`No result for ally #${ally.name}`);
+					- console.error(`No result for enemy #${enemy.name}`);
 					td(colspan=2, style='font-size: 75%; color: red; white-space: normal;')
 						| There was an error getting data for enemy #{enemy.name}
 		- }		
