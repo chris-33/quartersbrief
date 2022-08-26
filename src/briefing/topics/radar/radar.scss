@@ -56,9 +56,20 @@ $zoom: 0.25;
 		stroke: colors.$enemy;
 	}
 
+	&.ally.enemy:not(.player) > .base {
+		stroke: url('#radar-both');
+	}
+
 	&.player {
-		stroke: colors.$player;	
+		stroke: colors.$player;
 	}	
+}
+
+stop.ally {
+	stop-color: colors.$ally; 
+}
+stop.enemy { 
+	stop-color: colors.$enemy;
 }
 
 // Styling for the stealth warning indicator and details

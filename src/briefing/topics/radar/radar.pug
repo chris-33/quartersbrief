@@ -51,6 +51,10 @@
 	}
 if ships.length > 0
 	svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox="0 -100 100 105")
+		linearGradient#radar-both(x1='0%' y1='100%' x2='0%' y2='0%')
+			stop.ally(offset='16%')
+			stop.enemy(offset='66%')
+
 		g.grid
 			each range in [6000, 8000, 10000, 12000]
 				path(d=`M ${length(range)} 0 A ${length(range)} ${length(range)} 0 0 0 0 ${-length(range)}`)
