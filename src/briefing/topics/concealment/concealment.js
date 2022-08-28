@@ -1,11 +1,11 @@
 import pug from 'pug';
 import sass from 'sass';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
-import { arrayIntersect } from '../../../util/util.js';
 import { filters, teams } from '../common.js';
 
-const render = pug.compileFile('src/briefing/topics/concealment/concealment.pug');
-
+const BASE_BUILD = {
+	modules: 'stock'
+}
 const CONCEALMENT_BUILD = {
 	modules: 'top',
 	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
@@ -16,23 +16,29 @@ function buildHtml(battle, gameObjectFactory, options) {
 	let shipBuilder = new ShipBuilder(gameObjectFactory);
 	let ships = battle.getVehicles()
 		.map(vehicle => vehicle.shipId)
+		// Filter out duplicates
 		.filter(filters.duplicates)
-		.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD))
-		// Sort by concealment
-		.sort((ship1, ship2) => ship1.getConcealment() - ship2.getConcealment());	
+		.map(shipId => shipBuilder.build(shipId, BASE_BUILD))
+		// If options.filter.classes is set, filter the ships list accordingly
+		.filter(ship => options?.filter?.classes?.includes(ship.getClass()) ?? true)
+	
+	let entries = ships.map(ship => ({
+		ship,
+		baseConcealment: ship.getConcealment()
+	}));
+	ships = ships.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD));
+	ships.forEach((ship, index) => entries[index].concealment = ship.getConcealment())	;
 
-	if (options?.filter?.classes)
-		ships = ships.filter(ship => options.filter.classes.includes(ship.getClass()));
-	if (options?.filter?.limit)
-		ships = ships.filter(ship => ship.getConcealment() <= options.filter.limit);
+	if (options?.filter?.limit) {
+		entries = entries.filter(entry => entry.concealment <= options.filter.limit);
+	}
+	entries = entries.sort((entry1, entry2) => entry1.concealment - entry2.concealment);
 
 	let locals = {
-		ships: ships,
-		...teams(battle),
+		teams: teams(battle),
+		entries
 	}
-	locals.allies.push(locals.player); // The player is an ally
-	locals.both = arrayIntersect(locals.allies, locals.enemies);
-	return render(locals);
+	return pug.renderFile('src/briefing/topics/concealment/concealment.pug', locals);
 }
 
 async function buildScss() {

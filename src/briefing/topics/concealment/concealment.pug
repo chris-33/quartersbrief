@@ -1,15 +1,52 @@
+mixin details(entry)
+	.details-title #{entry.ship.getLabel()}
+
+	.details-line
+		span.caption Surface detectability:
+		span.value 
+			| #{entry.concealment.toFixed(2)}
+			span.unit km
+
+	.details-line
+		span.caption Surface detectability (base):
+		span.value
+			| #{entry.baseConcealment.toFixed(2)}
+			span.unit km
+
+	.details-line
+		span.caption Smoke firing penalty:
+		span.value
+			| #{entry.ship.get('hull.visibilityCoefGKInSmoke').toFixed(2)}
+			span.unit km
+
+	.details-line
+		span.caption Air detectability:
+		span.value
+			| #{entry.ship.get('hull.visibilityFactorByPlane').toFixed(2)}
+			span.unit km
+
 //- A constant value that all ship concealments will be reduced by. This reduces bar length and exaggerates concealment differences.
 - const reduction = 3;
 //- The maximum concealment present. Used to scale bar lengths - this value will translate to 100%.
-- const maxConcealment = ships[ships.length - 1].getConcealment()
+- const maxConcealment = Math.max(...entries.map(entry => entry.concealment))
 div
-	each ship in ships
+	each entry in entries
+		- const ship = entry.ship;
 		.ship
-			span.shipbar.label(style=`width: ${(ship.getConcealment() - reduction) * 100/maxConcealment}%`, class = {
-				"ally": allies.includes(ship.getID()) && ship.getID() !== player,
-				"enemy": enemies.includes(ship.getID()) && ship.getID() !== player,
-				"player": player === ship.getID()
-			})
+			span.shipbar.label(
+				style=`width: ${(entry.concealment - reduction) * 100/maxConcealment}%`, 
+				data-details=ship.getName(),
+				class = {
+					"ally": teams.allies.includes(ship.getID()),
+					"enemy": teams.enemies.includes(ship.getID()),
+					"player": teams.player === ship.getID()
+				})
 				| #{ship.getLabel()}
-			span.value(class={ "player": ship.getID() === player }) #{ship.getConcealment().toFixed(2)}
+			span.value(class={ "player": ship.getID() === teams.player }) #{entry.concealment.toFixed(2)}
 			span.unit km
+			aside.details(data-details-for=ship.getName(), class = {
+				"ally": teams.allies.includes(ship.getID()),
+				"enemy": teams.enemies.includes(ship.getID()),
+				"player": teams.player === ship.getID()
+			})
+				+details(entry)
