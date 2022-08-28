@@ -176,7 +176,7 @@ Captain.Skill = class {
 	getModifiers() {
 		let modifiers = this._data.modifiers;
 		return Object.keys(modifiers)
-					.map(key => Modifier.from(key, modifiers[key]))
+					.flatMap(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}
 

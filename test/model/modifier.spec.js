@@ -10,7 +10,13 @@ describe('Modifier', function() {
 	before(function() {
 		knownTargets = Modifier.KNOWN_TARGETS;
 		SHIPDATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
-		Modifier.KNOWN_TARGETS = { EngineValue: 'engine.value', ArtilleryValue: 'artillery.value' };
+		Modifier.KNOWN_TARGETS = { 
+			EngineValue: 'engine.value',
+			ArtilleryValue: [
+				'artillery.value',
+				'artillery.otherValue'
+			] 
+		};
 	});
 
 	after(function() {
@@ -18,9 +24,20 @@ describe('Modifier', function() {
 	});
 
 	describe('Modifier.from', function() {
-		it('should map a known key name to a target and an unknown key name to undefined', function() {
-			expect(Modifier.from('EngineValue', 2).target).to.equal(Modifier.KNOWN_TARGETS.EngineValue);
-			expect(Modifier.from('UnknownValue', 2).target).to.not.exist;
+		it('should map a known key name to a single target', function() {
+			
+			expect(Modifier.from('EngineValue', 2).map(modifier => modifier.target)).to
+				.be.an('array').with.deep.members([ Modifier.KNOWN_TARGETS.EngineValue ]);
+		});
+
+		it('should map a known key name to a list of targets', function() {
+			expect(Modifier.from('ArtilleryValue', 3).map(modifier => modifier.target)).to
+				.be.an('array').with.deep.members(Modifier.KNOWN_TARGETS.ArtilleryValue);
+		});
+
+		it('should map an unknown key name to undefined', function() {
+			expect(Modifier.from('UnknownValue', 2).map(modifier => modifier.target)).to
+				.be.an('array').with.members([ undefined ]);
 		});
 	});
 

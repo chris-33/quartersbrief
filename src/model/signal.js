@@ -14,7 +14,7 @@ export class Signal extends GameObject {
 	getModifiers() {
 		let modifiers = this.get('modifiers');
 		return Object.keys(modifiers)
-					.map(key => Modifier.from(key, modifiers[key]))
+					.flatMap(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}	
 }

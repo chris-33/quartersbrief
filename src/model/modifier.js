@@ -26,7 +26,10 @@ class Modifier {
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
 		GSShotDelay: 'atba.mounts.shotDelay', // PCM019_SecondaryGun_Mod_III
 		planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
-		visibilityDistCoeff: 'hull.visibilityFactor', // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
+		visibilityDistCoeff: [ // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
+			'hull.visibilityFactor', 
+			'hull.visibilityFactorByPlane' 
+		], 
 		sonarWorkTimeCoeff: 'consumables.sonar.workTime', // PCM041_SonarSearch_Mod_I, Skill 6 ConsumablesDuration
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
 		ConsumablesWorkTime: 'consumables.*.workTime', // PCM072_AbilityWorktimeBoost_Mod_I
@@ -98,9 +101,10 @@ class Modifier {
 	 * well-known targets {@link Modifier#KNOWN_TARGETS} and whose value is `data`.
 	 */
 	static from(key, data) {
-		let target = Modifier.KNOWN_TARGETS[key];
+		let targets = Modifier.KNOWN_TARGETS[key];
+		if (!Array.isArray(targets)) targets = [ targets ];
 
-		return new Modifier(target, data);
+		return targets.map(target => new Modifier(target, data));
 	}
 }
 
