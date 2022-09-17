@@ -34,7 +34,8 @@ $bareffect: linear-gradient(to right, #f0f0f0, transparent 2.5em);
 }
 
 // The bar for the player's ship
-.shipbar.player {
+.shipbar.player, .shipbar.player.enemy.ally {
+	background-image: none;
 	background-color: colors.$player;
 	color: black;
 }
