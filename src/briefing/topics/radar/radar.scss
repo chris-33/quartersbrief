@@ -78,9 +78,9 @@ $stealthwarn-color-severe: colors.$warning-severe;
 
 .label {
 	position: absolute;
+	background-color: white;
 
 	.ship {
-		background-color: white;
 		padding: 0.1ex 0.1ch;
 		
 		&.ally {
@@ -105,6 +105,11 @@ $stealthwarn-color-severe: colors.$warning-severe;
 			}
 		}
 
+		&.enemy.ally {
+			color: transparent;
+			background-image: linear-gradient(to right, colors.$ally 30%, colors.$enemy 50%);
+			background-clip: text;
+		}
 		&.player {
 			color: colors.$player;
 		}	
@@ -143,4 +148,9 @@ aside.details .details-line.contenders {
 	color: colors.$aside;
 	font-size: fontsizes.$large;
 	text-align: center;
+}
+
+g.radar.highlighted, .label .ship.highlighted {
+	color: colors.$highlighted;
+	stroke: colors.$highlighted;
 }

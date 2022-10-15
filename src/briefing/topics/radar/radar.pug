@@ -90,7 +90,12 @@ if ships.length > 0
 					let start = polarToCartesian(0, radius);
 					let end = polarToCartesian(angle(workTime), radius);
 					let maxEnd = polarToCartesian(angle(radars[range][workTime][0].maxTime), radius);
-				g.radar(class=radars[range][workTime].flatMap(entry => teamClasses(entry.ship)))
+				g.radar(
+					class=radars[range][workTime].flatMap(entry => teamClasses(entry.ship)), 
+					onmouseenter='highlight(this)',
+					onmouseleave='highlight(this)',
+					data-for=radars[range][workTime].map(entry => entry.ship.getName()).join(' '))
+					
 					path.base(d=`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`)
 					text(x=end.x + 0.25, y=end.y - 0.25) #{workTime}s
 					path.max(d=`M ${end.x} ${end.y} A ${radius} ${radius} 0 0 0 ${maxEnd.x} ${maxEnd.y}`)
@@ -106,12 +111,16 @@ if ships.length > 0
 					span.ship(
 						class=teamClasses(ship), 
 						class=warningClass(ship, range), 
-						data-details=ship.getName()) 
-						
+						onmouseenter='highlight(this)',
+						onmouseleave='highlight(this)',
+						data-details=ship.getName(),
+						data-for=ship.getName())
 						| #{ship.getLabel()}
 					br
 					aside.details(class=teamClasses(ship), data-details-for=ship.getName())
 						include details
+	script
+		include highlight.js
 
 else
 	.no-radars
