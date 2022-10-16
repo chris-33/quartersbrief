@@ -57,22 +57,26 @@ td {
 	&:last-of-type {
 		text-align: right;
 	}
+
 	.secondary {
 		font-size: fontsizes.$small;
 		font-style: italic;
 	}
-	.ship {
-		img {
-			vertical-align: baseline;
-			filter: brightness(80%);
-			height: 0.7em;
-			width: auto;
-		}
+}
+
+.ship {
+	img {
+		vertical-align: baseline;
+		filter: brightness(80%);
+		height: 0.7em;
+		width: auto;
 	}
 }
 
-aside.details {
-	text-align: left;
+aside.details .ship {
+	font-size: fontsizes.$small;
+	color: black;
+	font-weight: normal;
 }
 
 .winrate {	

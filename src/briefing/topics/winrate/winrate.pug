@@ -80,7 +80,7 @@ div
 							aside.details.ally(
 								class=ally.player.getName() === player.name ? 'player' : '', 
 								data-details-for=ally.player.getName())
-								+details(ally.player)
+								+details(ally)
 				else
 					- console.error(`No result for ally #${ally.name}`);
 					td(colspan=2, style='font-size: 75%; color: red; white-space: normal;')
@@ -100,7 +100,7 @@ div
 								| #{enemy.player.getBattles()} 
 								span.unit battles
 							aside.details.enemy(data-details-for=enemy.player.getName())
-								+details(enemy.player)
+								+details(enemy)
 					td.enemy(class=enemy.ship.getClass().toLowerCase(), 
 						data-details=enemy.player.getName())
 						//- +#{}: Dynamically determine mixin name and call it

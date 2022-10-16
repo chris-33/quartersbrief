@@ -1,11 +1,16 @@
-mixin details(player)
-	.details-title #{player.getName()}
+mixin details(participant)
+	.details-title 
+		div #{participant.player.getName()}
+		div.ship 
+			img(src=`img/icon_${participant.ship.getClass().toLowerCase()}.png`)
+			| &nbsp;
+			| #{participant.ship.getLabel()}
 
 	.details-line
 		span.caption Winrate:
 		span.value
-			| #{(100 * player.getWinrate()).toFixed(1)}
+			| #{(100 * participant.player.getWinrate()).toFixed(2)}
 			span.unit %
 	.details-line
 		span.caption Battles:
-		span.value #{player.getBattles()}
+		span.value #{participant.player.getBattles()}
