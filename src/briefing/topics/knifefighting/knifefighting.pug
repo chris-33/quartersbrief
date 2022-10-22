@@ -1,0 +1,26 @@
+- 
+	const playerEntry = entries.find(entry => entry.ship.getID() === teams.player);
+	const MAX_VALUE = Math.max(...entries.map(entry => entry.max.knifefighting)) + 200;
+	const subdivisions = options?.subdivisions ?? [];
+.content
+	each entry in entries
+		.ship(class = {
+					"ally": teams.allies.includes(entry.ship.getID()),
+					"enemy": teams.enemies.includes(entry.ship.getID()),
+					"player": teams.player === entry.ship.getID()
+		}, data-details = entry.ship.getName())
+			span.label #{entry.ship.getLabel()}
+			div
+				.shipbar(style=`width: ${100 * entry.max.knifefighting / MAX_VALUE}%;`) &nbsp;
+					//- Only display break-even points if an entry for the player is displayed
+					if playerEntry
+						each subdivision in subdivisions
+							.comparison(style=`left: ${subdivision * playerEntry.max.knifefighting / entry.max.knifefighting}%;`) 
+								- const comparison = Math.round(subdivision / 100 * playerEntry.max.knifefighting / entry.max.dpm.pertinent)
+								span #{ comparison > 9999 ? `${(comparison / 1000).toFixed(1)}k` : comparison }
+			aside.details(data-details-for=entry.ship.getName(), class = {
+				"ally": teams.allies.includes(entry.ship.getID()),
+				"enemy": teams.enemies.includes(entry.ship.getID()),
+				"player": teams.player === entry.ship.getID()
+			})
+				include details

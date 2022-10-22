@@ -1,0 +1,38 @@
+.details-title
+	| #{entry.ship.getLabel()}
+
+.details-line
+	span.caption Knife-fighting value:
+	span.value #{Math.round(entry.max.knifefighting / 1e6)}
+
+hr
+
+.details-line
+	span.caption Health:
+	span.value
+		| #{ entry.max.health}
+		span.unit HP
+
+hr
+
+| Damage per minute
+
+each ammo in ['cs', 'he', 'ap']
+	if entry.max.dpm[ammo]
+		.details-line 
+			span.caption #{ammo.toUpperCase()}:
+			span.value #{ Math.round(entry.max.dpm[ammo]) }
+				span.unit HP/min	
+
+if playerEntry
+	hr
+
+	| Break-even points
+	each subdivision in subdivisions
+		.details-line
+			- const comparison = Math.round(subdivision / 100 * playerEntry.max.knifefighting / entry.max.dpm.pertinent)
+			span.caption #{ subdivision }
+				span.unit %
+				| :
+			span.value #{ comparison }
+				span.unit HP

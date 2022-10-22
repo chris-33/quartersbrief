@@ -1,0 +1,25 @@
+@use '@sass-fairy/list';
+@use 'sass:meta';
+
+$NOTCH_HEIGHT: 20%;
+$NOTCH_WIDTH: 1ch;
+
+@function unit($value, $index, $items) {
+	@return 1% * $value;
+}
+
+$subdivisions: option('subdivisions');
+$subdivisions: [] !default;
+$subdivisions: list.map($subdivisions, meta.get-function('unit'));
+
+@function notch($horizontal-position, $index, $items, $vertical-position: "top") {
+	$direction: 0;
+	@if $vertical-position == "top" {
+		$direction: +1;
+		$vertical-position: 0%;
+	} @else {
+		$direction: -1;
+		$vertical-position: 100%;
+	}
+	@return "#{calc($horizontal-position - $direction * 0.5 * $NOTCH_WIDTH) $vertical-position, $horizontal-position calc($vertical-position + $direction * $NOTCH_HEIGHT), calc($horizontal-position + $direction * 0.5 * $NOTCH_WIDTH) $vertical-position}";	
+}
