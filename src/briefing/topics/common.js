@@ -38,7 +38,18 @@ function sortLikeLoadScreen(ship1, ship2) {
 	}
 	let v1 = classValue[ship1.getClass()] + ship1.getTier();
 	let v2 = classValue[ship2.getClass()] + ship2.getTier();
-	return v2 - v1; // Reverse sort order
+	// Reverse sort order (higher class and tier first)
+	v1 *= -1;
+	v2 *= -1;
+
+	// If classes and tiers are equal, the game seems to sort them by nation,
+	// according to the second letter of the reference code
+	if (v1 === v2) {
+		v1 = ship1.getRefCode().charCodeAt(1);
+		v2 = ship2.getRefCode().charCodeAt(1);
+	}
+
+	return v1 - v2;
 }
 
 
@@ -56,6 +67,18 @@ const sassFunctions = {
 	options: function(options) {
 		return {
 			"option($name)": args => {				
+				function convert(val) {
+					let type = typeof val;
+					if (Array.isArray(val)) type = 'array';
+					switch (type) {
+						case 'boolean': return val ? sass.sassTrue : sass.sassFalse; // new sass.SassBoolean isn't allowed
+						case 'number': return new sass.SassNumber(val);
+						case 'array': return new sass.SassList(val.map(v => convert(v)));
+						case 'undefined': return sass.sassNull;
+						default: throw new TypeError(`Unknown option type ${val}`);
+					}
+				}
+
 				let name = args[0];
 				// Make sure name is actually a SassString. This will throw if it isn't. 
 				name.assertString();
@@ -64,11 +87,7 @@ const sassFunctions = {
 				// Get the value of that option, if any
 				let val = options?.[name];
 				// Convert back to a Sass value
-				switch (typeof val) {
-					case 'boolean': return val ? sass.sassTrue : sass.sassFalse; // new sass.SassBoolean isn't allowed
-					case 'number': return new sass.SassNumber(val);
-					case 'undefined': return sass.sassNull;
-				}
+				return convert(val);
 			}			
 		}
 	}
