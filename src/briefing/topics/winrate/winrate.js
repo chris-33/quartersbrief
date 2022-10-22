@@ -8,10 +8,6 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	function enrich(participant) {
 		participant.player = players[participant.name];
 		participant.ship = ships.find(ship => ship.getID() === participant.shipId);
-
-		// Pass getClass and getTier through to ship to allow sorting:
-		participant.getClass = participant.ship.getClass.bind(participant.ship);
-		participant.getTier = participant.ship.getTier.bind(participant.ship);
 	}
 
 	// Check that required options api-key and realm are set, and create a more readable error message if they are not.
@@ -36,8 +32,8 @@ async function buildHtml(battle, gameObjectFactory, options) {
 	allies.forEach(enrich);
 	enemies.forEach(enrich);
 
-	allies.sort(sortLikeLoadScreen);
-	enemies.sort(sortLikeLoadScreen);
+	allies.sort((p1, p2) => sortLikeLoadScreen(p1.ship, p2.ship));
+	enemies.sort((p1, p2) => sortLikeLoadScreen(p1.ship, p2.ship));
 
 	const locals = { allies, enemies, player: battle.getPlayer(), options };
 	return pug.renderFile('src/briefing/topics/winrate/winrate.pug', locals);
