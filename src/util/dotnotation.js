@@ -37,10 +37,11 @@ export function elements(key) {
  * @param  {String[]} elements The key elements to join. May include wildcards.
  * @return {String}      The `elements`, joined by `.`.
  */
-export function join(path) {
-	if (!Array.isArray(path))
-        path = Array.from(arguments);
-    return path.join('.');
+export function join(elements) {	
+    if (!Array.isArray(elements))
+        elements = Array.from(arguments);
+    elements = elements.filter(el => el); // Filter out undefined and null elements
+    return elements.join('.');
 }
 
 /**

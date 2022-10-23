@@ -34,12 +34,17 @@ describe('DotNotation', function() {
 
 		it('should join the elements even if one of them is already compound', function() {
 			expect(DotNotation.join('a.b', 'c')).to.be.a('string').that.equals('a.b.c');
-		})
+		});
 
 		it('should be callable with an array or with the individual elements as arguments', function() {
 			const elements = [...'abc'];
 			expect(DotNotation.join(elements)).to.be.a('string').that.equals(DotNotation.join(...elements));
-		})
+		});
+
+		it('should ignore elements that are null or undefined', function() {
+			expect(DotNotation.join('a', undefined, 'b')).to.be.a('string').that.equals('a.b');
+			expect(DotNotation.join('a', null, 'b')).to.be.a('string').that.equals('a.b');
+		});
 	});
 
 	describe('resolve', function() {
