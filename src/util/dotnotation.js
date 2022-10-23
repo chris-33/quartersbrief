@@ -38,7 +38,9 @@ export function elements(key) {
  * @return {String}      The `elements`, joined by `.`.
  */
 export function join(path) {
-	return path.join('.');
+	if (!Array.isArray(path))
+        path = Array.from(arguments);
+    return path.join('.');
 }
 
 /**

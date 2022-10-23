@@ -23,14 +23,23 @@ describe('DotNotation', function() {
 	
 	describe('elements', function() {
 		it('should return the individual elements which are separated by dots', function() {
-			expect(DotNotation.elements('a.b.c')).to.be.an('array').with.members([ 'a', 'b', 'c' ]);
+			expect(DotNotation.elements('a.b.c')).to.be.an('array').with.members([...'abc']);
 		});
 	});
 
 	describe('join', function() {
 		it('should return the elements joined by dots', function() {
-			expect(DotNotation.join(['a','b','c'])).to.be.a('string').that.equals('a.b.c');
+			expect(DotNotation.join([...'abc'])).to.be.a('string').that.equals('a.b.c');
 		});
+
+		it('should join the elements even if one of them is already compound', function() {
+			expect(DotNotation.join('a.b', 'c')).to.be.a('string').that.equals('a.b.c');
+		})
+
+		it('should be callable with an array or with the individual elements as arguments', function() {
+			const elements = [...'abc'];
+			expect(DotNotation.join(elements)).to.be.a('string').that.equals(DotNotation.join(...elements));
+		})
 	});
 
 	describe('resolve', function() {
