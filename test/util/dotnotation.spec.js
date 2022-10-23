@@ -63,4 +63,37 @@ describe('DotNotation', function() {
 			expect(DotNotation.resolve.bind(null, 'a.b')).to.throw();
 		});
 	});
+
+	describe('matches', function() {
+		it('should return true for a simple matching key and path, false for non-matching key and path', function() {
+			const key = 'key';
+			expect(DotNotation.matches(key, key)).to.be.true;
+			expect(DotNotation.matches(key, 'path different')).to.be.false;
+			expect(DotNotation.matches('key different', key)).to.be.false;
+		});
+
+		it('should return true for a matching compound key and path, false for non-matching', function() {
+			const key = 'this.is.a.compound.key';
+			expect(DotNotation.matches(key, key)).to.be.true;
+			expect(DotNotation.matches(key, 'non.matching.compound.path')).to.be.false;
+			expect(DotNotation.matches(key, 'this.is.a.key')).to.be.false;
+			expect(DotNotation.matches('non.matching.compound.key', key)).to.be.false;
+		});
+
+		it('should return true for a matching complex key and path, false for non-matching', function() {
+			const key = 'complex*';
+			expect(DotNotation.matches(key, 'complex')).to.be.true;
+			expect(DotNotation.matches(key, 'complex1')).to.be.true;
+			expect(DotNotation.matches(key, 'compl')).to.be.false;
+			expect(DotNotation.matches(key, 'notcomplex')).to.be.false;
+		});
+
+		it('should return true for a matching compound complex key, false for non-matching', function() {
+			const key = 'this.is.the.*.compound.key';
+			expect(DotNotation.matches(key, 'this.is.the.first.compound.key')).to.be.true;
+			expect(DotNotation.matches(key, 'this.is.the.second.compound.key')).to.be.true;
+			expect(DotNotation.matches(key, 'this.is.a.third.compound.key')).to.be.false;
+			expect(DotNotation.matches(key, 'and.this.is.the.fourth.compound.key')).to.be.false;
+		});
+	});
 });

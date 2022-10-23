@@ -1,3 +1,8 @@
+// Utility function that translates a key to a regex.
+function regex(key) {
+	return new RegExp(`^${key.replace('*', '\\w*')}$`);	
+}
+
 /**
  * Checks if `key` is a *complex key* - one that contains at least one wildcard. It does not
  * matter whether `key` also a compound key.
@@ -48,9 +53,20 @@ export function resolve(key, base) {
 	if (isCompound(key)) 
 		throw new TypeError(`Cannot resolve compound key ${key}`);
 
-	let regex = new RegExp(`^${key.replace('*', '\\w*')}$`);
 	let result = [];
+	let keyRegex = regex(key);
 	for (let key in base)
-		if (regex.test(key)) result.push(key);
+		if (keyRegex.test(key)) result.push(key);
 	return result;
+}
+
+export function matches(key, path) {
+	let keyElements = elements(key);
+	let pathElements = elements(path);
+
+	for (let i = 0; i < keyElements.length; i++) {
+		if (!regex(keyElements[i]).test(pathElements[i])) 
+			return false;
+	}
+	return true;
 }
