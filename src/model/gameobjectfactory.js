@@ -7,6 +7,7 @@ import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { Signal } from './signal.js';
 import { Gun } from './gun.js';
+import * as DotNotation from '../util/dotnotation.js';
 import clone from 'clone';
 
 /**
@@ -30,7 +31,7 @@ class GameObjectFactory {
 	 */
 	static IGNORED_KEYS = [
 			// Blacklisted to prevent full inclusion of following ships in the tech tree
-			'nextShips', 
+			'ShipUpgradeInfo.*.nextShips', 
 			// Blacklisted to prevent infinite nesting of requested ship when resolving
 			// (Requested ship itself will have a "name" property, which would otherwise
 			// get resolved)
@@ -40,14 +41,14 @@ class GameObjectFactory {
 			'index', 
 			// Previous module in ShipUpgradeInfo modules. Some modules have names that
 			// would fit the naming convention for game objects.
-			'prev',
+			'ShipUpgradeInfo.*.prev',
 			// Whitelist and blacklist for modernizations
 			'ships', 'excludes',
 			// Whitelist and blacklist for camouflages
-			'specificShips', 'forbiddenShips', 
+			'restrictions.specificShips', 'restrictions.forbiddenShips', 
 			// These seem to refer to UI localization resources that are not available
 			// in GameParams.data
-			'titleIDs', 'descIDs', 'iconIDs',
+			'*.titleIDs', '*.descIDs', '*.iconIDs',
 			// Omit attached labels from expansion
 			'label'
 		];
@@ -100,7 +101,7 @@ class GameObjectFactory {
 	 * @return {Object}      `data`, with any references expanded to their corresponding objects. This method does _not_
 	 * return a `GameObject`.
 	 */
-	_expandReferences(data) {
+	_expandReferences(data, partialPath) {
 		let self = this;
 		let dedicatedlog = rootlog.getLogger(self.constructor.name);
 
@@ -108,7 +109,7 @@ class GameObjectFactory {
 		for (let key in data) {
 			// Therefore, omit certain keys from reference resolution. See
 			// JSDoc comment for IGNORED_KEYS.
-			if (GameObjectFactory.IGNORED_KEYS.includes(key)) {
+			if (GameObjectFactory.IGNORED_KEYS.some(ignore => DotNotation.matches(ignore, DotNotation.join(partialPath, key)))) {
 				continue;
 			}
 
@@ -161,7 +162,7 @@ class GameObjectFactory {
 			}
 			// If the current key's value is an object, expand references recursively
 			else if (typeof data[key] === 'object' && data[key] !== null) {
-				data[key] = self._expandReferences(data[key]);
+				data[key] = self._expandReferences(data[key], DotNotation.join(partialPath, key));
 			}
 		}
 		return data;
