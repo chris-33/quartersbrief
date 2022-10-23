@@ -1,4 +1,4 @@
-import DotNotation from '../../src/util/dotnotation.js';
+import * as DotNotation from '../../src/util/dotnotation.js';
 
 describe('DotNotation', function() {
 	describe('isComplex', function() {

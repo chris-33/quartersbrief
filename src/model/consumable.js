@@ -1,5 +1,5 @@
 import { GameObject } from './gameobject.js';
-import DotNotation from '../util/dotnotation.js';
+import * as DotNotation from '../util/dotnotation.js';
 
 /**
  * This class models a ship ability - called "consumable" in game.

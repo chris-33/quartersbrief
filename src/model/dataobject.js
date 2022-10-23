@@ -1,4 +1,4 @@
-import DotNotation from '../util/dotnotation.js';
+import * as DotNotation from '../util/dotnotation.js';
 import deepequal from 'deep-equal';
 
 export function collate(data) {
