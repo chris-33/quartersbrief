@@ -6,6 +6,7 @@ import { Consumable } from './consumable.js';
 import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { Signal } from './signal.js';
+import { Gun } from './gun.js';
 import clone from 'clone';
 
 /**
@@ -66,7 +67,8 @@ class GameObjectFactory {
 			'Permoflage': Camouflage,
 			'Skin': Camouflage,
 			'Flags': Signal
-		}
+		},
+		'Gun': Gun
 	}
 
 	/**
