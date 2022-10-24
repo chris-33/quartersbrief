@@ -306,7 +306,6 @@ describe('Ship', function() {
 		it('should apply the modernization effects', function() {
 			ship.equipModernization(modernization);
 			let modifiers = modernization.get('modifiers');
-			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * modifiers.ArtilleryValue);
 		});
 
@@ -342,7 +341,6 @@ describe('Ship', function() {
 
 		it('should negate the modernization effects', function() {
 			ship.unequipModernization(modernization);
-			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value);
 		});
 	});
@@ -370,7 +368,6 @@ describe('Ship', function() {
 
 			ship.equipModules('stock');
 			ship.setCaptain(captain);
-			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * captain.get('Skills.BattleshipSkill1.modifiers.EngineValue'));
 			expect(ship.get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * captain.get('Skills.BattleshipSkill2.modifiers.ArtilleryValue'));
 		});
@@ -444,7 +441,6 @@ describe('Ship', function() {
 		it('should apply the effects of the camouflage', function() {
 			ship.equipModules('stock');
 			ship.setCamouflage(camouflage);
-			// @todo This will need to be changed when a more sane readthrough of ship's properties has been implemented and getCurrentConfiguration() is removed
 			expect(ship.get('engine.value')).to.equal(TEST_DATA.AB1_Engine.value * camouflage.get('modifiers.EngineValue'));
 			expect(ship.get('artillery.value')).to.equal(TEST_DATA.AB1_Artillery.value * camouflage.get('modifiers.ArtilleryValue'));
 		});
