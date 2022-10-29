@@ -1,6 +1,7 @@
 import pug from 'pug';
 import sass from 'sass';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
+import { SKILLS } from '../../../model/captain.js';
 import { filters, teams } from '../common.js';
 import { sassFunctions } from '../common.js';
 
@@ -8,9 +9,12 @@ const BASE_BUILD = {
 	modules: 'stock'
 }
 const HEALTH_BUILD = {
-	modules: 'top'
+	modules: 'top',
+	skills: [ SKILLS.SURVIVABILITY_EXPERT ]
 }
-const DPM_BUILD = {}
+const DPM_BUILD = {
+	modernizations: [ 'PCM013_MainGun_Mod_III' ]
+}
 
 const knifefighting = configuration => configuration.health * configuration.dpm.pertinent;
 
