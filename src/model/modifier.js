@@ -22,9 +22,9 @@ class Modifier {
 		// @todo AAAuraDamage // PCM011_AirDefense_Mod_II
 		// @todo AABubbleDamage // PCM011_AirDefense_Mod_II
 		GSMaxDist: 'atba.maxDist', // PCM012_SecondaryGun_Mod_II, PCM028_FireControl_Mod_I_US
-		GMShotDelay: 'artillery.mounts.shotDelay', // PCM013_MainGun_Mod_III
+		GMShotDelay: 'artillery.mounts.*.shotDelay', // PCM013_MainGun_Mod_III
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
-		GSShotDelay: 'atba.mounts.shotDelay', // PCM019_SecondaryGun_Mod_III
+		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
 		planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
 		visibilityDistCoeff: [ // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
 			'hull.visibilityFactor', 
