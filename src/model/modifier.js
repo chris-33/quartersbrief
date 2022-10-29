@@ -12,10 +12,13 @@ import clone from 'clone';
  * in which it is considered to be a mapping of ship species to numbers. 
  */
 class Modifier {
-
 	/**
 	 * A dictionary translating modifier keys (the names found in the upgrade's game data) to
 	 * their corresponding keys in the ship to be modified. 
+	 *
+	 * This can either be a string in dot notation, or an array of strings in dot notation that the 
+	 * modifier will be applied to. The string form is just a convenience notation for an array containing
+	 * only that string.
 	 */
 	static KNOWN_TARGETS = {
 		// @todo GMRotationSpeed:  // PCM006_MainGun_Mod_II, PCM013_MainGun_Mod_III, PCM034_Guidance_Mod_0
@@ -25,7 +28,8 @@ class Modifier {
 		GMShotDelay: 'artillery.mounts.*.shotDelay', // PCM013_MainGun_Mod_III
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
 		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
-		planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
+		// @todo planeVisibilityFactor isn't the visibility BY plane, it's the visibility OF the planes
+		// planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
 		visibilityDistCoeff: [ // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
 			'hull.visibilityFactor', 
 			'hull.visibilityFactorByPlane' 
@@ -34,7 +38,6 @@ class Modifier {
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
 		ConsumablesWorkTime: 'consumables.*.workTime', // PCM072_AbilityWorktimeBoost_Mod_I
 		// Everything up to PCM035_SteeringGear_Mod_III
-		// @todo ConsumablesWorkTimeBoost; Find a way to implement one-to-many relationships. (needed for PCM072_AbilityWorktimeBoost_Mod_I)
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 	}
 
@@ -79,7 +82,7 @@ class Modifier {
 	 * for the `ship`'s species will be used. It is not an error for the modifier's target to be 
 	 * undefined or `null`, in this case this method just has no effect.
 	 * @param  {Ship} ship    The ship to be modified.
-	 * @param  {Object} [options] An options object to be passed to {@link CDO#multiply} when carrying
+	 * @param  {Object} [options] An options object to be passed to {@link DatObject#multiply} when carrying
 	 * out the modification. The default is `{ collate: false }`, which is different from the default.
 	 * @throws Throws a `TypeError` if `ship` is not a `Ship`, or if the `value` is not a number.
 	 */
