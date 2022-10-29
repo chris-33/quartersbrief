@@ -28,7 +28,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 		.map(ship => {
 			const entry = { ship, base: {}, max: {} };			
 
-			const guns = ship.get('artillery.mounts.*').length;
+			const guns = ship.get('artillery.mounts.*.numBarrels').reduce((prev, curr) => prev + curr, 0);
 			entry.base.health = ship.getHealth();
 			entry.base.reload = ship.get('artillery.mounts.*.shotDelay', { collate: true });
 
@@ -46,7 +46,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 		shipBuilder.build(entry.ship, HEALTH_BUILD);
 		shipBuilder.build(entry.ship, DPM_BUILD);
 
-		const guns = entry.ship.get('artillery.mounts.*').length;
+		const guns = entry.ship.get('artillery.mounts.*.numBarrels').reduce((prev, curr) => prev + curr, 0);
 		entry.max.health = entry.ship.getHealth();
 		entry.max.reload = entry.ship.get('artillery.mounts.*.shotDelay', { collate: true });
 		
