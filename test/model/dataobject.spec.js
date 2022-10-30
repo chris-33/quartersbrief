@@ -75,65 +75,62 @@ describe('DataObject', function() {
 		});
 	});
 
-	describe('.multiply', function() {
-		it('should multiply the correct own, nested, or array property', function() {
-			const coeff = 2;
-			obj.multiply('prop2', coeff);
-			obj.multiply('nested.prop1', coeff);
-			obj.multiply('arr.0', coeff);
-			expect(obj._data.prop2, 'own property').to.equal(TEST_DATA.prop2 * coeff);			
-			expect(obj._data.nested.prop1, 'nested property').to.equal(TEST_DATA.nested.prop1 * coeff);
-			expect(obj._data.arr[0], 'array property').to.equal(TEST_DATA.arr[0] * coeff);
+	describe('.apply', function() {
+		const f = x => 2 ** x;
+
+		it('should apply the function to the correct own, nested, or array property', function() {
+			obj.apply('prop2', f);
+			obj.apply('nested.prop1', f);
+			obj.apply('arr.0', f);
+			expect(obj._data.prop2, 'own property').to.equal(f(TEST_DATA.prop2));
+			expect(obj._data.nested.prop1, 'nested property').to.equal(f(TEST_DATA.nested.prop1));
+			expect(obj._data.arr[0], 'array property').to.equal(f(TEST_DATA.arr[0]));
 			// Make sure the coefficient doesn't just get registered across the board:
 			expect(obj._data.prop3, 'other own property').to.equal(TEST_DATA.prop3);
 			expect(obj._data.nested.prop2, 'other nested property').to.equal(TEST_DATA.nested.prop2);
 			expect(obj._data.arr[1], 'other array property').to.equal(TEST_DATA.arr[1]);
 		});
 
-		it('should multiply all properties matching a wildcard key', function() {
-			const coeff = 2;			
-			obj.multiply('nested*.prop1', coeff);
-			expect(obj._data.nested.prop1).to.equal(TEST_DATA.nested.prop1 * coeff);
-			expect(obj._data.nested2.prop1).to.equal(TEST_DATA.nested2.prop1 * coeff);
+		it('should apply the function to all properties matching a wildcard key', function() {
+			obj.apply('nested*.prop1', f);
+			expect(obj._data.nested.prop1).to.equal(f(TEST_DATA.nested.prop1));
+			expect(obj._data.nested2.prop1).to.equal(f(TEST_DATA.nested2.prop1));
 
 			obj = new DataObject(clone(TEST_DATA));
-			obj.multiply('arr.*', coeff);
-			expect(obj._data.arr).to.have.members(TEST_DATA.arr.map(i => i * coeff));
+			obj.apply('arr.*', f);
+			expect(obj._data.arr).to.have.members(TEST_DATA.arr.map(f));
 
 			obj = new DataObject(clone(TEST_DATA));
-			obj.multiply('nested.*', coeff);
-			expect(obj._data.nested.prop1).to.equal(TEST_DATA.nested.prop1 * coeff);
-			expect(obj._data.nested.prop2).to.equal(TEST_DATA.nested.prop2 * coeff);
+			obj.apply('nested.*', f);
+			expect(obj._data.nested.prop1).to.equal(f(TEST_DATA.nested.prop1));
+			expect(obj._data.nested.prop2).to.equal(f(TEST_DATA.nested.prop2));
 		});
 
-		it('should multiply into nested DataObjects', function() {
-			const coeff = 2;
-			obj.multiply('dataobject.prop1', coeff);
-			expect(obj._data.dataobject._data.prop1).to.equal(TEST_DATA.dataobject.prop1 * coeff);
+		it('should apply into nested DataObjects', function() {
+			obj.apply('dataobject.prop1', f);
+			expect(obj._data.dataobject._data.prop1).to.equal(f(TEST_DATA.dataobject.prop1));
 		});
 
 		it('should return a scalar when collate is true', function() {
 			delete obj._data.prop1;
-			const coeff = 2;
-			expect(obj.multiply('prop*', coeff, { collate: true })).to.equal(TEST_DATA.prop2 * coeff);
+			expect(obj.apply('prop*', f, { collate: true })).to.equal(f(TEST_DATA.prop2));
 		});
 
 		it('should not collate by default even with a complex key', function() {			
-			expect(obj.multiply('nested.*', 2)).to.be.an('array');
+			expect(obj.apply('nested.*', f)).to.be.an('array');
 		});
 
-		it('should throw if collate is true but not all multiplication results are equal', function() {
-			expect(obj.multiply.bind(obj, 'nested.prop*', 2, { collate: true })).to.throw();
+		it('should throw if collate is true but not all function application results are equal', function() {
+			expect(obj.apply.bind(obj, 'nested.prop*', f, { collate: true })).to.throw();
 		});
 
-		it('should multiply into own properties when includeOwnProperties is set to true', function() {
+		it('should apply into own properties when includeOwnProperties is set to true', function() {
 			obj.nested = clone(TEST_DATA.nested);
-			const coeff = 2;
-			const expected = Object.values(obj.nested).concat(Object.values(TEST_DATA.nested)).map(x => x * coeff);			
-			expect(obj.multiply('nested.*', coeff, { includeOwnProperties: true })).to.be.an('array').with.members(expected);
+			const expected = Object.values(obj.nested).concat(Object.values(TEST_DATA.nested)).map(f);
+			expect(obj.apply('nested.*', f, { includeOwnProperties: true })).to.be.an('array').with.members(expected);
 			Object.keys(TEST_DATA.nested).forEach(key => {
-				expect(obj.nested[key]).to.equal(TEST_DATA.nested[key] * coeff);
-				expect(obj._data.nested[key]).to.equal(TEST_DATA.nested[key] * coeff);
+				expect(obj.nested[key]).to.equal(f(TEST_DATA.nested[key]));
+				expect(obj._data.nested[key]).to.equal(f(TEST_DATA.nested[key]));
 			});			
 		});
 	});

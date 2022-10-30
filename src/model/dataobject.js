@@ -67,7 +67,7 @@ export default class DataObject {
 		return targets;
 	}
 
-	multiply(key, factor, options) {
+	apply(key, func, options) {
 		let path = DotNotation.elements(key);
 		let prop = path.pop();
 		
@@ -81,14 +81,22 @@ export default class DataObject {
 		let targets = DotNotation.isCompound(key) ? 
 			this.get(DotNotation.join(path), { collate: false, includeOwnProperties: options?.includeOwnProperties }) :
 			options?.includeOwnProperties ? [ this._data, this ] : [ this._data ]
-		// If target is a DataObject (and not this DataObject itself), hand off the multiplication to it. Otherwise,
-		// multiply all matching properties.
+		// If target is a DataObject (and not this DataObject itself), hand off the function application to it. Otherwise,
+		// apply func to all matching properties.
 		targets = targets.flatMap(target => target instanceof DataObject && target !== this ? 
-				target.multiply(prop, factor) :
-				DotNotation.resolve(prop, target).map(key => target[key] = target[key] * factor));
+				target.apply(prop, func) :
+				DotNotation.resolve(prop, target).map(key => target[key] = func(target[key])));
 
 		if (options?.collate)
 			targets = collate(targets);
-		return targets;
+		return targets;		
+	}
+
+	multiply(key, factor, options) {
+		return this.apply(key, x => factor * x, options);
+	}
+
+	add(key, summand, options) {
+		return this.apply(key, x => summand + x, options);
 	}
 }
