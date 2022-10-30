@@ -65,12 +65,12 @@ class Consumable extends GameObject {
 		return super.get(DotNotation.join(path), options);
 	}
 
-	multiply(key, factor, options) {
+	apply(key, func, options) {
 		if (!this.#flavor)
-			throw new Error(`Trying to multiply property ${key} on consumable ${this.getName()} while no flavor is set`);
+			throw new Error(`Trying to apply function on property ${key} on consumable ${this.getName()} while no flavor is set`);
 		else
 			key = this.#flavor + '.' + key;
-		return super.multiply(key, factor, options);
+		return super.apply(key, func, options);		
 	}
 
 	get consumableType() { return this.get('consumableType'); }
