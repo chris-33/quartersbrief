@@ -23,13 +23,17 @@ includeOwnPropertiesByDefault(Weapon.prototype);
 
 class Artillery extends Weapon {
 	/** Main artillery caliber in mm. */
-	getCaliber() { return 1000 * this.get('mounts.*.barrelDiameter', { collate: true }) }
+	getCaliber() { return 1000 * this.get('mounts.*.barrelDiameter', { collate: true }); }
 }
 
+class Torpedoes extends Weapon {
+	getReload() { return this.get('shotDelay'); }
+}
 
 export default function createModule(kind, ship, data) {
 	let Constructor = {
-		'artillery': Artillery
+		'artillery': Artillery,
+		'torpedoes': Torpedoes,
 	}[kind] ?? Module;
 	return new Constructor(ship, data);
 }

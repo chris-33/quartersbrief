@@ -7,6 +7,8 @@ import { Captain } from './captain.js';
 import { Camouflage } from './camouflage.js';
 import { Signal } from './signal.js';
 import { Gun } from './gun.js';
+import { Torpedo } from './torpedo.js';
+
 import clone from 'clone';
 
 /**
@@ -68,7 +70,10 @@ class GameObjectFactory {
 			'Skin': Camouflage,
 			'Flags': Signal
 		},
-		'Gun': Gun
+		'Gun': Gun,
+		'Projectile': {
+			'Torpedo': Torpedo
+		}
 	}
 
 	/**
