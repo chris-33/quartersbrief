@@ -8,10 +8,10 @@
 					"ally": teams.allies.includes(entry.ship.getID()),
 					"enemy": teams.enemies.includes(entry.ship.getID()),
 					"player": teams.player === entry.ship.getID()
-		}, data-details = entry.ship.getName())
-			span.label #{entry.ship.getLabel()}
+		})
+			span.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
 			div
-				.shipbar(style=`width: ${100 * entry.max.knifefighting / MAX_VALUE}%;`) &nbsp;
+				.shipbar(style=`width: ${100 * entry.max.knifefighting / MAX_VALUE}%;`, data-details = entry.ship.getName()) &nbsp;
 					//- Only display break-even points if an entry for the player is displayed
 					if playerEntry
 						each subdivision in subdivisions
