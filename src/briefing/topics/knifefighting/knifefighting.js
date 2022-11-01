@@ -82,6 +82,6 @@ export default async function buildTopic(battle, gameObjectFactory, options) {
 	return {
 		html: buildHtml(battle, gameObjectFactory, options),
 		scss: await buildScss(battle, gameObjectFactory, options),
-		caption: 'Knife-fighting Value'
+		caption: 'Knife Fighting Value'
 	}
 }
