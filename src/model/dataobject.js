@@ -99,4 +99,8 @@ export default class DataObject {
 	add(key, summand, options) {
 		return this.apply(key, x => summand + x, options);
 	}
+
+	set(key, value, options) {
+		return this.apply(key, () => value, options);
+	}
 }
