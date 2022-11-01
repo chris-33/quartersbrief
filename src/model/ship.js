@@ -436,12 +436,13 @@ class Ship extends GameObject {
 			if (configuration[componentKey].length > 1)
 				dedicatedlog.warn(`Module descriptor descriptor ${descriptor} did not resolve unambiguously for ${componentKey} of ${this.getName()}. Choosing the first module that fits.`)
 			configuration[componentKey] = configuration[componentKey][0];
-			Object.defineProperty(this, componentKey, {
-				value: createModule(componentKey, this, this._data[configuration[componentKey]]),
-				writable: false,
-				configurable: true,
-				enumerable: true
-			});
+			if (configuration[componentKey])
+				Object.defineProperty(this, componentKey, {
+					value: createModule(componentKey, this, this._data[configuration[componentKey]]),
+					writable: false,
+					configurable: true,
+					enumerable: true
+				});
 		}
 		this._configuration = configuration;
 
