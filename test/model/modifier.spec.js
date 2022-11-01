@@ -2,8 +2,9 @@ import { Modifier } from '../../src/model/modifier.js';
 import { Ship } from '../../src/model/ship.js';
 import { readFileSync } from 'fs';
 import clone from 'clone';
+import sinon from 'sinon';
 
-describe('Modifier', function() {
+describe.only('Modifier', function() {
 	let knownTargets;
 	let SHIPDATA;
 
@@ -15,7 +16,12 @@ describe('Modifier', function() {
 			ArtilleryValue: [
 				'artillery.value',
 				'artillery.otherValue'
-			] 
+			],
+			HullValue: {
+				target: 'hull.value',
+				calc: (ship, baseValue) => 2 * ship.getTier() * baseValue,
+				mode: 'add'
+			}
 		};
 	});
 
@@ -24,8 +30,7 @@ describe('Modifier', function() {
 	});
 
 	describe('Modifier.from', function() {
-		it('should map a known key name to a single target', function() {
-			
+		it('should map a known key name to a single target', function() {			
 			expect(Modifier.from('EngineValue', 2).map(modifier => modifier.target)).to
 				.be.an('array').with.deep.members([ Modifier.KNOWN_TARGETS.EngineValue ]);
 		});
@@ -35,6 +40,13 @@ describe('Modifier', function() {
 				.be.an('array').with.deep.members(Modifier.KNOWN_TARGETS.ArtilleryValue);
 		});
 
+		it('should map a known key name to a descriptor', function() {
+			let modifiers = Modifier.from('HullValue', 3);
+			expect(modifiers).to
+				.be.an('array');
+			expect(modifiers[0]).to.be.an('object').that.includes(Modifier.KNOWN_TARGETS.HullValue);
+		});
+
 		it('should map an unknown key name to undefined', function() {
 			expect(Modifier.from('UnknownValue', 2).map(modifier => modifier.target)).to
 				.be.an('array').with.members([ undefined ]);
@@ -42,37 +54,30 @@ describe('Modifier', function() {
 	});
 
 	describe('.invert', function() {
-		it('should have 1 / value as its value for a simple numeric modifier', function() {
-			const value = 5;
-			let modifier = new Modifier('target', value);
-			expect(modifier.invert().value).to.equal(1 / value);
-		});
-
-		it('should have 1 / value for every value in an object modifier', function() {
-			const value = {
-				Destroyer: 1,
-				Cruiser: 2,
-				Battleship: 3
-			}
-			let modifier = new Modifier('target', value);
-			modifier = modifier.invert();
-			for (let key in value) {
-				expect(modifier.value[key]).to.equal(1 / value[key]);
-			}
+		it('should throw for a modifier in \'set\' mode', function() {
+			let modifier = new Modifier('target', 0, null, 'set');
+			expect(modifier.invert.bind(modifier)).to.throw();
 		});
 
 		it('should negate the effects of the original modifier when applying', function() {
-			let ship = new Ship(clone(SHIPDATA));
-			let modifier = new Modifier('engine.value', 2);
-			let val = ship.get('engine.value');
-			modifier.applyTo(ship);
-			modifier.invert().applyTo(ship);
-			expect(ship.get('engine.value')).to.equal(val);
-		})
+			[
+				{ desc: 'target', value: 5 },
+				{ desc: 'object', value: { Battleship: 3 }},
+				{ desc: 'add mode', value: 5, mode: 'add' },
+				{ desc: 'with calc function', value: 5, calc: (ship, baseValue) => 2 ** (ship.getTier() * baseValue) }
+			].forEach(test => {
+				let ship = new Ship(clone(SHIPDATA));
+				let modifier = new Modifier('engine.value', test.value, test.calc, test.mode);
+				let val = ship.get('engine.value');
+				modifier.applyTo(ship);
+				modifier.invert().applyTo(ship);
+				expect(ship.get('engine.value'), test.desc).to.equal(val);
+			});
+		});
 	});
 
 	describe('.applyTo', function() {
-		it('should throw only if trying to apply to something other than a ship, or if the value is not a number or a mapping from species to number', function() {
+		it('should throw only if trying to apply to something other than a ship, or if the value is not a number or a mapping from species to number (default calc function)', function() {
 			// Check that it errors when trying to apply to anything other than a ship
 			let modifier = new Modifier('engine.value', 1);
 			expect(modifier.applyTo.bind(modifier, {}), 'applying to something other than a ship').to
@@ -98,7 +103,7 @@ describe('Modifier', function() {
 				.not.throw();
 		});
 
-		it('should multiply the ship\'s value with the modifier value', function() {
+		it('should multiply the ship\'s value with the modifier value (default mode)', function() {
 			let modifier = new Modifier('engine.value', 2);
 			let ship = new Ship(clone(SHIPDATA));
 
@@ -106,11 +111,36 @@ describe('Modifier', function() {
 			modifier.applyTo(ship);
 			expect(ship.engine.get('value'), 'applying a primitive value').to.equal(val * modifier.value);
 
-			modifier = new Modifier('artillery.value', {});
-			modifier.value[ship.getSpecies()] = 2;
+			modifier = new Modifier('artillery.value', { [ship.getSpecies()]: 2 });
 			val = ship.artillery.get('value');
 			modifier.applyTo(ship);
 			expect(ship.artillery.get('value'), 'applying an object value').to.equal(val * modifier.value[ship.getSpecies()]);
+		});
+
+		it('should run the calculation function when applying', function() {
+			const baseValue = 2;
+			let modifier = new Modifier('hull.value', baseValue, () => 2 ** baseValue);
+			let calc = sinon.spy(modifier, 'calc');
+			let ship = new Ship(clone(SHIPDATA));
+
+			let val = ship.hull.get('value');
+			modifier.applyTo(ship);
+			expect(calc).to.have.been.calledWith(ship, baseValue);
+			expect(ship.hull.get('value'), 'applying with a calculation function').to.equal(val * modifier.calc(ship, baseValue));
+		});
+
+		it('should use the mode when applying', function() {
+			let modifier = new Modifier('engine.value', 2, null, 'add');
+			let ship = new Ship(clone(SHIPDATA));
+			let val = ship.engine.get('value');
+
+			modifier.applyTo(ship);
+			expect(ship.engine.get('value'), 'add').to.equal(val + modifier.value);
+			
+			modifier = new Modifier('artillery.value', 5, null, 'set');
+			val = ship.artillery.get('value');
+			modifier.applyTo(ship);
+			expect(ship.artillery.get('value')).to.equal(modifier.value);
 		});
 	});
 
