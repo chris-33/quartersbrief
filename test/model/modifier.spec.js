@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import clone from 'clone';
 import sinon from 'sinon';
 
-describe.only('Modifier', function() {
+describe('Modifier', function() {
 	let knownTargets;
 	let SHIPDATA;
 

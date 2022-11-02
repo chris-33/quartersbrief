@@ -1,5 +1,4 @@
 import { Ship } from '../model/ship.js';
-import clone from 'clone';
 
 /**
  * This class describes a single modification to be carried out on a ship's characteristic. 
