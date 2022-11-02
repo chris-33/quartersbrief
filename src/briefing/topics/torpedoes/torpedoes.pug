@@ -1,0 +1,46 @@
+- 
+	const MAX_RANGE = 20000;
+	const MAX_DAMAGE = 25000;
+	const MIN_SPEED = 52;
+	const MAX_SPEED = 75;
+
+	function launcherConfiguration(launcherTubes) {
+		const result = {}
+		for (tubes of launcherTubes) {
+			result[tubes] ??= 0;
+			result[tubes]++;
+		}
+		return result;
+	}
+	function speedPercentage(speed) {
+		return Math.min(1, Math.max(0, (speed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)));
+	}
+.content
+	each entry in entries
+		.ship(class = {
+					"ally": teams.allies.includes(entry.ship.getID()),
+					"enemy": teams.enemies.includes(entry.ship.getID()),
+					"player": teams.player === entry.ship.getID()
+		})
+			span.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
+			.diagram
+				.shipbar(style=`width: ${entry.range * 100 / MAX_RANGE}%`, data-details = entry.ship.getName())
+					.tubes
+						| #{ Object.entries(launcherConfiguration(entry.tubes)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+					.speed(style=`width: ${speedPercentage(entry.speed) * 5 + 4}em; background-image: radial-gradient(farthest-side, hsl(210 ${33 * (1 - speedPercentage(entry.speed))}% ${85 + 15 * speedPercentage(entry.speed)}%) ${75 * speedPercentage(entry.speed)}%, transparent);`)
+						span #{entry.speed}
+						span.unit kts
+					.range
+						| #{(entry.range / 1000).toFixed(1)}
+						span.unit km
+				.explosion(style=`width: calc(6em * ${entry.damage / MAX_DAMAGE})`, data-details = entry.ship.getName())
+					div
+						| #{entry.damage > 9999 ? `${(entry.damage / 1000).toFixed(1)}k` : entry.damage}
+						span.unit HP
+
+			aside.details(data-details-for=entry.ship.getName(), class = {
+				"ally": teams.allies.includes(entry.ship.getID()),
+				"enemy": teams.enemies.includes(entry.ship.getID()),
+				"player": teams.player === entry.ship.getID()
+			})
+				include details

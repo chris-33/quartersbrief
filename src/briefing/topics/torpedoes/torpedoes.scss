@@ -1,0 +1,96 @@
+@use '../colors';
+@use '../fontsizes';
+@use 'sass:selector';
+
+$unit-light: #e8e8e8;
+
+.ship {	
+	display: flex;
+	align-items: center;
+	margin: 1ex 0;
+
+	.label {
+		white-space: nowrap;
+		// Do not grow. Do not shrink. Base width is clamp(6ch, 15%, 15ch).
+		flex: 0 0 clamp(6ch, 18%, 15ch);
+		overflow-x: hidden;
+		text-overflow: ellipsis;
+	}
+
+	.diagram {
+		// Allow growth. Do not shrink. Base width is auto.
+		flex: 1 0 auto;
+		white-space: nowrap;
+		display: flex;
+		align-items: center;
+	}
+
+}
+
+.shipbar {
+	$padding: 2pt;
+
+	padding: $padding 3em $padding 0.5ch;
+	color: white;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	align-items: center;
+
+	.range {
+	}
+
+	.speed {
+		text-align: center;	
+		color: black;
+		font-size: fontsizes.$small;	
+		align-self: stretch;
+		margin: -$padding 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+}
+
+.explosion {
+	// Make the height match the width:
+	aspect-ratio: 1/1;
+	// Make it a circle:
+	border-radius: 50%;		
+	// Move center to range bar's end:
+	transform: translateX(-50%);
+	color: white;
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+}
+
+// Make the units on range and damage (but not speed) a lighter color for allies and enemies, but not the player
+#{selector.nest('.ally, .enemy', '&:not(.player)', '.range, .explosion', '.unit')} {
+	color: $unit-light;	
+}
+
+.ally { 
+	.shipbar, .explosion {
+		background-color: colors.$ally; 
+	}
+}
+.enemy  { 
+	.shipbar, .explosion {
+		background-color: colors.$enemy; 
+	}
+}
+.ally.enemy {
+	.shipbar { 
+		background-image: linear-gradient(20deg, colors.$ally 30%, colors.$enemy 70%); 
+	}
+}
+.player , .player.enemy {
+	.shipbar, .explosion {
+		background-color: colors.$player; 
+		background-image: none;
+		color: black;
+	}
+}
