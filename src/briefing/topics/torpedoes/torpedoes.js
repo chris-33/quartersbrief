@@ -7,7 +7,8 @@ import { sassFunctions } from '../common.js';
 
 
 const BASE_BUILD = { modules: 'stock' }
-const STEALTH_BUILD = {
+const CONCEALMENT_BUILD = {
+	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
 	skills: [ SKILLS.CONCEALMENT_EXPERT ]
 }
 const TORPEDO_BUILD = {
@@ -25,7 +26,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 		.filter(filters.teams(teams(battle), options?.filter?.teams ?? []))
 		// Filter out duplicates
 		.filter(filters.duplicates)
-		.map(shipId => shipBuilder.build(shipId, BASE_BUILD))
+		.map(shipId => shipBuilder.build(shipId, { ...BASE_BUILD, ...CONCEALMENT_BUILD }))
 		// If options.filter.classes is set, filter the ships list accordingly
 		.filter(ship => options?.filter?.classes?.includes(ship.getClass()) ?? true)
 		.filter(ship => ship.torpedoes)
@@ -46,11 +47,10 @@ function buildHtml(battle, gameObjectFactory, options) {
 					reload: ship.torpedoes.get('mounts.*.shotDelay', { collate: true }),
 					torpedoes: torpedoes.map(torpedo => ({
 						torpedo: torpedo,
-						range: Math.round(torpedo.getRange() / 10) * 10, // Round to 10m precision
+						range: Math.round(torpedo.getRange() / 50) * 50, // Round to 50m precision
 						damage: torpedo.getDamage(),
 						speed: torpedo.getSpeed(),
 						visibility: torpedo.getVisibility(),
-						reaction: torpedo.getVisibility() / torpedo.getSpeed(),
 						flooding: torpedo.getFloodChance()
 					}))
 				}
@@ -64,7 +64,7 @@ function buildHtml(battle, gameObjectFactory, options) {
 		};
 		
 		[ 'range', 'damage', 'speed', 'flooding' ].forEach(property => entry[property] = Math.max(...entry.builds.flatMap(build => build.torpedoes).map(torpedo => torpedo[property])));
-		[ 'rection', 'visibility' ].forEach(property => entry[property] = Math.min(...entry.builds.flatMap(build => build.torpedoes).map(torpedo => torpedo[property])));
+		[ 'visibility' ].forEach(property => entry[property] = Math.min(...entry.builds.flatMap(build => build.torpedoes).map(torpedo => torpedo[property])));
 
 		entry.reload = Math.min(...entry.builds.map(build => build.reload));
 		// Find the build with largest total number of tubes

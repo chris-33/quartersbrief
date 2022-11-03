@@ -65,13 +65,6 @@ each build, index in entry.builds
 					| #{ torpedo.visibility }
 					span.unit km
 			.details-line
-				.details-caption Reaction time:
-				.details-value(class={
-					best: torpedo.reaction === entry.reaction
-				})
-					| #{ torpedo.reaction.toFixed(5) }
-					span.unit s
-			.details-line
 				.details-caption Flooding chance:
 				.details-value(class={
 					best: torpedo.flooding === entry.flooding
