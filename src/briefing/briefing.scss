@@ -47,6 +47,7 @@ aside.details {
 
 	.details-line {
 		white-space: nowrap;
+		column-gap: 2em;
 		
 		&:not(:last-of-type) {
 			margin-bottom: 0.5ex;
@@ -64,6 +65,11 @@ aside.details {
 			text-align: right;
 		}
 	}	
+
+	.details-space {
+		content: '';
+		margin: 1ex 0;
+	}
 
 	hr {
 		border: none;
