@@ -1,6 +1,7 @@
 @use '../colors';
 @use '../fontsizes';
 @use 'sass:selector';
+@use 'details';
 
 $unit-light: #e8e8e8;
 
@@ -18,26 +19,60 @@ $unit-light: #e8e8e8;
 	}
 
 	.diagram {
-		// Allow growth. Do not shrink. Base width is auto.
-		flex: 1 0 auto;
+		// Do not grow. Do not shrink. Base width is auto.
+		flex: 1 0 0;
 		white-space: nowrap;
 		display: flex;
 		align-items: center;
 	}
 
+	.warnings {
+		$symbol-spacing: 3pt;
+
+		flex: 0 0 2em;
+		// Write from top to bottom, but don't change character orientation
+		writing-mode: vertical-lr;
+		text-orientation: upright;
+
+		letter-spacing: $symbol-spacing;
+		line-height: calc(100% + $symbol-spacing);
+		max-height: 4em;
+		
+		// Allow line breaks
+		white-space: normal;
+		// Allow soft wrap opportunities around every typographic character unit disregarding any prohibition against line breaks
+		// Normally, some of the symbol characters we are using otherwise prohibit line breaks
+		line-break: anywhere;
+		
+		font-family: "dripicons-v2";
+		.moderate {
+			color: colors.$warning-moderate;
+		}
+		.severe {
+			color: colors.$warning-severe;
+		}
+	}
 }
 
 .shipbar {
-	$padding: 2pt;
+	$vertical-padding: 2pt;
 
-	padding: $padding 3em $padding 0.5ch;
+	padding: $vertical-padding 0;
 	color: white;
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
 	align-items: center;
 
+	flex: 0 0 auto;
+
+	.tubes {
+		margin-left: 0.25ch;
+	}
+
 	.range {
+		// Prevent range from being covered by the explosion circle
+		z-index: 1;
 	}
 
 	.speed {
@@ -45,16 +80,22 @@ $unit-light: #e8e8e8;
 		color: black;
 		font-size: fontsizes.$small;	
 		align-self: stretch;
-		margin: -$padding 0;
+		margin: -$vertical-padding 0;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 	}
+
+	.hidden {
+		visibility: none;
+	}
 }
 
 .explosion {
+	flex: 0 0 auto;
 	// Make the height match the width:
-	aspect-ratio: 1/1;
+	// Currently commented out because the old chromium version (79) of the Steam overlay can't understand this
+	// aspect-ratio: 1/1;
 	// Make it a circle:
 	border-radius: 50%;		
 	// Move center to range bar's end:

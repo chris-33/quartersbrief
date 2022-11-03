@@ -1,0 +1,52 @@
+@use '../colors';
+@use '../fontsizes';
+
+.indent {
+	margin-left: 3ch;
+}
+
+.launcher {
+	word-spacing: -0.2ch;
+	white-space: nowrap;
+	text-align: center;
+
+	&:first-of-type {
+		text-align: left;
+	}
+	&:last-of-type {
+		text-align: right;
+	}
+
+	.launcherSide {
+		// color: colors.$aside;
+		font-size: fontsizes.$small;
+	}
+}
+
+.best::after {
+	content: '\2023'; // Right triangular bullet
+    transform: scale(-1, 1); // Flip horizontally
+	color: red;
+	position: absolute; // Needed to remove from layouting space apportionment, so it will appear to float outside the text block
+}
+
+aside.details {
+	padding-right: 1ch; // Give some extra space to put the best-value marker
+}
+
+.details-line.contenders {
+	display: block;
+
+	ul {
+		text-align: left;
+		padding: 0;
+		margin: 0;
+		// Without setting this, the text will be left-aligned to the aside, making the consumable icon sit outside:
+		list-style-position: inside;
+	}
+
+	.no-contenders {
+		color: colors.$aside;
+		font-style: italic;
+	}
+}

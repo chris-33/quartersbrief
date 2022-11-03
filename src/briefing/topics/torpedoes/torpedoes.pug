@@ -1,9 +1,7 @@
-- 
-	const MAX_RANGE = 20000;
-	const MAX_DAMAGE = 25000;
-	const MIN_SPEED = 52;
-	const MAX_SPEED = 75;
+include warnings
+include params
 
+- 	
 	function launcherConfiguration(launcherTubes) {
 		const result = {}
 		for (tubes of launcherTubes) {
@@ -12,8 +10,14 @@
 		}
 		return result;
 	}
+	function clampPercentage(min, val, max) {
+		return Math.min(1, Math.max(0, (val - min) / (max - min)));
+	}
 	function speedPercentage(speed) {
-		return Math.min(1, Math.max(0, (speed - MIN_SPEED) / (MAX_SPEED - MIN_SPEED)));
+		return clampPercentage(MIN_SPEED, speed, MAX_SPEED);
+	}
+	function damagePercentage(damage) {
+		return clampPercentage(MIN_DAMAGE, damage, MAX_DAMAGE);
 	}
 .content
 	each entry in entries
@@ -24,19 +28,35 @@
 		})
 			span.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
 			.diagram
-				.shipbar(style=`width: ${entry.range * 100 / MAX_RANGE}%`, data-details = entry.ship.getName())
-					.tubes
+				.shipbar(style=`flex: 0 0 calc(${entry.range * 100 / MAX_RANGE}% - ${MAX_EXPLOSION_SIZE / 2}em)`, data-details = entry.ship.getName())
+					.tubes(class={ hidden: entry.range <= RANGE_THRESHOLD_HIDE_TUBES })
 						| #{ Object.entries(launcherConfiguration(entry.tubes)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
-					.speed(style=`width: ${speedPercentage(entry.speed) * 5 + 4}em; background-image: radial-gradient(farthest-side, hsl(210 ${33 * (1 - speedPercentage(entry.speed))}% ${85 + 15 * speedPercentage(entry.speed)}%) ${75 * speedPercentage(entry.speed)}%, transparent);`)
-						span #{entry.speed}
+					
+					.speed(
+						class={ hidden: entry.range <= RANGE_THRESHOLD_HIDE_SPEED }
+						style=`
+							width: ${speedPercentage(entry.speed) * VAR_SPEED_SIZE + MIN_SPEED_SIZE}em; 
+							background-image: radial-gradient(
+								farthest-side, 
+								hsl(210, ${MIN_SPEED_SATURATION * (1 - speedPercentage(entry.speed))}%, ${MIN_SPEED_BRIGHTNESS + VAR_SPEED_BRIGHTNESS * speedPercentage(entry.speed)}%) ${SPEED_OFFSET * speedPercentage(entry.speed)}%, 
+								transparent);`)
+						span #{ Math.round(entry.speed) }
 						span.unit kts
-					.range
+					
+					.range(style=`margin-right: calc(0.5em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)}`)
 						| #{(entry.range / 1000).toFixed(1)}
 						span.unit km
-				.explosion(style=`width: calc(6em * ${entry.damage / MAX_DAMAGE})`, data-details = entry.ship.getName())
+				
+				.explosion(
+					style=`
+						width: calc(1em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)}); 
+						height: calc(1em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)});`, 
+					data-details = entry.ship.getName())
+					
 					div
-						| #{entry.damage > 9999 ? `${(entry.damage / 1000).toFixed(1)}k` : entry.damage}
-						span.unit HP
+						| #{entry.damage > 9999 ? `${(entry.damage / 1000).toFixed(1)}k` : Math.round(entry.damage)}
+				
+			+warningsPanel(entry)
 
 			aside.details(data-details-for=entry.ship.getName(), class = {
 				"ally": teams.allies.includes(entry.ship.getID()),
@@ -44,3 +64,4 @@
 				"player": teams.player === entry.ship.getID()
 			})
 				include details
+

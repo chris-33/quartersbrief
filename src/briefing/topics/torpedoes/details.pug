@@ -1,3 +1,107 @@
+- 
+	const buildNames = {
+		2: [ 'Stock', 'Top' ],
+		3: [ 'Stock', 'Middle', 'Top' ],
+		4: [ 'Stock', 'Lower middle', 'Upper middle', 'Top' ],
+	}
+
 .details-title
 	| #{entry.ship.getLabel()}
 
+each build, index in entry.builds
+	if index > 0
+		hr
+	if entry.builds.length > 1
+		.details-line
+			span.caption #{ buildNames[entry.builds.length][index] } configuration
+	.details-line
+		.details-caption Launcher configuration:
+		.details-value #{ Object.entries(launcherConfiguration(Object.values(build.tubes).flat())).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+	.details-line
+		each side in [ 'port', 'center', 'starboard' ]
+			div.launcher
+				if (build.tubes[side].length > 0)					
+					span.launcherSide #{side === 'starboard' ? 'stbd' : side}
+					br
+					| #{ Object.entries(launcherConfiguration(build.tubes[side])).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+	.details-space
+	.details-line
+		.details-caption Reload:
+		.details-value 
+			| #{ Math.round(build.reload) }
+			span.unit s
+
+	each torpedo in build.torpedoes
+		.details-line 
+			.details-caption Torpedo:
+			.details-value #{torpedo.torpedo.getLabel()}
+		.indent
+			.details-line
+				.details-caption Range:
+				.details-value(class={
+					best: torpedo.range === entry.range
+				})
+					| #{ (torpedo.range/1000).toFixed(2) }
+					span.unit km
+			.details-line
+				.details-caption Damage:
+				.details-value(class={
+					best: torpedo.damage === entry.damage
+				})
+					| #{ Math.round(torpedo.damage) }
+					span.unit HP	
+			.details-line
+				.details-caption Speed:
+				.details-value(class={
+					best: torpedo.speed === entry.speed
+				})
+					| #{ Math.round(torpedo.speed) }
+					span.unit kts
+			.details-line
+				.details-caption Visibility:
+				.details-value(class={
+					best: torpedo.visibility === entry.visibility
+				})
+					| #{ torpedo.visibility }
+					span.unit km
+			.details-line
+				.details-caption Reaction time:
+				.details-value(class={
+					best: torpedo.reaction === entry.reaction
+				})
+					| #{ torpedo.reaction.toFixed(5) }
+					span.unit s
+			.details-line
+				.details-caption Flooding chance:
+				.details-value(class={
+					best: torpedo.flooding === entry.flooding
+				})
+					| #{ Math.round(torpedo.flooding) }
+					span.unit %
+
+if (entry.ship.consumables.torpedoReloader)
+	-const reloadBooster = entry.ship.consumables.torpedoReloader;
+	hr
+	.details-line #{reloadBooster.getLabel()}
+	.details-line
+		.details-caption Torpedo reload time:
+		.details-value
+			| #{reloadBooster.torpedoReloadTime}
+			span.unit s
+	.details-line
+		.details-caption Cooldown:
+		.details-value
+			| #{reloadBooster.reloadTime}
+			span.unit s
+	.details-line
+		.details-caption Number of consumables:
+		.details-value #{reloadBooster.numConsumables}
+	.details-line.contenders
+		| In the same slot:
+		- const sameSlot = entry.ship.consumables.getContending('torpedoReloader').asArray().filter(consumable => consumable.consumableType !== 'torpedoReloader');
+		ul
+			each contender in sameSlot
+				li(style=`list-style-image: url(img/consumables/consumable_${contender.getName()}.png);`)
+					| #{contender.getLabel()}
+			else
+				span.no-contenders none

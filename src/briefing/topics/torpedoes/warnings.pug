@@ -1,0 +1,58 @@
+-
+	const THRESHOLDS = {
+		reload: [ 60, 45 ],
+		visibility: [ 1.2, 1.0 ],
+		flooding: [ 500, 600 ]
+	};
+	
+	const LESS_IS_BETTER = (a,b) => a <= b;
+	const MORE_IS_BETTER = (a,b) => a >= b;
+
+	function checkThresholds(comp) {
+		return function(entry) {
+			if (comp(entry[this.name], THRESHOLDS[this.name][1])) return 'severe';
+			if (comp(entry[this.name], THRESHOLDS[this.name][0])) return 'moderate';
+			return '';
+		}
+	}
+
+	const WARNINGS = [
+		{ 
+			name: 'torpedoReloader', 
+			severity: entry => entry.ship.consumables.torpedoReloader && 'severe', 
+			symbol: 'Z', // Clockwise Arrow 
+			tooltip: 'This ship has a torpedo reload booster' 
+		},
+		 { 
+			name: 'reload', 
+			severity: checkThresholds(LESS_IS_BETTER), 
+			symbol: '\ue046', // Stopwatch
+			tooltip: `These torpedoes have a ${reloadSeverity === 'severe' ? 'very' : ''} low base reload` 
+		}, {
+			name: 'visibility',
+			severity: checkThresholds(LESS_IS_BETTER),
+			symbol: '\ue037', // Eye
+			tooltip: `These torpedoes are detected late`
+		}, { 
+			name: 'flooding', 
+			severity: checkThresholds(MORE_IS_BETTER), 
+			symbol: '\ue059', // Waves
+			tooltip: `These torpedoes have a #{reloadSeverity === 'severe' ? 'very' : ''} high chance to cause flooding.` 
+		}, { 
+			name: 'stealthLaunch', 
+			severity: entry => entry.ship.getConcealment() <= entry.range && 'severe', 
+			symbol: '\ue063', // Warning
+			tooltip: `This ship can launch its torpedoes from stealth`
+		}
+	];
+
+
+mixin warningsPanel(entry)
+	.warnings
+		each warning in WARNINGS
+			if warning.severity(entry)
+				span(class=warning.severity(entry), data-details=`${entry.ship.getName()}-warning-${warning.name}`) #{warning.symbol}
+	div(style=`position: relative;`)
+		each warning in WARNINGS
+			aside.details.tooltip(data-details-for=`${entry.ship.getName()}-warning-${warning.name}`)
+				| #{ warning.tooltip }

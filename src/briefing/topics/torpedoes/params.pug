@@ -1,0 +1,39 @@
+-
+	// The range at which the range bar should reach its maximum length
+	const MAX_RANGE = 20000;
+	// The minimum range required to display the speed effect in the ship's range bar
+	const RANGE_THRESHOLD_HIDE_SPEED = 6000;
+	// The minimum range required to display the number of tubes in the ship's range bar
+	const RANGE_THRESHOLD_HIDE_TUBES = 6000;
+
+	// The damage at which the explosion circle should reach its minimum size
+	const MIN_DAMAGE = 8000;
+	// The damage at which the explosion circle should reach its maximum size
+	const MAX_DAMAGE = 30000;
+	
+	// The speed at which the speed effect should reach its minimum strength
+	const MIN_SPEED = 55;
+	// The speed at which the speed effect should reach its maximum strength
+	const MAX_SPEED = 85;
+
+	// The minimum size of the explosion circle
+	const MIN_EXPLOSION_SIZE = 1.5; // em
+	// The maximum size the variable aspect of the explosion circle can reach
+	const VAR_EXPLOSION_SIZE = 4; // em
+	// The absolute maximum size of the explosion circle
+	const MAX_EXPLOSION_SIZE = MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE; // em
+
+	// The minimum size of the speed effect
+	const MIN_SPEED_SIZE = 2; // em
+	// The maximum size the variable aspect of the speed effect can reach
+	const VAR_SPEED_SIZE = 5;
+	// The absolute maximum size of the speed effect
+	const MAX_SPEED_SIZE = MIN_SPEED_SIZE + VAR_SPEED_SIZE;
+	// The highest saturation that slow torpedoes can reach
+	const MIN_SPEED_SATURATION = 33; // %
+	// The minimum brightness of the torpedo speed effect's core
+	const MIN_SPEED_BRIGHTNESS = 85; // %
+	// The maximum brightness of the variable aspect of the speed effect
+	const VAR_SPEED_BRIGHTNESS = 100 - MIN_SPEED_BRIGHTNESS; // %
+	// The maximum offset the bright core can extend to
+	const SPEED_OFFSET = 75; // %
