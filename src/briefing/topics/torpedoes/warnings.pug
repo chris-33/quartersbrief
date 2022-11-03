@@ -1,7 +1,7 @@
 -
 	const THRESHOLDS = {
 		reload: [ 60, 45 ],
-		visibility: [ 1.2, 1.0 ],
+		visibility: [ 1.0, 0.7 ],
 		flooding: [ 500, 600 ]
 	};
 	
@@ -27,7 +27,7 @@
 			name: 'reload', 
 			severity: checkThresholds(LESS_IS_BETTER), 
 			symbol: '\ue046', // Stopwatch
-			tooltip: `These torpedoes have a ${reloadSeverity === 'severe' ? 'very' : ''} low base reload` 
+			tooltip: `These torpedoes reload quickly` 
 		}, {
 			name: 'visibility',
 			severity: checkThresholds(LESS_IS_BETTER),
@@ -37,10 +37,10 @@
 			name: 'flooding', 
 			severity: checkThresholds(MORE_IS_BETTER), 
 			symbol: '\ue059', // Waves
-			tooltip: `These torpedoes have a #{reloadSeverity === 'severe' ? 'very' : ''} high chance to cause flooding.` 
+			tooltip: `These torpedoes have a high chance to cause flooding` 
 		}, { 
 			name: 'stealthLaunch', 
-			severity: entry => entry.ship.getConcealment() <= entry.range && 'severe', 
+			severity: entry => entry.ship.getConcealment() * 1000 <= entry.range && 'severe', 
 			symbol: '\ue063', // Warning
 			tooltip: `This ship can launch its torpedoes from stealth`
 		}
