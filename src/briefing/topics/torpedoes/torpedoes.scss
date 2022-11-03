@@ -5,10 +5,15 @@
 
 $unit-light: #e8e8e8;
 
+.content {
+	display: flex;
+	flex-direction: column;
+	row-gap: 2ex;
+}
+
 .ship {	
 	display: flex;
 	align-items: center;
-	margin: 1ex 0;
 
 	.label {
 		white-space: nowrap;
@@ -16,6 +21,7 @@ $unit-light: #e8e8e8;
 		flex: 0 0 clamp(6ch, 18%, 15ch);
 		overflow-x: hidden;
 		text-overflow: ellipsis;
+		padding-right: 0.5ch;
 	}
 
 	.diagram {
@@ -44,6 +50,8 @@ $unit-light: #e8e8e8;
 		// Normally, some of the symbol characters we are using otherwise prohibit line breaks
 		line-break: anywhere;
 		
+		cursor: default;
+
 		font-family: "dripicons-v2";
 		.moderate {
 			color: colors.$warning-moderate;
@@ -60,7 +68,8 @@ $unit-light: #e8e8e8;
 	padding: $vertical-padding 0;
 	color: white;
 	display: flex;
-	flex-direction: row;
+	// Layout in reverse row direction to make sure the range is always right-aligned, even if both tubes and speed effect are hidden
+	flex-direction: row-reverse;
 	justify-content: space-between;
 	align-items: center;
 
@@ -87,7 +96,7 @@ $unit-light: #e8e8e8;
 	}
 
 	.hidden {
-		visibility: none;
+		display: none;
 	}
 }
 
@@ -105,7 +114,7 @@ $unit-light: #e8e8e8;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
+	justify-content: center;	
 }
 
 // Make the units on range and damage (but not speed) a lighter color for allies and enemies, but not the player
@@ -134,4 +143,7 @@ $unit-light: #e8e8e8;
 		background-image: none;
 		color: black;
 	}
+	// Always make the player's ship come last
+	order: 20;
 }
+
