@@ -6,6 +6,7 @@ import { Camouflage } from './camouflage.js';
 import { Signal } from './signal.js';
 import { Consumable } from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
+import { getModuleLines, discoverModules } from './ship-research.js';
 import createModule from './module.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
@@ -35,10 +36,10 @@ const dedicatedlog = rootlog.getLogger('Ship');
  * ```
  *
  * 
- *      Module line       '    Module line   '    Module line
- *      _Artillery        '       _Hull      '     _Engine
+ *      Module line       '    Module line   '     Module line
+ *      _Artillery        '       _Hull      '      _Engine
  *                        '                  '
- *      AB1_Artillery     '      A_Hull      '     AB1_Engine
+ *      AB1_Artillery     '      A_Hull      '      AB1_Engine
  *                        '         |        '        
  *                        '         |        '        
  *                        '         V        '
@@ -332,7 +333,7 @@ class Ship extends GameObject {
 	 */
 	equipModules(descriptor) {
 		let self = this;
-		let moduleLines = self.getModuleLines();
+		let moduleLines = this.getModuleLines();
 
 		// Expand shorthand notations such as descriptor === 'stock' and
 		// descriptor === 'top'
@@ -469,156 +470,13 @@ class Ship extends GameObject {
 		signals.forEach(signal => this.hoist(signal));
 	}
 
-	/**
-	 * Get the module lines for this ship. Building the ship's module lines tends to be an 
-	 * expensive operation, so this method will return a cached result on subsequent calls. 
-	 */
-	getModuleLines() {
-		/*
-			This algorithm works as follows:
-			It puts all the module definitions from ShipUpgradeInfo into
-			an array. As long as this array is not empty, it removes the
-			first item from the START of the array and examines it.
-
-			If this module is the start of a module line (i.e., its prev 
-			property equals ''), module is put at the start of the module
-			line, and its distance metadata is set to 0.
-
-			Otherwise, it tries to find the predecessor for the module in any
-			module line. If none can be found, it must not have been processed yet.
-			The module is appended again to the END of the list to be looked at
-			again later.
-
-			If a predecessor is found, the module's distance metadata is the predecessor's
-			distance + 1. The module is then inserted into its module line such that
-			the module to its left has a lower distance value, the module to its right
-			a higher distance value. (This can also mean inserting at the start or end).
-		 */
-		let self = this;		
-
-		// Building module lines is a relatively expensive operation (~50-100ms).
-		// Therefore, only build once and then cache.
-		// On subsequent calls, read from cache if available and not forced to rebuild.
-		if (self.#moduleLines)
-			return self.#moduleLines;
-
-		// Helper function that returns true if the argument is an 
-		// module definition
-		function isModuleDefinition(o) {
-			return typeof o === 'object'
-				&& o.hasOwnProperty('components')
-				&& o.hasOwnProperty('prev')
-				&& o.hasOwnProperty('ucType');
-		}		
-
-		// Get everything in ShipUpgradeInfo
-		let modules = this._data.ShipUpgradeInfo;
-		
-		// Initialize metadata to be kept for each module.
-		// We need this for the algorithm to work: For one thing,
-		// we need to preserve the key names of the individual module
-		// definitions, because the "prev" property references those. 
-		// Of course, we could just keep working with the ShipUpgradeInfo
-		// object, but that makes handling and iterating over the module
-		// definitions much more convoluted: Lots of Object.keys(), Object.values()
-		// and Object.entries() calls. So instead, we will project down to 
-		// an array of module definition objects soon, and keep key names
-		// as metadata.
-		// 
-		// Keys for the metadata will be hashes of their corresponding
-		// module objects.
-		let metadata = new WeakMap();
-		for (let moduleKey in modules) {
-			let module = modules[moduleKey];
-			// Filter out primitives
-			if (!isModuleDefinition(module)) continue;
-			// Save the module's key name in metadata
-			metadata.set(modules[moduleKey], { name: moduleKey });
-		}
-		// Now project down to module definition objects
-		modules = Object.values(modules)
-			// Filter out only those that are objects. Now contains
-			// arrays of the form [keyname, object]
-			.filter(obj => isModuleDefinition(obj));
-
-		let moduleLines = {};
-
-		// As long as there are still unprocessed modules
-		while (modules.length > 0) {
-			// Take the first one out
-			let module = modules.shift();	
-
-			if (module.prev === '') {
-				// This module is the beginning of the module line. Put it at the front.
-				// If the module line does not exist yet, create one.
-				if (!moduleLines[module.ucType]) moduleLines[module.ucType] = [];
-				
-				// Insert at the front
-				moduleLines[module.ucType].splice(0, 0, module);
-				// The module is at the start of the module line, so its distance is 0
-				metadata.get(module).distance = 0;
-			} else {
-				// Try to find the module's predecessor. This might be in any module line.
-				// The predecessor is that module whose metadata name property equals the prev
-				// property of the module we're currently dealing with.
-				let predecessor = null;
-				for (let line of Object.values(moduleLines)) {
-					predecessor = line.find(u => metadata.get(u).name === module.prev);
-					if (predecessor) break;
-				}
-
-				if (!predecessor) {
-					// If no predecessor has been found in any module line, it must not have
-					// been processed yet. 
-					// Put the module back into the list and continue with the next one.
-					modules.push(module);
-					continue;
-				} else {
-					// If one has been found, our module's distance metadata is the predecesor's
-					// distance plus one.
-					metadata.get(module).distance = metadata.get(predecessor).distance + 1;
-					// Initialize the module's module line if necessary
-					if (!moduleLines[module.ucType]) moduleLines[module.ucType] = [];
-					
-					// Two short-hands that make the following code a little more readable
-					let line = moduleLines[module.ucType];
-					let distance = (u => metadata.get(u).distance);
-
-					// Look for the insertion index. This is the place where the previous module
-					// in the line has a lower distance, and the subsequent one has a higher distance.
-					let index = -1;
-					for (let i = -1; i < line.length; i++) {
-						// The distances to the left and right
-						let lowerbound; let upperbound;
-						switch (i) {
-							case -1: 
-								lowerbound = Number.NEGATIVE_INFINITY; // If we are just starting out, the lowerbound -oo ...
-								upperbound = distance(line[0]); // ... and the upper bound is the distance of the first item
-								break;
-							case line.length - 1: 
-								lowerbound = distance(line[i]); // If we are at the end, the lower bound is the distance of the last item ...
-								upperbound = Number.POSITIVE_INFINITY; // ... and the upper bound is +oo
-								break;
-							default:
-								lowerbound = distance(line[i]); // In all other cases, the lower bound is the distance of the current item ...
-								upperbound = distance(line[i+1]); // ... and the upper bound is the distance of the next item
-						}
-						// If we are between the lower and the upper bound, we have found the right place
-						if (lowerbound < distance(module) && distance(module) < upperbound) {
-							// Insert at the next index
-							index = i + 1;
-							// If we have already found the right place, no need to continue
-							break;
-						}
-					}
-					if (index > -1)
-						line.splice(index, 0, module);
-				}
-			}
-		}
-		// Cache for later
-		self.#moduleLines = moduleLines;
-		return moduleLines;
+	getModuleLines() { return getModuleLines(this.get('ShipUpgradeInfo')); }
+	discoverModules(type) { 
+		// If type is not a ucType, convert it to one.
+		// E.g. if called as discoverModules('torpedoes'), make it discoverModules('_Torpedoes')
+		if (!type.startsWith('_'))
+			type = `_${type[0].toUpperCase()}${type.slice(1)}`;
+		return discoverModules(type, this.get('ShipUpgradeInfo'));
 	}
 
 	/**
