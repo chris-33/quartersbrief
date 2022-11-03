@@ -42,6 +42,7 @@ class Modifier {
 	 * only that string.
 	 */
 	static KNOWN_TARGETS = {
+		floodChanceFactor: 'torpedoes.mounts.*.ammoList.*.uwCritical', // Skill 60 Liquidator, PCEF017_VL_SignalFlag, PCEF019_JW1_SignalFlag
 		// @todo GMRotationSpeed:  // PCM006_MainGun_Mod_II, PCM013_MainGun_Mod_III, PCM034_Guidance_Mod_0
 		// @todo AAAuraDamage // PCM011_AirDefense_Mod_II
 		// @todo AABubbleDamage // PCM011_AirDefense_Mod_II
@@ -49,12 +50,18 @@ class Modifier {
 		GMShotDelay: 'artillery.mounts.*.shotDelay', // PCM013_MainGun_Mod_III
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
 		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
+		GTShotDelay: 'torpedoes.mounts.*.shotDelay', // PCM014_Torpedo_Mod_III, PCM057_Special_Mod_I_Shimakaze, PCM075_Special_Mod_I_Daring, Skill 4 Fill the Tubes
 		// @todo planeVisibilityFactor isn't the visibility BY plane, it's the visibility OF the planes
 		// planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
 		visibilityDistCoeff: [ // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
 			'hull.visibilityFactor', 
 			'hull.visibilityFactorByPlane' 
 		], 
+		torpedoDamageCoeff: [ // Skill 30 Enhanced Torpedo Explosive Charge
+			'torpedoes.mounts.*.ammoList.*.alphaDamage',
+			'torpedoes.mounts.*.ammoList.*.damage',
+		],
+		torpedoSpeedMultiplier: 'torpedoes.mounts.*.ammoList.*.speed', // PCM070_Torpedo_Mod_IV, Skill 24 Swift Fish
 		sonarWorkTimeCoeff: 'consumables.sonar.workTime', // PCM041_SonarSearch_Mod_I, Skill 6 ConsumablesDuration
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
 		ConsumablesWorkTime: 'consumables.*.workTime', // PCM072_AbilityWorktimeBoost_Mod_I

@@ -12,7 +12,9 @@ class Consumable extends GameObject {
 		'label',
 		'distShip',
 		'workTime',
-		'reloadTime'
+		'reloadTime',
+		'numConsumables',
+		'torpedoReloadTime' // Torpedo Reload Booster
 	];
 
 	#flavor;
