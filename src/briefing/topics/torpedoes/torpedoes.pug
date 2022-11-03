@@ -28,10 +28,17 @@ include params
 		})
 			span.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
 			.diagram
-				.shipbar(style=`flex: 0 0 calc(${entry.range * 100 / MAX_RANGE}% - ${MAX_EXPLOSION_SIZE / 2}em)`, data-details = entry.ship.getName())
-					.tubes(class={ hidden: entry.range <= RANGE_THRESHOLD_HIDE_TUBES })
-						| #{ Object.entries(launcherConfiguration(entry.tubes)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+				//- The length of the bar indicates the range of the torpedoes
+				.shipbar(style=`flex: 0 0 calc(${Math.min(MAX_RANGE, entry.range) * 100 / MAX_RANGE}% - ${MAX_EXPLOSION_SIZE / 2}em)`, data-details = entry.ship.getName())
+					//- These are in reverse order because flex-direction is set to row-reverse on .shipbar
+					//- (This is to make sure range is always right-aligned, even if speed and tubes are hidden)				
 					
+					//- The numeric range indicator
+					.range(style=`margin-right: calc(0.5em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)}`)
+						| #{(entry.range / 1000).toFixed(1)}
+						span.unit km
+			
+					//- The speed effect: the faster the torpedoes, the larger (and brighter) the effect
 					.speed(
 						class={ hidden: entry.range <= RANGE_THRESHOLD_HIDE_SPEED }
 						style=`
@@ -42,11 +49,12 @@ include params
 								transparent);`)
 						span #{ Math.round(entry.speed) }
 						span.unit kts
-					
-					.range(style=`margin-right: calc(0.5em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)}`)
-						| #{(entry.range / 1000).toFixed(1)}
-						span.unit km
+
+					//- The tube configuration			
+					.tubes(class={ hidden: entry.range <= RANGE_THRESHOLD_HIDE_TUBES })
+						| #{ Object.entries(launcherConfiguration(entry.tubes)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
 				
+				//- The explosion circle indicates the damage the torpedoes do
 				.explosion(
 					style=`
 						width: calc(1em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)}); 
@@ -56,6 +64,7 @@ include params
 					div
 						| #{entry.damage > 9999 ? `${(entry.damage / 1000).toFixed(1)}k` : Math.round(entry.damage)}
 				
+			//- Various warning indicators
 			+warningsPanel(entry)
 
 			aside.details(data-details-for=entry.ship.getName(), class = {
