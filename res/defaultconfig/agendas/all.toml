@@ -28,3 +28,13 @@ almostThreshold = 500
 filter = { teams = [ "enemies" ] }
 
 [topics.overmatch_me]
+
+[topics.knifefighting]
+filter = { classes = [ "Destroyer" ] }
+# A list of percentages controlling how to subdivide ships' value bars. E.g. [33,66,100] means subdivisions at 33%,
+# 66% and 100%. All ships' bars will then have notches at those percentages. In addition, ships will show their
+# corresponding health values at which their knife-fighting value matches that of the player's ship.
+subdivisions = [ 33, 66, 100 ]
+
+[topics.torpedoes]
+filter = { teams = [ "player", "enemies" ]}
