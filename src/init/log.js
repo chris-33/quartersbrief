@@ -17,7 +17,7 @@ prefix.apply(log, {
 		}
 		return colors[level](level.toUpperCase());
 	},
-	timestampFormatter: date => `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes()}:${date.getSeconds()}.${date.getMilliseconds()}`
+	timestampFormatter: date => `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}:${date.getSeconds().toString().padStart(2,'0')}.${date.getMilliseconds().toString().padStart(3,'0')}`
 });
 
 // Make child loggers silent by default, unless they were explicitly listed with the --debug flag
