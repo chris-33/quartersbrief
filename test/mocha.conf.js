@@ -14,10 +14,12 @@ sinon.test = sinontest(sinon);
 chainock.setTimeout(500); 
 
 chai.use(sinonchai);
-chai.use(chaiaspromised);
 chai.use(chaievents);
 chai.use(chainock);
 chai.use(chaifs);
+// This needs to be the last call to use()
+// See https://github.com/domenic/chai-as-promised/blob/master/README.md#node
+chai.use(chaiaspromised);
 
 global.expect = chai.expect;
 
