@@ -1,6 +1,13 @@
 export function each(step) {
-	return async function(result) {
-		return result.map(async r => await step(r));
+	return async function(arg) {
+		if (Array.isArray(arg)) 
+			return arg.map(async member => await step(member));
+		else if (typeof arg === 'object') { 
+			let result = {};
+			for (let key in arg)
+				result[key] = await step(arg[key]);
+			return result;
+		}
 	}
 }
 
