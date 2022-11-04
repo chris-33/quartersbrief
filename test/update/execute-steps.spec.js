@@ -1,4 +1,4 @@
-import { executeSteps, each } from '../../src/update/update.js';
+import executeSteps, { each } from '../../src/update/execute-steps.js';
 import sinon from 'sinon';
 
 describe('executeSteps', function() {
@@ -20,7 +20,7 @@ describe('executeSteps', function() {
 	it('should handle errors in some mysterious and yet unspecified way');
 });
 
-describe.only('each', function() {
+describe('each', function() {
 	it('should call the step function with each array item instead of the array', async function() {
 		const step = sinon.stub();
 		const arg = [ 1, 2, 3 ];
