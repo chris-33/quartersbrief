@@ -1,5 +1,6 @@
 import { extract, readFile, writeJSON } from '../../../src/update/infra/steps.js';
 import os from 'os';
+import path from 'path';
 import { join } from 'path';
 import esmock from 'esmock';
 import mockfs from 'mock-fs';
@@ -118,6 +119,14 @@ describe('extract', function() {
 			await extractor(resources);
 			resources.include.forEach(incl => expect(execa, `include ${incl}`).to.have.been.calledWith(sinon.match.any, sinon.match(hasParam('include', incl))));
 			resources.exclude.forEach(excl => expect(execa, `exclude ${excl}`).to.have.been.calledWith(sinon.match.any, sinon.match(hasParam('exclude', excl))));
+		});
+
+		it('should return a list of paths for all extracted files', async function() {
+			const resources = [ 'folder/fileA', 'folder/fileB']
+			execa.resolves({ stdout: resources.join('\r\n') }); // Simulate output of wowsunpack - a Windows program, so we have Windows line separators
+
+			let result = await extractor('*');
+			expect(result).to.be.an('array').with.members(resources.map(resource => path.join(dest, resource)));
 		});
 	});	
 });

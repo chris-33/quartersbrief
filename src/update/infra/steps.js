@@ -70,7 +70,10 @@ export function extract(wows, dest, buildno, resource) {
 		if (resource.exclude)
 			args = args.concat(resource.exclude.flatMap(excl => [ '--exclude', excl ]));
 
-		return (await execa(cmd, args)).stdout;
+		return (await execa(cmd, args))
+			.stdout
+			.split('\r\n') // The stdout comes from wowsunpack.exe - a Windows program. So we need to use the Windows line separator here, regardless of host OS
+			.map(line => path.join(dest, line));
 	}
 
 	if (resource) 
