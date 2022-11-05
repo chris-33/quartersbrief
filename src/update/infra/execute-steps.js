@@ -19,6 +19,12 @@ export function each(step) {
 	}
 }
 
+export function passthrough(step) {
+	return async function(arg) {
+		await step(arg);
+		return arg;
+	}
+}
 /**
  * Executes a series of functions, calling each with the result of its predecessor. Returns the last result.
  * @param  {Function[]} steps The functions to execute.

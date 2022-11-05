@@ -1,4 +1,4 @@
-import executeSteps, { each } from '../../../src/update/infra/execute-steps.js';
+import executeSteps, { each, passthrough } from '../../../src/update/infra/execute-steps.js';
 import sinon from 'sinon';
 
 describe('executeSteps', function() {
@@ -24,22 +24,30 @@ describe('each', function() {
 	it('should call the step function with each array item instead of the array', async function() {
 		const step = sinon.stub();
 		const arg = [ 1, 2, 3 ];
-		await executeSteps([
-			() => arg,
-			each(step)
-		]);
+		await each(step)(arg);
+
 		arg.forEach(arg => expect(step).to.have.been.calledWith(arg));
 	});
 
 	it('should call the step function with each object property instead of the object', async function() {
 		const step = sinon.stub();
 		const arg = { a: 'a', b: 'b' };
-		await executeSteps([
-			() => arg,
-			each(step)
-		]);
+		await each(step)(arg);
+		
 		for (let key in arg) 
 			expect(step).to.have.been.calledWith(arg[key]);
 	});
 
+});
+
+describe('passthrough', function() {
+	it('should call the step function with the argument and return the argument', async function() {
+		const arg = {};
+		const step = sinon.stub();
+
+		let result = await passthrough(step)(arg);
+
+		expect(step).to.have.been.calledWith(arg);
+		expect(result).to.equal(arg);
+	});
 });
