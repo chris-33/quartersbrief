@@ -12,7 +12,7 @@ describe('latestBuild', function() {
 		this.timeout(3000); // Loading of the modules sometimes takes a while, so increase the timeout to 3s
 
 		// Do a dynamic import so we can supply a mock config.js
-		({ latestBuild } = (await esmock('../../src/update/buildno.js', {}, {
+		({ latestBuild } = (await esmock('../../src/update/infra/buildno.js', {}, {
 			'../../src/init/config.js': { default: config },
 		})));
 	});

@@ -1,4 +1,4 @@
-import { extract, readFile, writeJSON } from '../../src/update/steps.js';
+import { extract, readFile, writeJSON } from '../../src/update/infra/steps.js';
 import os from 'os';
 import { join } from 'path';
 import esmock from 'esmock';
