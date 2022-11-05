@@ -13,6 +13,7 @@ describe('extract', function() {
 
 	describe('extractor function', function() {
 		let execa;
+		let extract;
 		let extractor;
 
 		const wowsdir = '/wows'
@@ -37,9 +38,10 @@ describe('extract', function() {
 			
 			execa = sinon.stub().resolves({ stdout: '', stderr: '' });
 
-			extractor = (await esmock('../../../src/update/infra/steps.js', {}, {
+			extract = (await esmock('../../../src/update/infra/steps.js', {}, {
 				execa: { execa },				
-			})).extract(wowsdir, dest, buildno);
+			})).extract;
+			extractor = extract(wowsdir, dest, buildno)
 		});
 
 		afterEach(function() {
@@ -87,6 +89,13 @@ describe('extract', function() {
 
 			await extractor('*');
 			expect(execa).to.have.been.calledWith(sinon.match.any, sinon.match(hasBuild));
+		});
+
+		it('should extract the resource if one was supplied when created', async function() {
+			const resource = '/abc';
+			extractor = extract(wowsdir, dest, buildno, resource)
+			await extractor();
+			expect(execa).to.have.been.calledWith(sinon.match.any, sinon.match(hasParam('include', resource)));			
 		});
 
 		it('should extract the resource when specified as a string', async function() {

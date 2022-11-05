@@ -12,12 +12,18 @@ import { execa } from 'execa';
  * or an object `{ includes, excludes }` each containing an array of inclusion/exclusion patterns. It returns an array of strings containing
  * the paths of the extracted files.
  * 
+ * Because this will frequently form the start of a step chain, it supports a convenience form where the resource to extract can be 
+ * passed directly. This form is equivalent to the step sequence `[ () => resource, extract(wows, dest, buildno) ]`, but more readable.
+ *
+ * @param  {String} wows	 The World of Warships base directory
  * @param  {String} dest     The directory to extract to
  * @param  {number} buildno  The build number to extract from
+ * @param  {String} [resource]	The resource to extract. If this is not specified, the returned extractor function will take the resource to
+ * extract as an argument.
  * @return {Function}          The extractor function.
  */
-export function extract(wows, dest, buildno) {
-	return async function(resource) {
+export function extract(wows, dest, buildno, resource) {
+	async function extractor(resource) {
 		if (!buildno) 
 			throw new TypeError(`No buildno specified`);
 		if (!resource) 
@@ -66,6 +72,11 @@ export function extract(wows, dest, buildno) {
 
 		return (await execa(cmd, args)).stdout;
 	}
+
+	if (resource) 
+		return () => extractor(resource);
+	else
+		return extractor;
 }
 
 /**
