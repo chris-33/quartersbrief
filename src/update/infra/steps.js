@@ -1,4 +1,4 @@
-import config, { paths } from '../init/config.js';
+import config, { paths } from '../../init/config.js';
 import path from 'path';
 import * as fs from 'fs/promises';
 import os from 'os';
@@ -85,13 +85,13 @@ export function readFile(options='utf8') {
 
 /**
  * Returns a step function that writes its argument to the specified file as JSON. If the path to the file
- * does not exist, it is created.
+ * does not exist, it is created. The step function returns the path of the written file.
  * @param  {String} file The file to write to
  * @return {Function} The writer function
  */
 export function writeJSON(file) {
 	return async function(data) {
 		await fs.mkdir(path.dirname(file), { recursive: true });
-		return fs.writeFile(file, JSON.stringify(data))
+		return fs.writeFile(file, JSON.stringify(data)).then(() => file);
 	}
 }

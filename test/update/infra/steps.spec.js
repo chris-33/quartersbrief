@@ -182,7 +182,7 @@ describe('writeFile', function() {
 		});
 
 		it('should create the specified file if it doesn\'t exist and write the data as JSON', async function() {
-			await writer(contents);
+			expect(await writer(contents)).to.equal(file);
 			expect(file).to.be.a.file().with.content(JSON.stringify(contents));
 		});
 
@@ -190,7 +190,7 @@ describe('writeFile', function() {
 			mockfs({ [file]: JSON.stringify({})});
 			expect(file).to.be.a.file();
 
-			await writer(contents);
+			expect(await writer(contents)).to.equal(file);
 			expect(file).to.be.a.file().with.content(JSON.stringify(contents));
 		});
 
