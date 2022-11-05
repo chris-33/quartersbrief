@@ -1,4 +1,4 @@
-import executeSteps, { each } from '../../src/update/infra/execute-steps.js';
+import executeSteps, { each } from '../../../src/update/infra/execute-steps.js';
 import sinon from 'sinon';
 
 describe('executeSteps', function() {
