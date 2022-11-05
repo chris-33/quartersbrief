@@ -136,6 +136,11 @@ describe('readFile', function() {
 			mockfs.restore()
 		});
 
+		it('should read the file if one was supplied when created', function() {
+			reader = readFile('utf8', file);
+			return expect(reader(file)).to.eventually.equal(contents);
+		});
+
 		it('should read the specified file', function() {
 			return expect(reader(file)).to.eventually.equal(contents);
 		});

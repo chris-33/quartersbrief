@@ -71,13 +71,22 @@ export function extract(wows, dest, buildno) {
 /**
  * Returns a step function that reads the specified file. The returned function takes the file name
  * as an argument and returns the file's content as a `Buffer` or a `String` depending on the specified encoding. 
+ *
+ * Because this will frequently form the start of a step chain, it supports a convenience form where the file name can be 
+ * passed directly. In this case, `options` **must** be specified (but may be `null` or `undefined`). This form is equivalent to
+ * the step sequence `[ () => file, readFile() ]`, but more readable.
  * @param  {String|Object} [options='utf8'] An options object, or the encoding, to be passed to [fs.readFile](https://nodejs.org/api/fs.html#fspromisesreadfilepath-options)
+ * @param  {String} [file]	The file to read from. If this is ommitted, the step function reads the file that it gets passed as an argument.
  * @return {Function}         The reader function.
  */
-export function readFile(options='utf8') {
-	return function(file) {
+export function readFile(options='utf8', file) {
+	function reader(file) {
 		return fs.readFile(file, options);
 	}
+
+	if (arguments.length > 1)
+		return () => reader(file)
+	else return reader;
 }
 
 /**
