@@ -1,4 +1,4 @@
-import { extract, readFile, writeJSON } from '../../src/update/infra/steps.js';
+import { extract, readFile, writeJSON } from '../../../src/update/infra/steps.js';
 import os from 'os';
 import { join } from 'path';
 import esmock from 'esmock';
@@ -15,17 +15,9 @@ describe('extract', function() {
 		let execa;
 		let extractor;
 
-		const config = {
-			wowsdir: '/wows'
-		};
-		const paths = {
-			config: '/config',
-			data: '/data',
-			temp: '/tmp',
-			base: '/'
-		};
+		const wowsdir = '/wows'
+		const dest = '/data';
 		const buildno = 1;
-		const dest = paths.temp;
 
 		// Convenience function that generates a sinon matcher that looks for the sequence '--<option> <value>' in the args array
 		function hasParam(option, value) {
@@ -45,13 +37,9 @@ describe('extract', function() {
 			
 			execa = sinon.stub().resolves({ stdout: '', stderr: '' });
 
-			extractor = (await esmock('../../src/update/steps.js', {}, {
-				execa: { execa },
-				'../../src/init/config.js': {
-					default: config,
-					paths
-				},		
-			})).extract(dest, buildno);
+			extractor = (await esmock('../../../src/update/infra/steps.js', {}, {
+				execa: { execa },				
+			})).extract(wowsdir, dest, buildno);
 		});
 
 		afterEach(function() {
@@ -81,6 +69,12 @@ describe('extract', function() {
 				// Check commands of the execa calls
 				expect(execa).to.have.been.calledWith(sinon.match(command[sys]), sinon.match(argument0[sys]));
 			});
+		});
+
+		it('should have the correct path to wowsunpack.exe', async function() {
+			await extractor('*');
+			let wowsunpack = execa.firstCall.firstArg;
+			expect(wowsunpack).to.be.a.file();
 		});
 
 		it('should extract to the specified destination', async function() {

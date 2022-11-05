@@ -1,11 +1,8 @@
-import config, { paths } from '../../init/config.js';
 import path from 'path';
+import { fileURLToPath } from 'url';
 import * as fs from 'fs/promises';
 import os from 'os';
 import { execa } from 'execa';
-import rootlog from 'loglevel';
-
-const dedicatedlog = rootlog.getLogger('Updater');
 
 /**
  * Returns a step function that extracts the specified resources of the specified build number to the specified destination using `wowsunpack.exe`. 
@@ -19,7 +16,7 @@ const dedicatedlog = rootlog.getLogger('Updater');
  * @param  {number} buildno  The build number to extract from
  * @return {Function}          The extractor function.
  */
-export function extract(dest, buildno) {
+export function extract(wows, dest, buildno) {
 	return async function(resource) {
 		if (!buildno) 
 			throw new TypeError(`No buildno specified`);
@@ -32,18 +29,19 @@ export function extract(dest, buildno) {
 		// 
 		// Need to actually use path.join here to make sure we're passing valid input into the command line call.
 		const idxPath = path.join(
-			config.wowsdir, 
+			wows, 
 			'bin',
 			String(buildno), 
 			'idx');
 
+		const wowsunpack = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../../', 'res/wowsunpack.exe');
 		let cmd;
 		let args;
 		if (os.type() === 'Linux') {
 			cmd = 'wine';
-			args = [ path.resolve(path.join(paths.base, 'tools/wowsunpack/wowsunpack.exe')) ];
+			args = [ wowsunpack ];
 		} else if (os.type() === 'Windows_NT') {
-			cmd = path.resolve(path.join(paths.base, 'tools/wowsunpack/wowsunpack.exe'));
+			cmd = wowsunpack;
 			args = [];
 		} 
 
@@ -57,7 +55,7 @@ export function extract(dest, buildno) {
 		// Construct arguments array
 		args = args.concat([
 			idxPath,
-			'--packages', path.join(config.wowsdir, 'res_packages'),
+			'--packages', path.join(wows, 'res_packages'),
 			'--output', dest,
 			'--extract',
 			'--list',
@@ -66,7 +64,6 @@ export function extract(dest, buildno) {
 		if (resource.exclude)
 			args = args.concat(resource.exclude.flatMap(excl => [ '--exclude', excl ]));
 
-		dedicatedlog.debug(`Running ${cmd} ${args.join(' ')}`);
 		return (await execa(cmd, args)).stdout;
 	}
 }
