@@ -84,7 +84,7 @@ export function moduleComponentsResolveUnambiguously(ship) {
 	// An array of ship IDs that the "ignored known violator" warning was already given for. Otherwise we get a bunch of duplicate warnings -
 	// one for every component involved in the violation.
 	let ignoredWarnings = [];
-debugger	
+	
 
 	dedicatedlog.debug(`Checking invariant assertModuleComponentsResolveUnambiguously for ${ship.name}`);
 	
@@ -144,7 +144,7 @@ debugger
 	}
 	problematic = problematic.filter(problem => !toDelete.includes(problem));
 	problematic = problematic.concat(toAdd);
-debugger
+
 	// Now try to find remedies for the problematic modules.
 	for (let problem of problematic) {
 		let problematicComponentKey = Object.keys(problem.components).filter(key => problem.components[key].length > 1);
@@ -189,7 +189,7 @@ debugger
 				counterexamples.push(`${ship.name}.ShipUpgradeInfo.${moduleNames(problem)}.${problematicComponentKey}`);
 		}
 	}
-debugger
+
 	if (counterexamples.length > 0) {
 		let errors = counterexamples.map(counterexample => new InvariantError('all modules\' components must be resolvable unambiguously', counterexample));
 		throw errors.length > 1 ? new AggregateError(errors) : errors[0];
