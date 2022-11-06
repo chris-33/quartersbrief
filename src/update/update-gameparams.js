@@ -100,7 +100,35 @@ export default async function updateGameParams(wows, dest, buildno) {
 		//   opposed to being included for legacy reasons.
 		// For the time being, project to the definitions.
 		gpd => gpd[0],
+		// Check invariants
 		passthrough(each(gameObject => Object.values(invariants).filter(imported => typeof imported === 'function').forEach(invariant => invariant(gameObject)))),
+		// @todo Write game param files individually instead of in one big file
+		// passthrough(each(writeJSON(gameObject => path.format({
+		// 		dir: dest, 
+		// 		name: gameObject.name,
+		// 		ext: '.json'
+		// })))),
+		// each(async gameObject => {
+		// 	if (gameObject.index !== gameObject.name)
+		// 		await fs.link(path.format({
+		// 			dir: dest, 
+		// 			name: gameObject.name,
+		// 			ext: '.json'
+		// 		}), path.format({
+		// 			dir: dest, 
+		// 			name: gameObject.index,
+		// 			ext: '.json'
+		// 		}))
+		// 	await fs.link(path.format({
+		// 		dir: dest, 
+		// 		name: gameObject.name,
+		// 		ext: '.json'
+		// 	}), path.format({
+		// 		dir: dest, 
+		// 		name: gameObject.id,
+		// 		ext: '.json'
+		// 	}))
+		// })
 		writeJSON(path.join(dest, 'GameParams.json'))
 	]);
 }
