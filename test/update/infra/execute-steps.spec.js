@@ -16,8 +16,6 @@ describe('executeSteps', function() {
 
 		}));
 	});
-
-	it('should handle errors in some mysterious and yet unspecified way');
 });
 
 describe('each', function() {

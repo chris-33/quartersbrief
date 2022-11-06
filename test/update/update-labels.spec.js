@@ -34,14 +34,4 @@ describe('updateLabels', function() {
 		expect(await updateLabels(wowsdir, dest, buildno)).to.be.ok;
 		expect(path.join(dest, 'global-en.json')).to.be.a.file().with.contents(JSON.stringify(expected));
 	});
-
-	it.skip('should revert labels to their previous version if the label update fails', async function() {
-		mockfs({
-			...prepopulated,
-			[path.join(dest, 'global-en.json')]: 'preexisting',
-			[path.join(wowsdir, `/bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`)]: 'malformed',
-		});
-		expect(await updateLabels(buildno)).to.be.false;
-		expect(path.join(dest, 'global-en.json')).to.be.a.file().with.contents('preexisting');
-	});
 });
