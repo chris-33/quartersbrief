@@ -70,6 +70,15 @@ export default async function updateGameParams(wows, dest, buildno) {
 	// All props go to him.
 	return executeSteps([
 		extract(wows, tmpdir, buildno, resource),
+		// The above returned an array of paths, even though we only extracted one file.
+		// Make sure it really way exactly one, and return that one's path instead.
+		extracted => {
+			switch (extracted.length) {
+				case 0: throw new Error(`Could not extract GameParams.data from game files`);
+				case 1: return extracted[0];
+				default: throw new Error(`Expected GameParams.data to be unique, but ${extracted.length} files were extracted`)
+			}
+		},
 		// Read the extracted file as a Buffer
 		readFile({ encoding: null }),
 		// Delete the extracted file now that we have read it

@@ -18,18 +18,24 @@ describe('updateGameParams', function() {
 
 	let data;
 
-	const extractor = async function(resource) {
-		await fs.mkdir(path.dirname(path.join(os.tmpdir(), resource)));
-		await fs.writeFile(path.join(os.tmpdir(), resource), data);
-		return Promise.resolve(path.join(os.tmpdir(), resource));
-	}
-
+	let extract;
+	
 	let invariants;
 
 	let updateGameParams;
 
 	before(async function() {
 		data = await fs.readFile('test/update/testdata/GameParams.data');
+	});
+
+	beforeEach(function() {
+		extract = sinon.stub().callsFake(function(wows, dest, build, resource) {
+			return sinon.stub().callsFake(async function() {
+				await fs.mkdir(path.dirname(path.join(os.tmpdir(), resource)));
+				await fs.writeFile(path.join(os.tmpdir(), resource), data);
+				return Promise.resolve([ path.join(os.tmpdir(), resource) ]);
+			});
+		});
 	});
 
 	beforeEach(function() {
@@ -42,9 +48,7 @@ describe('updateGameParams', function() {
 	beforeEach(async function() {
 		const steps = {
 			..._steps,
-			extract: function(wows, dest, build, resource) {
-				return sinon.stub().callsFake(extractor.bind(this, resource));
-			}
+			extract
 		}
 		updateGameParams = (await esmock('../../src/update/update-gameparams.js', {}, {
 				'../../src/update/infra/steps.js': steps,
@@ -54,6 +58,14 @@ describe('updateGameParams', function() {
 
 	afterEach(function() {
 		mockfs.restore();
+	});
+
+	it('should throw if not exactly one file was extracted', async function() {
+		extract.returns(sinon.stub().resolves([]));		
+		await expect(updateGameParams(wowsdir, dest, buildno), `extracted no files`).to.be.rejected;
+		
+		extract.returns(sinon.stub().resolves([ 'GameParams-1.data', 'GameParams-2.data' ]));
+		await expect(updateGameParams(wowsdir, dest, buildno), `extracted too many files`).to.be.rejected;
 	});
 
 	it('should check every game object against all invariants', async function() {
