@@ -19,12 +19,21 @@ export function each(step) {
 	}
 }
 
+/**
+ * Returns a function that calls the passed `step` function and ignores its result, returning the argument that was provided
+ * to `step` instead.
+ *
+ * This allows inserting steps where the result is not important, and continue processing as if that function was not there.
+ * @param  {Function} step The function to call
+ * @return {*}      The argument that was supplied to `step`. 
+ */
 export function passthrough(step) {
 	return async function(arg) {
 		await step(arg);
 		return arg;
 	}
 }
+
 /**
  * Executes a series of functions, calling each with the result of its predecessor. Returns the last result.
  * @param  {Function[]} steps The functions to execute.
