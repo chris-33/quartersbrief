@@ -172,7 +172,7 @@ describe('readFile', function() {
 	});
 });
 
-describe('writeFile', function() {
+describe('writeJSON', function() {
 	it('should return a function', function() {
 		expect(writeJSON()).to.be.a('function');
 	});
@@ -216,6 +216,14 @@ describe('writeFile', function() {
 			writer = writeJSON(join(path, dirs, basename));
 			await writer({});
 			expect(join(path, dirs)).to.be.a.directory();
+		});
+
+		it('should support specifying the file as a function, and call that function with the data', async function() {
+			let fn = sinon.stub().returns(file);
+			writer = writeJSON(fn);
+			await writer(contents);
+			expect(file).to.be.a.file().with.contents(JSON.stringify(contents));
+			expect(fn).to.have.been.calledWith(contents);
 		});
 	});
 });

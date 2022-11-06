@@ -105,13 +105,19 @@ export function readFile(options='utf8', file) {
 
 /**
  * Returns a step function that writes its argument to the specified file as JSON. If the path to the file
- * does not exist, it is created. The step function returns the path of the written file.
- * @param  {String} file The file to write to
+ * does not exist, it is created. `file` may be a function, in which case it will be called with the data to be written and must
+ * return the filename.
+ * 
+ * The step function returns the path of the written file.
+ * @param  {String|Function} file The file to write to. If this is a function, it will be called with `data` and must return the filename.
  * @return {Function} The writer function
  */
 export function writeJSON(file) {
 	return async function(data) {
-		await fs.mkdir(path.dirname(file), { recursive: true });
-		return fs.writeFile(file, JSON.stringify(data)).then(() => file);
+		let actualFile = file;
+		if (typeof actualFile === 'function') 
+			actualFile = file(data);
+		await fs.mkdir(path.dirname(actualFile), { recursive: true });
+		return fs.writeFile(actualFile, JSON.stringify(data)).then(() => actualFile);
 	}
 }
