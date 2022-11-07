@@ -82,7 +82,7 @@ export default class Updater {
 			return result;
 		} catch (err) {
 			if (err.code === 'ENOENT') {
-				dedicatedlog.debug(`Could not detect remembered version`);
+				dedicatedlog.debug(`Could not find remembered version`);
 				return undefined;
 			} else throw err;
 		}
