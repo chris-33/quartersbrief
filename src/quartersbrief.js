@@ -35,8 +35,7 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 	process.exit(1);
 }
 
-if (await needsUpdate())
-	await update();
+await update();
 
 let { data, labels } = await loadData(paths.data);
 
