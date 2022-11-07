@@ -3,7 +3,7 @@
 import config, { paths } from './init/config.js';
 import createconfig from './init/createconfig.js';
 import './init/log.js';
-import { needsUpdate, update } from './init/update.js';
+import update from './init/update.js';
 import log from 'loglevel';
 import loadData from './init/load.js';
 import assertInvariants, { InvariantError } from './init/invariants.js';
