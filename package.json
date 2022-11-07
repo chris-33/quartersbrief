@@ -21,6 +21,7 @@
     "env-paths": "^3.0.0",
     "execa": "^6.1.0",
     "express": "^4.17.3",
+    "fs-extra": "^10.1.0",
     "gettext-parser": "^5.1.1",
     "http-errors": "^2.0.0",
     "jpickle": "github:jlaine/node-jpickle#pull/14/head",
