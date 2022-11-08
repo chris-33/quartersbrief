@@ -76,13 +76,23 @@ describe('Topic', function() {
 		});
 
 		it('should infer the names of the pug and scss files based on the class name if no topic name is given', function() {
-			const SubTopic = class extends Topic {};
-			topic = new SubTopic();
+			class DerivedClass extends Topic {}
+			topic = new DerivedClass();
 
-			const expected = `sub_topic`;
+			const expected = `derived_class`;
 			expect(topic).to.have.property('pugFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.pug`));
 			expect(topic).to.have.property('scssFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.scss`));
-		})
+		});
+
+		it('should remove suffix "Topic" when inferring pug and scss files', function() {
+			class DerivedFromTopic extends Topic {}
+
+			topic = new DerivedFromTopic();
+
+			const expected = `derived_from`;
+			expect(topic).to.have.property('pugFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.pug`));
+			expect(topic).to.have.property('scssFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.scss`));
+		});
 	});
 
 	describe('.getPugData', function() {
@@ -268,13 +278,23 @@ describe('Topic', function() {
 		});
 
 		it('should infer the caption from the class name if none was set', async function() {
-			class SubTopicA extends Topic {}
+			class DerivedClass extends Topic {}
 
-			topic = new SubTopicA();
+			topic = new DerivedClass();
 			sinon.stub(topic, 'renderHtml');
 			sinon.stub(topic, 'renderCss');
 
-			return expect(topic.render(battle, null)).to.eventually.have.property('caption').that.equals('Sub Topic A');	
+			return expect(topic.render(battle, null)).to.eventually.have.property('caption').that.equals('Derived Class');
+		});
+
+		it('should remove the suffix "Topic" when inferring caption from class name', function() {
+			class DerivedFromTopic extends Topic {}
+
+			topic = new DerivedFromTopic();
+			sinon.stub(topic, 'renderHtml');
+			sinon.stub(topic, 'renderCss');
+
+			return expect(topic.render(battle, null)).to.eventually.have.property('caption').that.equals('Derived From');
 		});
 
 		it('should call the renderHtml and renderCss', async function() {

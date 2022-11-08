@@ -4,6 +4,8 @@ import sass from 'sass';
 import { toSass } from 'sass-cast';
 import { screamingSnakeCase } from '../util/util.js';
 
+const basename = name => name !== 'Topic' && name.endsWith('Topic') ? name.slice(0, -5) : name;
+
 /**
  * `Topic` automates the process of rendering the HTML and CSS for a single topic. This includes
  * acquiring the necessary data. Indeed this is the core benefit of this class: by providing overridable
@@ -43,7 +45,7 @@ export default class Topic {
 	constructor(topicName, providers) {
 		if (typeof topicName !== 'string') {
 			providers = topicName;
-			topicName = screamingSnakeCase(this.constructor.name).toLowerCase();
+			topicName = screamingSnakeCase(basename(this.constructor.name)).toLowerCase();
 		}
 		this.pugFile = `src/briefing/topics/${topicName}/${topicName}.pug`;
 		this.scssFile = `src/briefing/topics/${topicName}/${topicName}.scss`;
@@ -158,12 +160,14 @@ export default class Topic {
 	 * inferred) caption of the topic.
 	 */
 	async render(battle, options) {
-		const caption = 
-			// Use this.caption, if it was set
-			this.caption ?? 
-			// Otherwise infer caption from class name by 
-			// inserting spaces before any capital letter except at the beginning of the string
-			this.constructor.name[0].toUpperCase() + this.constructor.name.slice(1).replaceAll(/[A-Z]/g, ' $&');
+		let caption = this.caption;
+		if (!caption) {
+			// Infer caption from class name by removing suffix 'Topic' if present...
+			caption = basename(this.constructor.name);
+
+			// ... and inserting spaces before any capital letter that is not the first letter of the string
+			caption = caption[0].toUpperCase() + caption.slice(1).replaceAll(/[A-Z]/g, ' $&');
+		}
 		
 		return {
 			html: await this.renderHtml(battle, options),
