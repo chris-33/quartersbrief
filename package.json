@@ -22,6 +22,7 @@
     "clone": "^2.1.2",
     "deep-equal": "^2.0.5",
     "env-paths": "^3.0.0",
+    "esmock": "^2.0.7",
     "execa": "^6.1.0",
     "express": "^4.17.3",
     "fs-extra": "^10.0.1",
@@ -35,6 +36,7 @@
     "pupa": "^3.1.0",
     "run-script-os": "^1.1.6",
     "sass": "^1.49.8",
+    "sass-cast": "^0.4.2",
     "socket.io": "^4.5.3",
     "xml2js": "^0.4.23",
     "yargs": "^17.4.0"
@@ -42,6 +44,7 @@
   "devDependencies": {
     "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
+    "chai-each": "^0.0.1",
     "chai-events": "^0.0.3",
     "chai-fs": "^2.0.0",
     "chai-nock": "^1.3.0",
@@ -50,7 +53,6 @@
     "eslint": "^8.8.0",
     "eslint-plugin-chai-expect": "^3.0.0",
     "eslint-plugin-mocha": "^10.0.3",
-    "esmock": "^1.7.7",
     "grunt": "^1.4.1",
     "grunt-bump": "^0.8.0",
     "grunt-eslint": "^24.0.0",
