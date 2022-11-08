@@ -20,7 +20,7 @@ describe('topic-filters', function() {
 		beforeEach(function() {
 			teams = {
 				player: 0,
-				allies: [ 1, 2, 3, 0 ],
+				allies: [ 1, 2, 3 ],
 				enemies: [ 11, 12, 13 ]
 			};
 			ids = Object.values(teams).flat();
