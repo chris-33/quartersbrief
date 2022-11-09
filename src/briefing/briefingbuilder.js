@@ -112,7 +112,7 @@ export default class BriefingBuilder {
 		const briefing = new EventEmitter();
 		briefing.topics = new Array(agenda.getTopicNames().length);
 		briefing.html = renderBriefing(briefing);
-		briefing.css = sass.compile('src/briefing/briefing.scss');
+		briefing.css = sass.compile('src/briefing/briefing.scss').css;
 		
 		// Defer emission so there is a chance to attach event listeners
 		setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START));
@@ -151,19 +151,4 @@ export default class BriefingBuilder {
 
 		return briefing;
 	}
-
-	static buildNoBattle() {
-		return {
-			html: pug.renderFile('src/briefing/no-battle.pug'),
-			css: sass.compile('src/briefing/message.scss').css
-		}
-	}
-
-	static buildNoAgenda() {
-		return {
-			html: pug.renderFile('src/briefing/no-agenda.pug'),
-			css: sass.compile('src/briefing/message.scss').css
-		}
-	}
-
 }
