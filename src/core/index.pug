@@ -12,6 +12,4 @@ html
     header World of Warships Quarters Brief
     #briefing  
       | !{briefing}
-    script
-      | const socket = io();
-      | socket.on('battlestart', function() { window.location.reload() })
+    script(src='js/io.js')
