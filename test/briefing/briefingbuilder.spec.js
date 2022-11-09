@@ -38,14 +38,18 @@ describe('BriefingBuilder', function() {
 	});
 
 	describe('.build', function() {
-		it('should emit EVT_BRIEFING_START at the beginning', function() {
+		it('should emit EVT_BRIEFING_START at the beginning', async function() {
 			const briefing = builder.build(battle, agenda);
-			return expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_START);
+			const data = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_START);
+			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_START);
+			await expect(data).to.eventually.be.an('array').with.members([briefing]);
 		});
 
-		it('should emit EVT_BRIEFING_FINISH at the end', function() {
+		it('should emit EVT_BRIEFING_FINISH at the end', async function() {
 			const briefing = builder.build(battle, agenda);
-			return expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_FINISH);
+			const data = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
+			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_FINISH);
+			await expect(data).to.eventually.be.an('array').with.members([briefing]);
 		});
 
 		it('should build an error message if the import cannot be found', async function() {
