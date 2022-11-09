@@ -1,3 +1,4 @@
+import { Battle } from '../model/battle.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import rootlog from 'loglevel';
@@ -21,7 +22,7 @@ export default class BattleDataReader {
 	 */
 	async read() {
 		try {
-			return JSON.parse(await readFile(path.join(this.replaydir, 'tempArenaInfo.json')));
+			return new Battle(JSON.parse(await readFile(path.join(this.replaydir, 'tempArenaInfo.json'))));
 		} catch (err) {
 			switch (err.code) {
 				case 'ENOENT':

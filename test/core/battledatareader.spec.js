@@ -1,5 +1,6 @@
 import mockfs from 'mock-fs';
 import BattleDataReader from '../../src/core/battledatareader.js';
+import { Battle } from '../../src/model/battle.js';
 
 describe('.BattleDataReader', function() {
 	const replaydir = '/replays';
@@ -18,12 +19,14 @@ describe('.BattleDataReader', function() {
 		expect(() => new BattleDataReader()).to.throw();
 	});
 
-	it('should read the file contents', function() {
+	it('should return a battle over the file contents', async function() {
 		const battleData = {
 			n: 5
 		}
 		mockfs({ [replaydir]: { 'tempArenaInfo.json': JSON.stringify(battleData) }});
-		return expect(battleDataReader.read()).to.eventually.deep.equal(battleData);
+		const battle = await battleDataReader.read();
+		expect(battle).to.be.an.instanceof(Battle);
+		expect(battle._data).to.deep.equal(battleData);
 	});
 
 	it('should return null if there is no tempArenaInfo', function() {
