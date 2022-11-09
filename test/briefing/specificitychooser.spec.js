@@ -6,7 +6,7 @@ import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import { readFileSync } from 'fs';
 import sinon from 'sinon';
 
-describe.only('SpecificityChooser', function() {
+describe('SpecificityChooser', function() {
 	let TEST_DATA;
 	const SHIP_DATA = {
 		name: 'PAAA001_Battleship',
