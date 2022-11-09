@@ -115,11 +115,11 @@ export default class BriefingBuilder {
 		briefing.css = sass.compile('src/briefing/briefing.scss').css;
 		
 		// Defer emission so there is a chance to attach event listeners
-		setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START));
+		setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
 
 		// Do NOT return or await this Promise, because we need to return briefing synchronously.
 		// The async nature of the building process is reflected through event emissions.
-		Promise.allSettled(agenda.getTopicNames().map(async (topicName, index) => {
+		Promise.all(agenda.getTopicNames().map(async (topicName, index) => {
 			rootlog.debug(`Building topic ${topicName}`);
 
 			let topic;
@@ -132,7 +132,7 @@ export default class BriefingBuilder {
 					this.gameObjectFactory, 
 					agenda.topics[topicName]);
 
-				const caption = topic.caption ?? inferCaption(topicName)
+				const caption = topic.caption ?? inferCaption(topicName);
 				topic = {
 					html: renderTopic({ index, caption, html: topic.html }),
 					css: sass.compileString(`#topic-${index} { ${topic.css ?? ''} }`).css
