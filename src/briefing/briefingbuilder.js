@@ -15,7 +15,7 @@ import clone from 'clone';
  * and styling respectively. (Note that the property here is still `**s**css`. In the similarly composed 
  * object returned by {@link BriefingBuilder#build}, this becomes `css`.) 
  *
- * Topic builders are retrieved by calling `{@link #getTopicBuilder}`, which in turn attempts a dynamic import of
+ * Topic builders are retrieved by calling `{@link #getTopic}`, which in turn attempts a dynamic import of
  * the module for the topic builder. Topic builder modules are expected to be found in `topics/<topicname>/<topicname>.js`
  * and export a function as described above as default. The function may be `async`.
  */
@@ -23,7 +23,8 @@ class BriefingBuilder {
 	#briefingHTML;
 	#briefingCSS(briefing) {
 		// @todo Cache contents of briefing.scss to avoid synchronous reads on every refresh
-		let src = `${readFileSync('src/briefing/briefing.scss', 'utf8')}${briefing.topics.map(topic => topic.scss).join('')}`;
+		let src = `${readFileSync('src/briefing/briefing.scss', 'utf8')}${briefing.topics.map(topic => topic.css).join('')}`;
+		debugger
 		return sass.compileString(src, {
 			// Since we're compiling from a string, we need to manually provide the base path for imports:
 			loadPaths: [ 'src/briefing' ]
@@ -32,34 +33,29 @@ class BriefingBuilder {
 
 	/**
 	 * Creates a new `BriefingBuilder`.
-	 * @param  {GameObjectFactory} [gameObjectFactory] A game object factory that will be passed to each
-	 * topic builder. It is possible to create a briefing builder without a game object factory, but note 
-	 * that topic builders will then also not have one available.
+	 * @param  {Object} [providers] A hash of data providers to be passed to each `Topic`'s constructor.
+	 * It is possible to create a briefing builder without providers, but note that topics will then also 
+	 * not have any available.
 	 */
-	constructor(gameObjectFactory) {
-		this.gameObjectFactory = gameObjectFactory;
+	constructor(providers) {
+		this.providers = providers;
 		this.#briefingHTML = pug.compileFile('src/briefing/briefing.pug');
 	}
 
-
 	/**
-	 * Dynamically imports the topic builder for the given `topic`. Topic builders will be expected
+	 * Dynamically imports the topic for the given `topic`. Topics will be expected
 	 * to be a file with the topic's name and extension '.js' in a subdirectory of the topic's name,
-	 * exporting a function of length 2 as default.
-	 * The function may be async and must return an object containing the topic's html as a `string` 
-	 * in a property `html`, and (optionally) the topic's styling as a `string` in a property `scss`.
-	 * Topic builder's do not need to worry about polluting other topic's styles, as topic styles
+	 * exporting a class with the `Topic` interface as default.
+	 * Topics do not need to worry about polluting other topic's styles, as topic styles
 	 * are automatically scoped.
 	 * @param  {String} topic The topic for which to get a topic builder.
-	 * @return {Promise}       A promise that resolves to the topic builder, or rejects if none could be found.
+	 * @return {Topic}       The `Topic` class for the given `topic` name.
 	 */
-	getTopicBuilder(topic) {
+	async getTopic(topic) {
 		const t0 = Date.now();
-		return import(`./topics/${topic}/${topic}.js`)
-			.then(x => (
-				rootlog.getLogger(this.constructor.name).debug(`Loaded topic builder ${topic} in ${Date.now() - t0}ms`),
-				x
-			));
+		const imp = await import(`./topics/${topic}/${topic}.js`);
+		rootlog.getLogger(this.constructor.name).debug(`Loaded topic builder ${topic} in ${Date.now() - t0}ms`);
+		return imp;
 	}
 
 	/**
@@ -98,19 +94,15 @@ class BriefingBuilder {
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 
 		// For each briefing content part, get the dedicated builder for that part and build it
-		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(topicName => {
+		let builtTopics = await Promise.allSettled(agenda.getTopicNames().map(async topicName => {
 				rootlog.debug(`Building topic ${topicName}`);
-				return this
-					.getTopicBuilder(topicName)
-					.then(dynimport => dynimport.default(
-						// Pass a separate copy of the battle to each topic builder
-						clone(battle), 
-						this.gameObjectFactory, 
-						agenda.topics[topicName]))
-					.then(x => (
-						dedicatedlog.debug(`Built topic ${topicName} in ${Date.now() -t0}ms`),
-						x
-					));
+				const dynimport = await this.getTopic(topicName);
+				const rendered = await new dynimport.default(topicName, this.providers).render(
+					clone(battle), // Pass a separate copy of the battle to each topic builder
+						agenda.topics[topicName]
+				);
+				dedicatedlog.debug(`Built topic ${topicName} in ${Date.now() -t0}ms`);
+				return rendered;
 		}));
 
 		// Assign it to the layout pane dedicated to it for successful builds
@@ -122,7 +114,7 @@ class BriefingBuilder {
 					html: dynimport.value.html,
 					// Scope topic SCSS by nesting it inside the topic <div>
 					// If the topic builder returned no SCSS, use ''
-					scss: `#topic-${i} {${dynimport.value.scss ?? ''}}`,
+					css: `#topic-${i} {${dynimport.value.css ?? ''}}`,
 					// Use the caption the topic builder provided if any, otherwise try to infer a 
 					// caption from the topic's name
 					caption: dynimport.value.caption ?? inferCaption(agenda.getTopicNames()[i])
