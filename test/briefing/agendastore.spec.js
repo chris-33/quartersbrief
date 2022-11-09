@@ -1,4 +1,4 @@
-import { AgendaStore } from '../../src/briefing/agendastore.js';
+import AgendaStore from '../../src/briefing/agendastore.js';
 import mockfs from 'mock-fs';
 import { readFileSync } from 'fs';
 import TOML from '@iarna/toml';

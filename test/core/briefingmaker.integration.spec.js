@@ -4,7 +4,7 @@ import os from 'os';
 import TOML from '@iarna/toml';
 import { BriefingMaker } from '../../src/core/briefingmaker.js';
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
-import { AgendaStore } from '../../src/briefing/agendastore.js';
+import AgendaStore from '../../src/briefing/agendastore.js';
 import SpecificityChooser from '../../src/briefing/specificitychooser.js';
 import { valid as isHtml, parse } from 'node-html-parser';
 import { validate } from 'csstree-validator';

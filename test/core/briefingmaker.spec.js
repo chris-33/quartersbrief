@@ -1,6 +1,6 @@
 import { BriefingMaker, ErrorHandlingAgendaStore, BattleDataReader } from '../../src/core/briefingmaker.js';
 import { BriefingBuilder } from '../../src/briefing/briefingbuilder.js';
-import { AgendaStore } from '../../src/briefing/agendastore.js';
+import AgendaStore from '../../src/briefing/agendastore.js';
 import { Agenda } from '../../src/briefing/agenda.js';
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import mockfs from 'mock-fs';
