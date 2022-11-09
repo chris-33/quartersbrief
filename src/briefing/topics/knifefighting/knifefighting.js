@@ -1,13 +1,7 @@
-import pug from 'pug';
-import sass from 'sass';
+import Topic from '../../topic.js';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { SKILLS } from '../../../model/captain.js';
-import { filters, teams } from '../common.js';
-import { sassFunctions } from '../common.js';
 
-const BASE_BUILD = {
-	modules: 'stock'
-}
 const HEALTH_BUILD = {
 	modules: 'top',
 	skills: [ SKILLS.SURVIVABILITY_EXPERT ]
@@ -18,17 +12,14 @@ const DPM_BUILD = {
 
 const knifefighting = configuration => configuration.health * configuration.dpm.pertinent;
 
-function buildHtml(battle, gameObjectFactory, options) {
-	let shipBuilder = new ShipBuilder(gameObjectFactory);
-	let ships = battle.getVehicles()
-		.map(vehicle => vehicle.shipId)
-		// Filter out duplicates
-		.filter(filters.duplicates)
-		.map(shipId => shipBuilder.build(shipId, BASE_BUILD))
-		// If options.filter.classes is set, filter the ships list accordingly
-		.filter(ship => options?.filter?.classes?.includes(ship.getClass()) ?? true);
-		
-	const entries = ships.map(ship => {
+export default class KnifefightingTopic extends Topic {
+	caption = 'Knife Fighting Value';
+
+	async getPugData(battle, options) {
+		let shipBuilder = new ShipBuilder(this.gameObjectFactory);
+
+		const locals = await super.getPugData(battle, options);
+		const entries = locals.ships.map(ship => {
 			const entry = { ship, base: {}, max: {} };			
 
 			const guns = ship.get('artillery.mounts.*.numBarrels').reduce((prev, curr) => prev + curr, 0);
@@ -59,29 +50,9 @@ function buildHtml(battle, gameObjectFactory, options) {
 			return entry;
 		});
 
-	entries.sort((e1, e2) => e1.max.knifefighting - e2.max.knifefighting);
+		entries.sort((e1, e2) => e1.max.knifefighting - e2.max.knifefighting);
+		locals.entries = entries;
 
-	let locals = {
-		teams: teams(battle),
-		entries,
-		options
-	}
-	return pug.renderFile('src/briefing/topics/knifefighting/knifefighting.pug', locals);
-}
-
-async function buildScss(battle, gameObjectFactory, options) {
-	return sass.compile('src/briefing/topics/knifefighting/knifefighting.scss', {
-		loadPaths: ['node_modules'],
-		functions: {
-			...sassFunctions.options(options)
-		}
-	}).css;
-}
-
-export default async function buildTopic(battle, gameObjectFactory, options) {
-	return {
-		html: buildHtml(battle, gameObjectFactory, options),
-		scss: await buildScss(battle, gameObjectFactory, options),
-		caption: 'Knife Fighting Value'
+		return locals;
 	}
 }

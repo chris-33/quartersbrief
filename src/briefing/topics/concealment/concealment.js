@@ -1,53 +1,34 @@
-import pug from 'pug';
-import sass from 'sass';
+import Topic from '../../topic.js';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
-import { filters, teams } from '../common.js';
+import { SKILLS } from '../../../model/captain.js';
 
-const BASE_BUILD = {
-	modules: 'stock'
-}
 const CONCEALMENT_BUILD = {
 	modules: 'top',
 	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
-	skills: [ 12 ]
+	skills: [ SKILLS.CONCEALMENT_EXPERT ]
 }
 
-function buildHtml(battle, gameObjectFactory, options) {
-	let shipBuilder = new ShipBuilder(gameObjectFactory);
-	let ships = battle.getVehicles()
-		.map(vehicle => vehicle.shipId)
-		// Filter out duplicates
-		.filter(filters.duplicates)
-		.map(shipId => shipBuilder.build(shipId, BASE_BUILD))
-		// If options.filter.classes is set, filter the ships list accordingly
-		.filter(ship => options?.filter?.classes?.includes(ship.getClass()) ?? true)
-	
-	let entries = ships.map(ship => ({
-		ship,
-		baseConcealment: ship.getConcealment()
-	}));
-	ships = ships.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD));
-	ships.forEach((ship, index) => entries[index].concealment = ship.getConcealment())	;
+export default class ConcealmentTopic extends Topic {
+	async getPugData(battle, options) {
+		let shipBuilder = new ShipBuilder(this.gameObjectFactory);
+		
+		const locals = await super.getPugData(battle, options);
+		
+		// Initialize with base build
+		let entries = locals.ships.map(ship => ({
+			ship,
+			baseConcealment: ship.getConcealment()
+		}));
+		// Apply concealment build
+		locals.ships = locals.ships.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD));
+		locals.ships.forEach((ship, index) => entries[index].concealment = ship.getConcealment())	;
 
-	if (options?.filter?.limit) {
-		entries = entries.filter(entry => entry.concealment <= options.filter.limit);
-	}
-	entries = entries.sort((entry1, entry2) => entry1.concealment - entry2.concealment);
+		if (options?.filter?.limit) {
+			entries = entries.filter(entry => entry.concealment <= options.filter.limit);
+		}
+		entries = entries.sort((entry1, entry2) => entry1.concealment - entry2.concealment);
+		locals.entries = entries;
 
-	let locals = {
-		teams: teams(battle),
-		entries
-	}
-	return pug.renderFile('src/briefing/topics/concealment/concealment.pug', locals);
-}
-
-async function buildScss() {
-	return sass.compile('src/briefing/topics/concealment/concealment.scss').css;
-}
-
-export default async function buildTopic(battle, gameObjectFactory, options) {
-	return {
-		html: buildHtml(battle, gameObjectFactory, options),
-		scss: await buildScss(battle, gameObjectFactory, options)
+		return locals;
 	}
 }
