@@ -55,6 +55,6 @@ async function buildScss() {
 export default async function buildTopic(battle, gameObjectFactory, options) {
 	return {
 		html: await buildHtml(battle, gameObjectFactory, options),
-		scss: await buildScss(battle, gameObjectFactory, options)
+		css: await buildScss(battle, gameObjectFactory, options)
 	}
 }
