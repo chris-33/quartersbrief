@@ -303,5 +303,15 @@ describe('Topic', function() {
 			expect(topic.renderHtml).to.have.been.calledWith(battle, options);
 			expect(topic.renderCss).to.have.been.calledWith(battle, options);
 		});
+
+		it('should have properties html and css', async function() {
+			const HTML = 'html';
+			const CSS = 'css';
+			topic.renderHtml.resolves(HTML);
+			topic.renderCss.resolves(CSS);
+			const result = await topic.render(battle);
+			expect(result).to.have.property('html').that.equals(HTML);
+			expect(result).to.have.property('css').that.equals(CSS);
+		});
 	});
 });

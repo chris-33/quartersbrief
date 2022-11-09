@@ -171,7 +171,7 @@ export default class Topic {
 		
 		return {
 			html: await this.renderHtml(battle, options),
-			scss: await this.renderCss(battle, options),
+			css: await this.renderCss(battle, options),
 			caption: caption
 		}
 	}
