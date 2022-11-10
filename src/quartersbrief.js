@@ -74,46 +74,23 @@ const { srv, io } = createServers(config.host, config.port);
 
 const indexTemplate = pug.compileFile('./src/core/index.pug');
 let briefing;
-let buffer;
-srv.get('/', async function(req, res) {
-	briefing = await briefingController.createBriefing();	
-	
-	buffer = [];
-	briefing.once(BriefingBuilder.EVT_BRIEFING_START, function(briefing) { 
-		console.log('start');
-		if (buffer)
-			buffer.push({ event: BriefingBuilder.EVT_BRIEFING_START, args: [ briefing ] });
-		else
-			io.emit(BriefingBuilder.EVT_BRIEFING_START, briefing);
-	});
-	briefing.on(BriefingBuilder.EVT_BRIEFING_TOPIC, function(index, topic) {
-		console.log('topic', index)
-		if (buffer)
-			buffer.push({ event: BriefingBuilder.EVT_BRIEFING_TOPIC, args: [ index, topic ] });
-		else
-			io.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, topic);
-	});
-	briefing.once(BriefingBuilder.EVT_BRIEFING_FINISH, function(briefing) {
-		console.log('finish');
-		if (buffer)
-			buffer.push({ event: BriefingBuilder.EVT_BRIEFING_FINISH, args: [ briefing ] });
-		else
-			io.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing);
-	});
-
-	io.on('connection', function() {
-		console.log('ready');
-		buffer.forEach(({ event, args }) => io.emit(event, ...args));
-		buffer = null;
-	});
-
-	let html = indexTemplate({ briefing: briefing.html });
+srv.get('/', function(req, res) {
+	let html = indexTemplate();
 	res.send(html);
 });
 
-io.on('disconnect', function() {
-	console.log('disconnected');
-})
+async function handler() {
+	briefing = await briefingController.createBriefing();	
+	
+	Object.keys(BriefingBuilder)
+		.filter(key => key.startsWith('EVT_'))
+		.map(key => BriefingBuilder[key])
+		.forEach(eventName => briefing.on(eventName, function(...args) {
+			log.debug(`Received event ${eventName} with ${args.length === 0 ? 'no ' : ''}data ${args.join(',')}`);
+			io.emit(eventName, ...args);
+		}))
+}
+io.on('connect', handler);
 
 let quartersbriefcss;
 srv.get('/quartersbrief.css', function(req, res) {
@@ -135,8 +112,8 @@ srv.get('/quartersbrief-briefing.css', function(req, res) {
 });
 
 battleController.on('battlestart', function() {
-	buffer = [];
 	io.emit('battlestart');
+	handler();
 });
 
 battleController.on('battleend', function() {
