@@ -143,10 +143,10 @@ export default class BriefingBuilder {
 				rootlog.error(`Building topic ${topicName} failed: ${err}`);
 				return this.buildErrorTopic(err)				
 			}			
-			briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, topic);
+			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, topic));
 			return topic;
 		})).then(() => {
-			briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing);
+			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing));
 		});
 
 		return briefing;
