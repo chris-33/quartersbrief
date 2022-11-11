@@ -73,42 +73,32 @@ const briefingController = new BriefingController(
 const { srv, io } = createServers(config.host, config.port);
 
 const indexTemplate = pug.compileFile('./src/core/index.pug');
-let briefing;
 srv.get('/', function(req, res) {
 	let html = indexTemplate();
 	res.send(html);
 });
 
 async function handler() {
-	briefing = await briefingController.createBriefing();	
-	
+	const briefing = await briefingController.createBriefing();	
+
 	Object.keys(BriefingBuilder)
 		.filter(key => key.startsWith('EVT_'))
 		.map(key => BriefingBuilder[key])
 		.forEach(eventName => briefing.on(eventName, function(...args) {
-			log.debug(`Received event ${eventName} with ${args.length === 0 ? 'no ' : ''}data ${args.join(',')}`);
+			let logstr = `Re-emitted event ${eventName}`;			
+			if (eventName === BriefingBuilder.EVT_BRIEFING_TOPIC)
+				logstr += ` for topic #${args[0]}`;
+			log.debug(logstr);
+			
 			io.emit(eventName, ...args);
-		}))
+		}));
 }
 io.on('connect', handler);
 
-let quartersbriefcss;
+const stylesheet = sass.compile('src/core/quartersbrief.scss').css;
 srv.get('/quartersbrief.css', function(req, res) {
 	res.type('text/css');
-	if (!quartersbriefcss)
-		quartersbriefcss = sass.compile('src/core/quartersbrief.scss').css;
-	res.send(quartersbriefcss);
-	// Disable caching in dev mode
-	if (process.env.NODE_ENV === 'development')
-		quartersbriefcss = null;
-});
-
-srv.get('/quartersbrief-briefing.css', function(req, res) {
-	res.type('text/css');
-	if (briefing.css)
-		res.send(briefing.css);
-	else
-		res.status(404).end();
+	res.send(stylesheet);
 });
 
 battleController.on('battlestart', function() {
