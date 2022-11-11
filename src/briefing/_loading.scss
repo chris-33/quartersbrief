@@ -1,0 +1,34 @@
+@use 'sass:math';
+
+$transition-duration: 1.33s;
+.topic.loading.loaded {
+	opacity: 0;
+	transition: opacity $transition-duration, transform $transition-duration step-end;
+	transform: translateY(2em);
+}
+.topic.loaded:not(.loading) {
+	opacity: 100%;
+	transition: opacity $transition-duration, transform $transition-duration;
+	transform: translateY(0);
+}
+
+.topic.loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 50vh;
+
+	.spinner {
+		font-family: 'dripicons-v2';
+		font-size: 50px;
+		color: lightgray;
+		width: fit-content;
+		animation: 3s infinite normal spin;
+	}
+}
+
+@keyframes spin {
+	@for $stop from 0 through 5 {
+		#{20%*$stop} { rotate: $stop * math.div(180deg,5)}
+	}
+}
