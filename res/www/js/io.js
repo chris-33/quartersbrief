@@ -1,3 +1,5 @@
+import makeDetails from './details.js';
+
 export const EVT_BRIEFING_START = 'briefingstart';
 export const EVT_BRIEFING_TOPIC = 'briefingtopic';
 export const EVT_BRIEFING_FINISH = 'briefingfinish';
@@ -55,7 +57,15 @@ export async function onBriefingTopic(index, { html, css }) {
 	await new Promise(resolve => setTimeout(resolve, START_TRANSITION_TIME));
 	if (transitions.size > 0)
 		await transition(topic);
-	topic.html(html).removeClass('loading');
+	
+	topic
+		// Remove inner HTML of topic
+		.empty()
+		// Turn new topic HTML into a JQuery object, run makeDetails on it and then append it
+		.append(makeDetails($(html)))
+		// Remove class 'loading' to trigger fade-in transition
+		.removeClass('loading');
+
 	await new Promise(resolve => setTimeout(resolve, START_TRANSITION_TIME));
 	if (transitions.size > 0)
 		await transition(topic);
