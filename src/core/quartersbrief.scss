@@ -1,6 +1,11 @@
 @use '../briefing/topics/fontsizes';
+@use 'sass:selector';
+$fa-font-path: 'font';
+@import '@fortawesome/fontawesome-free/scss/fontawesome';
+@import '@fortawesome/fontawesome-free/scss/solid';
 
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
 
 @font-face {
 	font-family: "dripicons-v2";
@@ -9,16 +14,6 @@
 		url("font/dripicons-v2.woff") format("woff"),
 		url("font/dripicons-v2.ttf") format("truetype"),
 		url("font/dripicons-v2.svg#dripicons-v2") format("svg");
-	font-weight: normal;
-	font-style: normal;
-}
-
-@font-face {
-	font-family: "quartersbrief";
- 	src:url("font/quartersbrief.eot");
-	src:url("font/quartersbrief.woff") format("woff"),
-		url("font/quartersbrief.ttf") format("truetype"),
-		url("font/quartersbrief.svg") format("svg");
 	font-weight: normal;
 	font-style: normal;
 }
@@ -45,31 +40,36 @@ header {
 	font-weight: 600;
 	color: $textcolor;
 	letter-spacing: 0.3ch;
+	display: flex;
+	justify-content: space-between;
 
 	#fullscreen {
-		transition: all 1s;
+		cursor: pointer;
 		border-radius: 50%;
 		box-shadow: 1pt 1pt 2pt $textcolor;
+		transition: all 1s;
+		
+		letter-spacing: 0;
+		font-weight: normal;
+		font-style: normal;
+		padding: 8pt;
+		
+		width: 1em;
+		height: 1em;
+		text-align: center;
 
-		cursor: pointer;
-		float: right;
-		display: flex;
-		justify-content: center;
-		align-items: center;
-		margin-right: 2pt;
+		margin-right: 2pt;		
 
-		&:hover {			
+		&:hover {		
 			background-color: $textcolor;
 			color: white;
 		}
-		& > span {
-			margin: 8pt;
-			font-family: 'quartersbrief';
-			font-weight: normal;
-			font-size: 75%;
-			font-style: normal;
-			width: 1em;
-			text-align: center;
+
+		// Display "expand" icon
+		@include fa-icon-solid($fa-var-expand);
+		// When the body is in fullscreen mode, change the icon to "compress"
+		@at-root #{selector.nest('body:fullscreen', &)} {
+			@include fa-icon-solid($fa-var-compress);
 		}
 	}
 }
