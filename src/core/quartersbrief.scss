@@ -13,6 +13,16 @@
 	font-style: normal;
 }
 
+@font-face {
+	font-family: "quartersbrief";
+ 	src:url("font/quartersbrief.eot");
+	src:url("font/quartersbrief.woff") format("woff"),
+		url("font/quartersbrief.ttf") format("truetype"),
+		url("font/quartersbrief.svg") format("svg");
+	font-weight: normal;
+	font-style: normal;
+}
+
 $textcolor: midnightblue;
 
 body {
@@ -20,6 +30,13 @@ body {
 	font-weight: 300;
 	font-size: fontsizes.$normal;
 	background-color: white;
+
+	&:fullscreen {
+		padding: 1ex 1ch;
+	}
+	&::backdrop {
+		background-color: white;
+	}
 }
 
 header {
@@ -28,6 +45,33 @@ header {
 	font-weight: 600;
 	color: $textcolor;
 	letter-spacing: 0.3ch;
+
+	#fullscreen {
+		transition: all 1s;
+		border-radius: 50%;
+		box-shadow: 1pt 1pt 2pt $textcolor;
+
+		cursor: pointer;
+		float: right;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		margin-right: 2pt;
+
+		&:hover {			
+			background-color: $textcolor;
+			color: white;
+		}
+		& > span {
+			margin: 8pt;
+			font-family: 'quartersbrief';
+			font-weight: normal;
+			font-size: 75%;
+			font-style: normal;
+			width: 1em;
+			text-align: center;
+		}
+	}
 }
 
 #briefing {

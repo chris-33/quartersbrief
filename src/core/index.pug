@@ -10,8 +10,23 @@ html
       script(src="https://unpkg.com/@popperjs/core@2")
   body
     header World of Warships Quarters Brief
+      #fullscreen(onclick='toggleFullscreen()') 
+        span &#xe900;
+
     #briefing  
       | !{briefing}
+
+    script
+      | async function toggleFullscreen() {
+      |   const wantFullscreen = !Boolean(document.fullscreenElement);
+      |   await wantFullscreen ? document.body.requestFullscreen() : document.exitFullscreen();
+      |   $('#fullscreen > span').html({ 
+      |     // contract icon
+      |     true: '&#xe901;', 
+      |     // expand icon
+      |     false: '&#xe900;' 
+      |   }[wantFullscreen]);
+      | }
     script
       | const socket = io();
       | socket.on('battlestart', function() { window.location.reload() })
