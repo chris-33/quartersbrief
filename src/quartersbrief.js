@@ -76,7 +76,9 @@ let quartersbriefcss;
 srv.get('/quartersbrief.css', function(req, res) {
 	res.type('text/css');
 	if (!quartersbriefcss)
-		quartersbriefcss = sass.compile('src/core/quartersbrief.scss').css;
+		quartersbriefcss = sass.compile('src/core/quartersbrief.scss', {
+			loadPaths: ['node_modules']
+		}).css;
 	res.send(quartersbriefcss);
 	// Disable caching in dev mode
 	if (process.env.NODE_ENV === 'development')
