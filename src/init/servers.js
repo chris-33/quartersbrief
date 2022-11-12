@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 function createServers(host, port) {
 	const srv = express();
 	srv.use(express.static('res/www'));
+	srv.use('/font', express.static('node_modules/@fortawesome/fontawesome-free/webfonts'))
 	
 	const httpServer = createServer(srv);
 	const io = new Server(httpServer);
