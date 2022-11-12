@@ -20,18 +20,18 @@ $fa-font-path: 'font';
 
 $textcolor: midnightblue;
 
+:fullscreen {
+	padding: 1ex 1ch;
+}
+::backdrop {
+	background-color: white;
+}
+
 body {
 	font-family: 'Montserrat', sans-serif;
 	font-weight: 300;
 	font-size: fontsizes.$normal;
 	background-color: white;
-
-	&:fullscreen {
-		padding: 1ex 1ch;
-	}
-	&::backdrop {
-		background-color: white;
-	}
 }
 
 header {
@@ -68,7 +68,7 @@ header {
 		// Display "expand" icon
 		@include fa-icon-solid($fa-var-expand);
 		// When the body is in fullscreen mode, change the icon to "compress"
-		@at-root #{selector.nest('body:fullscreen', &)} {
+		@at-root #{selector.nest(':fullscreen', &)} {
 			@include fa-icon-solid($fa-var-compress);
 		}
 	}
