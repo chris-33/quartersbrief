@@ -10,8 +10,8 @@ html
       script(src="https://unpkg.com/@popperjs/core@2")
   body
     header World of Warships Quarters Brief
-      #fullscreen(onclick='toggleFullscreen()') 
-        span &#xe900;
+      #fullscreen(onclick='document.fullscreenElement ? document.exitFullscreen() : document.body.requestFullscreen()')
+        i
 
     #briefing  
       | !{briefing}

@@ -16,6 +16,7 @@
     "postinstall:windows": "powershell -NoProfile -ExecutionPolicy Unrestricted -Command scripts\\postinstall.ps1"
   },
   "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.2.0",
     "@iarna/toml": "^2.2.5",
     "@sass-fairy/list": "^1.2.1",
     "chalk": "^5.0.0",
