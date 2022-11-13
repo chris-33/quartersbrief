@@ -3,6 +3,7 @@ import pug from 'pug';
 import sass from 'sass';
 import rootlog from 'loglevel';
 import clone from 'clone';
+import * as topics from './topics/index.js';
 
 const renderTopic = pug.compileFile('src/briefing/topic.pug');
 const renderBriefing = pug.compileFile('src/briefing/briefing.pug');
@@ -46,11 +47,12 @@ export default class BriefingBuilder {
 	 * @param  {String} topic The topic for which to get a topic builder.
 	 * @return {Topic}       The `Topic` class for the given `topic` name.
 	 */
-	async getTopic(topic) {
-		const t0 = Date.now();
-		const imp = await import(`./topics/${topic}/${topic}.js`);
-		rootlog.getLogger(this.constructor.name).debug(`Loaded topic builder ${topic} in ${Date.now() - t0}ms`);
-		return imp;
+	getTopic(topic) {
+		const topicClassName = topic
+			.split('_')
+			.map(word => word[0].toUpperCase() + word.slice(1).toLowerCase())
+			.join('') + 'Topic';
+		return topics[topicClassName];
 	}
 
 	/**
@@ -93,6 +95,8 @@ export default class BriefingBuilder {
 		const t0 = Date.now();
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 
+		const topics = agenda.getTopicNames().map(topicName => new (this.getTopic(topicName))(topicName, this.providers));
+
 		const briefing = new EventEmitter();
 		briefing.topics = new Array(agenda.getTopicNames().length);
 		briefing.html = renderBriefing(briefing);
@@ -103,14 +107,13 @@ export default class BriefingBuilder {
 
 		// Do NOT return or await this Promise, because we need to return briefing synchronously.
 		// The async nature of the building process is reflected through event emissions.
-		Promise.all(agenda.getTopicNames().map(async (topicName, index) => {
+		Promise.all(topics.map(async (topic, index) => {
+			const topicName = agenda.getTopicNames()[index];
 			rootlog.debug(`Building topic ${topicName}`);
 
 			let rendered;
 
 			try {
-				const dynimport = await this.getTopic(topicName);
-				const topic = new dynimport.default(topicName, this.providers);
 				const caption = topic.caption;
 
 				rendered = await topic.render(
