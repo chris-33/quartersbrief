@@ -35,6 +35,10 @@ export default class Topic {
 	 * is not provided, the constructor will attempt to guess at the correct value based
 	 * on the name of the (sub-)class being instantiated by converting it to snake case 
 	 * (like "snake_case").
+	 *
+	 * Additionally, the caption for the topic is initialized. The caption is intendend to be
+	 * a human-readable title for the topic. It is inferred from the topic's class name by 
+	 * inserting spaces before any capital letters except the first letter of the string. 
 	 * 
 	 * @param  {String} [topicName] The topic name to use when setting initial values for
 	 * `this.pugFile` and `this.scssFile`.
@@ -49,6 +53,11 @@ export default class Topic {
 		}
 		this.pugFile = `src/briefing/topics/${topicName}/${topicName}.pug`;
 		this.scssFile = `src/briefing/topics/${topicName}/${topicName}.scss`;
+		
+		// Infer caption from class name by removing suffix 'Topic' if present...
+		this.caption = basename(this.constructor.name);
+		// ... and inserting spaces before any capital letter that is not the first letter of the string
+		this.caption = this.caption[0].toUpperCase() + this.caption.slice(1).replaceAll(/[A-Z]/g, ' $&');
 
 		Object.assign(this, providers);
 	}
@@ -150,29 +159,15 @@ export default class Topic {
 	}
 
 	/**
-	 * Returns both the rendered HTML and CSS, as well as a caption for the topic. The caption is `this.caption` if
-	 * it is set, and otherwise inferred from the topic's class name by inserting spaces before any capital letters 
-	 * except the first letter of the string.
-	 * 
+	 * Returns both the rendered HTML and CSS for the topic. 
 	 * @param  {Battle} battle  Passed through to `renderHtml` and `renderCss`
 	 * @param  {Object} options Passed through to `renderHtml` and `renderCss`
-	 * @return {Object}         An object `{ html, css, caption }` with the results of the renderings and the (possibly
-	 * inferred) caption of the topic.
+	 * @return {Object}         An object `{ html, css }` with the results of the renderings.
 	 */
 	async render(battle, options) {
-		let caption = this.caption;
-		if (!caption) {
-			// Infer caption from class name by removing suffix 'Topic' if present...
-			caption = basename(this.constructor.name);
-
-			// ... and inserting spaces before any capital letter that is not the first letter of the string
-			caption = caption[0].toUpperCase() + caption.slice(1).replaceAll(/[A-Z]/g, ' $&');
-		}
-		
 		return {
 			html: await this.renderHtml(battle, options),
-			css: await this.renderCss(battle, options),
-			caption: caption
+			css: await this.renderCss(battle, options)
 		}
 	}
 }
