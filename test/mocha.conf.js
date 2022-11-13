@@ -5,6 +5,7 @@ import sinonchai from 'sinon-chai';
 import chaiaspromised from 'chai-as-promised';
 import chaievents from 'chai-events';
 import chainock from 'chai-nock';
+import chaieach from 'chai-each';
 import chaifs from 'chai-fs';
 import log from 'loglevel';
 
@@ -17,6 +18,7 @@ chai.use(sinonchai);
 chai.use(chaievents);
 chai.use(chainock);
 chai.use(chaifs);
+chai.use(chaieach);
 // This needs to be the last call to use()
 // See https://github.com/domenic/chai-as-promised/blob/master/README.md#node
 chai.use(chaiaspromised);

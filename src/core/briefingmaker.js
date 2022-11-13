@@ -3,6 +3,8 @@ import { Battle } from '../model/battle.js';
 import { readFile } from 'fs/promises';
 import log from 'loglevel';
 import path from 'path';
+import { PlayerFactory } from '../model/playerfactory.js';
+import config from '../init/config.js';
 
 /**
  * Helper class to read 'tempArenaInfo.json' from the World of Warship replays directory and parse it to an object.
@@ -109,7 +111,10 @@ class BriefingMaker {
 		this.gameObjectFactory = gameObjectFactory;
 		this.errorHandlingAgendaStore = new ErrorHandlingAgendaStore(agendaStore);
 		this.strategy = strategy;
-		this.briefingBuilder = new BriefingBuilder(this.gameObjectFactory);
+		this.briefingBuilder = new BriefingBuilder({ 
+			gameObjectFactory,
+			playerFactory: new PlayerFactory(config.apiKey, config.realm)
+		});
 	}
 
 	/**
