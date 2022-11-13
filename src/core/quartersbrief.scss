@@ -96,6 +96,11 @@ header {
 	overflow-y: scroll;
 	scroll-snap-type: y mandatory;
 
+	// Switch to proximity snapping on smaller devices
+	@media(max-height: 600px) {
+		scroll-snap-type: y proximity;
+	}
+
 	flex: 1;
 }
 
