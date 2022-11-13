@@ -3,7 +3,7 @@
 import config, { paths } from './init/config.js';
 import createconfig from './init/createconfig.js';
 import './init/log.js';
-import { needsUpdate, update } from './init/update.js';
+import update from './init/update.js';
 import log from 'loglevel';
 import loadData from './init/load.js';
 import assertInvariants, { InvariantError } from './init/invariants.js';
@@ -35,8 +35,7 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 	process.exit(1);
 }
 
-if (await needsUpdate())
-	await update();
+await update();
 
 let { data, labels } = await loadData(paths.data);
 
