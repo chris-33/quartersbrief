@@ -6,7 +6,7 @@ import path from 'path';
 /**
  * The `AgendaStore` holds all known agendas after reading them from disk.
  */
-class AgendaStore {
+export default class AgendaStore {
 	constructor(agendadir) {		
 		this.agendadir = agendadir;
 	}
@@ -25,5 +25,3 @@ class AgendaStore {
 	}
 
 }
-
-export { AgendaStore }

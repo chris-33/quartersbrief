@@ -1,5 +1,5 @@
 import Topic from '../../src/briefing/topic.js';
-import { BriefingBuilder } from '../../src/briefing/briefingbuilder.js';
+import BriefingBuilder from '../../src/briefing/briefingbuilder.js';
 import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
 import { Agenda } from '../../src/briefing/agenda.js';
 import { Battle } from '../../src/model/battle.js';
@@ -9,12 +9,22 @@ import { valid as isHtml } from 'node-html-parser';
 import { validate } from 'csstree-validator';
 const isCss = (s) => typeof s === 'string' && validate(s).length === 0;
 
+
+// Helper function that returns a promise that resolves when the emitter emits the specified event.
+function waitFor(emitter, evt) {
+	return new Promise(resolve => emitter.on(evt, (...args) => resolve(args)));
+}
+
 describe('BriefingBuilder', function() {
 	let builder;
 	let gameObjectFactory;
 	let battle;
 	let agenda;
 
+	const rendered = {
+		html: '<p>topic</p>',
+		css: 'p { color: red; }'
+	}
 	const MockTopic = class extends Topic {};	
 
 	before(function() {
@@ -31,10 +41,7 @@ describe('BriefingBuilder', function() {
 		builder = new BriefingBuilder({ gameObjectFactory });
 		sinon.stub(builder, 'getTopic').resolves({ default: MockTopic });		
 		sinon.stub(MockTopic.prototype);
-		MockTopic.prototype.render.resolves({
-			html: '<p>topic </p>',
-			css: 'p { color: red; }'
-		});
+		MockTopic.prototype.render.resolves(rendered);
 	});
 
 	afterEach(function() {
@@ -42,11 +49,26 @@ describe('BriefingBuilder', function() {
 	});
 
 	describe('.build', function() {
+		it('should emit EVT_BRIEFING_START at the beginning', async function() {
+			const briefing = builder.build(battle, agenda);
+			const data = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_START);
+			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_START);
+			await expect(data).to.eventually.be.an('array').with.members([briefing]);
+		});
+
+		it('should emit EVT_BRIEFING_FINISH at the end', async function() {
+			const briefing = builder.build(battle, agenda);
+			const data = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
+			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_FINISH);
+			await expect(data).to.eventually.be.an('array').with.members([briefing]);
+		});
+
 		it('should build an error message if the import cannot be found', async function() {
 			builder.getTopic.rejects();
 			sinon.spy(builder, 'buildErrorTopic');
 			try {
-				await builder.build(battle, agenda);
+				const briefing = builder.build(battle, agenda);
+				await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
 				expect(builder.buildErrorTopic).to.have.been.called;				
 			} finally {
 				builder.buildErrorTopic.restore();
@@ -60,8 +82,9 @@ describe('BriefingBuilder', function() {
 
 		it('should pass along the agenda options to the topic builder', async function() {
 			agenda.topics.testtopic = { option: 'option' };
+			
 			let expected = agenda.topics.testtopic;
-			await builder.build(battle, agenda);
+			await waitFor(builder.build(battle, agenda), BriefingBuilder.EVT_BRIEFING_FINISH);
 			expect(MockTopic.prototype.render).to.have.been.calledWith(sinon.match.any, expected);
 		});
 
@@ -69,7 +92,7 @@ describe('BriefingBuilder', function() {
 			agenda.topics = { topic1: {}, topic2: {}};
 
 			// Expect both topic builders to have been called:
-			await builder.build(battle, agenda);
+			await waitFor(builder.build(battle, agenda), BriefingBuilder.EVT_BRIEFING_FINISH);
 			expect(MockTopic.prototype.render).to.have.been.calledTwice;
 
 			// Expect the "battle" argument of each topic builder to have been deeply equal, but not strictly equal:			
@@ -79,16 +102,23 @@ describe('BriefingBuilder', function() {
 			expect(battle1).to.deep.equal(battle2);
 		});
 
-		it('should return a promise that resolves to a briefing object with valid HTML', async function() {
-			return expect(builder.build(battle, agenda)).to.eventually
-				.have.property('html')
-				.that.satisfies(isHtml);
-		});
+		it('should emit EVT_BRIEFING_TOPIC when a topic has finished rendering', async function() {
+			const briefing = builder.build(battle, agenda);
 
-		it('should return a promise that resolves to a briefing object with valid CSS', async function() {
-			return expect(builder.build(battle, agenda)).to.eventually
-				.have.property('css')
-				.that.satisfies(isCss);
+			// Temporary promise for the waitFor helper function
+			// We can't await this directly, because both waitFor and the .emit assertion will
+			// register event handlers, and both need to be registered when build is run
+			const p = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_TOPIC);
+			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_TOPIC);
+
+
+			const eventData = await p;
+			expect(eventData).to.be.an('array');
+			expect(eventData[0]).to.equal(0);
+			expect(eventData[1]).to.deep.equal(rendered);
+
+			expect(eventData[1].html).to.satisfy(isHtml);
+			expect(eventData[1].css).to.satisfy(isCss);
 		});
 	});
 });

@@ -15,13 +15,15 @@ sinon.test = sinontest(sinon);
 chainock.setTimeout(500); 
 
 chai.use(sinonchai);
-chai.use(chaievents);
 chai.use(chainock);
 chai.use(chaifs);
 chai.use(chaieach);
-// This needs to be the last call to use()
+// This needs to be the last call to use() except for chai-events
 // See https://github.com/domenic/chai-as-promised/blob/master/README.md#node
 chai.use(chaiaspromised);
+// This needs to come after chai-as-promised, or we will have a bunch of false positives.
+// Probably related to https://github.com/CodeLenny/chai-events/issues/14
+chai.use(chaievents);
 
 global.expect = chai.expect;
 

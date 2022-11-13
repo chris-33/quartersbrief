@@ -1,32 +1,16 @@
+doctype html
 html
   head
     block head
       meta(charset='utf-8')
       meta(name='viewport', content='width=device-width, initial-scale=1.0')
       link(href='quartersbrief.css' rel='stylesheet')        
-      link(href='quartersbrief-briefing.css' rel='stylesheet')        
-      script(src="/socket.io/socket.io.js")
       script(src="https://code.jquery.com/jquery-3.6.0.slim.js")
-      script(src="https://unpkg.com/@popperjs/core@2")
   body
     header World of Warships Quarters Brief
       #fullscreen(onclick='document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()')
         i
 
     #briefing  
-      | !{briefing}
 
-    script
-      | async function toggleFullscreen() {
-      |   const wantFullscreen = !Boolean(document.fullscreenElement);
-      |   await wantFullscreen ? document.body.requestFullscreen() : document.exitFullscreen();
-      |   $('#fullscreen > span').html({ 
-      |     // contract icon
-      |     true: '&#xe901;', 
-      |     // expand icon
-      |     false: '&#xe900;' 
-      |   }[wantFullscreen]);
-      | }
-    script
-      | const socket = io();
-      | socket.on('battlestart', function() { window.location.reload() })
+    script(type="module" src='js/init.js')

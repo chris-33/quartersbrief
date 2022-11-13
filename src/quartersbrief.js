@@ -7,14 +7,17 @@ import update from './init/update.js';
 import log from 'loglevel';
 import loadData from './init/load.js';
 import assertInvariants, { InvariantError } from './init/invariants.js';
-import { BattleController } from './core/battlecontroller.js';
 import { GameObjectFactory } from './model/gameobjectfactory.js';
 import Labeler from './model/labeler.js';
-import { AgendaStore } from './briefing/agendastore.js';
-import { SpecificityStrategy } from './briefing/specificitystrategy.js';
+import BattleDataReader from './core/battledatareader.js';
+import AgendaStore from './briefing/agendastore.js';
+import SpecificityChooser from './briefing/specificitychooser.js';
+import BriefingBuilder from './briefing/briefingbuilder.js';
 import createServers from './init/servers.js';
-import { BriefingMaker } from './core/briefingmaker.js';
-import { existsSync, readFileSync } from 'fs';
+import AgendaController from './core/agendacontroller.js';
+import { BattleController } from './core/battlecontroller.js';
+import BriefingController from './core/briefingcontroller.js';
+import { existsSync } from 'fs';
 import path from 'path';
 import pug from 'pug';
 import sass from 'sass';
@@ -56,49 +59,57 @@ if (!config.skipInvariants) {
 }
 
 const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
-const agendaStore = new AgendaStore(config.agendasdir);
+const agendaController = new AgendaController([
+	new AgendaStore(config.agendasdir)
+], new SpecificityChooser(gameObjectFactory));
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
-const strategy = new SpecificityStrategy(gameObjectFactory);
-const briefingMaker = new BriefingMaker(path.join(config.wowsdir, 'replays'), gameObjectFactory, agendaStore, strategy);
+const briefingController = new BriefingController(
+	new BattleDataReader(path.join(config.wowsdir, 'replays')),
+	new BriefingBuilder(gameObjectFactory),
+	agendaController
+);
 
 const { srv, io } = createServers(config.host, config.port);
 
 const indexTemplate = pug.compileFile('./src/core/index.pug');
-let briefing;
-srv.get('/', async function(req, res) {
-	briefing = await briefingMaker.makeBriefing();	
-	let html = indexTemplate({ briefing: briefing.html });
+srv.get('/', function(req, res) {
+	let html = indexTemplate();
 	res.send(html);
 });
 
-let quartersbriefcss;
+async function handler() {
+	const briefing = await briefingController.createBriefing();	
+
+	Object.keys(BriefingBuilder)
+		.filter(key => key.startsWith('EVT_'))
+		.map(key => BriefingBuilder[key])
+		.forEach(eventName => briefing.on(eventName, function(...args) {
+			let logstr = `Re-emitted event ${eventName}`;			
+			if (eventName === BriefingBuilder.EVT_BRIEFING_TOPIC)
+				logstr += ` for topic #${args[0]}`;
+			log.debug(logstr);
+			
+			io.emit(eventName, ...args);
+		}));
+}
+io.on('connect', handler);
+
+const stylesheet = sass.compile('src/core/quartersbrief.scss', {
+	loadPaths: ['node_modules'],
+	functions: {
+		'scrollSnap()': function() {
+			return config.scrollSnap ? sass.sassTrue : sass.sassFalse
+		}
+	}
+}).css;
 srv.get('/quartersbrief.css', function(req, res) {
 	res.type('text/css');
-	if (!quartersbriefcss)
-		quartersbriefcss = sass.compile('src/core/quartersbrief.scss', {
-			loadPaths: ['node_modules'],
-			functions: {
-				'scrollSnap()': function() {
-					return config.scrollSnap ? sass.sassTrue : sass.sassFalse
-				}
-			}
-		}).css;
-	res.send(quartersbriefcss);
-	// Disable caching in dev mode
-	if (process.env.NODE_ENV === 'development')
-		quartersbriefcss = null;
-});
-
-srv.get('/quartersbrief-briefing.css', function(req, res) {
-	res.type('text/css');
-	if (briefing.css)
-		res.send(briefing.css);
-	else
-		res.status(404).end();
+	res.send(stylesheet);
 });
 
 battleController.on('battlestart', function() {
 	io.emit('battlestart');
+	handler();
 });
 
 battleController.on('battleend', function() {

@@ -1,12 +1,14 @@
+import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
+
 /**
- * The `SpecificityStrategy` chooses the agenda that most specifically matches the player's ship in the battle. 
+ * The `SpecificityChooser` selects the agenda that most specifically matches the player's ship in the battle. 
  * Specificity is calculated according to the following rules:
  * - `ships` matched: 100 pts
  * - `classes`, `tiers`, `nations` matched: 10 pts each.
  *
- * This is somewhat inspired by CSS selectors.
+ * This is somewhat inspired by the way CSS selectors work.
  */
-class SpecificityStrategy {	
+export default class SpecificityChooser {	
 	static POINTS = {
 				ships: 100,
 				classes: 10,
@@ -16,6 +18,9 @@ class SpecificityStrategy {
 	static PENALTY = -10000;
 
 	constructor(gameObjectFactory) {
+		if (!gameObjectFactory || !(gameObjectFactory instanceof GameObjectFactory))
+			throw new TypeError(`Need a GameObjectFactory to create a ${this.constructor.name} but got ${gameObjectFactory}`);
+
 		this.gameObjectFactory = gameObjectFactory;
 	}
 
@@ -29,7 +34,7 @@ class SpecificityStrategy {
 	 * 
 	 * @return {number} The specificity score of the agenda's matcher.
 	 */
-	_getScore(ownship, agenda) {
+	scoreOf(ownship, agenda) {
 		function score(prop) {
 			const targets = {
 				ships: 'getName',
@@ -39,11 +44,12 @@ class SpecificityStrategy {
 			}
 			if (agenda.matcher?.[prop]) 
 				return agenda.matcher[prop].includes(ownship[targets[prop]].call(ownship)) ? 
-					SpecificityStrategy.POINTS[prop] : 
-					SpecificityStrategy.PENALTY;
+					SpecificityChooser.POINTS[prop] : 
+					SpecificityChooser.PENALTY;
 			else 
-				return 0;
+				return 0; 
 		}
+
 		return [ 'ships', 'classes', 'tiers', 'nations' ]
 			.map(score)
 			.reduce((prev, curr) => prev + curr, 0);
@@ -57,13 +63,13 @@ class SpecificityStrategy {
 	 * @return {Agenda}        Returns the agenda with the highest specificity score that matched
 	 * the ship, or `null` if no agendas matched.
 	 */
-	chooseAgenda(battle, agendas) {
+	choose(battle, agendas) {
 		let ownship = this.gameObjectFactory.createGameObject(battle.getPlayer().shipId);
 
 		return agendas
 			// Calculate a score for every agenda.
 			// agendas now contains objects of the form { agenda, score }
-			.map(agenda => ({ agenda, score: this._getScore(ownship, agenda) }))
+			.map(agenda => ({ agenda, score: this.scoreOf(ownship, agenda) }))
 			// Filter out all agendas that didn't actually match the ownship
 			.filter(entry => entry.score >= 0)
 			// Find the highest scoring one, or default to null if no agendas matched
@@ -72,5 +78,3 @@ class SpecificityStrategy {
 			.agenda;
 	}
 }
-
-export { SpecificityStrategy };
