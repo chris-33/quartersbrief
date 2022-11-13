@@ -109,6 +109,7 @@ $stealthwarn-color-severe: colors.$warning-severe;
 			color: transparent;
 			background-image: linear-gradient(to right, colors.$ally 30%, colors.$enemy 50%);
 			background-clip: text;
+			-webkit-background-clip: text;
 		}
 		&.player {
 			color: colors.$player;
