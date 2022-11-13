@@ -29,7 +29,7 @@ export async function onBriefingTopic(index, { html, css }) {
 	// of the old briefing.
 	await readyForTopics;
 
-	const topic = $(`#topic-${index}`);
+	const topic = $(`#topic-${index} .topic-content`);
 	// Count how many transitions are started on the topic, so we can wait for all of them to finish.
 	const transitions = new Set();
 	topic.on('transitionstart', function(event) {

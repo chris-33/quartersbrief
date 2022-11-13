@@ -1,22 +1,22 @@
 @use 'sass:math';
 
 $transition-duration: 1.33s;
-.topic.loading.loaded {
+.topic-content.loading.loaded {
 	opacity: 0;
 	transition: opacity $transition-duration, transform $transition-duration step-end;
 	transform: translateY(2em);
 }
-.topic.loaded:not(.loading) {
+.topic-content.loaded:not(.loading) {
 	opacity: 100%;
 	transition: opacity $transition-duration, transform $transition-duration;
 	transform: translateY(0);
 }
 
-.topic.loading {
+.topic-content.loading {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	height: 50vh;
+	height: 33vh;
 
 	.spinner {
 		font-family: 'dripicons-v2';

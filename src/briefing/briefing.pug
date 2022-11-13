@@ -1,5 +1,8 @@
 each topic, index in topics
-	.topic.loading(id = `topic-${index}`)
-		.spinner &#xe011;
+	.topic(id = `topic-${index}`)
+		.topic-caption
+			| #{topic.caption}
+		.topic-content.loading
+			.spinner &#xe011;
 
 script(src='js/details.js')

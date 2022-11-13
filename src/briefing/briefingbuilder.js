@@ -5,7 +5,6 @@ import rootlog from 'loglevel';
 import clone from 'clone';
 import * as topics from './topics/index.js';
 
-const renderTopic = pug.compileFile('src/briefing/topic.pug');
 const renderBriefing = pug.compileFile('src/briefing/briefing.pug');
 
 /**
@@ -98,7 +97,7 @@ export default class BriefingBuilder {
 		const topics = agenda.getTopicNames().map(topicName => new (this.getTopic(topicName))(topicName, this.providers));
 
 		const briefing = new EventEmitter();
-		briefing.topics = new Array(agenda.getTopicNames().length);
+		briefing.topics = topics;
 		briefing.html = renderBriefing(briefing);
 		briefing.css = sass.compile('src/briefing/briefing.scss').css;
 		
@@ -121,7 +120,7 @@ export default class BriefingBuilder {
 					agenda.topics[topicName]
 				);
 
-				rendered.html = renderTopic({ index, caption, html: rendered.html });
+				// rendered.html = renderTopic({ index, caption, html: rendered.html });
 				rendered.css = sass.compileString(`#topic-${index} { ${rendered.css ?? ''} }`).css;
 
 				briefing.topics[index] = rendered;
