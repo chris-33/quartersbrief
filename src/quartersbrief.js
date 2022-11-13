@@ -77,7 +77,12 @@ srv.get('/quartersbrief.css', function(req, res) {
 	res.type('text/css');
 	if (!quartersbriefcss)
 		quartersbriefcss = sass.compile('src/core/quartersbrief.scss', {
-			loadPaths: ['node_modules']
+			loadPaths: ['node_modules'],
+			functions: {
+				'scrollSnap()': function() {
+					return config.scrollSnap ? sass.sassTrue : sass.sassFalse
+				}
+			}
 		}).css;
 	res.send(quartersbriefcss);
 	// Disable caching in dev mode

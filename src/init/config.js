@@ -33,6 +33,10 @@ const config = {
 			type: 'boolean',
 			description: 'Do not check fundamental assumptions at application start.',
 		})
+		.option('scroll-snap', {
+			type: 'boolean',
+			description: 'Snap to nearest topic when scrolling.'
+		})
 		.option('wowsdir', {
 			alias: 'd',
 			type: 'string',
