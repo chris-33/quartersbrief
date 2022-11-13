@@ -6,7 +6,6 @@ import './init/log.js';
 import update from './init/update.js';
 import log from 'loglevel';
 import loadData from './init/load.js';
-import assertInvariants, { InvariantError } from './init/invariants.js';
 import { GameObjectFactory } from './model/gameobjectfactory.js';
 import Labeler from './model/labeler.js';
 import BattleDataReader from './core/battledatareader.js';
@@ -41,22 +40,6 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 await update();
 
 let { data, labels } = await loadData(paths.data);
-
-if (!config.skipInvariants) {
-	try {
-		assertInvariants(data);
-	} catch (err) {
-		if (err instanceof AggregateError && err.errors.every(error => error instanceof InvariantError)) {
-			log.error(`${err.message} ${err.errors.map(e => e.message + '\n')}.\nThis means that an important assumption this app depends upon to function correctly was not true.\nYou can start with the --skip-invariants option to disable invariant checking. Exiting.`);
-			process.exit(1);
-		} else {
-			log.error(`${err} ${err.stack}`);
-			process.exit(1);
-		}
-	}
-} else {
-	log.warn(`Skipped invariant checking.`);
-}
 
 const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
 const agendaController = new AgendaController([
