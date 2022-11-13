@@ -3,7 +3,6 @@ import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { SKILLS } from '../../../model/captain.js';
 
 
-const BASE_BUILD = { modules: 'stock' }
 const CONCEALMENT_BUILD = {
 	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
 	skills: [ SKILLS.CONCEALMENT_EXPERT ]
@@ -20,13 +19,14 @@ export default class TorpedoesTopic extends Topic {
 		const locals = await super.getPugData(battle, options);
 		locals.ships = locals.ships.filter(ship => ship.torpedoes)
 
-		const entries = ships.map(ship => {
+		const entries = locals.ships.map(ship => {
 			const entry = { 
 				ship,
 				builds: ship.discoverModules('torpedoes').map((module, index) => {
 					shipBuilder.build(ship, { 
 						modules: `torpedoes: ${index}, others: top`,
-						...TORPEDO_BUILD
+						...TORPEDO_BUILD,
+						...CONCEALMENT_BUILD
 					});	
 					let torpedoes = ship.torpedoes.get('mounts.*.ammoList', { collate: true });
 				
