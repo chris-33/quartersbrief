@@ -50,7 +50,8 @@ describe('updateGameParams', function() {
 			..._steps,
 			extract
 		}
-		updateGameParams = (await esmock('../../src/update/update-gameparams.js', {}, {
+		// Use esmock strict mode here, to that invariants get replaced instead of merged
+		updateGameParams = (await esmock.strict('../../src/update/update-gameparams.js', {}, {
 				'../../src/update/infra/steps.js': steps,
 				'../../src/update/invariants-gameparams.js': invariants
 		})).default;		
