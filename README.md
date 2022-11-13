@@ -1,6 +1,6 @@
 # Word of Warships Quarters Brief
 
-This project is intended as an information tool for the popular video game [World of Warships](https://worldofwarships.eu/). While the game is easy enough to get started on, playing it well requires knowing a vast amount of information about ships' capabilities, quirks and technical data. This project provides that information, restricted to that which is actually pertinent to the current battle, saving you the trouble of having to memorize half of the [World of Warships wiki](https://wiki.wargaming.net/en/World_of_Warships).
+This project is intended as an information tool for the popular video game [World of Warships](https://worldofwarships.eu/). While the game is easy enough to get started on, playing it well requires knowing a vast amount of information about ships' capabilities, quirks and technical data. Quartersbrief provides that information, restricted to that which is actually pertinent to the current battle, saving you the trouble of having to memorize half of the [World of Warships wiki](https://wiki.wargaming.net/en/World_of_Warships).
 
 ## Use
 
@@ -50,11 +50,78 @@ While all ways to configure quartersbrief are available as command-line options 
 
 ### Configuring (agendas)
 
-See (TBC)
+*Agendas* are the blueprints for the briefings delivered by quartersbrief. An agenda consists of two parts: a *matcher* describing what sort of battle the agenda is for, and a *topics* section detailing the topics to show. 
+
+#### Matcher
+
+The matcher begins with the header `[matches]`, followed by one or more lists for `ships`, `classes`, `tiers`, and `nations`. These describe the conditions the player's ship must satisfy for this agenda to be considered a match. These conditions are cumulative: If both `classes` and `tiers` is specified, for example, the player ship must satisfy both of them. Conditions that are not set, or set to an empty list(`[]`) are considered to be met regardless of the player ship, so not all of them need to be used in every agenda. 
+
+Examples:
+```
+[matches]
+classes = [ 'Cruiser', 'Destroyer' ]
+tiers = [5, 6, 7, 8, 9, 10, 11 ]
+```
+This matches all cruisers and destroyers of tier 5 and up.
+```
+[matches]
+ships = [ 'PASD021_Fletcher_1943', 'PASD013_Gearing_1945 ']
+```
+This will match only ships Fletcher and Gearing.
+```
+[matches]
+classes = [ 'Battleship' ]
+ships = [ 'PASD021_Fletcher_1943' ]
+```
+This will match nothing, because Fletcher is a destroyer.
+
+If more than one agenda matches, quarterbrief's scoring system decides which one will actually be shown: Agendas are awarded points for how specific their matchers are. An agenda gets 10 points each for matching `classes`, `tiers`, and `nations`, and 100 points for matching `ships`. If there are several agendas with the same score, quartersbrief shows the first one it came across.
+
+Example: 
+```
+[matches]
+classes = [ 'Cruiser', 'Destroyer' ]
+tiers = [5, 6, 7, 8, 9, 10, 11 ]
+```
+This agenda gets 20 points when it matches, 10 for matching the class and another 10 for matching the tier.
+```
+[matches]
+ships = [ 'PASD021_Fletcher_1943', 'PASD013_Gearing_1945 ']
+```
+This agenda gets 100 points when it matches.
+```
+[matches]
+ships = [ 'PASD021_Fletcher_1943', 'PASD013_Gearing_1945 ']
+classes = [ 'Destroyer' ]
+```
+This agenda gets 110 points, even though it matches the same ships as the previous example.
+
+#### Topics
+
+The topics section begins with the header `[topics]`, followed by tables for the desired topics in the order they will be shown. Thus, an agenda wishing to show the hydro topic and the radar topic would look like this: 
+```
+[topics]
+
+[topics.hydro]
+
+[topics.radar]
+```
+In their respective section, topics may have configuration options, for example to specify what type of ship they should include. The following example restricts the hydro topic to enemy ships and sets the gap between radar range and ship detectability at which a ship will be considered to "almost" have a stealth radar capability to 500m:
+```
+[topics]
+
+[topics.hydro]
+filter = { teams: [ "enemies" ] }
+
+[topics.radar]
+almostThreshold = 500
+```
 
 ### Running 
 
-Just run `quartersbrief`.
+Run `quartersbrief --wowsdir <path/to/game>`, replacing `<path/to/game>` with the path to your World of Warships installation directory. To avoid having to pass this at every start, it can be set in `quartersbrief.json`.
+
+After starting quartersbrief, direct your browser to `localhost:10000`.
 
 ## Development
 
