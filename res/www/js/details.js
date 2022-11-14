@@ -1,16 +1,14 @@
 import { createPopper } from 'https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.11.6/esm/popper.min.js';
 
 export default function makeDetails(topic) {
-	topic = $(topic);
-	topic.find('[data-details]').each(function(index, element) {
-		element = $(element);
-		// Scope search to topic
-		const details = $(`aside[data-details-for="${element.attr('data-details')}"]`, topic);
+	topic.querySelectorAll('[data-details]').forEach(element => {
+		let details = topic.querySelectorAll(`aside[data-details-for="${element.dataset.details}"]`);
 
 		if (details.length === 0) return;
-		if (details.length > 1) throw new Error(`Expected to find at most one details element for ${element.attr('data-details')} but found ${details.length}`);
+		if (details.length > 1) throw new Error(`Expected to find at most one details element for ${element.dataset.details} but found ${details.length}`);
+		details = details[0];
 
-		const popper = createPopper(element.get(0), details.get(0), {
+		const popper = createPopper(element, details, {
 			placement: 'right',
 			modifiers: [
 				{ name: 'flip', options: {} },
@@ -18,8 +16,8 @@ export default function makeDetails(topic) {
 			]
 		});
 
-		element.on('mouseenter focus', function() {
-			details.attr('data-show', true);
+		['mouseenter', 'focus'].forEach(eventName => element.addEventListener(eventName, function show() {
+			details.dataset.show = true;
 
 			// Enable the event listeners; see https://popper.js.org/docs/v2/tutorial/#performance
 			popper.setOptions((options) => ({
@@ -31,10 +29,10 @@ export default function makeDetails(topic) {
 			}));
 
 			popper.update();
-		});
+		}));
 
-		element.on('mouseleave blur', function hide() {
-			details.removeAttr('data-show');
+		['mouseleave','blur'].forEach(eventName => element.addEventListener(eventName, function hide() {
+			delete details.dataset.show;
 
 			// Disable the event listeners; see https://popper.js.org/docs/v2/tutorial/#performance
 			popper.setOptions((options) => ({
@@ -44,7 +42,7 @@ export default function makeDetails(topic) {
 					{ name: 'eventListeners', enabled: false },
 				],
 			}));			
-		});	
+		}));	
 	});
 	return topic;
 }

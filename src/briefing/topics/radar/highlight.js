@@ -1,10 +1,10 @@
 'use strict';
 
+// eslint-disable-next-line no-unused-vars
 function highlight(el) {
-	el = $(el);
-	let ships = el.data('for').split(' ');
+	let ships = el.dataset.for.split(' ');
 	el
 		.closest('.topic')
-		.find(ships.map(ship => `[data-for~="${ship}"]`).join(','))
-		.toggleClass('highlighted');
+		.querySelectorAll(ships.map(ship => `[data-for~="${ship}"]`).join(','))
+		.classList.toggle('highlighted');
 }

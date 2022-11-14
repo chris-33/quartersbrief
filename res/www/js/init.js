@@ -1,8 +1,7 @@
 import { io } from 'https://cdn.socket.io/4.4.1/socket.io.esm.min.js'
 import * as handlers from './io.js';
 
-// This is now the recommended way of doing $(document).ready()
-$(function() {
+window.addEventListener('DOMContentLoaded', function() {
 	// Delay socket connection to when the DOM is safe to manipulate
 	// Otherwise, we can have issues where fast-building topics are
 	// delivered before the DOM is ready to receive them
@@ -28,5 +27,5 @@ $(function() {
 			handlerName = `on${handlerName}`;
 
 			socket.on(handlers[key], handlers[handlerName]);
-		});
+		});	
 });
