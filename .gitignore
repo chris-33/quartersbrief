@@ -8,3 +8,4 @@ tools/
 wows/
 *.secret
 node_modules/
+docs/

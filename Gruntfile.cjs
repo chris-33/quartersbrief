@@ -3,9 +3,12 @@ module.exports = function(grunt) {
 	config.pkg = grunt.file.readJSON('package.json')
 	grunt.initConfig(config);
 	
-	grunt.loadNpmTasks('grunt-jsdoc');
-	grunt.loadNpmTasks('grunt-eslint');
-	grunt.loadNpmTasks('grunt-todo');
-	grunt.loadNpmTasks('grunt-mocha-test')
-	grunt.loadNpmTasks('grunt-bump');
+	require('load-grunt-tasks')(grunt);
+
+	grunt.registerTask('test', function(target) {		
+		grunt.task.run(`mochacli${target ? `:${target}` : ''}`);
+	});
+
+	grunt.renameTask('bump', '_bump');
+	grunt.registerTask('bump', ['eslint', 'test', '_bump']);
 }

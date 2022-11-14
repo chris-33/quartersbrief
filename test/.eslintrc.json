@@ -1,8 +1,19 @@
  {
+	"env": {
+		"mocha": true
+	},
+    "plugins": [
+        "mocha",
+        "chai-expect"
+    ],
 	"rules": {
 		"mocha/no-sibling-hooks": "off",
 		"mocha/max-top-level-suites": "off"
 	},
+   "extends": [
+        "plugin:mocha/recommended",
+        "plugin:chai-expect/recommended"
+    ],
 	"globals": {
 		"describe": "readonly",
 		"context": "readonly",

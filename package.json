@@ -6,11 +6,11 @@
   "bin": "./src/quartersbrief.js",
   "scripts": {
     "start": "node src/quartersbrief.js",
-    "test": "node_modules/mocha/bin/mocha --loader=esmock --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
-    "debug": "node --inspect=0.0.0.0:9229 src/quartersbrief.js",
-    "debug-test": "node_modules/mocha/bin/mocha --loader=esmock --inspect=0.0.0.0:9229 --debug-brk --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js",
+    "test": "grunt test",
+    "debug": "node --inspect-brk=0.0.0.0:9229 src/quartersbrief.js",
+    "debug-test": "grunt test --inspect-brk=0.0.0.0:9229",
     "debug-local": "node inspect src/quartersbrief.js",
-    "debug-local-test": "node_modules/mocha/bin/mocha inspect --loader=esmock --colors --require test/mocha.conf.js test/**/*.spec.js test/*.spec.js"
+    "debug-local-test": "grunt test --inspect-local"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.2.0",
@@ -52,8 +52,8 @@
     "eslint": "^8.8.0",
     "eslint-plugin-chai-expect": "^3.0.0",
     "eslint-plugin-mocha": "^10.0.3",
+    "eslint-plugin-pug": "^1.2.5",
     "esmock": "^2.0.7",
-    "eslint-plugin-pug": "^1.2.4",
     "grunt": "^1.5.3",
     "grunt-bump": "^0.8.0",
     "grunt-depcheck": "^1.0.0",
@@ -63,6 +63,7 @@
     "grunt-todo": "^0.5.0",
     "ink-docstrap": "^0.5.4",
     "jsdoc": "^3.6.10",
+    "load-grunt-tasks": "^5.1.0",
     "mocha": "^9.1.4",
     "mock-fs": "^5.1.2",
     "nock": "^13.2.4",

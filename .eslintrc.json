@@ -1,18 +1,13 @@
 {
     "env": {
-        "browser": true,
         "node": true,
-        "mocha": true,
         "es2021": true
     },
     "plugins": [
-        "mocha",
-        "chai-expect"
+        "pug"
     ],
     "extends": [
-        "eslint:recommended",
-        "plugin:mocha/recommended",
-        "plugin:chai-expect/recommended"
+        "eslint:recommended"
     ],
     "parserOptions": {
         "ecmaVersion": "latest",

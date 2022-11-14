@@ -1,0 +1,6 @@
+{
+	"overrides": [{
+		"files": "*.pug",
+		"extends": "../res/www/js/.eslintrc.json"
+	}]
+}
