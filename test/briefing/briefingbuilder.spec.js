@@ -39,7 +39,7 @@ describe('BriefingBuilder', function() {
 
 	beforeEach(function() {
 		builder = new BriefingBuilder({ gameObjectFactory });
-		sinon.stub(builder, 'getTopic').resolves({ default: MockTopic });		
+		sinon.stub(builder, 'getTopic').returns(MockTopic );
 		sinon.stub(MockTopic.prototype);
 		MockTopic.prototype.render.resolves(rendered);
 	});
@@ -63,8 +63,8 @@ describe('BriefingBuilder', function() {
 			await expect(data).to.eventually.be.an('array').with.members([briefing]);
 		});
 
-		it('should build an error message if the import cannot be found', async function() {
-			builder.getTopic.rejects();
+		it('should build an error message if the topic builder has an error', async function() {
+			MockTopic.prototype.render.rejects();		
 			sinon.spy(builder, 'buildErrorTopic');
 			try {
 				const briefing = builder.build(battle, agenda);
