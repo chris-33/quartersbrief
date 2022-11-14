@@ -93,6 +93,32 @@ describe('Topic', function() {
 			expect(topic).to.have.property('pugFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.pug`));
 			expect(topic).to.have.property('scssFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.scss`));
 		});
+
+		it('should not overwrite the caption if one is already set', async function() {
+			const expected = 'topicwithcaption';
+			class TopicWithCaption extends Topic {
+				caption = expected;
+			}
+			topic = new TopicWithCaption();
+			expect(topic).to.have.property('caption').that.equals(expected);
+		});
+
+		it('should infer the caption from the class name', async function() {
+			class DerivedClass extends Topic {}
+
+			topic = new DerivedClass();
+
+			expect(topic).to.have.property('caption').that.equals('Derived Class');
+		});
+
+		it('should remove the suffix "Topic" when inferring caption from class name', function() {
+			class DerivedFromTopic extends Topic {}
+
+			topic = new DerivedFromTopic();
+
+			expect(topic).to.have.property('caption').that.equals('Derived From');
+		});
+
 	});
 
 	describe('.getPugData', function() {
@@ -270,31 +296,6 @@ describe('Topic', function() {
 		afterEach(function() {
 			topic.renderHtml.restore();
 			topic.renderCss.restore();
-		});
-
-		it('should include the caption if one was set', async function() {
-			topic.caption = 'caption';
-			return expect(topic.render(battle)).to.eventually.have.property('caption').that.equals(topic.caption);
-		});
-
-		it('should infer the caption from the class name if none was set', async function() {
-			class DerivedClass extends Topic {}
-
-			topic = new DerivedClass();
-			sinon.stub(topic, 'renderHtml');
-			sinon.stub(topic, 'renderCss');
-
-			return expect(topic.render(battle, null)).to.eventually.have.property('caption').that.equals('Derived Class');
-		});
-
-		it('should remove the suffix "Topic" when inferring caption from class name', function() {
-			class DerivedFromTopic extends Topic {}
-
-			topic = new DerivedFromTopic();
-			sinon.stub(topic, 'renderHtml');
-			sinon.stub(topic, 'renderCss');
-
-			return expect(topic.render(battle, null)).to.eventually.have.property('caption').that.equals('Derived From');
 		});
 
 		it('should call the renderHtml and renderCss', async function() {
