@@ -78,13 +78,14 @@ Vagrant.configure("2") do |config|
   # Make aliases for some common npm run commands. "npm run debug-test" for example can then just be called by typing "debug-test"
   config.vm.provision "shell", name: "Install convenience commands", privileged: false, inline: <<-SHELL
     mkdir -p /home/vagrant/.local/bin
-    echo 'npm run debug $@' > /home/vagrant/.local/bin/debug  && chmod +x /home/vagrant/.local/bin/debug
-    echo 'npm run debug-test $@' > /home/vagrant/.local/bin/debug-test  && chmod +x /home/vagrant/.local/bin/debug-test
-    # This needs to be "tests" instead of "test" because test is a Linux command
-    echo 'npm test $@' > /home/vagrant/.local/bin/tests  && chmod +x /home/vagrant/.local/bin/tests
-    echo 'npm run debug $@' > /home/vagrant/.local/bin/debug  && chmod +x /home/vagrant/.local/bin/debug
-    echo 'npm start $@' > /home/vagrant/.local/bin/start  && chmod +x /home/vagrant/.local/bin/start
+    echo 'npm start -- $@' > /home/vagrant/.local/bin/start  && chmod +x /home/vagrant/.local/bin/start
     ln -s /home/vagrant/.local/bin/start /home/vagrant/.local/bin/quartersbrief
+    echo 'npm run debug -- $@' > /home/vagrant/.local/bin/debug  && chmod +x /home/vagrant/.local/bin/debug
+    echo 'npm run debug-local -- $@' > /home/vagrant/.local/bin/debug-local  && chmod +x /home/vagrant/.local/bin/debug-local
+    # This needs to be "tests" instead of "test" because test is a Linux command
+    echo 'npm test -- $@' > /home/vagrant/.local/bin/tests  && chmod +x /home/vagrant/.local/bin/tests
+    echo 'npm run debug-test -- $@' > /home/vagrant/.local/bin/debug-test  && chmod +x /home/vagrant/.local/bin/debug-test
+    echo 'npm run debug-local-test -- $@' > /home/vagrant/.local/bin/debug-local-test  && chmod +x /home/vagrant/.local/bin/debug-local-test
   SHELL
 
   # Share data directory as per XDG Base Directory Specification
