@@ -6,7 +6,7 @@ import httpError from 'http-errors';
 /**
  * This class encapsulates working with the API provided online by Wargaming.
  */
-class WargamingAPI {
+export default class WargamingAPI {
 	
 	/**
 	 * The top level domain to use for calls to the Wargaming API. Dependent on the realm:
@@ -138,6 +138,3 @@ WargamingAPI.APIError = class extends Error {
 		this.url = url;
 	}
 }
-
-
-export { WargamingAPI }

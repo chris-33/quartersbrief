@@ -1,6 +1,6 @@
-import { ShipBuilder } from '../../src/util/shipbuilder.js';
-import { Ship } from '../../src/model/ship.js';
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
+import ShipBuilder from '../../src/util/shipbuilder.js';
+import Ship from '../../src/model/ship.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
 import sinon from 'sinon';
 
 describe('ShipBuilder', function() {

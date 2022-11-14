@@ -1,13 +1,13 @@
-import { GameObject } from './gameobject.js';
-import { Ship } from './ship.js';
-import { Modifier } from './modifier.js';
+import GameObject from './gameobject.js';
+import Ship from './ship.js';
+import Modifier from './modifier.js';
 
 /**
  * This class describes _Modernizations_. In game, these are called "upgrades".
  *
  * @see Modernization.gamedata
  */
-class Modernization extends GameObject {
+export default class Modernization extends GameObject {
 	
 
 	/**
@@ -87,6 +87,3 @@ class Modernization extends GameObject {
 	getWhitelist() { return this._data.ships; }
 	getSlot() { return this._data.slot; }
 }
-
-
-export { Modernization }

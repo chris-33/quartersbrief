@@ -9,7 +9,7 @@ import DataObject from './dataobject.js';
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
  * object. (This is checked at application startup through invariant assertion checking.)
  */
-class GameObject extends DataObject {
+export default class GameObject extends DataObject {
 	/**
 	 * Regex to find game object reference codes.
 	 * References all start with the capital letter P, followed
@@ -39,5 +39,3 @@ class GameObject extends DataObject {
 	getRefCode() { return this._data.index; }
 	getTypeInfo() { return this._data.typeinfo; }
 }
-
-export { GameObject }

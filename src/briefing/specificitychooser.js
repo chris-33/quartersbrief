@@ -1,4 +1,4 @@
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
 
 /**
  * The `SpecificityChooser` selects the agenda that most specifically matches the player's ship in the battle. 

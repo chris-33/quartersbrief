@@ -1,4 +1,4 @@
-import { Player } from '../../src/model/player.js';
+import Player from '../../src/model/player.js';
 
 describe('Player', function() {
 	const statistics = [ 'getBattles', 'getVictories', 'getWinrate' ];

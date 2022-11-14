@@ -1,4 +1,4 @@
-import { Consumable } from '../../src/model/consumable.js';
+import Consumable from '../../src/model/consumable.js';
 import { readFileSync } from 'fs';
 import clone from 'clone';
 

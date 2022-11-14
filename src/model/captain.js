@@ -1,6 +1,6 @@
-import { GameObject } from './gameobject.js';
-import { Ship } from './ship.js';
-import { Modifier } from './modifier.js';
+import GameObject from './gameobject.js';
+import Ship from './ship.js';
+import Modifier from './modifier.js';
 
 export const SKILLS = {
 	AA_DEFENSE_AND_ASW_EXPERT: 35,
@@ -98,7 +98,7 @@ export const SKILLS = {
  *
  * @see Captain.gamedata
  */
-class Captain extends GameObject {
+export default class Captain extends GameObject {
 	
 	/* 
 	 *	Source: https://github.com/WoWs-Builder-Team/DataConverter/blob/51d5c29cb0224799ca12db4d1da2c4d83d6e5d7f/DataConverter/JsonData/SKILLS_BY_TIER.json 
@@ -265,5 +265,3 @@ Captain.Skill = class {
 
 	getSkillnumber() { return this._data.skillType; }
 }
-
-export { Captain };

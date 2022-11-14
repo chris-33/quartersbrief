@@ -6,7 +6,7 @@ import { EventEmitter } from 'events';
  * The `BattleController` watches the World of Warships replay directory for the existence of `tempArenaInfo.json`. When it detects
  * this file being created or changed, it emits a `battlestart` event. When it detects it being removed, it emits a `battleend` event.
  */
-class BattleController extends EventEmitter {
+export default class BattleController extends EventEmitter {
 	
 	constructor (replaydir) {
 		super();
@@ -27,5 +27,3 @@ class BattleController extends EventEmitter {
 		process.on('exit', function() { log.debug('Ending folder watch'); watcher.close(); });
 	}
 }
-
-export { BattleController }

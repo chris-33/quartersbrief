@@ -2,7 +2,7 @@
  * An agenda describes how to construct a briefing. It consists of two main constituents: a _matcher_ and _topics_.
  * The matcher determines what ships this agenda pertains to. The topics are the briefing's content.
  */
-class Agenda {
+export default class Agenda {
 	matcher;
 	topics;
 
@@ -20,5 +20,3 @@ class Agenda {
 		return Object.keys(this.topics);
 	}
 }
-
-export { Agenda }

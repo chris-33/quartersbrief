@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { Battle } from '../../src/model/battle.js';
+import Battle from '../../src/model/battle.js';
 import esmock from 'esmock';
 import sinon from 'sinon';
 import clone from 'clone';

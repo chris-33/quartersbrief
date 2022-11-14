@@ -1,4 +1,4 @@
-import { Battle } from '../../src/model/battle.js';
+import Battle from '../../src/model/battle.js';
 import { readFileSync } from 'fs';
 
 describe('Battle', function() {

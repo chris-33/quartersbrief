@@ -1,4 +1,4 @@
-import { GameObject } from './gameobject.js';
+import GameObject from './gameobject.js';
 import DotNotation from '../util/dotnotation.js';
 
 /**
@@ -6,7 +6,7 @@ import DotNotation from '../util/dotnotation.js';
  * 
  * @see Ability.gamedata
  */
-class Consumable extends GameObject {
+export default class Consumable extends GameObject {
 	static EXPOSED_FLAVOR_PROPERTIES = [
 		'consumableType',
 		'label',
@@ -79,5 +79,3 @@ class Consumable extends GameObject {
 
 	getLabel() { return this.get('label'); }
 }
-
-export { Consumable }

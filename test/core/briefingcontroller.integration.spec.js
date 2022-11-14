@@ -3,7 +3,7 @@ import path from 'path';
 import os from 'os';
 import TOML from '@iarna/toml';
 import BriefingController from '../../src/core/briefingcontroller.js';
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
 import AgendaStore from '../../src/briefing/agendastore.js';
 import SpecificityChooser from '../../src/briefing/specificitychooser.js';
 import { valid as isHtml, parse } from 'node-html-parser';

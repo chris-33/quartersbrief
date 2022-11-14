@@ -1,5 +1,5 @@
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
-import { Consumable } from '../../src/model/consumable.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import Consumable from '../../src/model/consumable.js';
 import { readFileSync } from 'fs';
 import clone from 'clone';
 import sinon from 'sinon';

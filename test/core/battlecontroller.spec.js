@@ -1,4 +1,4 @@
-import { BattleController } from '../../src/core/battlecontroller.js';
+import BattleController from '../../src/core/battlecontroller.js';
 import { writeFileSync, rmSync } from 'fs';
 import os from 'os';
 import path from 'path';

@@ -1,10 +1,10 @@
 import DataObject, { includeOwnPropertiesByDefault } from './dataobject.js';
-import { GameObject } from './gameobject.js';
-import { Modernization } from './modernization.js';
-import { Captain } from './captain.js';
-import { Camouflage } from './camouflage.js';
-import { Signal } from './signal.js';
-import { Consumable } from './consumable.js';
+import GameObject from './gameobject.js';
+import Modernization from './modernization.js';
+import Captain from './captain.js';
+import Camouflage from './camouflage.js';
+import Signal from './signal.js';
+import Consumable from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
 import { getModuleLines, discoverModules } from './ship-research.js';
 import createModule from './module.js';
@@ -80,7 +80,7 @@ const dedicatedlog = rootlog.getLogger('Ship');
  *
  * @see Ship.gamedata
  */
-class Ship extends GameObject {
+export default class Ship extends GameObject {
 	/**
 	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
 	 */

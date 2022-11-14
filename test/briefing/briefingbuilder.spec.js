@@ -1,8 +1,8 @@
 import Topic from '../../src/briefing/topic.js';
 import BriefingBuilder from '../../src/briefing/briefingbuilder.js';
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
-import { Agenda } from '../../src/briefing/agenda.js';
-import { Battle } from '../../src/model/battle.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import Agenda from '../../src/briefing/agenda.js';
+import Battle from '../../src/model/battle.js';
 import sinon from 'sinon';
 import { readFileSync } from 'fs';
 import { valid as isHtml } from 'node-html-parser';

@@ -1,5 +1,5 @@
-import { PlayerFactory } from '../../src/model/playerfactory.js';
-import { Player } from'../../src/model/player.js';
+import PlayerFactory from '../../src/model/playerfactory.js';
+import Player from'../../src/model/player.js';
 import { existsSync, readFileSync } from 'fs';
 import chalk from 'chalk';
 import dedent from 'dedent-js';

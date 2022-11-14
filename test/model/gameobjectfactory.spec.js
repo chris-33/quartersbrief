@@ -1,5 +1,5 @@
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
-import { GameObject } from '../../src/model/gameobject.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObject from '../../src/model/gameobject.js';
 import clone from 'clone';
 import sinon from 'sinon';
 

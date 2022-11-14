@@ -1,4 +1,4 @@
-class Player {
+export default class Player {
 	bot = false;
 
 	constructor(data) {
@@ -23,5 +23,3 @@ class Player {
 		return player;
 	}
 }
-
-export { Player }

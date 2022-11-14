@@ -1,10 +1,10 @@
-import { Ship } from '../../src/model/ship.js';
-import { Modernization } from '../../src/model/modernization.js';
-import { Captain } from '../../src/model/captain.js';
-import { Camouflage } from '../../src/model/camouflage.js';
-import { Consumable } from '../../src/model/consumable.js';
-import { Signal } from '../../src/model/signal.js';
-import { Modifier } from '../../src/model/modifier.js';
+import Ship from '../../src/model/ship.js';
+import Modernization from '../../src/model/modernization.js';
+import Captain from '../../src/model/captain.js';
+import Camouflage from '../../src/model/camouflage.js';
+import Consumable from '../../src/model/consumable.js';
+import Signal from '../../src/model/signal.js';
+import Modifier from '../../src/model/modifier.js';
 import sinon from 'sinon';
 import clone from 'clone';
 import { readFileSync } from 'fs';

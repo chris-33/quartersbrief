@@ -1,6 +1,6 @@
-import { Agenda } from '../../src/briefing/agenda.js';
-import { Battle } from '../../src/model/battle.js';
-import { Ship } from '../../src/model/ship.js';
+import Agenda from '../../src/briefing/agenda.js';
+import Battle from '../../src/model/battle.js';
+import Ship from '../../src/model/ship.js';
 import sinon from 'sinon';
 
 describe('Agenda', function() {

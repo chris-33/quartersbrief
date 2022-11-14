@@ -1,4 +1,4 @@
-import { Ship } from '../model/ship.js';
+import Ship from '../model/ship.js';
 
 /**
  * This class describes a single modification to be carried out on a ship's characteristic. 
@@ -24,7 +24,7 @@ import { Ship } from '../model/ship.js';
  * The _mode_ describes the way the value is to be applied to the target. The default is `'multiply'`,
  * but it can also be `'add'` or `'set'`.
  */
-class Modifier {
+export default class Modifier {
 	static DEFAULT_DESCRIPTOR = {
 		calc: (ship, baseValue) => 
 			typeof baseValue === 'object' && ship.getClass() in baseValue ? 
@@ -152,5 +152,3 @@ class Modifier {
 			new Modifier(target.target, data, target.calc, target.mode));
 	}
 }
-
-export { Modifier }

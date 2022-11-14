@@ -1,6 +1,6 @@
 import mockfs from 'mock-fs';
 import BattleDataReader from '../../src/core/battledatareader.js';
-import { Battle } from '../../src/model/battle.js';
+import Battle from '../../src/model/battle.js';
 
 describe('.BattleDataReader', function() {
 	const replaydir = '/replays';

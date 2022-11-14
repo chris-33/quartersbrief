@@ -1,10 +1,10 @@
-import { Modifier } from './modifier.js';
-import { GameObject } from './gameobject.js';
+import Modifier from './modifier.js';
+import GameObject from './gameobject.js';
 
 /** 
  * Signal flags can be hoisted on ships to provide bonuses in combat.
  */
-export class Signal extends GameObject {
+export default class Signal extends GameObject {
 	/**
 	 * Gets `Modifier` objects for the changes this signal makes.
 	 *

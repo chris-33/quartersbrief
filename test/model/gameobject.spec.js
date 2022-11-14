@@ -1,4 +1,4 @@
-import { GameObject } from '../../src/model/gameobject.js';
+import GameObject from '../../src/model/gameobject.js';
 import clone from 'clone';
 
 describe('GameObject', function() {

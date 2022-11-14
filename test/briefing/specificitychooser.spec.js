@@ -1,8 +1,8 @@
 import SpecificityChooser from '../../src/briefing/specificitychooser.js';
-import { Agenda } from '../../src/briefing/agenda.js';
-import { Battle } from '../../src/model/battle.js';
-import { Ship } from '../../src/model/ship.js';
-import { GameObjectFactory } from '../../src/model/gameobjectfactory.js';
+import Agenda from '../../src/briefing/agenda.js';
+import Battle from '../../src/model/battle.js';
+import Ship from '../../src/model/ship.js';
+import GameObjectFactory from '../../src/model/gameobjectfactory.js';
 import { readFileSync } from 'fs';
 import sinon from 'sinon';
 

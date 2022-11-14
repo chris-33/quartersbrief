@@ -1,7 +1,7 @@
-import { GameObject } from './gameobject.js';
+import GameObject from './gameobject.js';
 import { conversions } from '../util/conversions.js';
 
-class Torpedo extends GameObject {
+export default class Torpedo extends GameObject {
 	getRange() { return conversions.BWToMeters(this.get('maxDist')); }
 	getDamage() { return this.get('alphaDamage') / 3 + this.get('damage'); }
 	getSpeed() { return this.get('speed'); }	
@@ -9,5 +9,3 @@ class Torpedo extends GameObject {
 	getFloodChance() { return this.get('uwCritical') * 100; }
 	getVisibility() { return this.get('visibilityFactor'); }
 }
-
-export { Torpedo };

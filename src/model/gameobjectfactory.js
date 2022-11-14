@@ -1,20 +1,20 @@
 import rootlog from 'loglevel';
-import { GameObject } from './gameobject.js';
-import { Ship } from './ship.js';
-import { Modernization } from './modernization.js';
-import { Consumable } from './consumable.js';
-import { Captain } from './captain.js';
-import { Camouflage } from './camouflage.js';
-import { Signal } from './signal.js';
-import { Gun } from './gun.js';
-import { Torpedo } from './torpedo.js';
+import GameObject from './gameobject.js';
+import Ship from './ship.js';
+import Modernization from './modernization.js';
+import Consumable from './consumable.js';
+import Captain from './captain.js';
+import Camouflage from './camouflage.js';
+import Signal from './signal.js';
+import Gun from './gun.js';
+import Torpedo from './torpedo.js';
 
 import clone from 'clone';
 
 /**
  * @see GameObject
  */
-class GameObjectFactory {
+export default class GameObjectFactory {
 
 	/**
 	 * A list of keys that will be ignored during reference resolution.
@@ -322,5 +322,3 @@ class GameObjectFactory {
 			throw new Error('No data set. Make sure to set data using setData before requesting.');
 	}
 }
-
-export { GameObjectFactory }

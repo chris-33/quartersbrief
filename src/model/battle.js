@@ -1,4 +1,4 @@
-class Battle {
+export default class Battle {
 	constructor(data) {
 		this._data = data;
 	}
@@ -19,5 +19,3 @@ class Battle {
 		return this._data.vehicles;
 	}
 }
-
-export { Battle }

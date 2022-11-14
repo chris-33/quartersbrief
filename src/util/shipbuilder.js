@@ -1,10 +1,10 @@
-import { Ship } from '../model/ship.js';
+import Ship from '../model/ship.js';
 
 /**
  * `ShipBuilder` is a convenience class that allows for easily configuring ships to a desired build. Builds
  * can encompass module configuration, modernizations, captain, captain skills and camouflage.
  */
-class ShipBuilder {
+export default class ShipBuilder {
 	/**
 	 * The captain to use as a default, when none is provided in the build.
 	 */

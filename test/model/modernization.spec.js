@@ -1,7 +1,7 @@
-import { Modernization } from '../../src/model/modernization.js';
-import { Ship } from '../../src/model/ship.js';
-import { GameObject } from '../../src/model/gameobject.js';
-import { Modifier } from '../../src/model/modifier.js';
+import Modernization from '../../src/model/modernization.js';
+import Ship from '../../src/model/ship.js';
+import GameObject from '../../src/model/gameobject.js';
+import Modifier from '../../src/model/modifier.js';
 
 import { readFileSync } from 'fs';
 import clone from 'clone';

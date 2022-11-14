@@ -1,4 +1,4 @@
-import { WargamingAPI } from '../../src/util/wgapi.js';
+import WargamingAPI from '../../src/util/wgapi.js';
 import nock from 'nock';
 import httpError from 'http-errors';
 const HTTPError = httpError.HttpError;

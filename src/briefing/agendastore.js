@@ -1,4 +1,4 @@
-import { Agenda } from './agenda.js';
+import Agenda from './agenda.js';
 import { readdir, readFile } from 'fs/promises';
 import TOML from '@iarna/toml';
 import path from 'path';

@@ -1,4 +1,4 @@
-import { Battle } from '../model/battle.js';
+import Battle from '../model/battle.js';
 import { readFile } from 'fs/promises';
 import path from 'path';
 import rootlog from 'loglevel';

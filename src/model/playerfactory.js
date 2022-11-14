@@ -1,8 +1,8 @@
-import { Player } from './player.js';
-import { WargamingAPI } from '../util/wgapi.js';
+import Player from './player.js';
+import WargamingAPI from '../util/wgapi.js';
 import rootlog from 'loglevel';
 
-class PlayerFactory {	
+export default class PlayerFactory {	
 	constructor(applicationID, realm) {
 		this._api = new WargamingAPI(applicationID, realm);
 	}
@@ -67,5 +67,3 @@ class PlayerFactory {
 	}
 
 }
-
-export { PlayerFactory }
