@@ -9,7 +9,7 @@ import { execa } from 'execa';
  * On Windows, `wowsunpack` is called directly, on Linux, it is called through `wine`. 
  *
  * The returned function takes the resource to extract as an argument. `resource` can either be a string for simple extractions,
- * or an object `{ includes, excludes }` each containing an array of inclusion/exclusion patterns. It returns an array of strings containing
+ * or an object `{ include, exclude }` each containing an array of inclusion/exclusion patterns. It returns an array of strings containing
  * the paths of the extracted files.
  * 
  * Because this will frequently form the start of a step chain, it supports a convenience form where the resource to extract can be 
