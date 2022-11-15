@@ -1,11 +1,9 @@
-notes and todos/
-node-modules/
 .vagrant/
 .project/
 data/
 config/
-tools/
 wows/
 *.secret
 node_modules/
-docs/
+dev/docs/
+dev/notes and todos/

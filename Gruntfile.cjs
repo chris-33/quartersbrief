@@ -1,5 +1,5 @@
 module.exports = function(grunt) {
-	let config = require('./grunt/index.cjs');	
+	let config = require('./dev/grunt/index.cjs');	
 	config.pkg = grunt.file.readJSON('package.json')
 	grunt.initConfig(config);
 	
