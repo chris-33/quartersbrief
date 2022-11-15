@@ -1,20 +1,23 @@
-import { existsSync, mkdirSync, writeFileSync, rmSync } from 'fs';
-import path from 'path';
-import os from 'os';
+import mockfs from 'mock-fs';
+import esmock from 'esmock';
 import TOML from '@iarna/toml';
-import BriefingController from '../../src/core/briefingcontroller.js';
 import GameObjectFactory from '../../src/model/gameobjectfactory.js';
 import AgendaStore from '../../src/briefing/agendastore.js';
 import SpecificityChooser from '../../src/briefing/specificitychooser.js';
+import BattleDataReader from '../../src/core/battledatareader.js';
+import BriefingController from '../../src/core/briefingcontroller.js';
+import AgendaController from '../../src/core/agendacontroller.js';
+
 import { valid as isHtml, parse } from 'node-html-parser';
 import { validate } from 'csstree-validator';
 const isCss = (s) => typeof s === 'string' && validate(s).length === 0;
+import Topic from '../../src/briefing/topic.js';
 
-// @todo Create an integration test for BriefingController once all API-changing branches are merged
-describe.skip('BriefingController @integration', function() {
-	let pathExisted;
-	const mockpath = 'src/briefing/topics/mock';
-	let briefingMaker;
+describe('BriefingController @integration', function() {
+	const agendasdir = '/agendas';
+	const replaysdir = '/replays';
+	let BriefingBuilder;
+	let briefingController;
 
 	const MOCK_GAME_DATA = {
 		PAAA001_Battleship: {
@@ -61,44 +64,66 @@ describe.skip('BriefingController @integration', function() {
 		playerVehicle: 'PAAA001_Battleship'
 	}
 	const MOCK_TOPIC_HTML = '<p>Mock topic</p>';
-	const MOCK_TOPIC_SCSS = '$color: red; p { color: $color }';
+	const MOCK_TOPIC_CSS = 'p { color: red; }';
 
-	before(function() {
-		pathExisted = existsSync(mockpath);
-		if (!pathExisted) {
-			mkdirSync('src/briefing/topics/mock/');
-			writeFileSync(path.join(mockpath, 'mock.js'), `export default function buildTopic() { return { html: "${MOCK_TOPIC_HTML}", scss: "${MOCK_TOPIC_SCSS}" }; }`);
-
-			writeFileSync(path.join(os.tmpdir(), 'tempArenaInfo.json'), JSON.stringify(MOCK_TEMP_ARENA_INFO));
-
-			mkdirSync(path.join(os.tmpdir(), 'agendas'));
-			writeFileSync(path.join(os.tmpdir(), 'agendas', 'agenda'), TOML.stringify(MOCK_AGENDA));
-		} else
-			expect.fail('Path for mock topic builder already existed');
-	});
-
-	after(function() {
-		if (!pathExisted) {
-			rmSync(mockpath, { recursive: true, force: true });
-
-			rmSync(path.join(os.tmpdir(), 'tempArenaInfo.json'));
-			rmSync(path.join(os.tmpdir(), 'agendas'), { recursive: true, force: true });
+	class MockTopic extends Topic {
+		render() { 
+			return {
+				html: MOCK_TOPIC_HTML,
+				css: MOCK_TOPIC_CSS
+			}
 		}
+	}
+	before(async function() {
+		BriefingBuilder = (await esmock.strict('../../src/briefing/briefingbuilder.js', {
+			'../../src/briefing/topics/index.js': { MockTopic }
+		})).default;	
 	});
 
 	beforeEach(function() {
-		let gameObjectFactory = new GameObjectFactory(MOCK_GAME_DATA);
-		let agendaStore = new AgendaStore(path.join(os.tmpdir(), 'agendas'));
-		let strategy = new SpecificityChooser(gameObjectFactory);
-		briefingMaker = new BriefingMaker(os.tmpdir(), gameObjectFactory, agendaStore, strategy);
+		mockfs({
+			'src/briefing': mockfs.load('src/briefing'),
+			[agendasdir]: {
+				'mock.toml': TOML.stringify(MOCK_AGENDA)
+			},
+			[replaysdir]: {
+				'tempArenaInfo.json': JSON.stringify(MOCK_TEMP_ARENA_INFO)
+			}
+		});
+	});
+
+	after(function() {
+		mockfs.restore();
+	});
+
+	beforeEach(function() {
+		const gameObjectFactory = new GameObjectFactory(MOCK_GAME_DATA);
+
+		briefingController = new BriefingController(
+			new BattleDataReader(replaysdir),
+			new BriefingBuilder({ gameObjectFactory }),
+			new AgendaController(
+				[ new AgendaStore(agendasdir), ],
+				new SpecificityChooser(gameObjectFactory)
+			)
+		);
 	});
 
 	it('should construct a briefing from tempArenaInfo.json', async function() {
-		let briefing = await briefingMaker.makeBriefing();
+		const emitter = await briefingController.createBriefing();
+		
+		const briefing = await new Promise(resolve => emitter.on(BriefingBuilder.EVT_BRIEFING_START, resolve));
 		expect(briefing.html, 'briefing should have valid HTML').to.satisfy(isHtml);
 		expect(briefing.css, 'briefing should have valid css').to.satisfy(isCss);
-		let html = parse(briefing.html);
-		expect(html.querySelector('#topic-0'), 'briefing should have a topic').to.exist;
-		expect(html.querySelector('#topic-0 .topic-content').innerHTML, 'briefing\'s topic should equal the mock topicBuilder\'s output').to.equal(MOCK_TOPIC_HTML);
+		expect(parse(briefing.html).querySelectorAll('.topic'), 'briefing should have a single topic').to.have.lengthOf(1);
+		
+		const topic = await new Promise(resolve => emitter.on(BriefingBuilder.EVT_BRIEFING_TOPIC, (index, topic) => resolve(topic)));
+		expect(topic.html, 'topic\'s html should equal MockTopic\'s output').to.equal(MOCK_TOPIC_HTML);
+		// Normalize topic css by removing newlines and trimming whitespace:
+		topic.css = topic.css.split(/\s+/).join(' ');
+		expect(topic.css, 'topic\'s css should be scoped').to.startWith('#topic-0');
+		expect(topic.css, 'topic\'s css should equal MockTopic\'s output').to.contain(MOCK_TOPIC_CSS);
+
+		await expect(emitter, 'should forward EVT_BRIEFING_FINISH').to.emit(BriefingBuilder.EVT_BRIEFING_FINISH);
 	});
 });
