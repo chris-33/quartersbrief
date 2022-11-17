@@ -19,7 +19,7 @@ $fa-font-path: 'font';
 }
 
 $textcolor: midnightblue;
-$padding-horizontal: 20pt;
+$padding-horizontal: 15pt;
 $padding-vertical: 10pt;
 
 :root {
@@ -40,30 +40,55 @@ body {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
+	background-image: url('img/background.jpg');
 }
 
 header {
-	font-style: italic;
-	font-size: fontsizes.$huge;
-	font-weight: 600;
-	color: $textcolor;
-	letter-spacing: 0.3ch;
 	display: flex;
 	justify-content: space-between;
+	align-items: center;
+
 	flex: 0 0 fit-content;
+	color: white;
+	margin: $padding-vertical $padding-horizontal 36pt;
 
-	margin: $padding-vertical $padding-horizontal; // Since font-size is 200%, need to halve 
+	#branding {
+		font-style: italic;
 
+		#logo {
+			margin-right: 12pt;
+			vertical-align: bottom;
+			filter: #{"invert()"}; // Necessary for deconfliction with sass builtin invert() function
+		}
+
+		#title {
+			display: inline-block;
+		}
+
+		#game {
+			font-variant: small-caps;
+			font-size: 18pt;
+			letter-spacing: 2pt;
+			font-weight: 200;
+		}
+
+		#quartersbrief {
+			font-size: 36pt;
+			letter-spacing: 8pt;
+			font-weight: 700;
+			line-height: 1ex;
+		}
+
+
+	}
 	#fullscreen {
 		cursor: pointer;
 		border-radius: 50%;
-		box-shadow: 1pt 1pt 2pt $textcolor;
 		transition: all 1s;
 		
-		letter-spacing: 0;
 		font-weight: normal;
 		font-style: normal;
-		font-size: fontsizes.$small;
+		font-size: 20pt;
 		padding: 10pt;
 		
 		width: 1em;
@@ -73,8 +98,9 @@ header {
 		margin-right: 2pt;		
 
 		&:hover {		
-			background-color: $textcolor;
-			color: white;
+			background-color: white;
+			color: navy;
+			box-shadow: 0 0 8pt white;
 		}
 
 		// Display "expand" icon
@@ -86,13 +112,29 @@ header {
 	}
 }
 
+#briefing-host {
+	flex: 1;
+
+	margin: 0 $padding-horizontal $padding-vertical;
+	background-color: navy;
+	border: 2pt solid white;
+	padding: 2pt;
+	display: flex;
+	overflow: hidden;
+}
+
 #briefing {
-	padding: $padding-vertical $padding-horizontal;
+	padding: 1em 1ex;
+	flex: 1;
+	
+	background-color: white;
+	
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 5% max(4ch, 4%);
-	overflow-y: scroll;
 	
+	overflow: scroll;
+	scroll-padding-top: 12pt;
 	@if scrollSnap() {
 		scroll-snap-type: y mandatory;
 
@@ -101,9 +143,6 @@ header {
 			scroll-snap-type: y proximity;
 		}
 	}
-
-
-	flex: 1;
 }
 
 .topic {

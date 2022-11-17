@@ -6,9 +6,16 @@ html
       meta(name='viewport', content='width=device-width, initial-scale=1.0')
       link(href='quartersbrief.css' rel='stylesheet')        
   body
-    header World of Warships Quarters Brief
+    header 
+      div#branding
+        img#logo(src='img/quartersbrief_64.png')
+        div#title
+          span#game World of Warships
+          br
+          span#quartersbrief quartersbrief
       #fullscreen(onclick='document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()')
 
-    #briefing  
+    #briefing-host
+      #briefing  
 
     script(type="module" src='js/init.js')
