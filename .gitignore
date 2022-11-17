@@ -7,3 +7,5 @@ wows/
 node_modules/
 dev/docs/
 dev/notes and todos/
+package-lock.json
+quartersbrief.sublime-workspace
