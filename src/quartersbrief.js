@@ -58,7 +58,9 @@ const briefingController = new BriefingController(
 
 const { srv, io } = createServers(config.host, config.port);
 
-const indexTemplate = pug.compileFile('./src/core/index.pug');
+const indexTemplate = process.env.NODE_ENV === 'development' ? 
+	(...args) => pug.renderFile('./src/core/index.pug', ...args) : 
+	pug.compileFile('./src/core/index.pug');
 srv.get('/', function(req, res) {
 	let html = indexTemplate();
 	res.send(html);
@@ -81,16 +83,19 @@ async function handler() {
 }
 io.on('connect', handler);
 
-const stylesheet = sass.compile('src/core/quartersbrief.scss', {
-	loadPaths: ['node_modules'],
-	functions: {
-		'scrollSnap()': function() {
-			return config.scrollSnap ? sass.sassTrue : sass.sassFalse
-		}
-	}
-}).css;
+let stylesheet;
 srv.get('/quartersbrief.css', function(req, res) {
 	res.type('text/css');
+	// Force recompilation on every request in development mode
+	if (!stylesheet || process.env.NODE_ENV === 'development')
+		stylesheet = sass.compile('src/core/quartersbrief.scss', {
+			loadPaths: ['node_modules'],
+			functions: {
+				'scrollSnap()': function() {
+					return config.scrollSnap ? sass.sassTrue : sass.sassFalse
+				}
+			}
+		}).css;
 	res.send(stylesheet);
 });
 
