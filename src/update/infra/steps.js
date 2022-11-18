@@ -118,6 +118,7 @@ export function writeJSON(file) {
 		if (typeof actualFile === 'function') 
 			actualFile = file(data);
 		await fs.mkdir(path.dirname(actualFile), { recursive: true });
-		return fs.writeFile(actualFile, JSON.stringify(data)).then(() => actualFile);
+		await fs.writeFile(actualFile, JSON.stringify(data));
+		return actualFile;
 	}
 }
