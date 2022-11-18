@@ -36,6 +36,27 @@ describe('each', function() {
 			expect(step).to.have.been.calledWith(arg[key]);
 	});
 
+	// eslint-disable-next-line mocha/no-setup-in-describe
+	[
+		[ 1, 2 ],
+		{ a: 'a', b: 'b' }
+	].forEach(arg => it(`should run sequentially instead of concurrently on ${Array.isArray(arg) ? 'arrays' : 'objects'}`, async function() {
+		const step = sinon.stub();
+		let resolve;
+		// A promise that will eventually be resolved with whether or not the second call
+		// was waiting when the first executed (true), or had already initiated (false)
+		let waitedForFirst = new Promise(_resolve => resolve = _resolve);
+		step.onFirstCall().callsFake(function() {
+			// Defer so the second has a chance to get started
+			// (Otherwise this would always be true, even if step is run concurrently)
+			setImmediate(() => resolve(step.callCount === 1));
+			return waitedForFirst;
+		});
+		step.onSecondCall().resolves();
+
+		await each(step)(arg);
+		expect(await waitedForFirst).to.be.true;
+	}));
 });
 
 describe('passthrough', function() {
