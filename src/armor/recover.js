@@ -4,19 +4,19 @@ const EPSILON = 1.0e-8;
 
 // Constants to describe the mode of coincident vertices on chains of shared edges.
 // See Foster et al. p. 5
-const LEFT_ON = 1;
-const RIGHT_ON = 2;
-const ON_ON = 3;
-const ON_LEFT = 4;
-const ON_RIGHT = 5;
+export const LEFT_ON = 1;
+export const RIGHT_ON = 2;
+export const ON_ON = 3;
+export const ON_LEFT = 4;
+export const ON_RIGHT = 5;
 
 // Constants to describe where a point lies with respect to an edge/a chain of edges
-const LEFT = +1;
-const RIGHT = -1;
+export const LEFT = +1;
+export const RIGHT = -1;
 
 // Constants to describe whether an intersection is crossing or bouncing
-const CROSSING = true;
-const BOUNCING = false;
+export const CROSSING = true;
+export const BOUNCING = false;
 
 // Like Math.sign, but with an epsilon-interval around zero.
 function sign(x) { return Math.abs(x) < EPSILON ? 0 : Math.sign(x) }
@@ -46,18 +46,57 @@ function area(p, q, r) {
 	return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
 }
 
-export function recover(subject, clip, MIN_LENGTH_SQ) {
-	subject = subject.map(vertex => { vertex });
-	clip = clip.map(vertex => { vertex });
+/**
+ * @typedef VertexEntry
+ * A data structure that holds a vertex in `vertex` and its associated metadata in assorted other keys.
+ */
 
-	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
-	// as new vertices into both
+/**
+ * Calculates the pair-wise intersections between the edges of `subject` and `clip`, and inserts
+ * them into both as new vertex entries. Intersection vertex entries will have an `intersection` flag set
+ * in their metadata, as well as a `corresponding` flag that points to this intersection vertex entry in the
+ * resp. other polygon.
+ * @param  {VertexEntry[]} subject     The subject polygon's vertex entries.
+ * @param  {VertexEntry[]} clip        The clip polygon's vertex entries.
+ * @return {Object}               `{ subject, clip }`.
+ */
+export function interconnect(subject, clip) {
+	function insertionIndex(poly, start, alpha) {
+		// Loop over the entries, trying to find one that is either a source vertex or whose alpha value is higher than the given
+		do {
+			start = (start + 1) % poly.length;
+		} while (!poly[start].source && poly[start].alpha < alpha)
+		// Insert at the end rather than at the beginning
+		return start || poly.length;
+	}
+	// Mark all original vertices in subject and clip
+	subject = subject.map(vertex => ({ ...vertex, source: true }));
+	clip = clip.map(vertex => ({ ...vertex, source: true }));
+
 	for (let i = 0; i < subject.length; i++) {
 		for (let j = 0; j < clip.length; j++) {
+			// Find pCurr, pNext, qCurr, and qNext as the next pairs of SOURCE vertices in subject and clip
 			let pCurr = subject[i];
-			let pNext = subject[(i + 1) % subject.length];
+			if (!pCurr.source)
+				continue;
+
+			let pNext;
+			for (let k = 1; k < subject.length; k++) {
+				pNext = subject[(i + k) % subject.length];
+				if (pNext.source)
+					break;
+			}
+
 			let qCurr = clip[j];
-			let qNext = clip[(j + 1) % clip.length];
+			if (!qCurr.source)
+				continue;
+
+			let qNext;
+			for (let k = 1; k < clip.length; k++) {
+				qNext = clip[(j + k) % clip.length];
+				if (qNext.source)
+					break;
+			}
 
 			const apCurr = area(pCurr.vertex, qCurr.vertex, qNext.vertex);
 			const apNext = area(pNext.vertex, qCurr.vertex, qNext.vertex);
@@ -82,57 +121,140 @@ export function recover(subject, clip, MIN_LENGTH_SQ) {
 				// 			  =	apCurr / (apCurr - apNext) 
 				alpha = apCurr / (apCurr - apNext);
 				beta = aqCurr / (aqCurr - aqNext); // aqCurr === aqNext iff apCurr === apNext, which we already know is not the case.
-			} else {
-				// They ARE parallel, but they may still overlap.
-				// If they do, we can find alpha and beta such that 
+
+				if (EPSILON <= alpha && alpha < 1 && EPSILON <= beta && beta < 1) {
+					// "True/normal" intersection
+					// 
+					const isect = [
+						pCurr.vertex[0] + alpha * (pNext.vertex[0] - pCurr.vertex[0]),
+						pCurr.vertex[1] + alpha * (pNext.vertex[1] - pCurr.vertex[1])
+					];
+					const pNew = { 
+						vertex: isect, 
+						intersection: true,
+						alpha
+					};
+					subject.splice(insertionIndex(subject, i, alpha), 0, pNew);
+					const qNew = { 
+						vertex: isect, 
+						intersection: true,
+						alpha: beta
+					}
+					clip.splice(insertionIndex(clip, j, beta), 0, qNew);
+					pNew.corresponding = qNew;
+					qNew.corresponding = pNew;
+				} else if (Math.abs(alpha) < EPSILON && EPSILON <= beta && beta < 1) {
+					// pCurr is on the edge (qCurr, qNext)
+					const qNew = {
+						vertex: pCurr.vertex,
+						intersection: true,
+						alpha: beta,
+						corresponding: pCurr
+					};
+					clip.splice(insertionIndex(clip, j, beta), 0, qNew);
+					pCurr.intersection = true;
+					pCurr.corresponding = qNew;
+				} else if (EPSILON <= alpha && alpha < 1 && Math.abs(beta) < EPSILON) {
+					// qCurr is on the edge (pCurr, pNext)
+					const pNew = {
+						vertex: qCurr.vertex,
+						intersection: true,
+						alpha,
+						corresponding: qCurr
+					};
+					subject.splice(insertionIndex(subject, i, alpha), 0, pNew);
+					qCurr.intersection = true;
+					qCurr.corresponding = pNew;
+				} else if (Math.abs(alpha) < EPSILON && Math.abs(beta) < EPSILON) {
+					// subject and clip touch in the vertex pCurr === qCurr
+					pCurr.intersection = true;
+					pCurr.corresponding = qCurr;
+					qCurr.intersection = true;
+					qCurr.corresponding = pCurr;
+				}
+			} else if (Math.abs(apCurr) < EPSILON) {
+				// They are COLLINEAR, and may overlap.
+				// Because they are collinear, we can find alpha and beta such that 
 				// 		qCurr = pCurr + alpha (pNext - pCurr)
 				// 		pCurr = qCurr + beta (qNext - qCurr)
-				// 	Calculate alpha values for x and y coordinates. If they are (almost) equal, there is an overlap, and we have found our alpha.
-				let alpha0 = (qCurr.vertex[0] - pCurr.vertex[0]) / (pNext.vertex[0] - pCurr.vertex[0]);
-				let alpha1 = (qCurr.vertex[1] - pCurr.vertex[1]) / (pNext.vertex[1] - pCurr.vertex[1]);
-				alpha = Math.abs(alpha1 - alpha0) < EPSILON ? alpha0 : undefined;
+				// If 0 <= alpha < 1 or 0 <= beta < 1 we have an overlap
+				let dim = Math.abs(pNext.vertex[0] - pCurr.vertex[0]) > Math.abs(pNext.vertex[1] - pCurr.vertex[1]) ? 0 : 1;
+				alpha = (qCurr.vertex[dim] - pCurr.vertex[dim]) / (pNext.vertex[dim] - pCurr.vertex[dim]);
+				beta = (pCurr.vertex[dim] - qCurr.vertex[dim]) / (qNext.vertex[dim] - qCurr.vertex[dim]);
 
-				let beta0 = (pCurr.vertex[0] - qCurr.vertex[0]) / (qNext.vertex[0] - qCurr.vertex[0]);
-				let beta1 = (pCurr.vertex[1] - qCurr.vertex[1]) / (qNext.vertex[1] - qCurr.vertex[1]);
-				beta = Math.abs(beta1 - beta0) < EPSILON ? beta0 : undefined;
-			}
+				// Do an early check if the intersection is out of bounds. Note that for overlaps, it is enough if it is in
+				// bounds for ONE of the segments.
+				if ((alpha < 0 || alpha >= 1) && (beta < 0 || beta >= 1))
+					continue;
 
-			// If the intersection is outside of the bounds of the segments [pCurr, pNext) and [qCurr, qNext),
-			// disregard it
-			if (alpha < 0 || alpha >= 1 || beta < 0 || beta >= 1)
+				if (EPSILON <= alpha && alpha < 1 && EPSILON <= beta && beta < 1) {
+					// pCurr lies on the edge (qCurr, qNext) and vice versa
+					// Insert each into the other
+					const pNew = { 
+						vertex: qCurr.vertex, 
+						intersection: true,
+						alpha,
+						corresponding: qCurr
+					};
+					subject.splice(insertionIndex(subject, i, alpha), 0, pNew);
+					const qNew = { 
+						vertex: pCurr.vertex,
+						intersection: true,
+						alpha: beta,
+						corresponding: pCurr
+					};
+					clip.splice(insertionIndex(clip, j, beta), 0, qNew);
+
+					pCurr.intersection = true;
+					pCurr.corresponding = qNew;
+					qCurr.intersection = true;
+					qCurr.corresponding = pNew;
+				} else if ((alpha < 0 || alpha >= 1) && EPSILON <= beta && beta < 1) {
+					// pCurr lies on (qCurr, qNext), but qCurr does not lie on (pCurr, pNext)
+					// Insert pCurr into (qCurr, qNext)
+					const qNew = {
+						vertex: pCurr.vertex,
+						intersection: true,
+						alpha: beta,
+						corresponding: pCurr
+					};
+					clip.splice(insertionIndex(clip, j, beta), 0, qNew);
+					pCurr.intersection = true;
+					pCurr.corresponding = qNew;
+				} else if (EPSILON <= alpha && alpha < 1 && (beta < 0 || beta >= 1)) {
+					// qCurr lies on (pCurr, pNext), but pCurr does not lie on (qCurr, qNext)
+					// Insert qCurr into (pCurr, pNext)
+					const pNew = {
+						vertex: qCurr.vertex,
+						intersection: true,
+						alpha,
+						corresponding: qCurr
+					};
+					subject.splice(insertionIndex(subject, i, alpha), 0, pNew);
+					qCurr.intersection = true;
+					qCurr.corresponding = pNew;
+				} else if (Math.abs(alpha) < EPSILON && Math.abs(beta) < EPSILON) {
+					pCurr.intersection = true;
+					pCurr.corresponding = qCurr;
+					qCurr.intersection = true;
+					qCurr.corresponding = pCurr;
+				}
+			} else {
+				// They are parallel, but not collinear. There can be no intersection.
 				continue;
-
-			const isect = [
-				pCurr.vertex[0] + alpha * (pNext.vertex[0] - pCurr.vertex[0]),
-				pCurr.vertex[1] + alpha * (pNext.vertex[1] - pCurr.vertex[1])
-			];
-
-			// Unless the intersection happens at (near) the start point, insert it.
-			// If it does happen at the start point, replace the start point with isect			
-			if (dist2(isect, pCurr) >= MIN_LENGTH_SQ) {			
-				// Insert isect into subject after pCurr and set pCurr to the inserted entry
-				i++;
-				subject.splice(i, 0, { vertex: isect });
-				pCurr = subject[i];
-			} else {
-				pCurr.vertex = isect;
 			}
-
-			if (dist2(isect, qCurr) >= MIN_LENGTH_SQ) {
-				// Insert isect into clip after qCurr and set qCurr to the inserted entry
-				j++;
-				clip.splice(j, 0, { vertex: isect });
-				qCurr = clip[j];
-			} else {
-				qCurr.vertex = isect;
-			}
-
-			pCurr.intersection = true;
-			pCurr.corresponding = qCurr;
-			qCurr.intersection = true;
-			qCurr.corresponding = pCurr;
 		}
 	}
+	return { subject, clip }
+}
+
+export default function recover(subject, clip, MIN_LENGTH_SQ) {
+	subject = subject.map(vertex => { vertex });
+	clip = clip.map(vertex => { vertex });
+
+	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
+	// as new vertices into both
+	({ subject, clip } = interconnect(subject, clip, MIN_LENGTH_SQ));
 
 	// Step 2: Classify all intersections as ENTRY or EXIT, by performing the following sequence of steps:
 	// 
@@ -169,9 +291,9 @@ export function recover(subject, clip, MIN_LENGTH_SQ) {
 	//      
 	// e) Classify all INTERIOR bouncing intersections as both an ENTRY and an EXIT; and all EXTERIOR bounces as neither.     
 	//
-	//            /                       \ /              
-	// ----------X-------+       ----------X-------+
-	//          /        |                         |        
+	//                                    \ /              
+	// ------------------+       ----------X-------+
+	//                   |                         |        
 	//     \   /         |                         |
 	//      \ /          |                         |
 	// ------X-----------+       ------------------+
@@ -301,13 +423,13 @@ export function recover(subject, clip, MIN_LENGTH_SQ) {
 
 			// Now we know for sure that the edge [start, start + 1] is not a shared edge.
 			// Create a new virtual vertex halfway between on that edge and insert it into the polygon.
-			start = {
+			start++;
+			poly.splice(start, 0, {
 				vertex: {
 					x: (poly[start].vertex[0] + poly [(start + 1) %poly.length].vertex[0]) / 2,
 					y: (poly[start].vertex[1] + poly [(start + 1) %poly.length].vertex[1]) / 2
 				}
-			};
-			poly.splice((start + 1) % poly.length, 0, start);
+			});
 		}
 		return start;
 	});
@@ -353,7 +475,7 @@ export function recover(subject, clip, MIN_LENGTH_SQ) {
 				//        \ /        |                         |
 				// --------X---------+       ------------------+
 				//                                     
-				//        both                    neither
+				//        both                    nothing
 				//        
 				if (inside) {
 					curr.entry = curr.exit = true;
@@ -431,7 +553,7 @@ export function recover(subject, clip, MIN_LENGTH_SQ) {
 	});
 
 	// Step 3: Trace clip and subject and fuse subsequent intersections in the resp. other if 
-	// they are closer than MIN_LENGTH
+	// they are closer than √MIN_LENGTH_SQ
 	//
 	// Specifically, find pairs of entering and exiting intersections in one polygon and check their
 	// distances. If they are close together, merge them in the OTHER polygon.
