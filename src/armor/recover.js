@@ -248,15 +248,63 @@ export function interconnect(subject, clip) {
 	return { subject, clip }
 }
 
-export default function recover(subject, clip, MIN_LENGTH_SQ) {
-	subject = subject.map(vertex => { vertex });
-	clip = clip.map(vertex => { vertex });
-
-	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
-	// as new vertices into both
-	({ subject, clip } = interconnect(subject, clip, MIN_LENGTH_SQ));
-
-	// Step 2: Classify all intersections as ENTRY or EXIT, by performing the following sequence of steps:
+/**
+ * Classifies all intersection vertex entries in `subject` with respect to `clip` as entering (`entry`), exiting (`exit`) or both, according to the following rules:
+ * 
+ * - a **crossing** intersection is an entry if its predecessor in one polygon is outside the other polygon, and an exit otherwise
+ * - an **exterior bouncing** intersection is neither an entry nor an exit
+ * - an **interior bouncing** intersection is both an entry and an exit
+ * - the start of a **delayed crossing** chain is an exit if the last vertex before the chain is inside the other polygon, and nothing otherwise
+ * - the end of a **delayed crossing** chain is an entry if the last vertex before the chain is outside the other polygon, and nothing otherwise
+ * - the start and end of a **delayed exterior bouncing** chain are neither entries nor exits
+ * - the start of a **delayed interior bouncing** chain is an exit, and the end an entry
+ *
+ * This function works in-place.
+ *
+ * **Definitions:**
+ * 
+ * A **crossing** intersection is one whose predecessor and successor are on different sides of the edge through predecessor, intersection and
+ * successor in `clip`. Otherwise, an intersection is **bouncing**.
+ * ```
+ * 
+ *            /                       \ /
+ * ----------X--------       ----------X-------+
+ *          /
+ *       crossing                  bouncing
+ * ```
+ * A **bouncing** intersection is **exterior** if its predecessor is outside `clip`, otherwise it is **interior**.
+ * ```
+ *                                    \ /              
+ * ------------------+       ----------X-------+
+ *                   |                         |        
+ *     \   /         |                         |
+ *      \ /          |                         |
+ * ------X-----------+       ------------------+
+ *  interior bounce           exterior bounce
+ * ```
+ * A **chain** is a series of consecutive intersection vertices. A **delayed crossing** chain is one where the last vertex before the chain and the first vertex
+ * after the chain are on opposite sides of the respective vertices in `clip`. Otherwise, it is a **delayed bouncing** chain.
+ * ``` 
+ *            /                 \       /
+ * ----X=====X--------       ----X=====X-------- 
+ *    /
+ *   delayed crossing         delayed bouncing
+ * ```
+ * A **delayed bouncing** chain is **exterior** if the last vertex before the chain is outside `clip`, **interior** otherwise.
+ * ```
+ *                                \     /              
+ * ------------------+       ------X===X-------+
+ *                   |                         |        
+ *     \       /     |                         |
+ *      \     /      |                         |
+ * ------X===X-------+       ------------------+
+ * interior delayed bounce   exterior delayed bounce
+ * ```
+ * @param  {VertexEntry[]} subject The polygon whose intersections to classify.
+ * @param  {VertexEntry[]} clip    The polygon with respect to which to classify.
+ */
+export function label(subject, clip) {
+	// Classify all intersections as ENTRY or EXIT, by performing the following sequence of steps:
 	// 
 	// a) Classify all intersections as CROSSING or BOUNCING.
 	// 
@@ -300,14 +348,15 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 	//  interior bounce           exterior bounce
 	//  
 
-	subject.forEach(curr => {
+	subject.forEach((curr, index) => {
 		if (curr.intersection) {
 			// Get the points P+ and P- following and preceding the intersection in the subject polygon, 
 			// and the same for the clip polygon
-			let pPlus = curr.next;
-			let pMinus = curr.prev;
-			let qPlus = curr.corresponding.next;
-			let qMinus = curr.corresponding.prev;
+			let pPlus = subject[(index + 1) % subject.length];
+			let pMinus = subject[(index - 1 + subject.length) % subject.length];
+			index = clip.indexOf(curr.corresponding);
+			let qPlus = clip[(index + 1) % clip.length];
+			let qMinus = clip[(index - 1 + clip.length) % clip.length];
 			// Check if this is an intersection or an overlap. 
 			// Because all overlaps are represented as common edges after the intersection phase, we can
 			// determine this by seeing if P+ is itself an intersection and is linked to either Q+ or Q-, and
@@ -358,7 +407,7 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 	subject.forEach(curr => {
 		if (!curr.chain) return;
 
-		switch (sign(curr.chain - ON_ON)) {
+		switch (Math.sign(curr.chain - ON_ON)) {
 			case -1: 
 				// If we are at the beginning of a chain, remember it
 				chainStart = curr;
@@ -377,180 +426,176 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 		}
 	});
 
-	// At this point, all of the intersection vertices of the subject polygon are marked as either
-	// CROSSING or BOUNCING, except for those in the middle of a chain.
-	// Copy those labels over to the clip polygon, because the clip polygon crosses the subject at an 
-	// intersection iff the subject crosses the clip.
-	subject.forEach(curr => {
-		if (curr.intersection) {
-			curr.corresponding.crossing = curr.crossing;
-			curr.corresponding.delayed = curr.delayed;
-		}
-	});
-
 	// Now we can perform the final labeling stage for both polygons: marking each intersection as either 
 	// an ENTRY or an EXIT or both.
 	
-	// For both polygons, try to find a vertex that is not an intersection vertex to start the process.
+	// Try to find a vertex that is not an intersection vertex to start the process.
 	// This is necessary so the inside/outside test can be performed unambiguously.		
-	//
-	// See Foster et al. p. 6			
-	let [ subjectStart, clipStart ] = [ subject, clip ].map(poly => poly.findIndex(curr => !curr.intersection));
+	let start = subject.findIndex(curr => !curr.intersection);
 	// Check that a non-intersection vertex existed in the subject polygon.
 	// If no such vertex existed, and every vertex is an ON/ON vertex, 
-	// then subject and clip polygon are identical, and the subject is completely occluded.
-	if (subjectStart === -1 && subject.every(curr => curr.chain === ON_ON))
-		return {
-			subject: [],
-			clip
-		};
-	else [ subjectStart, clipStart ] = [ 
-		{ start: subjectStart, poly: subject },
-		{ start: clipStart, poly: clip }
-	].map(({ start, poly }) => {
-		// Now either start is defined, meaning we already have a valid start vertex, or
+	// then subject and clip polygon are identical.
+	if (start === -1 && subject.every(curr => curr.chain === ON_ON))
+		throw new TypeError(`subject and clip are identical`);
+	else 
+		// Now either start is !== -1, meaning we already have a valid start vertex, or
 		// start is not defined but not every vertex of the polygon is an ON/ON vertex.
 		// Check which one it is:
 		if (start === -1) {				
 			// At this point, we know there is at least one vertex that is not an ON/ON vertex 
 			// and thus adjacent to an edge that is not a shared edge.
 			// Find that vertex.
-			let start = poly.findIndex(curr => curr.chain !== ON_ON);
+			let start = subject.findIndex(curr => curr.chain !== ON_ON);
 			// If it is a LEFT/ON or a RIGHT/ON vertex, move the start back one...
-			if (poly[start].chain < ON_ON) 
-				start = (start - 1 + poly.length) % poly.length;
+			if (subject[start].chain < ON_ON) 
+				start = (start - 1 + subject.length) % subject.length;
 			
 
 			// Now we know for sure that the edge [start, start + 1] is not a shared edge.
 			// Create a new virtual vertex halfway between on that edge and insert it into the polygon.
 			start++;
-			poly.splice(start, 0, {
+			subject.splice(start, 0, {
 				vertex: {
-					x: (poly[start].vertex[0] + poly [(start + 1) %poly.length].vertex[0]) / 2,
-					y: (poly[start].vertex[1] + poly [(start + 1) %poly.length].vertex[1]) / 2
+					x: (subject[start].vertex[0] + subject[(start + 1) % subject.length].vertex[0]) / 2,
+					y: (subject[start].vertex[1] + subject[(start + 1) % subject.length].vertex[1]) / 2
 				}
 			});
 		}
-		return start;
-	});
 
 	// Now both subjectStart and clipStart are guaranteed to not be on a polygon's edge. 
 	// So the inside/outside test can be performed unambiguously.
 	// We can finally mark every intersection as entering or exiting.
-	[ 
-		{ start: subjectStart, poly: subject, other: clip },
-		{ start: clipStart, poly: clip, other: subject } 
-	].forEach(({ start, poly, other }) => {
-		let inside;
-		// Initialize inside status according to whether the first point is inside or outside the OTHER polygon
-		inside = contains(poly[start].vertex, other.map(entry => entry.vertex));
+	let inside;
+	// Initialize inside status according to whether the first point is inside or outside the OTHER polygon
+	inside = contains(clip.map(entry => entry.vertex), subject[start].vertex);
 
-		for (let i = 0; i < poly.length; i++) {
-			const curr = poly[(start + i) % poly.length];
-			if (curr.crossing === CROSSING && !curr.chain) {
-				// A "standard" intersection, i.e. a crossing intersection that is not part of a chain is an entry
-				// if we are coming from the outside of the other polygon, and an exit if we are coming from the inside.
-				// 
-				//               
-				//            /                     
-				// ----------X-------+       ------------------+
-				//          /        |                         |
-				//                   |                         |
-				//                   |                  /      |
-				// ------------------+       ----------X-------+
-				//                                    /
-				//       entry                      exit
-				//       
-				curr[inside ? 'exit' : 'entry'] = true;
-				// Toggle the inside/outside status
-				inside = !inside;
-			} else if (curr.crossing === BOUNCING && !curr.chain) {
-				// A bouncing intersection that is not part of a chain is both an entry and an exit if we are inside
-				// the other polygon (i.e. it is an interior bounce), and neither if we are on the outside (exterior bounce)
-				//
-				//                                  \ /
-				// ------------------+       --------X---------+
-				//                   |                         |
-				//                   |                         |
-				//        \ /        |                         |
-				// --------X---------+       ------------------+
-				//                                     
-				//        both                    nothing
-				//        
-				if (inside) {
-					curr.entry = curr.exit = true;
-				}
-				// The inside/outside status does not change when bouncing
-			} else if (curr.crossing === CROSSING && curr.chain < ON_ON) {
-				// The START of a delayed crossing chain is an exit if we are on the inside of the other polygon, and nothing
-				// if we are on the outside
-				//
-				//             /                      
-				// ------+====X------+       ------------------+
-				//      /            |                         |
-				//                   |                         |
-				//                   |                   /     |
-				// ------------------+       ------+====X------+
-				//                                /   
-				//      nothing                     exit
-				//        
-				if (inside)
-					curr.exit = true;
-
-				// Do not toggle inside/outside status, it will be done at the end of the chain
-			} else if (curr.crossing === CROSSING && curr.chain > ON_ON) {
-				// The END of a delayed crossing chain is an entry if we are on the outside of the other polygon, and nothing
-				// if we are on the inside
-				//
-				//             /                      
-				// ------X====+------+       ------------------+
-				//      /            |                         |
-				//                   |                         |
-				//                   |                   /     |
-				// ------------------+       ------X====+------+
-				//                                /   
-				//        entry                   nothing
-				//        
-				if (!inside)
-					curr.entry = true;
-
-				// Toggle the inside/outside status at the end of the chain
-				inside = !inside;
-			} else if (curr.crossing === BOUNCING && curr.chain < ON_ON) {
-				// The START of delayed bouncing chain is an exit if we are on the inside of the other polygon, and nothing
-				// if we are on the outside
-				//
-				//      \      /                      
-				// ------+====X------+       ------------------+
-				//                   |                         |
-				//                   |                         |
-				//                   |            \      /     |
-				// ------------------+       ------+====X------+
-				//                                    
-				//      nothing                     exit
-				//        
-				if (inside)
-					curr.exit = true;
-				// The inside/outside status does not change when bouncing				
-			} else if (curr.crossing === BOUNCING && curr.chain > ON_ON) {
-				// The END of delayed bouncing chain is an entry if we are on the inside of the other polygon, and nothing
-				// if we are on the outside
-				//
-				//      \      /                      
-				// ------X====+------+       ------------------+
-				//                   |                         |
-				//                   |                         |
-				//                   |            \      /     |
-				// ------------------+       ------X====+------+
-				//                                   
-				//       nothing                   entry
-				//        
-				if (inside)
-					curr.entry = true;
-				// The inside/outside status does not change when bouncing				
+	for (let i = 0; i < subject.length; i++) {
+		const curr = subject[(start + i) % subject.length];
+		if (curr.crossing === CROSSING && !curr.chain) {
+			// A "standard" intersection, i.e. a crossing intersection that is not part of a chain is an entry
+			// if we are coming from the outside of the other polygon, and an exit if we are coming from the inside.
+			// 
+			//               
+			//            /                     
+			// ----------X-------+       ------------------+
+			//          /        |                         |
+			//                   |                         |
+			//                   |                  /      |
+			// ------------------+       ----------X-------+
+			//                                    /
+			//       entry                      exit
+			//       
+			curr[inside ? 'exit' : 'entry'] = true;
+			// Toggle the inside/outside status
+			inside = !inside;
+		} else if (curr.crossing === BOUNCING && !curr.chain) {
+			// A bouncing intersection that is not part of a chain is both an entry and an exit if we are inside
+			// the other polygon (i.e. it is an interior bounce), and neither if we are on the outside (exterior bounce)
+			//
+			//                                  \ /
+			// ------------------+       --------X---------+
+			//                   |                         |
+			//                   |                         |
+			//        \ /        |                         |
+			// --------X---------+       ------------------+
+			//                                     
+			//        both                    nothing
+			//        
+			if (inside) {
+				curr.entry = curr.exit = true;
 			}
+			// The inside/outside status does not change when bouncing
+		} else if (curr.crossing === CROSSING && curr.chain < ON_ON) {
+			// The START of a delayed crossing chain is an exit if we are on the inside of the other polygon, and nothing
+			// if we are on the outside
+			//
+			//             /                      
+			// ------+====X------+       ------------------+
+			//      /            |                         |
+			//                   |                         |
+			//                   |                   /     |
+			// ------------------+       ------+====X------+
+			//                                /   
+			//      nothing                     exit
+			//        
+			if (inside)
+				curr.exit = true;
+
+			// Do not toggle inside/outside status, it will be done at the end of the chain
+		} else if (curr.crossing === CROSSING && curr.chain > ON_ON) {
+			// The END of a delayed crossing chain is an entry if we are on the outside of the other polygon, and nothing
+			// if we are on the inside
+			//
+			//             /                      
+			// ------X====+------+       ------------------+
+			//      /            |                         |
+			//                   |                         |
+			//                   |                   /     |
+			// ------------------+       ------X====+------+
+			//                                /   
+			//        entry                   nothing
+			//        
+			if (!inside)
+				curr.entry = true;
+
+			// Toggle the inside/outside status at the end of the chain
+			inside = !inside;
+		} else if (curr.crossing === BOUNCING && curr.chain < ON_ON) {
+			// The START of delayed bouncing chain is an exit if we are on the inside of the other polygon, and nothing
+			// if we are on the outside
+			//
+			//      \      /                      
+			// ------+====X------+       ------------------+
+			//                   |                         |
+			//                   |                         |
+			//                   |            \      /     |
+			// ------------------+       ------+====X------+
+			//                                    
+			//      nothing                     exit
+			//        
+			if (inside)
+				curr.exit = true;
+			// The inside/outside status does not change when bouncing				
+		} else if (curr.crossing === BOUNCING && curr.chain > ON_ON) {
+			// The END of delayed bouncing chain is an entry if we are on the inside of the other polygon, and nothing
+			// if we are on the outside
+			//
+			//      \      /                      
+			// ------X====+------+       ------------------+
+			//                   |                         |
+			//                   |                         |
+			//                   |            \      /     |
+			// ------------------+       ------X====+------+
+			//                                   
+			//       nothing                   entry
+			//        
+			if (inside)
+				curr.entry = true;
+			// The inside/outside status does not change when bouncing				
 		}
-	});
+	}
+}
+
+export default function recover(subject, clip, MIN_LENGTH_SQ) {
+	subject = subject.map(vertex => { vertex });
+	clip = clip.map(vertex => { vertex });
+
+	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
+	// as new vertices into both
+	({ subject, clip } = interconnect(subject, clip, MIN_LENGTH_SQ));
+
+	// Step 2: Classify all intersections as ENTRY or EXIT, by performing the following sequence of steps:
+	try {
+		label(subject, clip); 
+	} catch (err) {
+		// If the subject and clip are identical, subject is completely occluded.
+		if (/identical/.test(err.message))
+			return {
+				subject: [],
+				clip
+			}
+	}
+	label(clip, subject); // No need to catch here, because clip is identical to subject iff subject is identical to clip
 
 	// Step 3: Trace clip and subject and fuse subsequent intersections in the resp. other if 
 	// they are closer than √MIN_LENGTH_SQ
