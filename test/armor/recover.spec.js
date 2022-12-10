@@ -1,4 +1,4 @@
-import { interconnect, label } from '../../src/armor/recover.js';
+import { interconnect, label, splitHybrids, fuse, separate, clean } from '../../src/armor/recover.js';
 
 describe.only('occlude zero-length recovery', function() {
 	let subject;
@@ -516,5 +516,183 @@ describe.only('occlude zero-length recovery', function() {
 				expect(label.bind(null, subject, clip)).to.throw(TypeError);
 			});
 		});		
+	});
+
+	describe('splitHybrid', function() {
+		it('should split vertices marked as both an entry and an exit', function() {
+			const clip = [
+				{ vertex: [ 0, 0 ] },
+				{ vertex: [ 3, 1 ], intersection: true, corresponding: subject[1], crossing: false },
+				{ vertex: [ 6, 2 ] }
+			]
+			Object.assign(subject[1], { 
+				intersection: true,
+				corresponding: clip[1],
+				crossing: false,
+				entry: true,
+				exit: true
+			});
+			
+			splitHybrids(subject, clip);
+
+			expect(subject).to.have.lengthOf(5);
+			expect(subject[1]).to.have.property('exit', true);
+			expect(subject[1].entry).to.not.be.ok;
+
+			expect(subject[2]).to.have.property('vertex').that.deep.equals(subject[1].vertex);
+			expect(subject[2]).to.have.property('entry', true);
+			expect(subject[2].exit).to.not.be.ok;
+
+			expect(subject[1].corresponding).to.not.equal(subject[2].corresponding);
+			expect(subject[1].corresponding).to.deep.equal(subject[2].corresponding);
+		});
+	});
+
+	describe('fuse', function() {
+		const MIN_LENGTH = 1.0e-4;
+
+		let correspondingEntry;
+		let correspondingExit;
+
+		beforeEach(function() {
+			correspondingEntry = {
+				vertex: [ 2 - 0.49 * MIN_LENGTH, 1 ],
+				intersection: true,
+				crossing: true,
+				entry: true
+			};
+			correspondingExit = {
+				vertex: [ 2 + 0.49 * MIN_LENGTH, 1 ],
+				intersection: true,
+				crossing: true,
+				exit: true
+			};
+			subject.splice(1, 0, 
+				{ vertex: correspondingEntry.vertex, intersection: true, crossing: true, entry: true, corresponding: correspondingEntry },
+				{ vertex: correspondingExit.vertex, intersection: true, crossing: true, exit: true, corresponding: correspondingExit });
+		});
+
+		it('should fuse entry and subsequent exit if they are closer together than √MIN_LENGTH_SQ', function() {
+			fuse(subject, MIN_LENGTH**2);
+
+			expect(correspondingEntry.vertex).to.equal(correspondingExit.vertex);
+			expect(correspondingEntry).to.have.property('fused', correspondingExit);
+			expect(correspondingExit).to.have.property('fused', correspondingEntry);
+		});
+
+		it('should not fuse entry and subsequent exit if their distance is at least √MIN_LENGTH_SQ', function() {
+			fuse(subject, (correspondingEntry.vertex[0] - correspondingExit.vertex[0])**2);
+
+			expect(correspondingEntry.vertex).to.not.equal(correspondingExit.vertex);
+		});
+
+		it('should fuse even if there are vertices between a fusable entry and exit', function() {
+			subject.splice(2, 0,
+				{ vertex: [ 2, 1 ] },
+				{ vertex: [ 1, 0 ] },
+				{ vertex: [ 3, 0 ] },
+				{ vertex: [ 2, 1 ] });
+
+			fuse(subject, MIN_LENGTH**2);
+
+			expect(correspondingEntry.vertex).to.equal(correspondingExit.vertex);
+			expect(correspondingEntry).to.have.property('fused', correspondingExit);
+			expect(correspondingExit).to.have.property('fused', correspondingEntry);
+		});
+	});
+
+	describe('separate', function() {
+		it('should work regardless of whether tracing starts at a fused vertex or not', function() {
+			//      +   +
+			//     / \ / \
+			//    +---+---+
+			//      start 
+			let subject = [
+				{ vertex: [ 3, 1 ] },
+				{ vertex: [ 4, 2 ] },
+				{ vertex: [ 5, 1 ] },
+				{ vertex: [ 3, 1 ] },
+				{ vertex: [ 1, 1 ] },
+				{ vertex: [ 2, 2 ] },
+			];
+			subject[0].fused = subject[3];
+			subject[3].fused = subject[0];
+
+			let result = separate(subject);
+
+			expect(result).to.be.an('array').with.lengthOf(2);
+			expect(result[0].map(item => item.vertex)).to.deep.equal(subject.slice(0, 3).map(item => item.vertex));
+			expect(result[1].map(item => item.vertex)).to.deep.equal(subject.slice(3).map(item => item.vertex));
+
+			//      +   +
+			//     / \ / \
+			//    +---+---+
+			// start 
+			subject = subject.slice(4).concat(subject.slice(0, 4));
+
+			result = separate(subject);
+
+			expect(result).to.be.an('array').with.lengthOf(2);
+			expect(result[0].map(item => item.vertex)).to.deep.equal(subject.slice(2, 5).map(item => item.vertex));
+			expect(result[1].map(item => item.vertex)).to.deep.equal(subject.slice(0, 3).map(item => item.vertex));
+		});
+
+		it('should break the polygon into two at a fused vertex', function() {
+			//   +   +
+			//  / \ / \
+			// +   +---+
+			//  \ /
+			//   +  <---- This vertex is there to see that the left polygon gets finished correctly even though it was "interrupted" by the right
+			const subject = [
+				{ vertex: [ 1, 1 ] },
+				{ vertex: [ 2, 2 ] },
+				{ vertex: [ 3, 1 ] },
+				{ vertex: [ 4, 2 ] },
+				{ vertex: [ 5, 1 ] },
+				{ vertex: [ 3, 1 ] },
+				{ vertex: [ 2, 0 ] }
+			];
+			subject[2].fused = subject[5];
+			subject[5].fused = subject[2];
+
+			const result = separate(subject);
+
+			expect(result).to.be.an('array').with.lengthOf(2);
+
+			expect(result[0].map(item => item.vertex)).to.deep.equal(subject.slice(2, 5).map(item => item.vertex));			
+			expect(result[1].map(item => item.vertex)).to.deep.equal(subject.slice(0, 3).concat([subject[6]]).map(item => item.vertex));
+		});
+	});
+
+	describe('clean', function() {
+		it('should remove collinear vertices', function() {
+			//   +
+			//  / \
+			// +-+-+
+			const poly = [
+				{ vertex: [ 1, 1 ] },
+				{ vertex: [ 2, 1 ] },
+				{ vertex: [ 3, 1 ] },
+				{ vertex: [ 2, 2 ] }
+			]
+
+			const result = clean([ poly ]);
+
+			expect(result).to.be.an('array').with.lengthOf(1);
+			expect(result[0]).to.deep.equal(poly.filter((_, index) => index !== 1));
+		});
+
+		it('should remove polygons with less than three vertices', function() {
+			// +--+--+
+			const poly = [
+				{ vertex: [ 1, 1 ] },
+				{ vertex: [ 2, 1 ] },
+				{ vertex: [ 3, 1 ] }
+			];
+
+			const result = clean([ poly ]);
+			
+			expect(result).to.be.an('array').that.is.empty;
+		});
 	});
 });

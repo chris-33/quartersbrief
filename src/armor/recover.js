@@ -576,78 +576,108 @@ export function label(subject, clip) {
 	}
 }
 
-export default function recover(subject, clip, MIN_LENGTH_SQ) {
-	subject = subject.map(vertex => { vertex });
-	clip = clip.map(vertex => { vertex });
-
-	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
-	// as new vertices into both
-	({ subject, clip } = interconnect(subject, clip, MIN_LENGTH_SQ));
-
-	// Step 2: Classify all intersections as ENTRY or EXIT, by performing the following sequence of steps:
-	try {
-		label(subject, clip); 
-	} catch (err) {
-		// If the subject and clip are identical, subject is completely occluded.
-		if (/identical/.test(err.message))
-			return {
-				subject: [],
-				clip
+/**
+ * Scans `subject` for vertex entries that are marked as both an entry and an exit and splits them into two vertex entries,
+ * with the first one marked as only an exit and the second one as only an entry. A new corresponding vertex entry is inserted
+ * into `clip`.
+ *
+ * This function works in-place.
+ * @param  {VertexEntry[]} subject The polygon to scan for hybrid entries.
+ * @param  {VertexEntry[]} clip    The polygon in which to insert corresponding entries.
+ */
+export function splitHybrids(subject, clip) {
+	for (let i = 0; i < subject.length; i++) {
+		let curr = subject[i];
+		if (curr.entry && curr.exit) {
+			const corrSplit = { ...curr.corresponding };
+			const split = {
+				...curr,
+				corresponding: corrSplit,
+				exit: true,
+				entry: false
 			}
+			curr.exit = false;
+			// Insert new entries, pushing current one back by one (because it lets us get away with not having to do modulo the polygons' lengths)
+			subject.splice(i, 0, split);
+			clip.splice(clip.indexOf(curr.corresponding), 0, corrSplit);
+			i++;
+		}
 	}
-	label(clip, subject); // No need to catch here, because clip is identical to subject iff subject is identical to clip
+}
 
-	// Step 3: Trace clip and subject and fuse subsequent intersections in the resp. other if 
-	// they are closer than √MIN_LENGTH_SQ
+/**
+ * Traces poly to find pairs of `entry` and `exit` vertices. If they are closer together than √MIN_LENGTH_SQ, their **corresponding** 
+ * vertices are fused by setting both their `vertex` property to the entry vertex, and marking each as a fuse partner of the other by setting
+ * the `fuse` property. 
+ *
+ * `poly` must not contain vertex entries that are marked as both `entry` and `exit`.
+ * @param  {VertexEntry[]} poly          The polygon to trace. Not that no fusing will be done in this polygon, as only **corresponding** vertices are fused.
+ * @param  {number} MIN_LENGTH_SQ  The **square** of the fusing threshold. Vertices whose squared distance is less than this will be fused.
+ */
+export function fuse(poly, MIN_LENGTH_SQ) {
+	// Trace poly and fuse subsequent intersections' corresponding vertices if they are closer than √MIN_LENGTH_SQ
 	//
-	// Specifically, find pairs of entering and exiting intersections in one polygon and check their
-	// distances. If they are close together, merge them in the OTHER polygon.
-	// For example:
-	// We are tracing poly1. We find the entry and exit intersections. If they are close enough together,
-	// fuse them in poly2. 
+	// Specifically, find pairs of entering and exiting intersections and check their distances. 
+	// If they are close together, merge their CORRESPONDING vertices.
 	// 
-	//             / poly1                           / poly1
+	// For example:
+	// We are tracing clip. We find the entry and exit intersections. If they are close enough together,
+	// fuse them in subject. 
+	// 
+	//             / poly                            / poly
 	//	    entry /                                 /
 	// ----------X-------+                 \       /
 	//	        /        |                  \     /
-	//	       /   poly2 |    ------->       \   /
-	//	      /          |              poly2 \ /
+	//	       /         |    ------->       \   /
+	//	      /          |                    \ /
 	// ------X-----------+                -----+----------+ (This "appendage" will be removed in the next step)
 	//      / exit                            / entry & exit fused
 	//      
 	// Note that it isn't enough to just compare immediately successive vertices, because there might be any 
 	// number of vertices in between when tracing poly1:
 	// 
-	//   poly1 \                                 \ poly1
+	//    poly \                                 \ poly
 	//          \ entry                           \    
 	// ----------X-------+                 \       \
-	// poly2      \      |                  \       \
+	//            \      |                  \       \
 	//	       +---+     |    ------->       \   +---+
-	//	      /          |              poly2 \ /
+	//	      /          |                    \ /
 	// ------X-----------+                -----+----------+
 	//      / exit                            / entry & exit fused
-	//      
 	
-	[ subject, clip ].forEach(poly => {
-		const i0 = poly.findIndex(item => item.entry);
-		if (i0  > -1) {
-			let entry = null;
-			for (let _i = 0; _i < poly.length; _i++) {
-				const i = (i0 + _i) % poly.length;
-				if (poly[i].exit && entry && dist2(poly[i].vertex, entry.vertex) < MIN_LENGTH_SQ) {
-					// Fuse the entry and the exit in the other polygon
-					poly[i].corresponding.vertex = entry.vertex;
-					// In the other polygon, mark the entry and exit vertices as fuse partners
-					poly[i].corresponding.fused = entry.corresponding;
-					entry.corresponding.fused = poly[i].corresponding;
-				}
-				if (poly[i].entry) 
-					entry = poly[i];
+	const i0 = poly.findIndex(item => item.entry);
+	if (i0  > -1) {
+		let entry = null;
+		for (let _i = 0; _i < poly.length; _i++) {
+			const i = (i0 + _i) % poly.length;
+			if (poly[i].exit && entry && dist2(poly[i].vertex, entry.vertex) < MIN_LENGTH_SQ) {
+				// Fuse the entry and the exit in the other polygon
+				poly[i].corresponding.vertex = entry.vertex;
+				// In the other polygon, mark the entry and exit vertices as fuse partners
+				poly[i].corresponding.fused = entry.corresponding;
+				entry.corresponding.fused = poly[i].corresponding;
 			}
+			if (poly[i].entry) 
+				entry = poly[i];
 		}
-	});
+	}
+}
 
-	// Step 4: Break the polygons up at fused vertices. 
+/**
+ * Breaks `poly` into its constituent components at fused vertices.
+ * ```
+ *     +                           +
+ *    / \     +                   / \            +
+ *   /   \   / \     ------->    /   \          / \
+ *  /     \ /   \               /     \        /   \
+ * +-------+-----+             +-------+      +-----+
+ *       fused                component 1   component 2
+ * ```
+ * @param  {VertexEntry[]} poly The polygon to break up.
+ * @return {VertexEntry[][]}      An array of the resultant polygons.
+ */
+export function separate(poly) {
+	// Break the polygons up at fused vertices. 
 	// 
 	//     +                           +
 	//    / \     +                   / \            +
@@ -666,56 +696,106 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 	//   component to the result. Unshelve the topmost unfinished result component from the stack of unfinished result components and add the fused
 	//   vertex to it.
 	// - If the current vertex is a fused vertex, but its fuse partner is not the current result component's start, we need to start a new result component.
-	//   Shelve the current result component on the stack of unfinished components. Start a new result component, and add the current vertex to it.
-	let [ subjects, clips ] = [ subject, clip ].map(poly => {
-		// A list of components which are the input polygon, broken up at fused vertices
-		const result = [];
-		// A stack of as yet incomplete result components
-		const unfinished = [];
-		// The current result component
-		let current = [];
-		// Trace the polygon vertex for vertex
-		for (let i = 0; i < poly.length; i++) {		
-			// p is the current polygon entry (i.e. vertex + metadata)
-			let p = poly[i];
-			// If p is a fused vertex...
-			if (p.fused) {
-				// Check if its fuse partner is the beginning of the current polygon.
-				if (p.fused === current[0]) {
-					// We just finished a result component.
-					// Add the current result component (the one we have now finished) to the overall result.
-					result.push(current);
-					// Pop the topmost unfinished component from the stack to keep working on.
-					current = unfinished.pop();
-				} else {
-					// We have encountered a "new" fused vertex and need to start a new component.
-					// Push the current result component onto the stack as unfinished, and start a new component.
-					unfinished.push(current);
-					current = [];
-				}			
-			}
-			// Add the current vertex to the current component.
-			current.push(p);
-		}
-		// If the current polygon is not empty, also push it to the result.
-		// (This happens anytime tracing did not start on a fused vertex)
-		if (current.length > 0)
-			result.push(current);
-		return result;
-	});
+	//   Shelve the current result component on the stack of unfinished components. Start a new result component, and add the current vertex to it.	
+	
 
-	// Step 5: Clean up.
-	// Project back to vertices, then remove collinear vertices, and polygons with less than three vertices.
-	[ subjects, clips ] = [subjects, clips ].map(polys => 
-		polys.map(poly => poly
-			.map(p => p.vertex)
-			// Filter out collinear vertices
-			.filter((vertex, index, poly) => {
-				const prev = poly[(index - 1 + poly.length) % poly.length];
-				const next = poly[(index + 1) % poly.length];
-				return Math.abs(area(prev, vertex, next)) > EPSILON;
-			}))
-		.filter(poly => poly.length >= 3));
+	// A list of components which are the input polygon, broken up at fused vertices
+	const result = [];
+	// A stack of as yet incomplete result components
+	const unfinished = [];
+	// The current result component
+	let current = [];
+	// Trace the polygon vertex for vertex
+	for (let i = 0; i < poly.length; i++) {		
+		// p is the current polygon entry (i.e. vertex + metadata)
+		let p = poly[i];
+		// If p is a fused vertex...
+		if (p.fused) {
+			// Check if its fuse partner is the beginning of the current polygon.
+			if (p.fused === current[0]) {
+				// We just finished a result component.
+				// Add the current result component (the one we have now finished) to the overall result.
+				result.push(current);
+				// Pop the topmost unfinished component from the stack to keep working on.
+				current = unfinished.pop();
+			} else {
+				// We have encountered a "new" fused vertex and need to start a new component.
+				// Push the current result component onto the stack as unfinished, and start a new component.
+				unfinished.push(current);
+				current = [];
+			}			
+		}
+		// Add the current vertex to the current component.
+		current.push(p);
+	}
+	// If the current polygon is not empty, also push it to the result.
+	// (This happens anytime tracing did not start on a fused vertex)
+	if (current.length > 0)
+		result.push(current);
+	return result;
+}
+
+/**
+ * Cleans up the array of polygons by removing collinear vertices from them, and removing any polygon that does not
+ * have at least three vertices after that.
+ * @param  {VertexEntry[][]} polys The array of polygons to clean up.
+ * @return {VertexEntry[][]}       The remaining polygons.
+ */
+export function clean(polys) {
+	return polys
+		.map(poly => poly.filter((curr, index, poly) => {
+			const prev = poly[(index - 1 + poly.length) % poly.length];
+			const next = poly[(index + 1) % poly.length];
+			return Math.abs(area(prev.vertex, curr.vertex, next.vertex)) > EPSILON;			
+		}))
+		.filter(poly => poly.length >= 3)
+}
+
+export default function recover(subject, clip, MIN_LENGTH_SQ) {
+	subject = subject.map(vertex => { vertex });
+	clip = clip.map(vertex => { vertex });
+
+	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
+	// as new vertices into both
+	({ subject, clip } = interconnect(subject, clip, MIN_LENGTH_SQ));
+
+	// Step 2: Classify all intersections as ENTRY or EXIT
+	try {
+		label(subject, clip); 
+		label(clip, subject);
+	} catch (err) {
+		// If the subject and clip are identical, subject is completely occluded.
+		if (/identical/.test(err.message))
+			return {
+				subject: [],
+				clip
+			}
+	}
+
+	// In an intermediate step, split vertex entries that are both entries AND exits (happens on interior bounces). 
+	// After this step, every intersection is marked as EITHER an entry OR an exit. 
+	// This makes it easier to mark fuse partners and determine the vertex to use for fusing. Otherwise we would have
+	// to involve some more complicated logic to e.g. resolve series of interior bounces etc.; for example:
+	// ------X-----X------
+	//      / \   / \
+	//     /   \ /   \
+	// ---X-----X-----X---
+	splitHybrids(subject, clip);
+	splitHybrids(clip, subject);
+
+	// Step 3: Trace clip and subject and fuse subsequent intersections in the resp. other if 
+	// they are closer than √MIN_LENGTH_SQ.
+	fuse(subject, MIN_LENGTH_SQ);
+	fuse(clip, MIN_LENGTH_SQ);	
+
+	let [ subjects, clips ] = [ subject, clip ]
+		// Step 4: Break the polygons up at fused vertices. 
+		.map(separate)
+		// Step 5: Clean up.
+		// Remove collinear vertices, and polygons with less than three vertices.
+		.map(clean)
+		// Convert back to vertices
+		.map(poly => poly.map(item => item.vertex));
 
 	return {
 		subject: subjects,
