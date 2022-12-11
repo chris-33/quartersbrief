@@ -1,4 +1,5 @@
-import { interconnect, label, splitHybrids, fuse, separate, clean } from '../../src/armor/recover.js';
+import { interconnect, label, splitHybrids, fuse, measure, separate, clean } from '../../src/armor/recover.js';
+import { dist2 } from 'geometry-3d/2d';
 
 describe.only('occlude zero-length recovery', function() {
 	let subject;
@@ -548,6 +549,38 @@ describe.only('occlude zero-length recovery', function() {
 		});
 	});
 
+	describe('measure', function() {
+		it('should set the square of the distance on the exit vertex', function() {
+			subject[1].entry = true;
+			subject[2].exit = true;
+
+			measure(subject);
+
+			[ 0, 1, 3 ].forEach(i => expect(subject[i]).to.not.have.property('dist2'));
+			expect(subject[2]).to.have.property('dist2', dist2(subject[1].vertex, subject[2].vertex));
+		});
+
+		it('should find the corresponding entry vertex even if there are other vertices in between', function() {
+			subject[0].entry = true;
+			subject[3].exit = true;
+
+			measure(subject);
+
+			[ 0, 1, 2 ].forEach(i => expect(subject[i]).to.not.have.property('dist2'));
+			expect(subject[3]).to.have.property('dist2', dist2(subject[0].vertex, subject[3].vertex));
+		});
+
+		it('should find the corresponding entry vertex even if the polygon is ordered such that the exit precedes the entry', function() {
+			subject[0].exit = true;
+			subject[3].entry = true;
+
+			measure(subject);
+
+			[ 1, 2, 3 ].forEach(i => expect(subject[i]).to.not.have.property('dist2'));
+			expect(subject[0]).to.have.property('dist2', dist2(subject[0].vertex, subject[3].vertex));
+		});
+	});
+
 	describe('fuse', function() {
 		const MIN_LENGTH = 1.0e-4;
 
@@ -565,11 +598,12 @@ describe.only('occlude zero-length recovery', function() {
 				vertex: [ 2 + 0.49 * MIN_LENGTH, 1 ],
 				intersection: true,
 				crossing: true,
-				exit: true
+				exit: true,
+				dist2: (0.98 * MIN_LENGTH)**2
 			};
 			subject.splice(1, 0, 
 				{ vertex: correspondingEntry.vertex, intersection: true, crossing: true, entry: true, corresponding: correspondingEntry },
-				{ vertex: correspondingExit.vertex, intersection: true, crossing: true, exit: true, corresponding: correspondingExit });
+				{ vertex: correspondingExit.vertex, intersection: true, crossing: true, exit: true, corresponding: correspondingExit, dist2: (0.98 * MIN_LENGTH)**2 });
 		});
 
 		it('should fuse entry and subsequent exit if they are closer together than √MIN_LENGTH_SQ', function() {
@@ -580,8 +614,8 @@ describe.only('occlude zero-length recovery', function() {
 			expect(correspondingExit).to.have.property('fused', correspondingEntry);
 		});
 
-		it('should not fuse entry and subsequent exit if their distance is at least √MIN_LENGTH_SQ', function() {
-			fuse(subject, (correspondingEntry.vertex[0] - correspondingExit.vertex[0])**2);
+		it('should not fuse entry and subsequent exit if their distance is at least √MIN_LENGTH_SQ', function() {		
+			fuse(subject, (0.98 * MIN_LENGTH)**2);
 
 			expect(correspondingEntry.vertex).to.not.equal(correspondingExit.vertex);
 		});

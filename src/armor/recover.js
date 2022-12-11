@@ -606,6 +606,27 @@ export function splitHybrids(subject, clip) {
 }
 
 /**
+ * Finds corresponding pairs of entry and exit vertex entries in `poly` and sets the square of their distance in property `dist2` of the exit vertex entry.
+ */
+export function measure(poly) {
+	// This works almost exactly the same as fuse().
+	// See comment there.
+	const i0 = poly.findIndex(item => item.entry);
+	if (i0  > -1) {
+		let entry = null;
+		for (let _i = 0; _i < poly.length; _i++) {
+			const i = (i0 + _i) % poly.length;
+			if (poly[i].exit && entry) {
+				poly[i].dist2 = dist2(poly[i].vertex, entry.vertex);
+				entry = null;
+			}
+			if (poly[i].entry) 
+				entry = poly[i];
+		}
+	}
+}
+
+/**
  * Traces poly to find pairs of `entry` and `exit` vertices. If they are closer together than √MIN_LENGTH_SQ, their **corresponding** 
  * vertices are fused by setting both their `vertex` property to the entry vertex, and marking each as a fuse partner of the other by setting
  * the `fuse` property. 
@@ -650,12 +671,13 @@ export function fuse(poly, MIN_LENGTH_SQ) {
 		let entry = null;
 		for (let _i = 0; _i < poly.length; _i++) {
 			const i = (i0 + _i) % poly.length;
-			if (poly[i].exit && entry && dist2(poly[i].vertex, entry.vertex) < MIN_LENGTH_SQ) {
+			if (poly[i].exit && entry && poly[i].dist2 < MIN_LENGTH_SQ) {
 				// Fuse the entry and the exit in the other polygon
 				poly[i].corresponding.vertex = entry.vertex;
 				// In the other polygon, mark the entry and exit vertices as fuse partners
 				poly[i].corresponding.fused = entry.corresponding;
 				entry.corresponding.fused = poly[i].corresponding;
+				entry = null;
 			}
 			if (poly[i].entry) 
 				entry = poly[i];
@@ -752,8 +774,8 @@ export function clean(polys) {
 }
 
 export default function recover(subject, clip, MIN_LENGTH_SQ) {
-	subject = subject.map(vertex => { vertex });
-	clip = clip.map(vertex => { vertex });
+	subject = subject.map(vertex => ({ vertex }));
+	clip = clip.map(vertex => ({ vertex }));
 
 	// Step 1: Calculate the pair-wise intersection points between subject and clip (the erroring polygon) and insert them
 	// as new vertices into both
@@ -770,6 +792,8 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 				subject: [],
 				clip
 			}
+		else
+			throw err;
 	}
 
 	// In an intermediate step, split vertex entries that are both entries AND exits (happens on interior bounces). 
@@ -783,19 +807,23 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 	splitHybrids(subject, clip);
 	splitHybrids(clip, subject);
 
-	// Step 3: Trace clip and subject and fuse subsequent intersections in the resp. other if 
+	// Step 3: Measure the distances between entry-exit pairs
+	measure(subject);
+	measure(clip);
+
+	// Step 4: Trace clip and subject and fuse subsequent intersections in the resp. other if 
 	// they are closer than √MIN_LENGTH_SQ.
 	fuse(subject, MIN_LENGTH_SQ);
 	fuse(clip, MIN_LENGTH_SQ);	
 
 	let [ subjects, clips ] = [ subject, clip ]
-		// Step 4: Break the polygons up at fused vertices. 
+		// Step 5: Break the polygons up at fused vertices. 
 		.map(separate)
-		// Step 5: Clean up.
+		// Step 6: Clean up.
 		// Remove collinear vertices, and polygons with less than three vertices.
 		.map(clean)
 		// Convert back to vertices
-		.map(poly => poly.map(item => item.vertex));
+		.map(polys => polys.map(poly => poly.map(item => item.vertex)));
 
 	return {
 		subject: subjects,
