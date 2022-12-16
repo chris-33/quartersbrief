@@ -1,7 +1,8 @@
-import { interconnect, label, splitHybrids, fuse, measure, separate, clean } from '../../src/armor/recover.js';
+import { interconnect, label, splitHybrids, fuse, measure, separate, clean, default as recover } from '../../src/armor/recover.js';
+import clone from 'clone';
 import { dist2 } from 'geometry-3d/2d';
 
-describe.only('occlude zero-length recovery', function() {
+describe('occlude zero-length recovery', function() {
 	let subject;
 	beforeEach(function() {
 		subject = [
@@ -728,5 +729,185 @@ describe.only('occlude zero-length recovery', function() {
 			
 			expect(result).to.be.an('array').that.is.empty;
 		});
+	});
+
+	it('should return an empty subject array when subject and clip are identical', function() {
+		subject = subject.map(item => item.vertex);
+		const clip = clone(subject);
+
+		const result = recover(subject, clip, 1.0e-8);
+
+		expect(result.subject).to.be.an('array').that.is.empty;
+	});
+
+	it('should return subject and clip unchanged if there are no intersections', function() {
+		// +--------------+
+		// |              |
+		// |  +--------+  |
+		// |  |        |  |
+		// |  +--------+  |
+		// |              |
+		// +--------------+  
+		const poly1 = subject.map(item => item.vertex);
+		const poly2 = [
+			[ 1.5, 1.5 ],
+			[ 2.5, 1.5 ],
+			[ 2.5, 2.5 ],
+			[ 1.5, 2.5 ]
+		];
+
+		let result = recover(clone(poly1), clone(poly2), 1.0e-8);
+
+		expect(result.subject).to.be.an('array').that.deep.equals([ poly1 ]);
+		expect(result.clip).to.be.an('array').that.deep.equals([ poly2 ]);
+
+		result = recover(clone(poly2), clone(poly1), 1.0e-8);
+
+		expect(result.subject).to.be.an('array').that.deep.equals([ poly2 ]);
+		expect(result.clip).to.be.an('array').that.deep.equals([ poly1 ]);
+	});
+	
+	it('should remove an undersize segment when an edge of clip intersects two edges of subject', function() {
+		// +------+ +
+		// |      |/| 
+		// |      + |
+		// |     /| |
+		// |    / | | 
+		// +---+--+ |
+		//    /     |
+		//   +------+
+		subject = subject.map(item => item.vertex);
+		const clip = [
+			[ 1, 0 ],
+            [ 4, 0 ],
+            [ 4, 3 ]
+		];
+
+		const result = recover(clone(subject), clone(clip), 1.1 * dist2([ 2, 1 ], [ 3, 2 ]));
+
+		expect(result).to.be.an('object').with.keys(['subject','clip']);
+		// The subject should not have been broken up
+		expect(result.subject).to.be.an('array').with.lengthOf(1);
+		// All original vertices except the bottom right should still be included
+		expect(result.subject[0].filter((_, index) => index !== 1)).to.deep.equal([
+			[ 1, 1 ],
+			[ 3, 3 ],
+			[ 1, 3 ]
+		]);
+		// The bottom right corner should be replaced with the fused intersection.
+		// We are testing for either, because we make on assumptions here about which one gets kept when fusing.
+		expect(result.subject[0][1]).to.deep.be.oneOf([ [ 2, 1 ], [ 3, 2 ] ]);
+
+		expect(result.clip).to.be.an('array').that.deep.equals([ clip ]);
+	}); 
+
+	it('should remove an undersize segment when two edges of clip intersect the same edge of subject', function() {
+		// +-----------+
+		// |           |
+		// |     +     |
+		// |    / \    |
+		// +---+---+---+
+		//    /     \
+		//   +-------+
+		subject = subject.map(item => item.vertex);
+		const clip = [
+			[ 1, 0 ],
+			[ 3, 0 ],
+			[ 2, 2 ]
+		]
+
+		const result = recover(clone(subject), clone(clip), 1.1 * dist2([1.5, 1], [ 2.5, 1 ]));
+
+		expect(result).to.be.an('object').with.keys(['subject','clip']);
+		// subject should be unchanged
+		expect(result.subject).to.deep.equal([ subject ]);
+
+		// clip should not have been broken up
+		expect(result.clip).to.be.an('array').with.lengthOf(1);
+		// The two bottom vertices should still be present
+		expect(result.clip[0].slice(0, 2)).to.deep.equal(clip.slice(0, 2));
+		// The top corner should be replaced with a fused intersection.
+		expect(result.clip[0][2]).to.deep.be.oneOf([ [ 1.5, 1 ], [ 2.5, 1 ]])
+	});
+
+	it('should remove undersize segments when two edges of clip each intersect two edges of subject', function() {
+		//    +-----+
+		//    |     |
+		// +--+-----+--+
+		// |  |     |  |
+		// +--+-----+--+
+		//    |     |
+		//    +-----+
+		subject = [
+			[ 0, 1 ],
+			[ 4, 1 ],
+			[ 4, 2 ],
+			[ 0, 2 ]
+		];
+		const clip = [
+			[ 1, 0 ],
+			[ 2, 0 ],
+			[ 2, 4 ],
+			[ 1, 4 ]
+		];
+
+		const result = recover(clone(subject), clone(clip), 1.1);
+
+		expect(result).to.be.an('object').with.keys(['subject','clip']);
+
+		// subject should be broken into two
+		expect(result.subject).to.be.an('array').with.lengthOf(2);
+
+		// Find the result component corresponding to the bottom left corner
+		let component = result.subject.find(comp => comp.find(vertex => vertex[0] === subject[0][0] && vertex[1] === subject[0][1]));
+		// There should be one
+		expect(component).to.be.an('array').with.lengthOf(3);
+		// It should include the bottom left and top left corners
+		expect(component).to.deep.include.members([ subject[0], subject[3] ]);
+		// Find the (fused) intersection vertex
+		let isect = component.find(vertex => subject.every(v => v[0] !== vertex[0] || v[1] !== vertex[1]));
+		// There should be one
+		expect(isect).to.exist;
+		expect(isect).to.deep.be.oneOf([ [ 1, 1 ], [ 1, 2 ] ]);
+
+
+		// Find the result component corresponding to the bottom right corner
+		component = result.subject.find(comp => comp.find(vertex => vertex[0] === subject[1][0] && vertex[1] === subject[1][1]));
+		// There should be one
+		expect(component).to.be.an('array').with.lengthOf(3);
+		// It should include the bottom right and top right corners
+		expect(component).to.deep.include.members([ subject[1], subject[2] ]);
+		// Find the (fused) intersection vertex
+		isect = component.find(vertex => subject.every(v => v[0] !== vertex[0] || v[1] !== vertex[1]));
+		// There should be one
+		expect(isect).to.exist;
+		expect(isect).to.deep.be.oneOf([ [ 2, 1 ], [ 2, 2 ] ]);
+
+		// clip should be broken into two
+		expect(result.clip).to.be.an('array').with.lengthOf(2);
+
+		// Find the result component corresponding to the bottom left corner
+		component = result.clip.find(comp => comp.find(vertex => vertex[0] === clip[0][0] && vertex[1] === clip[0][1]));
+		// There should be one
+		expect(component).to.be.an('array').with.lengthOf(3);
+		// It should include the bottom left and bottom right corners
+		expect(component).to.deep.include.members([ clip[0], clip[1] ]);
+		// Find the (fused) intersection vertex
+		isect = component.find(vertex => clip.every(v => v[0] !== vertex[0] || v[1] !== vertex[1]));
+		// There should be one
+		expect(isect).to.exist;
+		expect(isect).to.deep.be.oneOf([ [ 1, 1 ], [ 2, 1 ] ]);
+
+		// Find the result component corresponding to the top left corner
+		component = result.clip.find(comp => comp.find(vertex => vertex[0] === clip[3][0] && vertex[1] === clip[3][1]));
+		// There should be one
+		expect(component).to.be.an('array').with.lengthOf(3);
+		// It should include the top left and top right corners
+		expect(component).to.deep.include.members([ clip[2], clip[3] ]);
+		// Find the (fused) intersection vertex
+		isect = component.find(vertex => clip.every(v => v[0] !== vertex[0] || v[1] !== vertex[1]));
+		// There should be one
+		expect(isect).to.exist;
+		expect(isect).to.deep.be.oneOf([ [ 1, 2 ], [ 2, 2 ] ]);
 	});
 });

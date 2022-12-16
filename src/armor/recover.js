@@ -645,26 +645,26 @@ export function fuse(poly, MIN_LENGTH_SQ) {
 	// We are tracing clip. We find the entry and exit intersections. If they are close enough together,
 	// fuse them in subject. 
 	// 
-	//             / poly                            / poly
-	//	    entry /                                 /
-	// ----------X-------+                 \       /
-	//	        /        |                  \     /
-	//	       /         |    ------->       \   /
-	//	      /          |                    \ /
-	// ------X-----------+                -----+----------+ (This "appendage" will be removed in the next step)
+	//             / poly                         / poly
+	//	    entry /                              /
+	// ----------X----+                 \       /  .+
+	//	        /     |                  \     / .- |
+	//	       /      |    ------->       \   /.-   |
+	//	      /       |                    \ /-     |
+	// ------X--------+                -----+-------+
 	//      / exit                            / entry & exit fused
 	//      
 	// Note that it isn't enough to just compare immediately successive vertices, because there might be any 
 	// number of vertices in between when tracing poly1:
 	// 
-	//    poly \                                 \ poly
-	//          \ entry                           \    
-	// ----------X-------+                 \       \
-	//            \      |                  \       \
-	//	       +---+     |    ------->       \   +---+
-	//	      /          |                    \ /
-	// ------X-----------+                -----+----------+
-	//      / exit                            / entry & exit fused
+	//    poly \          
+	//          \ entry   
+	// ----------X-------+
+	//            \      |
+	//	       +---+     |
+	//	      /          |
+	// ------X-----------+
+	//      / exit        
 	
 	const i0 = poly.findIndex(item => item.entry);
 	if (i0  > -1) {
@@ -773,7 +773,42 @@ export function clean(polys) {
 		.filter(poly => poly.length >= 3)
 }
 
+/**
+ * Attempts to recover zero-length errors from subtracting `clip` from `subject` by finding and eliminating segments that would fall below the given minimum length.
+ *
+ * Specifically, this function intersects all edges of `subject` and `clip` and classifies them according to whether each polygon enters or exits the respective other 
+ * in that intersection. It then examines pairs of associated entering and exiting intersections. If the square of the distance between them is less than `MIN_LENGTH_SQ`, 
+ * the two are fused into one in the _other_ polygon. In a final post-processing step, collapsed segments (i.e. ones that enclose zero area) are removed, and the result is
+ * broken up into simple polygons.
+ * Example:
+ * ``` 
+ *             / poly                         / poly
+ *	    entry /                              /
+ * ----------X----+                 \       /  .+                 \                .+
+ *	        /     |                  \     / .- |                  \             .- |
+ *	       /      |    ------->       \   /.-   |    ------->       \          .-   |
+ *	      /       |                    \ /-     |                    \       .-     |
+ * ------X--------+                -----+-------+                -----+     +-------+
+ *      / exit                         / entry & exit fused
+ *
+ * intersected & classified            fused                          split up
+ * ```
+ * 
+ * @param  {Array} subject       A polygon, i.e. an array of two-dimensional vertices of the form `[ x, y ]`.
+ * @param  {Array} clip          A polygon, i.e. an array of two-dimensional vertices of the form `[ x, y ]`.
+ * @param  {number} MIN_LENGTH_SQ The **square** of the minimum distance an entry and an exit must have to avoid fusing.
+ * @return {Object}               An object `{ subjects, clips }` each containing a list of output polygons.
+ */
 export default function recover(subject, clip, MIN_LENGTH_SQ) {
+	/*
+		This algorithm is greatly inspired by the Greiner-Hormann polygon intersection algorithm as improved by Foster et al. It works as follows:
+
+		1. Intersect subject and clip and insert the intersections as new vertices into both. See interconnect().
+		2. For both polygons, classify all intersections by whether the polygon enters or exits the respective other polygon. See label().
+		3. Find pairs of entries and associated exits and measure the distance between them. See measure().
+		4. Trace each polygon, and where the measured distance is below the threshold, fuse those intersections in the respective other. See trace().
+		5. Remove unnecessary collinear vertices from the result, and split it up at coinciding vertices.
+	 */
 	subject = subject.map(vertex => ({ vertex }));
 	clip = clip.map(vertex => ({ vertex }));
 
