@@ -19,7 +19,7 @@ describe('occlude', function() {
 		minZ, maxZ, midZ;
 
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/armor/testdata/subject.json'));
+		TEST_DATA = JSON.parse(readFileSync('test/armor/testdata/occlude-subject.json'));
 	});
 
 	beforeEach(function() {

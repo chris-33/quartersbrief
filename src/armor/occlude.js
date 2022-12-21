@@ -6,8 +6,7 @@ import rootlog from 'loglevel';
 
 const dedicatedlog = rootlog.getLogger('Projector');
 
-// A special epsilon for use when use when trying to see if vectors are perpendicular. The normal epsilon
-// is then MUCH too large: Math.cos(89.5 * Math.PI/180) === 0.00872...
+// At what angle to consider a triangle perpendicular to the view plane
 export const MAX_ANGLE = 89.5;
 // How long a segment can be in zero-length recovery before it is fused
 export const MIN_LENGTH  = 1.0e-6
