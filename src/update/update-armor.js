@@ -114,7 +114,7 @@ export default async function updateArmor(wows, dest, buildno) {
 				cur.seek(20);
 				metadata.numArmorBlocks = cur.readUInt32LE();
 				if (metadata.numArmorBlocks === 0)
-					throw new Error(`File ${infile} did not contain any armor blocks`);
+					return {};//throw new Error(`File ${infile} did not contain any armor blocks`);
 				else if (metadata.numArmorBlocks > 1)
 					throw new Error(`File ${infile} contained more than one armor block: ${metadata.numArmorBlocks}`);
 
