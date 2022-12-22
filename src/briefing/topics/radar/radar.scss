@@ -116,7 +116,7 @@ $stealthwarn-color-severe: colors.$warning-severe;
 			}
 		}
 
-		&.enemy.ally {
+		&.enemy.ally:not(.player) {
 			color: transparent;
 			background-image: linear-gradient(to right, colors.$ally 30%, colors.$enemy 50%);
 			background-clip: text;
