@@ -151,7 +151,14 @@ aside.details .details-line.contenders {
 	text-align: center;
 }
 
-g.radar.highlighted, .label .ship.highlighted {
-	color: colors.$highlighted;
-	stroke: colors.$highlighted;
+.highlighted {
+	color: colors.$highlighted !important;
+	
+	path { 
+		stroke: colors.$highlighted !important;
+	}
+
+	text {
+		fill: colors.$highlighted !important;
+	}
 }
