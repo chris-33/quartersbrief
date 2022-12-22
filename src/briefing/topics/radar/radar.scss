@@ -4,6 +4,9 @@
 $zoom: 0.25;
 //@use 'details';
 
+//
+// Styles for the range and time axes
+// 
 .axis {
 	stroke: black;
 	stroke-width: $zoom;
@@ -32,6 +35,9 @@ $zoom: 0.25;
 	stroke-dasharray: 2 1;
 }
 
+//
+// Styles for the arcs depicting ships' radars
+// 
 .radar {
 	fill: none;
 	text {
@@ -65,6 +71,7 @@ $zoom: 0.25;
 	}	
 }
 
+// Color stops for linear gradient used on ships present on both teams
 stop.ally {
 	stop-color: colors.$ally; 
 }
@@ -72,10 +79,14 @@ stop.enemy {
 	stop-color: colors.$enemy;
 }
 
-// Styling for the stealth warning indicator and details
+//
+// Styles for ships' labels
+// 
+
+
+// Colors of the stealth warning indicator and details
 $stealthwarn-color-moderate: colors.$warning-moderate;
 $stealthwarn-color-severe: colors.$warning-severe;
-
 .label {
 	position: absolute;
 	background-color: white;
@@ -117,6 +128,9 @@ $stealthwarn-color-severe: colors.$warning-severe;
 	}
 }
 
+//
+// Styles for mouseover tooltip
+// 
 aside.details.enemy {
 	.stealthwarn-moderate {
 		color: $stealthwarn-color-moderate;
@@ -149,6 +163,20 @@ aside.details .details-line.contenders {
 	color: colors.$aside;
 	font-size: fontsizes.$large;
 	text-align: center;
+}
+
+//
+// Styles for hover highlighting:
+// 
+$highlight-transition-time: 0.33s;
+.radar text {
+	transition: fill $highlight-transition-time;
+}
+.radar .base, .radar .max {
+	transition: stroke $highlight-transition-time;
+}
+.label .ship {
+	transition: color $highlight-transition-time;
 }
 
 .highlighted {
