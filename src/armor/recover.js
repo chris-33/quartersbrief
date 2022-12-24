@@ -449,11 +449,11 @@ export function label(subject, clip) {
 		// Now either start is !== -1, meaning we already have a valid start vertex, or
 		// start is not defined but not every vertex of the polygon is an ON/ON vertex.
 		// Check which one it is:
-		if (start === -1) {				
+		if (start === -1) {		
 			// At this point, we know there is at least one vertex that is not an ON/ON vertex 
 			// and thus adjacent to an edge that is not a shared edge.
 			// Find that vertex.
-			let start = subject.findIndex(curr => curr.chain !== ON_ON);
+			start = subject.findIndex(curr => curr.chain !== ON_ON);
 			// If it is a LEFT/ON or a RIGHT/ON vertex, move the start back one...
 			if (subject[start].chain < ON_ON) 
 				start = (start - 1 + subject.length) % subject.length;

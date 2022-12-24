@@ -505,7 +505,9 @@ describe('occlude zero-length recovery', function() {
 				expect(clip[1]).to.have.property('entry', true);
 				expect(clip[1]).to.not.have.property('exit');
 			});
+		});
 
+		describe('edge cases', function() {		
 			it('should throw when subject and clip are identical', function() {
 				const clip = subject.slice();
 				for (let i = 0; i < subject.length; i++) {
@@ -518,7 +520,43 @@ describe('occlude zero-length recovery', function() {
 				expect(label.bind(null, subject, clip)).to.throw(TypeError);
 			});
 
-			it('should work when the chain extends over the polygons\' start', function() {
+			it('should insert a vertex when all vertices are intersections, but the polygons are not identical', function() {
+				//     +
+				//    / \
+				//   +---+
+				//  /|   |\
+				// + |   | +
+				//  \|   |/
+				//   +---+
+				//    \ /
+				//     +
+				const clip = [
+					{ vertex: [ 2, 0 ] },
+					{ vertex: [ 3, 1 ], intersection: true },
+					{ vertex: [ 4, 2 ] },
+					{ vertex: [ 3, 3 ] , intersection: true },
+					{ vertex: [ 2, 4 ] },
+					{ vertex: [ 1, 3 ], intersection: true },
+					{ vertex: [ 0, 2 ] },
+					{ vertex: [ 1, 1 ], intersection: true }
+				];
+				subject.forEach(item => item.intersection = true);
+
+				subject[0].corresponding = clip[7];
+				clip[7].corresponding = subject[0];
+				subject[1].corresponding = clip[1];
+				clip[1].corresponding = subject[1];
+				subject[2].corresponding = clip[3];
+				clip[3].corresponding = subject[2];
+				subject[3].corresponding = clip[5];
+				clip[5].corresponding = subject[3];
+
+				label(subject, clip);
+
+				expect(subject.find(item => !item.intersection)).to.exist;
+			});
+
+			it('should work when a chain extends over the polygons\' start', function() {
 				//    +--------------+
 				//    |              |
 				//    |              |
