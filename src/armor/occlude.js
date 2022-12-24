@@ -87,7 +87,7 @@ export default function occlude(subject, other, viewAxis) {
 
 		let errorPolys;
 		let retries = MAX_RETRIES;
-		occlude: do {
+		do {
 			errorPolys = [];
 			retries--;
 
@@ -128,10 +128,14 @@ export default function occlude(subject, other, viewAxis) {
 					for (let j = 0; j < errorPolys.length; j++) {
 						let recovered = recover(T.regions[i], errorPolys[j].regions[0]);
 
+						// Replace the currently recovered region of T with the results of the recovery (this may be several polygons)
 						T.regions.splice(i, 1, ...recovered.subject);
-						// If the subject polygon is now empty, exit the occlusion algorithm
-						if (T.regions.length === 0)
-							break occlude;
+						// If recovery made the current region vanish, continue with the outer loop
+						if (recovered.subject.length === 0) {
+							// Make sure we don't skip an element after deletion
+							i--;
+							break;
+						}
 						errorPolys[j].regions = recovered.clip;
 					}
 				}

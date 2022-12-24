@@ -461,13 +461,13 @@ export function label(subject, clip) {
 
 			// Now we know for sure that the edge [start, start + 1] is not a shared edge.
 			// Create a new virtual vertex halfway between on that edge and insert it into the polygon.
-			start++;
-			subject.splice(start, 0, {
+			subject.splice(start + 1, 0, {
 				vertex: {
 					x: (subject[start].vertex[0] + subject[(start + 1) % subject.length].vertex[0]) / 2,
 					y: (subject[start].vertex[1] + subject[(start + 1) % subject.length].vertex[1]) / 2
 				}
 			});
+			start++;
 		}
 
 	// Now both subjectStart and clipStart are guaranteed to not be on a polygon's edge. 
