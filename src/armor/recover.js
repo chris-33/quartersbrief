@@ -404,27 +404,35 @@ export function label(subject, clip) {
 
 	// Process overlaps by marking them as (delayed) crossings/bouncings
 	let chainStart;
-	subject.forEach(curr => {
-		if (!curr.chain) return;
+	// Find an initial vertex that is LEFT/ON or RIGHT/ON. This is so we are guaranteed to process each
+	// chain start BEFORE its chain end. (Otherwise, we will have problems if the chain extends over the
+	// subject's beginning.)
+	const i0 = subject.findIndex(curr => Math.sign(curr.chain - ON_ON) === -1);
+	// If there are any chains, process them
+	if (i0 !== -1) 
+		for (let _i = 0; _i < subject.length; _i++) {
+			const i = (_i + i0) % subject.length;
+			const curr = subject[i];
+			if (!curr.chain) continue;
 
-		switch (Math.sign(curr.chain - ON_ON)) {
-			case -1: 
-				// If we are at the beginning of a chain, remember it
-				chainStart = curr;
-				break;
-			case 0:
-				// If we are in the middle of a chain, do nothing
-				break;
-			case +1:
-				// If we are at the end of a chain, mark the intersection as BOUNCING if the last vertex is
-				// on the same side as the first vertex was, and as CROSSING if it is on the other side.
-				curr.crossing = curr.chain - ON_ON === chainStart.chain ? BOUNCING : CROSSING;
-				// Mark chainStart as the same 
-				chainStart.crossing = curr.crossing;
-				// Reset chainStartSide
-				chainStart = undefined;
+			switch (Math.sign(curr.chain - ON_ON)) {
+				case -1: 
+					// If we are at the beginning of a chain, remember it
+					chainStart = curr;
+					break;
+				case 0:
+					// If we are in the middle of a chain, do nothing
+					break;
+				case +1:
+					// If we are at the end of a chain, mark the intersection as BOUNCING if the last vertex is
+					// on the same side as the first vertex was, and as CROSSING if it is on the other side.
+					curr.crossing = curr.chain - ON_ON === chainStart.chain ? BOUNCING : CROSSING;
+					// Mark chainStart as the same 
+					chainStart.crossing = curr.crossing;
+					// Reset chainStartSide
+					chainStart = undefined;
+			}
 		}
-	});
 
 	// Now we can perform the final labeling stage for both polygons: marking each intersection as either 
 	// an ENTRY or an EXIT or both.

@@ -517,6 +517,38 @@ describe('occlude zero-length recovery', function() {
 
 				expect(label.bind(null, subject, clip)).to.throw(TypeError);
 			});
+
+			it('should work when the chain extends over the polygons\' start', function() {
+				//    +--------------+
+				//    |              |
+				//    |              |
+				//    |              |
+				// +--+==============+--+
+				// |                    |
+				// +--------------------+
+				const clip = [
+					{ vertex: [ 1, 1 ], intersection: true },
+					{ vertex: [ 0, 1 ] },
+					{ vertex: [ 0, 0 ] },
+					{ vertex: [ 4, 0 ] },
+					{ vertex: [ 4, 1 ] },
+					{ vertex: [ 3, 1 ], intersection: true },
+				];
+				subject.push(subject.shift());
+				subject[0].intersection = true;
+				subject[3].intersection = true;
+
+				subject[0].corresponding = clip[5];
+				clip[5].corresponding = subject[0];
+				subject[3].corresponding = clip[0];
+				clip[0].corresponding = subject[3];
+
+				label(subject, clip);
+
+				expect(subject[0]).to.have.property('chain');
+				expect(subject[3]).to.have.property('chain');
+				expect(subject[0]).to.have.property('crossing');
+			});
 		});		
 	});
 
