@@ -205,60 +205,67 @@ describe('occlude', function() {
 		});
 	});
 
-	it('should perform error recovery on zero-length errors', async function() {
-		const recover = sinon.stub().returns({
-			subject: [], clip: []
+	describe('zero-length error recovery', function() {
+		let recover;
+		let polybool;
+		let occlude;
+
+		beforeEach(async function() {
+			// Return subject and clip unchanged. It doesn't really matter what we return here, as long as neither is empty
+			recover = sinon.stub().callsFake((subject, clip) => ({
+				subject: [ subject ], clip: [ clip ]
+			}));
+			polybool = (await import('polybooljs')).default;
+			// Fake a zero-length error on the first call
+			sinon.stub(polybool, 'selectDifference')
+
+			occlude = (await esmock('../../src/armor/occlude.js', {
+				'../../src/armor/recover.js': { default: recover },
+				'polybooljs': { default: polybool }
+			})).default;
 		});
-		const polybool = (await import('polybooljs')).default;
-		// Fake a zero-length error on the first call
-		sinon.stub(polybool, 'selectDifference')
-			.callThrough()
-			.onFirstCall().throws(new TypeError('zero-length segment detected'));
 
-		const occlude = (await esmock('../../src/armor/occlude.js', {
-			'../../src/armor/recover.js': { default: recover },
-			'polybooljs': { default: polybool }
-		})).default;
+		afterEach(function() {
+			polybool.selectDifference.restore();
+		});
 
-		// Use only one triangle of subject for this test
-		subject = subject.slice(0,1);
-		// Construct an occluding mesh that in front of the subject, but off to one side
-		const occluder = subject.map(tri => tri.map(([ x, y ]) => [
-			x + width,
-			y
-		]).map(vertex => [ ...vertex, Math.max(...subject.flat().map(vertex => vertex[Z])) + 1 ]));
+		it('should perform error recovery on zero-length errors', async function() {
+			// Fake a zero-length error on the first call
+			polybool.selectDifference
+				.callThrough()
+				.onFirstCall().throws(new TypeError('zero-length segment detected')); 
 
-		const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
+			// Use only one triangle of subject for this test
+			subject = subject.slice(0,1);
+			// Construct an occluding mesh that in front of the subject, but off to one side
+			const occluder = subject.map(tri => tri.map(([ x, y ]) => [
+				x + width,
+				y
+			]).map(vertex => [ ...vertex, Math.max(...subject.flat().map(vertex => vertex[Z])) + 1 ]));
 
-		expect(recover).to.have.been.called;
-		// There should be subject.length * occluder.length calls for the first run, and one resulting from the retry after error recovery
-		expect(polybool.selectDifference).to.have.callCount(subject.length * occluder.length + 1);
-		// We simulated a complete occlusion in recover()
-		expect(result).to.be.empty;
-	});
+			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
 
-	it('should perform error recovery a maximum of MAX_RETRIES times', async function() {
-		// Return subject and clip unchanged. It doesn't really matter what we return here, as long as neither is empty
-		const recover = sinon.stub().callsFake((subject, clip) => ({
-			subject: [ subject ], clip: [ clip ]
-		}));
-		// Fake a zero-length error on every call
-		const selectDifference = sinon.stub().throws(new TypeError('zero-length segment detected'));
+			expect(recover).to.have.been.called;
+			// There should be subject.length * occluder.length calls for the first run, and one resulting from the retry after error recovery
+			expect(polybool.selectDifference).to.have.callCount(subject.length * occluder.length + 1);
 
-		const occlude = (await esmock('../../src/armor/occlude.js', {
-			'../../src/armor/recover.js': { default: recover },
-			'polybooljs': { selectDifference: selectDifference }
-		})).default;
+			expect(result).to.deep.equal(subject);
+		});
 
-		// Use only one triangle of subject for this test
-		subject = subject.slice(0,1);
-		const occluder = clone(subject);
+		it('should perform error recovery a maximum of MAX_RETRIES times', async function() {
+			// Fake a zero-length error on every call
+			polybool.selectDifference.throws(new TypeError('zero-length segment detected'))
 
-		const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
+			// Use only one triangle of subject for this test
+			subject = subject.slice(0,1);
+			const occluder = clone(subject);
 
-		// There should have been MAX_RETRIES attempts at error recovery
-		expect(recover).to.have.callCount(MAX_RETRIES);
-		
-		expect(result).to.deep.equal(subject);
-	});	
+			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
+
+			// There should have been MAX_RETRIES attempts at error recovery
+			expect(recover).to.have.callCount(MAX_RETRIES);
+			
+			expect(result).to.deep.equal(subject);
+		});	
+	})
 });
