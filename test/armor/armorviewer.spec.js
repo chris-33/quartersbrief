@@ -33,7 +33,7 @@ describe('ArmorViewer', function() {
 			]
 		}
 
-		const result = await viewer.getView('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
 		expect(result).to.have.property('65585');
 		expect(result['65585']).to.be.an('array').with.lengthOf(1);
@@ -50,7 +50,7 @@ describe('ArmorViewer', function() {
 			}
 		});
 
-		const result = await viewer.getView('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
 		expect(result).to.deep.equal(TEST_DATA.front);
 	});
@@ -62,7 +62,7 @@ describe('ArmorViewer', function() {
 			}
 		});
 
-		const result = await viewer.getView('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
 		expect(JSON.parse(readFileSync(path.join(ARMOR_DIR, 'AAA001_Battleship.json')))).to.have.property('front').that.deep.equals(result);
 	});

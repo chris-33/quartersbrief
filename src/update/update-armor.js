@@ -179,6 +179,21 @@ export default async function updateArmor(wows, dest, buildno) {
 				
 				return armor;
 			},
+			function postProcess(armor) {
+				const convertVertex = ({ x, y, z }) => [ x, y, z ];
+
+				for (let id in armor) {
+					let piece = armor[id];
+					piece.vertices = piece.vertices.map(convertVertex);
+					armor[id] = [];
+					for (let i = 0; i < piece.vertices.length; i += 3) {
+						armor[id].push([ piece.vertices[i], piece.vertices[i + 1], piece.vertices[i + 2]])
+					}
+				}
+				return {
+					source: armor
+				}
+			},
 			writeJSON(path.format({
 				dir: dest,
 				name: path.basename(infile, '.geometry'),
