@@ -225,6 +225,11 @@ describe('occlude', function() {
 			})).default;
 		});
 
+		beforeEach(function() {
+			// Use only one triangle of subject for these tests
+			subject = subject.slice(0,1);			
+		});
+
 		afterEach(function() {
 			polybool.selectDifference.restore();
 		});
@@ -235,8 +240,6 @@ describe('occlude', function() {
 				.callThrough()
 				.onFirstCall().throws(new TypeError('zero-length segment detected')); 
 
-			// Use only one triangle of subject for this test
-			subject = subject.slice(0,1);
 			// Construct an occluding mesh that in front of the subject, but off to one side
 			const occluder = subject.map(tri => tri.map(([ x, y ]) => [
 				x + width,
@@ -252,12 +255,54 @@ describe('occlude', function() {
 			expect(result).to.deep.equal(subject);
 		});
 
+		it('should filter out very small subject polygons after error recovery', function() {
+			// Fake a zero-length error on the first call
+			polybool.selectDifference
+				.callThrough()
+				.onFirstCall().throws(new TypeError('zero-length segment detected')); 
+			// Make recover return a subject polygon that has an undersize edge
+			recover.callsFake(() => ({
+				subject: [
+					[ [ 1.0, 1.0 ], [ 1.0 + 0.5 * MIN_LENGTH, 1.0 ], [ 1.0, 2.0 ] ]
+				],
+				clip: []
+			}));
+			const occluder = clone(subject);
+
+			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
+
+			expect(recover).to.have.been.called;
+			// The subject should now be empty, because the subject polygon returned by recover() should have been
+			// discarded due to the undersize edge
+			expect(result).to.be.empty;
+		});
+
+		it('should filter out very small occluder polygons after error recovery', function() {
+			// Fake a zero-length error on the first call
+			polybool.selectDifference
+				.callThrough()
+				.onFirstCall().throws(new TypeError('zero-length segment detected')); 
+			// Make recover return a clip polygon that has an undersize edge
+			recover.callsFake(subject => ({
+				subject: [ subject ],
+				clip: [
+					[ [ 1.0, 1.0 ], [ 1.0 + 0.5 * MIN_LENGTH, 1.0 ], [ 1.0, 2.0 ] ]
+				]
+			}));
+			const occluder = clone(subject);
+
+			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
+
+			expect(recover).to.have.been.called;
+			// The subject should be unchanged, because the clip polygon returned by recover() should have been
+			// discarded due to the undersize edge
+			expect(result).to.deep.equal(subject);
+		});
+
 		it('should perform error recovery a maximum of MAX_RETRIES times', async function() {
 			// Fake a zero-length error on every call
 			polybool.selectDifference.throws(new TypeError('zero-length segment detected'))
 
-			// Use only one triangle of subject for this test
-			subject = subject.slice(0,1);
 			const occluder = clone(subject);
 
 			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone

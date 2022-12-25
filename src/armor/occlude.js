@@ -127,6 +127,14 @@ export default function occlude(subject, other, viewAxis) {
 				for (let i = 0; i < T.regions.length; i++) {
 					for (let j = 0; j < errorPolys.length; j++) {
 						let recovered = recover(T.regions[i], errorPolys[j].regions[0]);
+						// Filter out very small polygons from the results of recover().
+						// This is in preparation of the next round of the main loop. 
+						recovered.subject = recovered.subject
+							.map(poly => geom.fuse(poly, MIN_LENGTH_SQ))
+							.filter(poly => poly.length >= 3);
+						recovered.clip = recovered.clip
+							.map(poly => geom.fuse(poly, MIN_LENGTH_SQ))
+							.filter(poly => poly.length >= 3);
 
 						// Replace the currently recovered region of T with the results of the recovery (this may be several polygons)
 						T.regions.splice(i, 1, ...recovered.subject);
