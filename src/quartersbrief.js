@@ -53,7 +53,7 @@ const briefingController = new BriefingController(
 	new BriefingBuilder({
 		gameObjectFactory,
 		playerFactory: new PlayerFactory(config.apiKey, config.realm),
-		armorViewer: new ArmorViewer(path.join(config.data, 'armor'))
+		armorViewer: new ArmorViewer(path.join(paths.data, 'armor'))
 	}),
 	agendaController
 );
