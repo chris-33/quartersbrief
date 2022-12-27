@@ -41,26 +41,28 @@ export default function occlude(subject, other, viewAxis) {
 		// Do a preliminary check to see if T is (almost) perpendicular to the view axis.
 		// If it is, we can remove it and save a lot of expensive computations.
 		// In addition, if it is ALMOST perpendicular, its projection along the view axis will be very small,
-		// and this tends to make the computations numerically unstable.
+		// and this tends to make the computations numerically unstable/lead to zero-length segment errors.
 		//
 		// Remove T if its angle to the view vector is close to 90 degrees
 		if (Math.abs(Vector.dot(normal, view)) < ANGLE_EPSILON) {
 			// Remove T and do not increase i
 			subject.splice(i, 1);
-			// Normally we wouldn't do this, but constructing the log message involves two calls to Math.sqrt and one to Math.acos, all of which are expensive operations.
+			// Only construct error message if we are actually displaying this log. 
+			// Normally, this is discouraged. We do it here because constructing the log message 
+			// involves computationally expensive operations in itself (two calls to Math.sqrt() and one to Math.acos())
 			if (dedicatedlog.getLevel() <= dedicatedlog.levels.DEBUG)
 				dedicatedlog.debug(`Removed triangle ${i} because it was at angle ${Math.acos(Vector.dot(normal, view) / (Vector.length(normal) * Vector.length(view))) * 180/Math.PI} to the view vector\n`);
 			continue;
 		}
 
-		// Create the list of occlusion polygons
+		// Create the list of (potentially) occluding polygons
 		// This is done by projecting all triangles of other onto T's plane and then subtracting them from T
 		let occluders = other
 			// Do not occlude T with itself, because the result would always be empty
 			// (This will happen when checking a mesh against itself)
 			.filter(tri => tri !== T)
 			// Do not occlude with triangles that are (almost) perpendicular to the view axis.
-			// Their impact would be negligible, and the computations tend to be numerically unstable.
+			// Their impact would be negligible, and the computations tend to be numerically unstable/lead to zero-length segment errors.
 			.filter(tri => Math.abs(Vector.dot(geom.normal(tri), view)) > ANGLE_EPSILON)
 			// Project onto T's plane along the view axis
 			.map(tri => {
@@ -72,8 +74,10 @@ export default function occlude(subject, other, viewAxis) {
 			})
 			// Reduce to 2D in the same dimensions as for T. 
 			.map(poly => geom.convertDown(poly, axis))
+			// Filter out very small triangles
 			.map(poly => geom.fuse(poly, MIN_LENGTH_SQ))
 			.filter(poly => poly.length >= 3)
+			// Convert to polybooljs' format
 			.map(poly => ({
 				inverted: false,
 				regions: [ poly ]
@@ -163,7 +167,7 @@ export default function occlude(subject, other, viewAxis) {
 							i += recovered.subject.length - 1;
 					}
 				}
-				dedicatedlog.debug(`Retrying polygon ${i} with ${T.length} parts and ${errorPolys.length} occluders`);
+				dedicatedlog.debug(`Error recovery on polygon ${i} yielded ${T.length} regions and ${errorPolys.length} new occluders`);
 				T = {
 					regions: T,
 					inverted: false
@@ -181,11 +185,11 @@ export default function occlude(subject, other, viewAxis) {
 		T = T.regions
 			.map(region => geom.fuse(region, MIN_LENGTH_SQ))
 			.filter(region => region.length >= 3)
-			// Extrude T from its axis-aligned state back onto the original triangle's plane
-			.map(region => geom.project(geom.convertUp(region, axis), normal, d, axis))
-			// Break the result up into triangles again for further processing
+			// Break the result up into triangles again
 			.flatMap(geom.triangulate)
-		dedicatedlog.debug(`Broken up into ${T.length} triangles`);
+			// Extrude T from its axis-aligned state back onto the original triangle's plane
+			.map(tri => geom.project(geom.convertUp(tri, axis), normal, d, axis))
+		dedicatedlog.debug(`Polygon ${i} broken up into ${T.length} triangles`);
 
 		// Replace T with its remaining triangles in subject.
 		subject.splice(i, 1, ...T);
