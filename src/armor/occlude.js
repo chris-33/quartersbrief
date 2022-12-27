@@ -9,7 +9,7 @@ const dedicatedlog = rootlog.getLogger('Projector');
 // At what angle to consider a triangle perpendicular to the view plane
 export const MAX_ANGLE = 89.5;
 // How long a segment can be in zero-length recovery before it is fused
-export const MIN_LENGTH  = 1.0e-6
+export const MIN_LENGTH  = 1.0e-6;
 
 // How many times to attempt error recovery before giving up
 export const MAX_RETRIES = 3;
@@ -78,7 +78,7 @@ export default function occlude(subject, other, viewAxis) {
 				inverted: false,
 				regions: [ poly ]
 			}));
-	
+
 		// Convert T into polybooljs' format
 		T = {
 			regions: [ geom.convertDown(T, axis) ], 
@@ -104,8 +104,9 @@ export default function occlude(subject, other, viewAxis) {
 					let combined = polybool.combine(segments, polySegments);
 					segments = polybool.selectDifference(combined);
 					if (segments.segments.length === 0) {
-						dedicatedlog.debug(`The triangle is completely occluded`);
+						dedicatedlog.debug(`Stopping early because the triangle is completely occluded`);
 						// We can stop now, because there is nothing left to subtract further occluders from
+						errorPolys = [];
 						break;
 					}
 				} catch(err) {
@@ -124,9 +125,15 @@ export default function occlude(subject, other, viewAxis) {
 			T = polybool.polygon(segments);
 	
 			if (errorPolys.length > 0) {
-				for (let i = 0; i < T.regions.length; i++) {
-					for (let j = 0; j < errorPolys.length; j++) {
-						let recovered = recover(T.regions[i], errorPolys[j].regions[0]);
+				// Project T to its regions
+				T = T.regions;
+				// Project error polygons to a flat list of their regions. errorPolys is now an array of polygons.
+				errorPolys = errorPolys.flatMap(poly => poly.regions);
+
+				// Loop over all regions of T and errorPolys. Loop backward because we will be deleting from those arrays.
+				for (let i = T.length - 1; i >= 0; i--) {
+					for (let j = errorPolys.length - 1; j >= 0; j--) {
+						let recovered = recover(T[i], errorPolys[j]);
 						// Filter out very small polygons from the results of recover().
 						// This is in preparation of the next round of the main loop. 
 						recovered.subject = recovered.subject
@@ -136,23 +143,40 @@ export default function occlude(subject, other, viewAxis) {
 							.map(poly => geom.fuse(poly, MIN_LENGTH_SQ))
 							.filter(poly => poly.length >= 3);
 
-						// Replace the currently recovered region of T with the results of the recovery (this may be several polygons)
-						T.regions.splice(i, 1, ...recovered.subject);
-						// If recovery made the current region vanish, continue with the outer loop
-						if (recovered.subject.length === 0) {
-							// Make sure we don't skip an element after deletion
-							i--;
+						// Replace the current error polygon with the results of error recovery (this may be several polygons)
+						// There is no need to adjust j here, because this is the inner loop: running recover again with the same
+						// i (same region of T) and one of the just-recovered polygons can give no new results.
+						errorPolys.splice(j, 1, ...recovered.clip);
+
+						// Replace the current region of T with the results of the recovery (this may be several polygons)
+						T.splice(i, 1, ...recovered.subject);
+						// If the current region has vanished, continuing recovery of this region with the remaining error polygons
+						// is pointless. Continue with the next region.
+						// Otherwise, adjust i so we don't miss any regions in the next iteration.
+						// 
+						// Note: There is no need to check if T is completely empty for an early break, because at most one region
+						// can be removed in each iteration of the outer loop. Therefore, T's region cannot be emptied before the
+						// loop runs out. 
+						if (recovered.subject.length === 0)
 							break;
-						}
-						errorPolys[j].regions = recovered.clip;
+						else
+							i += recovered.subject.length - 1;
 					}
 				}
-				dedicatedlog.debug(`Retrying polygon ${i} with ${T.regions.length} parts and ${errorPolys.reduce((sum, poly) => sum += poly.regions.length, 0)} occluders`);
-				occluders = errorPolys;
+				dedicatedlog.debug(`Retrying polygon ${i} with ${T.length} parts and ${errorPolys.length} occluders`);
+				T = {
+					regions: T,
+					inverted: false
+				};
+				occluders = errorPolys.map(poly => ({
+					regions: [ poly ],
+					inverted: false
+				}));
 			}
 		} while (errorPolys.length > 0 && retries > 0);
 
-		if (retries === 0) dedicatedlog.debug(`Gave up error recovery for polygon ${i} after ${MAX_RETRIES} attempts`);
+		if (retries === 0 && errorPolys.length > 0) 
+			dedicatedlog.debug(`Gave up error recovery for polygon ${i} after ${MAX_RETRIES} attempts`);
 
 		T = T.regions
 			.map(region => geom.fuse(region, MIN_LENGTH_SQ))

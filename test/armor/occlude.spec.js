@@ -246,13 +246,43 @@ describe('occlude', function() {
 				y
 			]).map(vertex => [ ...vertex, Math.max(...subject.flat().map(vertex => vertex[Z])) + 1 ]));
 
-			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone
+			const result = occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone again
 
 			expect(recover).to.have.been.called;
 			// There should be subject.length * occluder.length calls for the first run, and one resulting from the retry after error recovery
 			expect(polybool.selectDifference).to.have.callCount(subject.length * occluder.length + 1);
 
 			expect(result).to.deep.equal(subject);
+		});
+
+		it('should retry occluding with the recovered polygons', function() {
+			// Fake a zero-length error on the first call
+			polybool.selectDifference
+				.callThrough()
+				.onFirstCall().throws(new TypeError('zero-length segment detected'));
+			const occluder = clone(subject);
+			// Make recover return two arbitrary polygons. It doesn't really matter what these are,
+			// but they need to be different from the ones passed into recover()
+			const recovered = {
+				subject: [
+					[ [ 0, 0 ], [ 1, 3 ], [ 0, 5 ] ]
+				],
+				clip: [
+					[ [ -1, -1 ], [ -3, -3 ], [ -2, -4 ] ]
+				]
+			}
+			recover.returns(recovered);
+
+			// Construct what should be passed into selectDifference() if there is a retry following recovery
+			const expected = polybool.combine(polybool.segments({
+				regions: recovered.subject, inverted: false
+			}), polybool.segments({
+				regions: recovered.clip, inverted: false
+			}));
+
+			occlude(clone(subject), clone(occluder), Z); // occlude works in-place, so need to clone again
+
+			expect(polybool.selectDifference).to.have.been.calledWith(expected);
 		});
 
 		it('should filter out very small subject polygons after error recovery', function() {
