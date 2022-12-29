@@ -17,6 +17,25 @@ export const MAX_RETRIES = 3;
 const ANGLE_EPSILON = Math.cos(MAX_ANGLE * Math.PI/180) ** 2;
 const MIN_LENGTH_SQ = MIN_LENGTH ** 2;
 
+// Helper function that calculates the bounding box of the passed polygon. It works in any number of dimensions.
+// The result is an array of objects { min, max } for each dimension.
+// E.g. a two-dimensional polygon would have a result like this: 
+// [
+// 		{ min: <left>, max: <right> },
+// 		{ min: <bottom>, max: <top> }
+// ]
+function getBoundingBox(poly) {
+	const dims = poly[0]?.length;
+	const result = new Array(dims);
+	for (let i = 0; i < dims; i++) {
+		const values = poly.map(vertex => vertex[i]);
+		result[i] = {
+			min: Math.min(...values),
+			max: Math.max(...values)
+		};
+	}
+	return result;
+}
 
 export default function occlude(subject, other, viewAxis) {
 	const view = [0,1,2].map(dim => dim === viewAxis ? 1 : 0);
@@ -57,10 +76,30 @@ export default function occlude(subject, other, viewAxis) {
 
 		// Create the list of (potentially) occluding polygons
 		// This is done by projecting all triangles of other onto T's plane and then subtracting them from T
+		const bboxT = getBoundingBox(T);
 		let occluders = other
 			// Do not occlude T with itself, because the result would always be empty
 			// (This will happen when checking a mesh against itself)
 			.filter(tri => tri !== T)
+			// Filter out triangles whose bounding boxes do not overlap T's bounding box
+			.filter(tri => {
+				const bboxTri = getBoundingBox(tri);
+				// Compare the bounding boxes in all dimensions except the view axis. 
+				// If the bounding boxes do not overlap, the triangles cannot intersect
+				for (let i = 0; i < bboxT.length; i++) {
+					if (i === viewAxis)
+						continue;
+					// This dimension of the bounding boxes does not overlap if
+					// - tri's smallest coordinate is larger than T's largest, or
+					// - tri's largest coordinate is smaller than T's smallest
+					// E.g. in the "x" dimension, they do not overlap if
+					// - tri's right edge is to the left of T's left edge, or
+					// - tri's left edge is to the right of T's right edge 
+					else if (bboxTri[i].min > bboxT[i].max || bboxTri[i].max < bboxT[i].min)
+						return false;
+				}
+				return true;
+			})
 			// Do not occlude with triangles that are (almost) perpendicular to the view axis.
 			// Their impact would be negligible, and the computations tend to be numerically unstable/lead to zero-length segment errors.
 			.filter(tri => Math.abs(Vector.dot(geom.normal(tri), view)) > ANGLE_EPSILON)
