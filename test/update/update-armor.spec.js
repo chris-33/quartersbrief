@@ -47,29 +47,42 @@ describe('updateArmor', function() {
 		})).default;		
 	});
 
+	beforeEach(function() {
+		mockfs({
+			[path.join(wowsdir, 'bin', String(buildno))]: {},
+			[dest]: {},
+		});
+	});
+
 	afterEach(function() {
 		mockfs.restore();
 	});
 
 	it('should turn the armor section of the .geometry file .json', async function() {		
-		mockfs({
-			[path.join(wowsdir, 'bin', String(buildno))]: {},
-			[dest]: {},
-		});
-
 		expect(await updateArmor(wowsdir, dest, buildno)).to.be.ok;
-		expect(path.format({
+		const filename = path.format({
 			dir: path.join(dest, 'armor'),
 			name: geometry,
 			ext: '.json'
-		})).to.be.a.file().with.contents(JSON.stringify(expected));
+		});
+
+		expect(filename).to.be.a.file().with.json;
+		expect(JSON.parse(await fs.readFile(filename))).to.deep.include({ armor: expected.armor });
+	});
+
+	it('should write section size and hash to the json file', async function() {
+		expect(await updateArmor(wowsdir, dest, buildno)).to.be.ok;
+		const filename = path.format({
+			dir: path.join(dest, 'armor'),
+			name: geometry,
+			ext: '.json'
+		});
+
+		expect(filename).to.be.a.file().with.json;
+		expect(JSON.parse(await fs.readFile(filename))).to.deep.include({ metadata: expected.metadata });		
 	});
 
 	it('should delete the extracted files from the tmp folder', async function() {
-		mockfs({
-			[path.join(wowsdir, 'bin', String(buildno))]: {},
-			[dest]: {},
-		});
 		await updateArmor(wowsdir, dest, buildno);
 		expect(path.join(os.tmpdir(), 'armor')).to.not.be.a.path();
 	});

@@ -31,6 +31,7 @@
     "jpickle": "github:jlaine/node-jpickle#pull/14/head",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
+    "md5": "^2.3.0",
     "node-fetch": "^3.2.3",
     "node-html-parser": "^6.1.1",
     "node-watch": "^0.7.3",

@@ -3,6 +3,7 @@ import struct
 import json
 import sys
 import os.path
+import hashlib
 
 if len(sys.argv) < 2:
 	print('Error: no infile specified.\nYou need to pass the name of an armor file in .json format to convert to .geometry')
@@ -15,7 +16,7 @@ with open(infile, 'r') as f:
 
 outfile = os.path.join(os.path.dirname(infile), os.path.splitext(os.path.basename(infile))[0] + '.geometry')
 
-armor = armor['source']
+armor = armor['armor']
 
 with open(outfile, 'wb') as f:
 	f.write(20*b'\xff')
@@ -55,34 +56,32 @@ with open(outfile, 'wb') as f:
 
 	# unknownA:36
 	armorContentLengthMark = f.tell()
-	f.write(36 * b'\xff')
+	# From now on, write to a byte string (so we can later hash what's been written)
+	data = 36 * b'\xff'
 
 	# numberOfArmorPieces:4					// uint32
-	f.write(len(armor).to_bytes(4, byteorder='little'))
+	data += len(armor).to_bytes(4, byteorder='little')
 	for id in armor.keys():
 		# Flatten the piece from a list of triangles (which are lists of length 3 of vertices) to a list of vertices
-		armor[id] = [vertex for tri in armor[id] for vertex in tri]
+		vertices = [vertex for tri in armor[id] for vertex in tri]
 
 		# id:4								// uint32
-		f.write((int(id)).to_bytes(4, byteorder='little'))
+		data += (int(id)).to_bytes(4, byteorder='little')
 		
 		# unknownB:24
-		f.write(24*b'\xff')
+		data += 24*b'\xff'
 		
 		# numberOfVertices:4					// uint32
-		f.write(len(armor[id]).to_bytes(4, byteorder='little'))
+		data += len(vertices).to_bytes(4, byteorder='little')
 
-		for vertex in armor[id]:
+		for vertex in vertices:			
 			# Write x,y, and z in one go:
-			f.write(struct.pack('<fff', *vertex))
+			data += struct.pack('<fff', *vertex)
 			# unknownC:4
-			f.write(4 * b'\xff')
+			data += 4 * b'\xff'
 
-		#for vertex in armor[id]['vertices']:
-			# Write x,y, and z in one go:
-		#	f.write(struct.pack('<fff', *vertex.values()))
-			# unknownC:4
-		#	f.write(4 * b'\xff')
+	# Write the byte string
+	f.write(data)
 
 	armorContentLength = f.tell() - armorContentLengthMark
 	sectionNamePosition = f.tell()
@@ -95,3 +94,14 @@ with open(outfile, 'wb') as f:
 	
 	f.seek(sectionNamePositionPosition)
 	f.write((sectionNamePosition - sectionNamePositionMark).to_bytes(4, byteorder='little'))
+
+# Construct dict to update json file (add metadata)
+armor = {
+	'armor': armor,
+	'metadata': {
+		'size': armorContentLength,
+		'hash': hashlib.md5(data).hexdigest()
+	}
+}
+with open(infile, 'wt') as f:
+	json.dump(armor, f, indent='\t')

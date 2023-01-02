@@ -4,6 +4,7 @@ import _BufferCursor from 'buffercursor';
 import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
+import md5 from 'md5';
 import rootlog from 'loglevel';
 
 const dedicatedlog = rootlog.getLogger('ArmorUpdater');
@@ -177,10 +178,13 @@ export default async function updateArmor(wows, dest, buildno) {
 				if (metadata.sectionName !== 'CM_PA_united.armor\u0000')
 					throw new Error(`Format error: expected section name to be 'CM_PA_united.armor\\u0000' but it was '${metadata.sectionName}'`);
 				
-				return armor;
+				metadata.hash = md5(cur.toByteArray().slice(metadata.armorContentPosition, metadata.armorContentPosition + metadata.armorContentLength));
+
+				return { armor, metadata };
 			},
-			function postProcess(armor) {
+			function postProcess(armorAndMetadata) {
 				const convertVertex = ({ x, y, z }) => [ x, y, z ];
+				const armor = armorAndMetadata.armor;
 
 				for (let id in armor) {
 					let piece = armor[id];
@@ -190,9 +194,11 @@ export default async function updateArmor(wows, dest, buildno) {
 						armor[id].push([ piece.vertices[i], piece.vertices[i + 1], piece.vertices[i + 2]])
 					}
 				}
-				return {
-					source: armor
+				armorAndMetadata.metadata = {
+					size: armorAndMetadata.metadata.armorContentLength,
+					hash: armorAndMetadata.metadata.hash
 				}
+				return armorAndMetadata;
 			},
 			writeJSON(path.format({
 				dir: dest,
