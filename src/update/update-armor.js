@@ -6,6 +6,7 @@ import path from 'path';
 import os from 'os';
 import md5 from 'md5';
 import rootlog from 'loglevel';
+import { cut } from 'geometry-3d';
 
 const dedicatedlog = rootlog.getLogger('ArmorUpdater');
 
@@ -115,7 +116,13 @@ export default async function updateArmor(wows, dest, buildno) {
 				cur.seek(20);
 				metadata.numArmorBlocks = cur.readUInt32LE();
 				if (metadata.numArmorBlocks === 0)
-					return {};//throw new Error(`File ${infile} did not contain any armor blocks`);
+					return {
+						armor: {},
+						metadata: {
+							size: 0,
+							hash: md5('')
+						}
+					};
 				else if (metadata.numArmorBlocks > 1)
 					throw new Error(`File ${infile} contained more than one armor block: ${metadata.numArmorBlocks}`);
 
@@ -186,6 +193,21 @@ export default async function updateArmor(wows, dest, buildno) {
 				const convertVertex = ({ x, y, z }) => [ x, y, z ];
 				const armor = armorAndMetadata.armor;
 
+				// Convert all pieces from this:
+				// id: {
+				//  id
+				// 	vertices: [
+				// 		{ x1, y1, z1 }
+				// 		{ x2, y2, z2 }
+				// 		{ x3, y3, z3 }
+				// 		...
+				// 	]
+				// }
+				// to this:
+				// id: [
+				// 		[ [ x1, y1, z1 ], [ x2, y2, z2 ], [ x3, y3, z3 ] ],
+				// 		...
+				// ]
 				for (let id in armor) {
 					let piece = armor[id];
 					piece.vertices = piece.vertices.map(convertVertex);
@@ -194,6 +216,12 @@ export default async function updateArmor(wows, dest, buildno) {
 						armor[id].push([ piece.vertices[i], piece.vertices[i + 1], piece.vertices[i + 2]])
 					}
 				}
+
+				// Cut the armor model at the water line:
+				for (let id in armor) {	
+					armor[id] = armor[id].map(tri => cut(tri, [ 0, 1, 0 ], 0).above)
+				}
+
 				armorAndMetadata.metadata = {
 					size: armorAndMetadata.metadata.armorContentLength,
 					hash: armorAndMetadata.metadata.hash

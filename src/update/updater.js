@@ -207,6 +207,7 @@ export default class Updater {
 				}
 				success = true;
 			} catch (err) {
+				rootlog.error(`Update failed: ${err.message}`)
 				success = false;
 			}
 			if (success)
