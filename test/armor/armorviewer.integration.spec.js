@@ -1,19 +1,26 @@
+import ArmorViewer from '../../src/armor/armorviewer.js';
 import mockfs from 'mock-fs';
-import esmock from 'esmock';
-import sinon from 'sinon';
-import { readFileSync, writeFileSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
-import Ship from '../../src/model/ship.js';
 
-describe('ArmorViewer', function() {
+describe('ArmorViewer @integration', function() {
 	const ARMOR_DIR = '/armor';
 	const CACHE_DIR = '/cache';
 
 	let noWarnings;
 
-	let createView;
 	let viewer;
 
+	// front view of the ship in TEST_DATA
+	const FRONT_VIEW = {
+		'1': [
+			[ [ 1, 3 ], [ 3, 3 ], [ 3, 1 ], [ 1, 1 ] ]
+		],
+		'2': [
+			[ [ -4, -1 ], [ -6, -1 ], [ -6, -3 ] ],
+			[ [ -1, -1 ], [ -3, -1 ], [ -1, -3 ] , [ -3, -3 ] ]
+		]
+	}
 	let TEST_DATA;
 
 	// Ugly hack to temporarily disable the "custom ESM loaders are experimental" warning emitted by NodeJS
@@ -31,13 +38,7 @@ describe('ArmorViewer', function() {
 		TEST_DATA = JSON.parse(readFileSync('test/armor/testdata/armor.json'));
 	});
 
-	beforeEach(async function() {
-		createView = sinon.stub().returns({});
-		let ArmorViewer = (await esmock('../../src/armor/armorviewer.js', {
-			'../../src/armor/create-view.js': {
-				default: createView
-			}
-		})).default;
+	beforeEach(function() {		
 		viewer = new ArmorViewer(ARMOR_DIR, CACHE_DIR);
 	});
 
@@ -65,26 +66,12 @@ describe('ArmorViewer', function() {
 		mockfs.restore();
 	});
 
-	it('should accept a Ship object', async function() {
-		const ship = Object.create(Ship.prototype);
-		ship.hull = {
-			model: 'content/gameplay/usa/ship/battleship/AAA001_Battleship/AAA001_Battleship.model'
-		};
-		
-		await viewer.view(ship, 'front');
-		// Reset viewer and cache:
-		viewer.cache = {};
-		rmSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), { force: true });
-		await viewer.view('AAA001_Battleship', 'front');
-
-		expect(createView).to.have.been.calledTwice;
-		expect(createView.firstCall.firstArg).to.deep.equal(createView.secondCall.firstArg);
-	});
-
 	it('should create a view of the requested ship\'s armor if no cached file exists', async function() {
-		await viewer.view('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(createView).to.have.been.called;
+		expect(result).to.have.property('1');
+		expect(result['1']).to.be.an('array').with.lengthOf(1);
+		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0]);
 	});
 
 	it('should create a view of the requested ship\'s armor if a cached file exists but does not hold the view', async function() {
@@ -92,9 +79,11 @@ describe('ArmorViewer', function() {
 			side: {},
 			metadata: TEST_DATA.metadata
 		}));
-		await viewer.view('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(createView).to.have.been.called;
+		expect(result).to.have.property('1');
+		expect(result['1']).to.be.an('array').with.lengthOf(1);
+		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0])
 	});
 
 	it('should create a view of the requested ship\'s armor if a cached file exists but does not have the right hash', async function() {
@@ -104,9 +93,11 @@ describe('ArmorViewer', function() {
 				hash: 'wronghash'
 			}
 		}));
-		await viewer.view('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(createView).to.have.been.called;
+		expect(result).to.have.property('1');
+		expect(result['1']).to.be.an('array').with.lengthOf(1);
+		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0])
 	});
 
 	it('should use the saved view if one exists and has the right hash', async function() {
@@ -118,15 +109,14 @@ describe('ArmorViewer', function() {
 		}
 		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify(CACHE_DATA));
 
-		await viewer.view('AAA001_Battleship', 'front');
+		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(createView).to.not.have.been.called;
+		expect(result).to.deep.equal(CACHE_DATA.front);
 	});
 
 	it('should write the created view to the armor file', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(path.join(CACHE_DIR, 'AAA001_Battleship.json')).to.be.a.file().with.json;
 		const written = JSON.parse(readFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json')));
 		expect(written).to.have.property('front').that.deep.equals(result);
 		expect(written).to.have.nested.property('metadata.hash').that.equals(TEST_DATA.metadata.hash);
