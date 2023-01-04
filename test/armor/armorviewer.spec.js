@@ -123,6 +123,14 @@ describe('ArmorViewer', function() {
 		expect(createView).to.not.have.been.called;
 	});
 
+	it('should create the cache dir if it does not exist', async function() {
+		rmSync(CACHE_DIR, { force: true, recursive: true });
+		expect(CACHE_DIR).to.not.be.a.path();
+
+		await viewer.view('AAA001_Battleship', 'front');
+		expect(CACHE_DIR).to.be.a.directory();
+	});
+
 	it('should write the created view to the armor file', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
 

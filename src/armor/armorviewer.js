@@ -1,6 +1,6 @@
 import createView from './create-view.js';
 import Ship from '../model/ship.js';
-import { readFile, writeFile } from 'fs/promises';
+import { readFile, writeFile, mkdir } from 'fs/promises';
 import path from 'path';
 
 export default class ArmorViewer {
@@ -64,6 +64,8 @@ export default class ArmorViewer {
 			}
 		}
 		
+		// Create the cache dir if it does not exist:
+		await mkdir(this.cachedir, { recursive: true });
 		await writeFile(path.format({
 				dir: this.cachedir, 
 				name: ship,
