@@ -11,14 +11,14 @@ describe('ArmorViewer @integration', function() {
 
 	let viewer;
 
-	// front view of the ship in TEST_DATA
+	// front view of the armor model in TEST_DATA, including result re-orientation
 	const FRONT_VIEW = {
 		'1': [
-			[ [ 1, 3 ], [ 3, 3 ], [ 3, 1 ], [ 1, 1 ] ]
+			[ [ 1, -3 ], [ 3, -3 ], [ 3, -1 ], [ 1, -1 ] ]
 		],
 		'2': [
-			[ [ -4, -1 ], [ -6, -1 ], [ -6, -3 ] ],
-			[ [ -1, -1 ], [ -3, -1 ], [ -1, -3 ] , [ -3, -3 ] ]
+			[ [ -4, 1 ], [ -6, 1 ], [ -6, 3 ] ],
+			[ [ -1, 1 ], [ -3, 1 ], [ -1, 3 ] , [ -3, 3 ] ]
 		]
 	}
 	let TEST_DATA;
@@ -68,7 +68,7 @@ describe('ArmorViewer @integration', function() {
 
 	it('should create a view of the requested ship\'s armor if no cached file exists', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
-
+debugger
 		expect(result).to.have.property('1');
 		expect(result['1']).to.be.an('array').with.lengthOf(1);
 		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0]);
@@ -99,14 +99,14 @@ describe('ArmorViewer @integration', function() {
 
 		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(result).to.deep.equal(CACHE_DATA.front);
+		expect(result).to.deep.equal(CACHE_DATA.view);
 	});
 
 	it('should write the created view to the armor file', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
 
 		const written = JSON.parse(readFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json')));
-		expect(written).to.have.property('front').that.deep.equals(result);
+		expect(written).to.have.property('view').that.deep.equals(result);
 		expect(written).to.have.nested.property('metadata.hash').that.equals(TEST_DATA.metadata.hash);
 	});
 });
