@@ -74,21 +74,9 @@ describe('ArmorViewer @integration', function() {
 		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0]);
 	});
 
-	it('should create a view of the requested ship\'s armor if a cached file exists but does not hold the view', async function() {
-		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify({
-			side: {},
-			metadata: TEST_DATA.metadata
-		}));
-		const result = await viewer.view('AAA001_Battleship', 'front');
-
-		expect(result).to.have.property('1');
-		expect(result['1']).to.be.an('array').with.lengthOf(1);
-		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0])
-	});
-
 	it('should create a view of the requested ship\'s armor if a cached file exists but does not have the right hash', async function() {
-		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify({
-			front: {},
+		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json'), JSON.stringify({
+			view: {},
 			metadata: {
 				hash: 'wronghash'
 			}
@@ -102,12 +90,12 @@ describe('ArmorViewer @integration', function() {
 
 	it('should use the saved view if one exists and has the right hash', async function() {
 		const CACHE_DATA = {
-			front: {
+			view: {
 				1: []
 			},
 			metadata: TEST_DATA.metadata
 		}
-		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify(CACHE_DATA));
+		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json'), JSON.stringify(CACHE_DATA));
 
 		const result = await viewer.view('AAA001_Battleship', 'front');
 
@@ -117,7 +105,7 @@ describe('ArmorViewer @integration', function() {
 	it('should write the created view to the armor file', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		const written = JSON.parse(readFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json')));
+		const written = JSON.parse(readFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json')));
 		expect(written).to.have.property('front').that.deep.equals(result);
 		expect(written).to.have.nested.property('metadata.hash').that.equals(TEST_DATA.metadata.hash);
 	});

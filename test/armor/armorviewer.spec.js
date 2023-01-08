@@ -32,7 +32,7 @@ describe('ArmorViewer', function() {
 	});
 
 	beforeEach(async function() {
-		createView = sinon.stub().returns({});
+		createView = sinon.stub().resolves({});
 		let ArmorViewer = (await esmock('../../src/armor/armorviewer.js', {
 			'../../src/armor/create-view.js': {
 				default: createView
@@ -74,7 +74,7 @@ describe('ArmorViewer', function() {
 		await viewer.view(ship, 'front');
 		// Reset viewer and cache:
 		viewer.cache = {};
-		rmSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), { force: true });
+		rmSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json'), { force: true });
 		await viewer.view('AAA001_Battleship', 'front');
 
 		expect(createView).to.have.been.calledTwice;
@@ -87,19 +87,9 @@ describe('ArmorViewer', function() {
 		expect(createView).to.have.been.called;
 	});
 
-	it('should create a view of the requested ship\'s armor if a cached file exists but does not hold the view', async function() {
-		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify({
-			side: {},
-			metadata: TEST_DATA.metadata
-		}));
-		await viewer.view('AAA001_Battleship', 'front');
-
-		expect(createView).to.have.been.called;
-	});
-
 	it('should create a view of the requested ship\'s armor if a cached file exists but does not have the right hash', async function() {
-		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify({
-			front: {},
+		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json'), JSON.stringify({
+			view: {},
 			metadata: {
 				hash: 'wronghash'
 			}
@@ -111,12 +101,12 @@ describe('ArmorViewer', function() {
 
 	it('should use the saved view if one exists and has the right hash', async function() {
 		const CACHE_DATA = {
-			front: {
+			view: {
 				1: []
 			},
 			metadata: TEST_DATA.metadata
 		}
-		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json'), JSON.stringify(CACHE_DATA));
+		writeFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json'), JSON.stringify(CACHE_DATA));
 
 		await viewer.view('AAA001_Battleship', 'front');
 
@@ -134,9 +124,41 @@ describe('ArmorViewer', function() {
 	it('should write the created view to the armor file', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
 
-		expect(path.join(CACHE_DIR, 'AAA001_Battleship.json')).to.be.a.file().with.json;
-		const written = JSON.parse(readFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.json')));
-		expect(written).to.have.property('front').that.deep.equals(result);
+		expect(path.join(CACHE_DIR, 'AAA001_Battleship.front.json')).to.be.a.file().with.json;
+		const written = JSON.parse(readFileSync(path.join(CACHE_DIR, 'AAA001_Battleship.front.json')));
+		expect(written).to.have.property('view').that.deep.equals(result);
 		expect(written).to.have.nested.property('metadata.hash').that.equals(TEST_DATA.metadata.hash);
+	});
+
+	it('should only create the view once even if requested again while still generating', async function() {				
+		const expected = {};
+		let liftGuard;
+		let finish;
+		// A promise we can await until createView has actually been called.
+		// What we are trying to simulate here is a second call coming in to viewer.view() in the time between cache lookup
+		// having failed (and thus, createView having been called) and view creation completing. So, unlike in the above tests,
+		// we can't just do await viewer.view(). 
+		// But we also can't do viewer.view(); viewer.view() either, because the caching strategy itself involves asynchronous calls,
+		// and we need to allow time for that (viewer.cache needs to have time to get set, which can only happen AFTER asynchronous 
+		// file system calls have come up empty). 
+		// So we will install a manual guard (in the form of a promise) that we can use to make sure the second call to viewer.view() is
+		// placed AFTER caching has failed and createView has actually been called.
+		const guard = new Promise(resolve => liftGuard = resolve);
+		createView.callsFake(function() {
+			liftGuard();
+			return new Promise(resolve => finish = resolve);
+		});
+
+		// First call
+		const first = viewer.view('AAA001_Battleship', 'front');
+		// Delay second call until createView has been called
+		await guard;
+		const second = viewer.view('AAA001_Battleship', 'front');
+		// After the second call has been placed, simulate createView finishing
+		finish(expected);
+		// If the ArmorViewer cached the promise (as opposed to the await'ed result of the promise), there should only be one call to createView()
+		expect(createView).to.have.been.calledOnce;
+		// Both calls should correctly resolve to expected
+		return expect(first).to.eventually.equal(await second).and.equal(expected);
 	});
 });
