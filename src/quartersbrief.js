@@ -8,6 +8,7 @@ import log from 'loglevel';
 import loadData from './init/load.js';
 import PlayerFactory from './model/playerfactory.js';
 import GameObjectFactory from './model/gameobjectfactory.js';
+import ArmorViewer from './armor/armorviewer.js';
 import Labeler from './model/labeler.js';
 import BattleDataReader from './core/battledatareader.js';
 import AgendaStore from './briefing/agendastore.js';
@@ -43,15 +44,16 @@ await update();
 let { data, labels } = await loadData(paths.data);
 
 const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
-const agendaController = new AgendaController([
-	new AgendaStore(config.agendasdir)
-], new SpecificityChooser(gameObjectFactory));
+const agendaController = new AgendaController(
+	[ new AgendaStore(config.agendasdir) ], 
+	new SpecificityChooser(gameObjectFactory));
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
 const briefingController = new BriefingController(
 	new BattleDataReader(path.join(config.wowsdir, 'replays')),
 	new BriefingBuilder({
 		gameObjectFactory,
-		playerFactory: new PlayerFactory(config.apiKey, config.realm)
+		playerFactory: new PlayerFactory(config.apiKey, config.realm),
+		armorViewer: new ArmorViewer(path.join(paths.data, 'armor'), path.join(paths.cache, 'armor'))
 	}),
 	agendaController
 );
