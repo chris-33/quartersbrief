@@ -3,16 +3,19 @@ import { convertDown, fuse } from 'geometry-3d';
 import { Pool, Worker, spawn } from 'threads';
 import rootlog from 'loglevel';
 
-// The precision to round result coordinates to.
-// Basically, this can be thought of the size of the "pixels" or a "grid" that the result polygons are inscribed into.
-// 
-// If PRECISION is too small (the grid is too fine), we get more zero-length errors from polybool both in the occlusion and in the
-// merging phase, and artifacts where triangles don't exactly line up after occluding and are thus not merged in the result polygon.
-// If PRECISION is too large (the grid is too coarse), we lose details and get boxy-looking results.
-// 
-// Experimentation has shown that 1.0e-3 is a good compromise. It eliminates almost all zero-length errors both in the occlusion and in the
-// merging phase, and still provides a sufficient level of detail in the output that the gridding is not really noticeable.
-const PRECISION = 1.0e-3;
+/**
+ * The precision to round result coordinates to.
+ * Basically, this can be thought of the size of the "pixels" or a "grid" that the result polygons are inscribed into.
+ * 
+ * If PRECISION is too small (the grid is too fine), we get more zero-length errors from polybool both in the occlusion and in the
+ * merging phase, and artifacts where triangles don't exactly line up after occluding and are thus not merged in the result polygon.
+ * If PRECISION is too large (the grid is too coarse), we lose details and get boxy-looking results.
+ * 
+ * Experimentation has shown that 1.0e-3 is a good compromise. It eliminates almost all zero-length errors both in the occlusion and in the
+ * merging phase, and still provides a sufficient level of detail in the output that the gridding is not really noticeable.
+ * @type {Number}
+ */
+export const PRECISION = 1.0e-3;
 
 /**
  * Generates a new view for the given armor model, along the given axis. This is done by taking all armor pieces found in the model
@@ -110,10 +113,13 @@ export default async function createView(model, viewAxis) {
 					if (retries > 0 && err.message.match(/zero-length/i)) {
 						// If we get a zero-length error, re-align the polygon into the grid and retry
 						result = polybool.polygon(result);
-						result.regions = result.regions.map(region => region.map(vertex => vertex.map(coord => Math.round(coord / PRECISION) * PRECISION)))
-						result = polybool.segments(result);
-						result = polybool.selectUnion(polybool.combine(result, polybool.segments(tri)));
-					} else if (retries === 0)
+						result.regions = result.regions
+							.map(region => region.map(vertex => vertex.map(coord => Math.round(coord / PRECISION) * PRECISION)))
+							// Fuse and filter out edges that have collapsed
+							.map(tri => fuse(tri, PRECISION**2))
+							.filter(poly => poly.length >= 3);
+						result = polybool.segments(result);						
+					} else if (retries === 0 && err.message.match(/zero-length/i))
 						rootlog.error(`Ignored a polygon because of a zero-length error when creating armor view`);
 					else 
 						throw err;
