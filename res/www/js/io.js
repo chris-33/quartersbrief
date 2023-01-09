@@ -21,7 +21,9 @@ export async function onBriefingStart({ html, css }) {
 export async function onBriefingTopic(index, { html, css }) {
 	const stylesheet = new CSSStyleSheet();
 	await stylesheet.replace(css);
-	document.adoptedStyleSheets.push(stylesheet);
+	// Chromium < 99 does not allow to push() to adoptedStyleSheets
+	// https://chromestatus.com/feature/5638996492288000
+	document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, stylesheet ];
 
 	// Guard against topics getting delivered extremely quickly, i.e. between briefing start and
 	// the completion of its event handler (because onBriefingStart is asynchronous).
