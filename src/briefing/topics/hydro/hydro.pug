@@ -26,12 +26,6 @@ if ships.length > 0
 					enemy: teams.enemies.includes(hydro.ship.getID())
 				}, data-details-for=hydro.ship.getName())
 					include details
-			script
-				| {
-				|	const div = document.currentScript.parentElement;
-				|	const computedStyle = window.getComputedStyle(div);
-				|	div.style.top = `${Number.parseFloat(computedStyle.top) - Number.parseFloat(computedStyle.height) / 2}px`;
-				| }
 
 else
 	.no-hydros
