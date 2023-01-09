@@ -133,7 +133,8 @@ header {
 	grid-template-columns: repeat(3, 1fr);
 	gap: 5% max(4ch, 4%);
 	
-	overflow: scroll;
+	overflow-x: hidden;
+	overflow-y: scroll;
 	scroll-padding-top: 12pt;
 	@if scrollSnap() {
 		scroll-snap-type: y mandatory;
