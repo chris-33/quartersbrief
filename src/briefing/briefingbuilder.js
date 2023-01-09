@@ -113,8 +113,6 @@ export default class BriefingBuilder {
 			let rendered;
 
 			try {
-				const caption = topic.caption;
-
 				rendered = await topic.render(
 					clone(battle), // Pass a separate copy of the battle to each topic builder
 					agenda.topics[topicName]
@@ -126,8 +124,8 @@ export default class BriefingBuilder {
 				briefing.topics[index] = rendered;
 				dedicatedlog.debug(`Built topic ${topicName} in ${Date.now() - t0}ms`);
 			} catch (err) {
-				rootlog.error(`Building topic ${topicName} failed: ${err}`);
-				return this.buildErrorTopic(err)				
+				rootlog.error(`Building topic ${topicName} failed: ${err} ${err.stack}`);
+				rendered = this.buildErrorTopic(err)				
 			}			
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, rendered));
 			return rendered;

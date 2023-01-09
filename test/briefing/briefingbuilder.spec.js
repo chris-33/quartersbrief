@@ -68,6 +68,7 @@ describe('BriefingBuilder', function() {
 			sinon.spy(builder, 'buildErrorTopic');
 			try {
 				const briefing = builder.build(battle, agenda);
+				await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_TOPIC);
 				await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
 				expect(builder.buildErrorTopic).to.have.been.called;				
 			} finally {
