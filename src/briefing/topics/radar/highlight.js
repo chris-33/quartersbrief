@@ -6,5 +6,5 @@ function highlight(el) {
 	el
 		.closest('.topic')
 		.querySelectorAll(ships.map(ship => `[data-for~="${ship}"]`).join(','))
-		.classList.toggle('highlighted');
+		.forEach(node => node.classList.toggle('highlighted'));
 }
