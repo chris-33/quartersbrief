@@ -1,10 +1,31 @@
 @use 'topics/colors';
 @use 'topics/fontsizes';
-@use '_loading';
+@use 'sass:math';
 
 .unit {
 	color: #757575;
 	font-size: fontsizes.$small;
+}
+
+.topic-content.loading {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 33vh;
+
+	.spinner {
+		font-family: 'dripicons-v2';
+		font-size: 50px;
+		color: lightgray;
+		width: fit-content;
+		animation: 3s infinite normal spin;
+	}
+}
+
+@keyframes spin {
+	@for $stop from 0 through 5 {
+		#{20%*$stop} { transform: rotate($stop * math.div(180deg,5))}
+	}
 }
 
 aside.details {
