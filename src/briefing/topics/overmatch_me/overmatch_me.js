@@ -7,9 +7,10 @@ export default class OvermatchMeTopic extends Topic {
 		const locals = await super.getPugData(battle, options);
 		locals.ships = locals.ships.filter(ship => 'artillery' in ship);
 
-		locals.ownPlating = locals.ships
-			.find(ship => ship.getID() === locals.teams.player)
-			.get('hull.armor.65584');
+		locals.ownship = locals.ships.find(ship => ship.getID() === locals.teams.player);
+		locals.armor = {
+			side: await this.armorViewer.view(locals.ownship, 'side'),
+		};
 
 		return locals;
 	}

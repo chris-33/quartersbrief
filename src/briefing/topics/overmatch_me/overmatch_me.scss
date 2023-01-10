@@ -1,46 +1,115 @@
+@use 'sass:color';
 @use '../colors';
 @use '../fontsizes';
 
-.own-plating {
-	border: 1px solid colors.$player;
-	margin-top: 5ex;
-	padding: 1ex;
-	font-size: fontsizes.$small;
-	text-align: center;
+.piece {
+	$lightness: 66%;
 
-	.info {
-		font-size: fontsizes.$normal;
-		margin: 0 1ch;
+	stroke-width: 0.2%;
+
+	&.all {
+		stroke: colors.$warning-severe;
+		fill: color.scale(colors.$warning-severe, $lightness: $lightness);
+	}
+	&.some {
+		stroke: colors.$warning-moderate;
+		fill: color.scale(colors.$warning-moderate, $lightness: $lightness);
+	}
+	&.none {
+		stroke: cornflowerblue;
+		fill: color.scale(cornflowerblue, $lightness: $lightness);
 	}
 }
 
-ul {
-	list-style: none;
+.gunlist {
+	margin-top: 2rem;
+	display: flex;
+	column-gap: 2.5em;
+	line-height: 1.5;
+
+	& > div {
+		padding: 1rem;
+		width: 33%;
+	}
+
+	h4 {
+		font-weight: normal;
+		text-decoration: underline;
+		text-align: center;
+		margin: 0;
+		margin-bottom: 2rem;
+	}
+
+	.ship {
+		& > :first-child {
+			color: colors.$enemy;
+		}
+		
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+
+		// ::after {
+		// 	margin-left: 1ch;
+		// 	text-align: center;
+		// 	width: 1em;
+		// 	display: inline-block;
+		// 	font-size: fontsizes.$large;
+		// 	color: slategray;
+		// }
+		// .bb-superheavy:after {
+		// 	content: '\25A3'; // white square containing small black square
+		// }
+		// .bb-heavy::after {
+		// 	content: '\25A0'; // black square
+		// }
+		// .bb::after {
+		// 	content: '\25AA'; // black small square
+		// }
+		// .bc::after {
+		// 	content: '\25AB'; // white small square
+		// } 
+		// .ca::after {
+		// 	content: '\2B26'; // white medium diamond
+		// }
+		// .cl::after {
+		// 	content: '\2B29'; // black small diamond
+		// }
+		// .dd::after {
+		// 	content: '\2022'; // black small circle (bullet)
+		// }
+	}
+}
+
+aside.details {
+	&.all {
+		border-color: colors.$warning-severe;
+		box-shadow-color: colors.$warning-severe;
+	}
+	&.some {
+		border-color: colors.$warning-moderate;
+		box-shadow-color: colors.$warning-moderate;
+	}
+}
+.details-line.overmatchers {
+	display: block;
+}
+.details-line.overmatchers > ul {	
+	text-align: left;
 	padding: 0;
-	margin: 0 15%;
-	width: 66%;
+	margin: 0;
+	margin-left: 3ch;
+	list-style: none;
 
 	li {
 		display: flex;
 		justify-content: space-between;
-		white-space: nowrap;
 
-		&:not(:last-of-type) {
-			margin-bottom: 0.5ex;
+		.overmatch {
+			color: colors.$warning-severe;
 		}
-
-		span.caliber {
-			text-align: right;
+		.no-overmatch {
+			color: colors.$warning-favorable;
 		}
 	}
-
-	.enemy {
-		color: colors.$enemy;
-	}
-}
-
-.no-overmatch {
-	color: colors.$aside;
-	font-size: fontsizes.$large;
-	text-align: center;
 }

@@ -1,30 +1,96 @@
-- const overmatchThreshold = Math.ceil(ownPlating * 14.3);
-- let overmatched = false;
-ul
-	each ship in ships
-		if ship.artillery.getCaliber() >= overmatchThreshold					
-			- overmatched = true;
-			li
-				span.ship.enemy #{ship.getLabel()}
-				span.caliber
-					| #{ship.artillery.getCaliber()}
-					span.unit mm
-if !overmatched
-	.no-overmatch
-		| No one in this battle overmatches your armor.
+- 
+	const enemyShips = ships
+		.filter(ship => teams.enemies.includes(ship.getID()))
+		.sort((ship1, ship2) => ship2.artillery.getCaliber() - ship1.artillery.getCaliber());
 
-.own-plating
-	| Own plating 
-	span.info
-		| #{ownPlating}
-		span.unit mm
-	|  is overmatched by guns 
-	span.info 
-		| #{overmatchThreshold}
-		span.unit mm
-	|  and larger.
+	const enemyShipsByClass = {
+		battleships: enemyShips.filter(ship => ship.getClass() === 'Battleship'),
+		cruisers: enemyShips.filter(ship => ship.getClass() === 'Cruiser'),
+		destroyers: enemyShips.filter(ship => ship.getClass() === 'Destroyer')
+	};
 
+-
+	function makePath(poly) {
+		let result = '';
+		for (let vertex of poly) {
+			const x = vertex[0]; const y = vertex[1];
+			if (!result)
+				result = `M ${x},${y}`;
+			else
+				result += ` L ${x},${y}`;
+		}
+		if (result) result += ' Z';
+		return result;
+	}
+	function boundingBox(model) {
+		model = Object.values(model).flat(2);
+		const minX = Math.min(...model.map(vertex => vertex[0]));
+		const minY = Math.min(...model.map(vertex => vertex[1]));
+		const maxX = Math.max(...model.map(vertex => vertex[0]));
+		const maxY = Math.max(...model.map(vertex => vertex[1]));
+		return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
+	}
+	function overmatched(thickness) {
+			if (enemyShipsByClass.battleships.every(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
+				return 'all';
+			else if (enemyShipsByClass.battleships.some(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
+				return 'some';
+			else 
+				return 'none';
+	}
 
-div(style="color: slategray; font-size: 10pt; margin: 100pt 2ch;")
-	div(style="font-family: dripicons-v2; font-size: 220%; margin: 0 0.33ch; float: left;") &#xe063;
-	| Detection of plating thickness is still very inexact. Take this with a grain of salt.
+svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor.side))
+	each piece, id in armor.side
+		- if (piece.length === 0) continue;
+		- const thickness = ownship.get(`hull.armor.${id}`);
+		path.piece(
+			data-details=id,
+			class=overmatched(thickness),
+			d=piece.map(poly => makePath(poly)).join(' '))
+	
+.gunlist
+	each ships, cls in enemyShipsByClass
+		div(class=cls.slice(0, -1).toLowerCase())
+			h4 #{cls[0].toUpperCase() + cls.slice(1)}
+			each ship in ships
+				.ship
+					span #{ship.getLabel()}
+					span #{ship.artillery.getCaliber()}
+						span.unit mm
+			else
+				.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
+
+each piece, id in armor.side
+	- 
+		const thickness = locals.ownship.get(`hull.armor.${id}`);
+
+	aside.details(data-details-for=id, class=overmatched(thickness))
+		.details-title Armor piece #{id}
+
+		.details-line
+			span.caption Thickness:
+			span.value
+				| #{thickness}
+				span.unit mm
+		hr
+		.details-line
+			span.caption Overmatched by:
+			span.value
+				| #{Math.ceil(thickness * 14.3)}
+				span.unit mm
+		.details-line.overmatchers
+			ul
+				each ship in enemyShips
+					li
+						span.caption #{ship.getLabel()}
+						if ship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)
+							span.value.overmatch
+								| yes
+								//- | #{ship.artillery.getCaliber()}
+								//- span.unit mm
+						else
+							span.value.no-overmatch
+								| no
+
+				else
+					| Not overmatched by anyone
