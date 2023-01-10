@@ -2,10 +2,9 @@
 @use '../fontsizes';
 
 $zoom: 0.25;
-//@use 'details';
-
-$highlight-transition-time: 0.25s;
-
+//
+// Styles for the range and time axes
+// 
 .axis {
 	stroke: black;
 	stroke-width: $zoom;
@@ -34,11 +33,13 @@ $highlight-transition-time: 0.25s;
 	stroke-dasharray: 2 1;
 }
 
+//
+// Styles for the arcs depicting ships' radars
+// 
 .radar {
 	fill: none;
 
 	text {
-		transition: fill $highlight-transition-time;
 
 		stroke: none;
 		fill: black;
@@ -46,11 +47,8 @@ $highlight-transition-time: 0.25s;
 	}
 
 	.base {
-		transition: stroke $highlight-transition-time;
 	}
 	.max {
-		transition: stroke $highlight-transition-time;
-
 		stroke-dasharray: 0.75 1.25;
 		stroke-dashoffset: 1.25;
 	}
@@ -72,26 +70,28 @@ $highlight-transition-time: 0.25s;
 	}	
 }
 
-stop {
-	&.ally {
-		stop-color: colors.$ally; 
-	}
-	&.enemy { 
-		stop-color: colors.$enemy;
-	}
+// Color stops for linear gradient used on ships present on both teams
+stop.ally {
+	stop-color: colors.$ally; 
+}
+stop.enemy { 
+	stop-color: colors.$enemy;
 }
 
-// Styling for the stealth warning indicator and details
+//
+// Styles for ships' labels
+// 
+
+
+// Colors of the stealth warning indicator and details
 $stealthwarn-color-moderate: colors.$warning-moderate;
 $stealthwarn-color-severe: colors.$warning-severe;
-
 .label {
 	position: absolute;
 	background-color: white;
 
 	.ship {
 		padding: 0.1ex 0.1ch;
-		transition: color $highlight-transition-time;
 
 		&.ally {
 			color: colors.$ally;
@@ -115,7 +115,7 @@ $stealthwarn-color-severe: colors.$warning-severe;
 			}
 		}
 
-		&.enemy.ally {
+		&.enemy.ally:not(.player) {
 			color: transparent;
 			background-image: linear-gradient(to right, colors.$ally 30%, colors.$enemy 50%);
 			background-clip: text;
@@ -127,6 +127,9 @@ $stealthwarn-color-severe: colors.$warning-severe;
 	}
 }
 
+//
+// Styles for mouseover tooltip
+// 
 aside.details.enemy {
 	.stealthwarn-moderate {
 		color: $stealthwarn-color-moderate;
@@ -161,6 +164,22 @@ aside.details .details-line.contenders {
 	text-align: center;
 }
 
+//
+// Styles for hover highlighting:
+// 
+$highlight-transition-time: 0.25s;
+.radar {
+	text {
+		transition: fill $highlight-transition-time;
+	}
+	.base,
+	.max {
+		transition: stroke $highlight-transition-time;
+	}
+}
+.label .ship {
+	transition: color $highlight-transition-time;
+}
 .highlighted {
 	color: colors.$highlighted !important;
 	
