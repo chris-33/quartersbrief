@@ -3,6 +3,8 @@
 	[
 		{
 			"path": ".",
+			"folder_exclude_patterns": ["node_modules",".git",".vagrant","data"],
+			"binary_file_patterns": ["dev/docs/*"]
 		}
 	],
 	"debugger_configurations":
