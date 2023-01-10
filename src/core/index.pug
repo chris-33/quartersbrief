@@ -1,21 +1,20 @@
 doctype html
 html
-  head
-    block head
-      meta(charset='utf-8')
-      meta(name='viewport', content='width=device-width, initial-scale=1.0')
-      link(href='quartersbrief.css' rel='stylesheet')        
-  body
-    header 
-      div#branding
-        img#logo(src='img/quartersbrief_64.png')
-        div#title
-          span#game World of Warships
-          br
-          span#quartersbrief quartersbrief
-      #fullscreen(onclick='document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()')
+	head
+		block head
+			meta(charset='utf-8')
+			meta(name='viewport', content='width=device-width, initial-scale=1.0')
+			link(href='quartersbrief.css' rel='stylesheet')        
+	body
+		header 
+			div#branding
+				img#logo(src='img/quartersbrief_64.png')
+				h1
+					div World of Warships					
+					div quartersbrief
 
-    #briefing-host
-      #briefing  
+			#fullscreen(onclick='document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen()')
 
-    script(type="module" src='js/init.js')
+		#briefing  
+
+		script(type="module" src='js/init.js')

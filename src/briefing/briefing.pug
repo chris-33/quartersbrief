@@ -1,7 +1,6 @@
 each topic, index in topics
-	.topic(id = `topic-${index}`)
-		.topic-caption
-			| #{topic.caption}
+	section.topic(id = `topic-${index}`)
+		h2 #{topic.caption}
 		.topic-content.loading
 			.spinner &#xe011;
 

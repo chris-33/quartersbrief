@@ -55,32 +55,32 @@ header {
 	#branding {
 		font-style: italic;
 
+		h1 {
+			margin: 0;
+			display: inline-block;
+
+			& > :first-child {
+				font-variant: small-caps;
+				font-size: 18pt;
+				letter-spacing: 2pt;
+				font-weight: 200;
+			}
+
+			& > :nth-child(2) {
+				font-size: 36pt;
+				letter-spacing: 8pt;
+				font-weight: 700;
+				line-height: 1ex;
+			}
+		}
+
 		#logo {
 			margin-right: 12pt;
 			vertical-align: bottom;
 			filter: #{"invert()"}; // Necessary for deconfliction with sass builtin invert() function
 		}
-
-		#title {
-			display: inline-block;
-		}
-
-		#game {
-			font-variant: small-caps;
-			font-size: 18pt;
-			letter-spacing: 2pt;
-			font-weight: 200;
-		}
-
-		#quartersbrief {
-			font-size: 36pt;
-			letter-spacing: 8pt;
-			font-weight: 700;
-			line-height: 1ex;
-		}
-
-
 	}
+
 	#fullscreen {
 		cursor: pointer;
 		border-radius: 50%;
@@ -112,23 +112,17 @@ header {
 	}
 }
 
-#briefing-host {
-	flex: 1;
-
-	margin: 0 $padding-horizontal $padding-vertical;
-	background-color: navy;
-	border: 2pt solid white;
-	padding: 2pt;
-	display: flex;
-	overflow: hidden;
-}
-
 #briefing {
+	margin: 0 $padding-horizontal $padding-vertical;
 	padding: 1em 1ex;
 	flex: 1;
 	
 	background-color: white;
-	
+	opacity: 97%;
+
+	outline: 2pt solid white;
+	outline-offset: 2pt;
+
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	gap: 5% max(4ch, 4%);
@@ -150,7 +144,7 @@ header {
 	scroll-snap-align: start;
 }
 
-.topic-caption {
+.topic > h2 {
 	text-align: center;
 	text-decoration: underline;
 	font-size: 140%;
