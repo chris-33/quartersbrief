@@ -64,10 +64,11 @@ export async function onBriefingTopic(index, { html, css }) {
 	topic.innerHTML = '';
 	// Remove inner HTML of topic
 	// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then append it
-	const newTopic = document.createElement('template');
-	newTopic.innerHTML = html;
-	makeDetails(newTopic.content);
-	topic.append(newTopic.content);
+	// const newTopic = document.createElement('template');
+	// newTopic.innerHTML = html;
+	const newTopic = document.createRange().createContextualFragment(html);
+	makeDetails(newTopic);
+	topic.append(newTopic);
 	// Remove class 'loading' to trigger fade-in transition
 	topic.classList.remove('loading');
 
