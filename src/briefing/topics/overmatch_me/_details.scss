@@ -1,0 +1,34 @@
+@use '../colors';
+
+aside.details {
+	&.all {
+		border-color: colors.$warning-severe;
+		box-shadow-color: colors.$warning-severe;
+	}
+	&.some {
+		border-color: colors.$warning-moderate;
+		box-shadow-color: colors.$warning-moderate;
+	}
+}
+.details-line.overmatchers {
+	display: block;
+}
+.details-line.overmatchers > ul {	
+	text-align: left;
+	padding: 0;
+	margin: 0;
+	margin-left: 3ch;
+	list-style: none;
+
+	li {
+		display: flex;
+		justify-content: space-between;
+
+		.overmatch {
+			color: colors.$warning-severe;
+		}
+		.no-overmatch {
+			color: colors.$warning-favorable;
+		}
+	}
+}

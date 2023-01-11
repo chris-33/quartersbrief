@@ -47,7 +47,14 @@ svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor
 			data-details=id,
 			class=overmatched(thickness),
 			d=piece.map(poly => makePath(poly)).join(' '))
-	
+
+.legend
+	| Overmatched by:
+	ul
+		li.all all battleships
+		li.some some battleships
+		li.none no battleships
+
 .gunlist
 	each ships, cls in enemyShipsByClass
 		div(class=cls.slice(0, -1).toLowerCase())

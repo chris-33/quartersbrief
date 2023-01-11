@@ -1,6 +1,8 @@
 @use 'sass:color';
 @use '../colors';
 @use '../fontsizes';
+@use 'details';
+@use 'legend';
 
 .piece {
 	$lightness: 66%;
@@ -9,15 +11,15 @@
 
 	&.all {
 		stroke: colors.$warning-severe;
-		fill: color.scale(colors.$warning-severe, $lightness: $lightness);
+		fill: colors.$warning-severe-light;
 	}
 	&.some {
 		stroke: colors.$warning-moderate;
-		fill: color.scale(colors.$warning-moderate, $lightness: $lightness);
+		fill: colors.$warning-moderate-light;
 	}
 	&.none {
-		stroke: cornflowerblue;
-		fill: color.scale(cornflowerblue, $lightness: $lightness);
+		stroke: colors.$warning-neutral;
+		fill: colors.$warning-neutral-light;
 	}
 }
 
@@ -48,68 +50,5 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-
-		// ::after {
-		// 	margin-left: 1ch;
-		// 	text-align: center;
-		// 	width: 1em;
-		// 	display: inline-block;
-		// 	font-size: fontsizes.$large;
-		// 	color: slategray;
-		// }
-		// .bb-superheavy:after {
-		// 	content: '\25A3'; // white square containing small black square
-		// }
-		// .bb-heavy::after {
-		// 	content: '\25A0'; // black square
-		// }
-		// .bb::after {
-		// 	content: '\25AA'; // black small square
-		// }
-		// .bc::after {
-		// 	content: '\25AB'; // white small square
-		// } 
-		// .ca::after {
-		// 	content: '\2B26'; // white medium diamond
-		// }
-		// .cl::after {
-		// 	content: '\2B29'; // black small diamond
-		// }
-		// .dd::after {
-		// 	content: '\2022'; // black small circle (bullet)
-		// }
-	}
-}
-
-aside.details {
-	&.all {
-		border-color: colors.$warning-severe;
-		box-shadow-color: colors.$warning-severe;
-	}
-	&.some {
-		border-color: colors.$warning-moderate;
-		box-shadow-color: colors.$warning-moderate;
-	}
-}
-.details-line.overmatchers {
-	display: block;
-}
-.details-line.overmatchers > ul {	
-	text-align: left;
-	padding: 0;
-	margin: 0;
-	margin-left: 3ch;
-	list-style: none;
-
-	li {
-		display: flex;
-		justify-content: space-between;
-
-		.overmatch {
-			color: colors.$warning-severe;
-		}
-		.no-overmatch {
-			color: colors.$warning-favorable;
-		}
 	}
 }

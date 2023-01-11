@@ -1,0 +1,39 @@
+@use '../colors';
+@use '../fontsizes';
+
+.legend {
+	margin: 1rem auto;
+	max-width: 40em;
+	line-height: 1.5;
+	font-size: fontsizes.$small;
+
+	ul {
+		margin: 0;
+		padding: 0;
+		list-style: none;		
+		display: flex;
+		justify-content: space-between;
+	}
+	li::before { 
+		content: '';
+		display: inline-block;
+		position: relative;
+		vertical-align: middle;
+		margin-right: 1em;		
+		width: 1em;
+		height: 1em;
+	}
+	li.none::before {
+		background-color: colors.$warning-neutral-light;
+		border: 1px solid colors.$warning-neutral;
+	}
+	li.some::before {
+		background-color: colors.$warning-moderate-light;
+		border: 1px solid colors.$warning-moderate;
+	}	
+	li.all::before {
+		background-color: colors.$warning-severe-light;
+		border: 1px solid colors.$warning-severe;
+	}	
+
+}
