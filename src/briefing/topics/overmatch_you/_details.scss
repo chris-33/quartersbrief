@@ -1,0 +1,30 @@
+@use '../colors';
+
+aside.details {
+	svg {
+		width: 100%;
+		min-height: 3rem;
+	}
+
+	ul {
+		line-height: 1.5;
+		list-style: none;		
+	}
+	li::before { 
+		content: '';
+		display: inline-block;
+		position: relative;
+		vertical-align: middle;
+		left: -1em;
+		width: 1em;
+		height: 1em;
+	}
+	li:not(.overmatch)::before {
+		background-color: colors.$warning-neutral-light;
+		border: 1px solid colors.$warning-neutral;
+	}
+	li.overmatch::before {
+		background-color: colors.$warning-severe-light;
+		border: 1px solid colors.$warning-severe;
+	}
+}

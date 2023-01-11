@@ -1,0 +1,77 @@
+include details
+
+- const caliber = ownship.artillery?.getCaliber();
+-
+	function makePath(poly) {
+		let result = '';
+		for (let vertex of poly) {
+			const x = vertex[0]; const y = vertex[1];
+			if (!result)
+				result = `M ${x},${y}`;
+			else
+				result += ` L ${x},${y}`;
+		}
+		if (result) result += ' Z';
+		return result;
+	}
+	function boundingBox(model) {
+		model = Object.values(model).flat(2);
+		const minX = Math.min(...model.map(vertex => vertex[0]));
+		const minY = Math.min(...model.map(vertex => vertex[1]));
+		const maxX = Math.max(...model.map(vertex => vertex[0]));
+		const maxY = Math.max(...model.map(vertex => vertex[1]));
+		return {
+			left: minX,
+			top: minY,
+			width: maxX - minX,
+			height: maxY - minY
+		};
+	}
+
+if caliber
+	- 
+		const biggestbox = Object.values(armors)
+			.filter(armor => !(armor instanceof Error))
+			.map(armor => boundingBox(armor))
+			.reduce((prev, curr) => ({
+				left: Math.min(prev.left, curr.left),
+				top: Math.min(prev.top, curr.top),
+				width: Math.max(prev.width, curr.width),
+				height: Math.max(prev.height, curr.height)
+			}));
+
+	div.ships
+		each ship in ships
+			.ship(class=ship.getClass().toLowerCase(), data-details=ship.getName())
+				- const armor = armors[ship.getName()];
+				
+				.label #{ship.getLabel()}
+
+				if armor instanceof Error
+					| This armor view could not be created: #{err.message}
+				else
+					//- Using actual bounding box left side here to left-align the ships
+					svg.armor(
+						version="1.1", 
+						xmlns="http://www.w3.org/2000/svg", 
+						viewBox=`${boundingBox(armor).left} ${biggestbox.top} ${biggestbox.width} ${biggestbox.height}`) 
+						
+						each piece, id in armor
+							- const thickness = ship.get(`hull.armor.${id}`)
+							path.piece(
+								class=caliber >= Math.ceil(14.3 * thickness) ? 'overmatched' : '',
+								d=piece.map(poly => makePath(poly)).join(' '))
+					
+					+details(ship, armor)
+
+	div.ownguns
+		| Your main artillery has a caliber of&ensp;
+		span #{caliber}
+			span.unit mm
+		| &ensp;which overmatches&ensp;
+		span #{Math.floor(caliber / 14.3)}
+			span.unit mm
+		| &ensp;of armor
+
+else
+	.message You do not have a main battery.

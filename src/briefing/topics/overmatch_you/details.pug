@@ -1,0 +1,22 @@
+mixin details(ship, armor)
+	aside.details.enemy(data-details-for=ship.getName())
+		.details-title #{ship.getLabel()}
+		
+		- const viewbox = boundingBox(armor)
+		
+		.details-line
+			svg.armor(
+				version="1.1", 
+				xmlns="http://www.w3.org/2000/svg", 
+				viewBox=`${viewbox.left} ${viewbox.top} ${viewbox.width} ${viewbox.height}`)
+			
+				each piece, id in armor
+					- const thickness = ship.get(`hull.armor.${id}`)
+					path.piece(
+						class=caliber >= Math.ceil(14.3 * thickness) ? 'overmatched' : '',
+						d=piece.map(poly => makePath(poly)).join(' '))
+
+		.details-line
+			ul
+				li.overmatch You overmatch this part of the ship's armor
+				li You do not overmatch this part of the ship's armor
