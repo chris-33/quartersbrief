@@ -1,21 +1,35 @@
 @use "sass:color";
 
+// Colors for team affiliation
 $ally: hsl(170deg,50%,50%);
 $enemy: hsl(0deg,65%,50%);
 $player: #fbd770;
 $neutral: cornflowerblue;
 
+// Colors for ship classes. For BB, CL/CA and DD these conform to the colors used in the game's loading screen silhouettes
 $aircarrier: #555756;
 $battleship: #acb0ae;
 $cruiser: #bdc6e4;
 $destroyer: #d7e6dc;
 $submarine: #e6d0b8;
 
+// Colors for styling secondary and tertiary information
 $aside: slategray;
 $minor: lightgray;
 
+// Colors for different levels of warning or attention grabbers
 $warning-moderate: goldenrod;
 $warning-severe: red;
 $warning: $warning-moderate;
+$warning-neutral: $neutral;
+$warning-favorable: green;
 
+// Lighter variants of the warning colors, useful for styling larger areas that would otherwise become too harsh
+$_lightness: 66%; // module-private variable
+$warning-severe-light: color.scale($warning-severe, $lightness: $_lightness);
+$warning-moderate-light: color.scale($warning-moderate, $lightness: $_lightness);
+$warning-neutral-light: color.scale($warning-neutral, $lightness: $_lightness);
+$warning-favorable-light: color.scale($warning-favorable, $lightness: $_lightness);
+
+// Color to use for mouse-over highlighting
 $highlighted: fuchsia;
