@@ -37,7 +37,8 @@ export async function onBriefingStart({ html, css }) {
 	await briefingStylesheet.replace(css);
 
 	const briefing = document.getElementById('briefing');
-	briefing.replaceChildren(document.createRange().createContextualFragment(html));
+	briefing.innerHTML = '';
+	briefing.append(document.createRange().createContextualFragment(html));
 	await briefing.animate([
 		{ transform: 'scale(0, 0.1)', },
 		{ transform: 'scale(1, 0.1)', offset: 0.4 },
@@ -68,7 +69,8 @@ export async function onBriefingTopic(index, { html, css }) {
 	// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
 	const newTopic = document.createRange().createContextualFragment(html);
 	makeDetails(newTopic);
-	topic.replaceChildren(newTopic);
+	topic.innerHTML = '';
+	topic.append(newTopic);
 	
 	await topic.animate(FADE_IN, FADE_TIME).finished;
 	await topic.animate(FLASH, FADE_TIME / 2).finished;
