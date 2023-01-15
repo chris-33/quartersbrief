@@ -8,19 +8,14 @@ export const EVT_BATTLE_END = 'battleend';
 
 const FADE_OUT = [
 	{ opacity: 1, easing: 'ease-in' },
-	{ opacity: 0, transform: 'translateY(3rem)' }	
+	{ opacity: 0 }	
 ];
 const FADE_IN = [
 	{ opacity: 0, transform: 'translateY(3rem) scale(0.7)', easing: 'linear' },
 	{ transform: 'translateY(3rem) scale(1)', offset: 0.2, easing: 'ease-out' },
 	{ opacity: 1, },
 ];
-const FLASH = [
-	{ backgroundColor: 'revert', },
-	{ backgroundColor: 'hsl(200deg, 75%, 90%)', },
-	{ backgroundColor: 'revert', }
-]
-const FADE_TIME = 750;
+const ANIMATION_DURATION = 1000;
 
 // Guard against topics getting delivered extremely quickly, i.e. between briefing start and
 // the completion of its event handler (because onBriefingStart is asynchronous).
@@ -45,7 +40,7 @@ export async function onBriefingStart({ html, css }) {
 		{ transform: 'scale(1, 0.1)', offset: 0.6 },
 		{ transform: 'scale(1)' }
 	], {
-		duration: 750,
+		duration: ANIMATION_DURATION,
 		easing: 'ease-in-out'
 	}).finished;
 
@@ -63,7 +58,7 @@ export async function onBriefingTopic(index, { html, css }) {
 	await readyForTopics;
 
 	const topic = document.querySelector(`#topic-${index} .topic-content`);
-	await topic.animate(FADE_OUT, FADE_TIME).finished;
+	await topic.animate(FADE_OUT, ANIMATION_DURATION).finished;
 	topic.classList.remove('loading');
 	
 	// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
@@ -72,8 +67,7 @@ export async function onBriefingTopic(index, { html, css }) {
 	topic.innerHTML = '';
 	topic.append(newTopic);
 	
-	await topic.animate(FADE_IN, FADE_TIME).finished;
-	await topic.animate(FLASH, FADE_TIME / 2).finished;
+	await topic.animate(FADE_IN, ANIMATION_DURATION).finished;
 }
 
 // No-ops. This way we can already register them on the socket instance,
