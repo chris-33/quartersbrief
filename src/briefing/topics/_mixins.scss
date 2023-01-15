@@ -1,0 +1,42 @@
+@use 'colors';
+@use 'sass:map';
+@use 'sass:meta';
+
+// Get variables from the colors module as a map, so we can access dynamically
+// (Sass doesn't allow interpolating variable names.)
+$_colors: meta.module-variables(colors);
+
+// Initial values
+* {
+	--emblazon-gradient-direction: 90deg;
+	--emblazon-gradient-offset-start: 30%;
+	--emblazon-gradient-offset-end: 70%;
+}
+
+/*
+	Sets up color markings based on team affiliation for all the properties in $props.
+ */
+@mixin emblazon($props) {
+	@each $affiliation in ['ally', 'enemy','player'] {
+		&.#{$affiliation} {
+			@if $affiliation == 'player' {
+				color: black;
+			} @else {
+				color: white;
+			}
+			@each $prop in $props {
+				#{$prop}: map.get($_colors, $affiliation);
+			}
+		}
+	}
+
+	&.ally.enemy:not(.player) {
+		@each $prop in $props {
+			color: white;
+			#{$prop}: linear-gradient(
+				var(--emblazon-gradient-direction), 
+				colors.$ally var(--emblazon-gradient-offset-start),
+				colors.$enemy var(--emblazon-gradient-offset-end));
+		}
+	}
+}
