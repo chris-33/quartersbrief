@@ -42,6 +42,13 @@ describe('ArmorViewer @integration', function() {
 		viewer = new ArmorViewer(ARMOR_DIR, CACHE_DIR);
 	});
 
+	afterEach(function() {
+		// Need to manually terminate the worker thread pool.
+		// Otherwise, mocha will not exit, unless run with the --exit flag.
+		// (Not a problem in the production code, where killing the process will always kill the threads)
+		return viewer.pool.terminate();
+	});
+
 	beforeEach(function() {
 		mockfs({
 			[ARMOR_DIR]: {
