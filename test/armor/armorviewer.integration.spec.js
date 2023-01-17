@@ -12,15 +12,30 @@ describe('ArmorViewer @integration', function() {
 	let viewer;
 
 	// front view of the armor model in TEST_DATA, including result re-orientation
+	/* eslint-disable mocha/no-setup-in-describe */
 	const FRONT_VIEW = {
 		'1': [
-			[ [ 1, -3 ], [ 3, -3 ], [ 3, -1 ], [ 1, -1 ] ]
+			[ 
+				[ 1 - ArmorViewer.PRECISION, -(3 + ArmorViewer.PRECISION) ], 
+				[ 3 + ArmorViewer.PRECISION, -(3 + ArmorViewer.PRECISION) ], 
+				[ 3 + ArmorViewer.PRECISION, -(1 - ArmorViewer.PRECISION) ], 
+				[ 1 - ArmorViewer.PRECISION, -(1 - ArmorViewer.PRECISION) ] 
+			]
 		],
 		'2': [
-			[ [ -4, 1 ], [ -6, 1 ], [ -6, 3 ] ],
-			[ [ -1, 1 ], [ -3, 1 ], [ -1, 3 ] , [ -3, 3 ] ]
+			[ 
+				[ -4 + ArmorViewer.PRECISION, -(-1 + ArmorViewer.PRECISION) ], 
+				[ -6 - ArmorViewer.PRECISION, -(-1 + ArmorViewer.PRECISION) ], 
+				[ -6 - ArmorViewer.PRECISION, -(-3 - ArmorViewer.PRECISION) ] 
+			], [ 
+				[ -1 + ArmorViewer.PRECISION, -(-1 + ArmorViewer.PRECISION) ], 
+				[ -3 - ArmorViewer.PRECISION, -(-1 + ArmorViewer.PRECISION) ], 
+				[ -1 + ArmorViewer.PRECISION, -(-3 - ArmorViewer.PRECISION) ] , 
+				[ -3 - ArmorViewer.PRECISION, -(-3 - ArmorViewer.PRECISION) ] 
+			]
 		]
 	}
+	/* eslint-enable mocha/no-setup-in-describe */
 	let TEST_DATA;
 
 	// Ugly hack to temporarily disable the "custom ESM loaders are experimental" warning emitted by NodeJS
@@ -75,7 +90,7 @@ describe('ArmorViewer @integration', function() {
 
 	it('should create a view of the requested ship\'s armor if no cached file exists', async function() {
 		const result = await viewer.view('AAA001_Battleship', 'front');
-debugger
+
 		expect(result).to.have.property('1');
 		expect(result['1']).to.be.an('array').with.lengthOf(1);
 		expect(result['1'][0]).to.have.deep.members(FRONT_VIEW['1'][0]);

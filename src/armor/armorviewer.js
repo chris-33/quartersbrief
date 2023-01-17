@@ -8,19 +8,6 @@ import rootlog from 'loglevel';
 
 const dedicatedlog = rootlog.getLogger('ArmorViewer');
 
-/**
- * The precision to round result coordinates to.
- * Basically, this can be thought of the size of the "pixels" or a "grid" that the result polygons are inscribed into.
- * 
- * If PRECISION is too small (the grid is too fine), we get more zero-length errors from polybool both in the occlusion and in the
- * merging phase, and artifacts where triangles don't exactly line up after occluding and are thus not merged in the result polygon.
- * If PRECISION is too large (the grid is too coarse), we lose details and get boxy-looking results.
- * 
- * Experimentation has shown that 1.0e-3 is a good compromise. It eliminates almost all zero-length errors both in the occlusion and in the
- * merging phase, and still provides a sufficient level of detail in the output that the gridding is not really noticeable.
- * @type {Number}
- */
-export const PRECISION = 1.0e-3;
 
 /**
  * This class manages views of ships' armor. Views are two-dimensional representations of a ship's exterior armor. In essence, a view corresponds to those
@@ -39,9 +26,9 @@ export default class ArmorViewer {
 	 * The precision to round result coordinates to.
 	 * Basically, this can be thought of the size of the "pixels" or a "grid" that the result polygons are inscribed into.
 	 * 
-	 * If PRECISION is too small (the grid is too fine), we get more zero-length errors from polybool both in the occlusion and in the
+	 * If ArmorViewer.PRECISION is too small (the grid is too fine), we get more zero-length errors from polybool both in the occlusion and in the
 	 * merging phase, and artifacts where triangles don't exactly line up after occluding and are thus not merged in the result polygon.
-	 * If PRECISION is too large (the grid is too coarse), we lose details and get boxy-looking results.
+	 * If ArmorViewer.PRECISION is too large (the grid is too coarse), we lose details and get boxy-looking results.
 	 * 
 	 * Experimentation has shown that 1.0e-3 is a good compromise. It eliminates almost all zero-length errors both in the occlusion and in the
 	 * merging phase, and still provides a sufficient level of detail in the output that the gridding is not really noticeable.
@@ -88,9 +75,9 @@ export default class ArmorViewer {
 		model = {};
 		for (let id in _model) {
 			model[id] = _model[id]
-				.map(tri => tri.map(vertex => vertex.map(coord => Math.round(coord / PRECISION) * PRECISION)))
+				.map(tri => tri.map(vertex => vertex.map(coord => Math.round(coord / ArmorViewer.PRECISION) * ArmorViewer.PRECISION)))
 				// Fuse and filter out triangles that have collapsed (where two vertices have been rounded to the same spot)
-				.map(tri => fuse(tri, PRECISION**2))
+				.map(tri => fuse(tri, ArmorViewer.PRECISION**2))
 				.filter(poly => poly.length >= 3);
 		}
 		
@@ -130,14 +117,54 @@ export default class ArmorViewer {
 				inverted: false
 			});
 			
-			// Align all triangles of this piece into the grid by rounding all coordinates to a precision of PRECISION.
+			// Align all triangles of this piece into the grid by rounding all coordinates to a precision of ArmorViewer.PRECISION.
 			// This is necessary because otherwise polybooljs tends to generate errors on vertices that are very close together,
 			// but not identical.
 			piece = piece
-					.map(tri => tri.map(vertex => vertex.map(coord => Math.round(coord / (PRECISION)) * PRECISION)))
+					.map(tri => tri.map(vertex => vertex.map(coord => Math.round(coord / (ArmorViewer.PRECISION)) * ArmorViewer.PRECISION)))
 					// Fuse and filter out triangles that have collapsed
-					.map(tri => fuse(tri, PRECISION**2))
+					.map(tri => fuse(tri, ArmorViewer.PRECISION**2))
 					.filter(poly => poly.length >= 3);
+					
+			// Expand all triangles by a little bit. This helps to conceal artifacts caused by occluded triangles not lining up exactly (especially
+			// after having just been rounded to grid), which otherwise show up as holes or stray lines.
+			// 
+			// The way this works is, we divide the bounding box of the triangle into nine areas. Vertices' x and y coordinates get shifted according to what
+			// area they are in. This is less accurate than actually scaling from the triangles circumcenter. But it is a lot faster.
+			// +------------+------------+------------+
+			// |            |            |            |
+			// | shift left |  shift up  | shift right|
+			// | and up     |            | and up     |
+			// |            |            |            |
+			// +------------+------------+------------+
+			// |            |            |            |
+			// | shift left |   do not   | shift right|
+			// |            |   shift    |            |
+			// |            |            |            |
+			// +------------+------------+------------+
+			// |            |            |            |
+			// | shift left | shift down | shift right|
+			// | and down   |            | and down   |
+			// |            |            |            |
+			// +------------+------------+------------+
+			piece = piece.map(tri => {
+						const x = tri.map(vertex => vertex[0]);
+						const y = tri.map(vertex => vertex[1]);
+						const leftX = Math.min(...x) + 1/3 * (Math.max(...x) - Math.min(...x));
+						const rightX = Math.min(...x) + 2/3 * (Math.max(...x) - Math.min(...x));
+						const bottomY = Math.min(...y) + 1/3 * (Math.max(...y) - Math.min(...y));
+						const topY = Math.min(...x) + 2/3 * (Math.max(...x) - Math.min(...x));
+						return tri.map(([ x, y ]) => {
+							if (x < leftX) x -= ArmorViewer.PRECISION
+							else if (x > rightX) x += ArmorViewer.PRECISION;
+
+							if (y < bottomY) y -= ArmorViewer.PRECISION
+							else if (y > topY) y += ArmorViewer.PRECISION;
+							
+							return [ x, y ];
+						});
+					});
+
 		
 			for (let tri of piece) {
 				tri = {
@@ -154,15 +181,15 @@ export default class ArmorViewer {
 						// 
 						// What might work: 
 						// 1. Manually calculate intersections and insert them into both polygons
-						// 2. Round intersections to PRECISION, i.e. align them with the grid
+						// 2. Round intersections to ArmorViewer.PRECISION, i.e. align them with the grid
 						// 3. Retry
 						if (retries > 0 && err.message.match(/zero-length/i)) {
 							// If we get a zero-length error, re-align the polygon into the grid and retry
 							result = polybool.polygon(result);
 							result.regions = result.regions
-								.map(region => region.map(vertex => vertex.map(coord => Math.round(coord / PRECISION) * PRECISION)))
+								.map(region => region.map(vertex => vertex.map(coord => Math.round(coord / ArmorViewer.PRECISION) * ArmorViewer.PRECISION)))
 								// Fuse and filter out edges that have collapsed
-								.map(tri => fuse(tri, PRECISION**2))
+								.map(tri => fuse(tri, ArmorViewer.PRECISION**2))
 								.filter(poly => poly.length >= 3);
 							result = polybool.segments(result);						
 						} else if (retries === 0 && err.message.match(/zero-length/i))

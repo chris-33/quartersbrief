@@ -49,11 +49,24 @@ describe('ArmorViewer', function() {
 		it('should return arrays of polygons with the 2D representations of all armor pieces', async function() {
 			const expected = {
 				'1': [
-					[ [ 1, 3 ], [ 3, 3 ], [ 3, 1 ], [ 1, 1 ] ]
+					[ 
+						[ 1 - ArmorViewer.PRECISION, 3 + ArmorViewer.PRECISION ], 
+						[ 3 + ArmorViewer.PRECISION, 3 + ArmorViewer.PRECISION ], 
+						[ 3 + ArmorViewer.PRECISION, 1 - ArmorViewer.PRECISION ], 
+						[ 1 - ArmorViewer.PRECISION, 1 - ArmorViewer.PRECISION ] 
+					]
 				],
 				'2': [
-					[ [ -4, -1 ], [ -6, -1 ], [ -6, -3 ] ],
-					[ [ -1, -1 ], [ -3, -1 ], [ -1, -3 ] , [ -3, -3 ] ]
+					[ 
+						[ -4 + ArmorViewer.PRECISION, -1 + ArmorViewer.PRECISION ], 
+						[ -6 - ArmorViewer.PRECISION, -1 + ArmorViewer.PRECISION ], 
+						[ -6 - ArmorViewer.PRECISION, -3 - ArmorViewer.PRECISION ] 
+					], [ 
+						[ -1 + ArmorViewer.PRECISION, -1 + ArmorViewer.PRECISION ], 
+						[ -3 - ArmorViewer.PRECISION, -1 + ArmorViewer.PRECISION ], 
+						[ -1 + ArmorViewer.PRECISION, -3 - ArmorViewer.PRECISION ] , 
+						[ -3 - ArmorViewer.PRECISION, -3 - ArmorViewer.PRECISION ] 
+					]
 				]
 			}
 
@@ -79,7 +92,12 @@ describe('ArmorViewer', function() {
 			});
 
 			it('should realign and retry upon the first zero-length error', async function() {
-				const expected = [ [ 1, 3 ], [ 3, 3 ], [ 3, 1 ], [ 1, 1 ] ];
+				const expected = [ 
+					[ 1 - ArmorViewer.PRECISION, 3 + ArmorViewer.PRECISION ], 
+					[ 3 + ArmorViewer.PRECISION, 3 + ArmorViewer.PRECISION ], 
+					[ 3 + ArmorViewer.PRECISION, 1 - ArmorViewer.PRECISION ], 
+					[ 1 - ArmorViewer.PRECISION, 1 - ArmorViewer.PRECISION ] 
+				];
 				polybool.selectUnion
 					.onFirstCall().throws(new TypeError('Zero-length segment detected'));
 
