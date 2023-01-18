@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
-import config, { paths } from './init/config.js';
-import createconfig from './init/createconfig.js';
+import config from './init/config.js';
+import * as paths from './init/paths.js';
 import './init/log.js';
 import update from './init/update.js';
 import log from 'loglevel';
@@ -23,9 +23,7 @@ import path from 'path';
 import pug from 'pug';
 import sass from 'sass';
 
-process.chdir(paths.base);
-
-await createconfig();
+process.chdir(paths.BASE_DIR);
 
 // Make sure the game directory is specified.
 if (!config.wowsdir) {
@@ -39,13 +37,26 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 	process.exit(1);
 }
 
-await update();
+let version = await update();
+let datadir = path.join(paths.DATA_DIR, String(version));
 
-let { data, labels } = await loadData(paths.data);
+let data, labels;
+try {
+	const t0 = Date.now();
+	({ data, labels } = await loadData(datadir));
+	log.info(`Loaded game data in ${Date.now() - t0}ms.`);
+} catch(err) {
+	log.error(`Could not load data from ${paths.DATA_DIR}: ${err.message}. Try running quartersbrief with update-policy=force`);
+	process.exit(1);
+}
+if (labels instanceof Error) {
+	log.warn(`Could not load labels from ${paths.DATA_DIR}: ${labels.message}. Labels will be unavailable.`);
+	labels = undefined;
+}
 
 const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
 const agendaController = new AgendaController(
-	[ new AgendaStore(config.agendasdir) ], 
+	[ new AgendaStore(paths.AGENDAS_DEFAULT_DIR) ], 
 	new SpecificityChooser(gameObjectFactory));
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
 const briefingController = new BriefingController(
@@ -53,7 +64,7 @@ const briefingController = new BriefingController(
 	new BriefingBuilder({
 		gameObjectFactory,
 		playerFactory: new PlayerFactory(config.apiKey, config.realm),
-		armorViewer: new ArmorViewer(path.join(paths.data, 'armor'), path.join(paths.cache, 'armor'))
+		armorViewer: new ArmorViewer(path.join(datadir, 'armor'), path.join(paths.CACHE_DIR, 'armor'))
 	}),
 	agendaController
 );
