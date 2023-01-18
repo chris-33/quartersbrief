@@ -1,6 +1,5 @@
 import Updater from '../../src/update/updater.js';
 import path from 'path';
-import fs from 'fs/promises';
 import mockfs from 'mock-fs';
 import sinon from 'sinon';
 import { setImmediate } from 'timers/promises';
@@ -19,68 +18,40 @@ describe('Updater', function() {
 		mockfs.restore();
 	});
 
-	describe('.detectGameVersion', function() {
-		it('should return the highest build number', async function() {
+	describe('.detectVersion', function() {
+		const dir = '/dir';
+		it('should return the name of the subdirectory with the highest number', async function() {
 			const builds = [ 1, 2, 3 ];
 			const expected = Math.max(...builds);
 			const bin = {};
 			builds
-				.map(buildno => ({ [`${wowsdir}/bin/${buildno}`]: {} }))
+				.map(buildno => ({ [`${dir}/${buildno}`]: {} }))
 				.forEach(buildDir => Object.assign(bin, buildDir));
 			mockfs(bin);
-			return expect(updater.detectGameVersion()).to.eventually.equal(expected);
+			return expect(updater.detectVersion(dir)).to.eventually.equal(expected);
 		});
 
 		it('should ignore files and subfolders not consisting only of digits', function() {
 			const buildno = 1;
-			const bin = {
-				[`${wowsdir}/bin/${buildno}`]: {},
-				[`${wowsdir}/bin/alphanumeric dir`]: {},
-				[`${wowsdir}/bin/alphanumeric file`]: '',
-				[`${wowsdir}/bin/${2 * buildno}`]: 'numeric file' // * 2 to make sure this is the highest
-			}
-			mockfs(bin);
-			return expect(updater.detectGameVersion()).to.eventually.equal(buildno);
+			mockfs({
+				[`${dir}/${buildno}`]: {},
+				[`${dir}/alphanumeric dir`]: {},
+				[`${dir}/alphanumeric file`]: '',
+				[`${dir}/${2 * buildno}`]: 'numeric file' // * 2 to make sure this is the highest
+			});
+			return expect(updater.detectVersion(dir)).to.eventually.equal(buildno);
+		});
+
+		it('should return undefined if there are no numerically-named subfolders', async function() {
+			mockfs({
+				[dir]: {}
+			});
+			return expect(updater.detectVersion(dir)).to.eventually.be.undefined;
 		});
 
 		it('should throw if it can\'t read the bin folder', function() {
-			return expect(updater.detectGameVersion()).to.be.rejected;
+			return expect(updater.detectVersion(dir)).to.be.rejected;
 		});		
-	});
-
-	describe('.recallVersion', function() {
-		it('should return the number from the .version file', async function() {
-			const remembered = 1;
-			mockfs({
-				[dest]: {
-					'.version': String(remembered)
-				}
-			});
-
-			let result = await updater.recallVersion()
-			expect(result).to.be.a('number');
-			expect(result).to.equal(remembered);
-		});
-
-		it('should return undefined if the file does not exist', async function() {
-			expect(await updater.recallVersion(), 'data directory does not exist').to.be.undefined;
-			mockfs({ [dest]: {} });
-			expect(await updater.recallVersion(), 'data directory exists but .version file does not').to.be.undefined;
-		});
-
-		it('should throw if the file exists but can not be accessed', function() {
-			mockfs({ [dest]: {
-				'.version': mockfs.file({ mode: 0o000 }) // Nobody is allowed to do anything with this file
-			}});
-			return expect(updater.recallVersion()).to.be.rejected;
-		});
-
-		it('should throw if the contents of the file are not a number', function() {
-			mockfs({
-				[dest]: { '.version': '1a' }
-			});
-			return expect(updater.recallVersion()).to.be.rejected;
-		});
 	});
 
 	describe('.needsUpdate', function() {		
@@ -117,75 +88,41 @@ describe('Updater', function() {
 		});
 	});
 
-	describe('.snapshot', function() {
-		it(`should rename the data directory by attaching the suffix ${Updater.ROLLBACK_SUFFIX}`, async function() {			
-			const expected = `${dest}${Updater.ROLLBACK_SUFFIX}`;
+	describe('.commit', function() {
+		it('should remove the data directory of the old version and keep the data directory for the new version', async function() {
+			const oldVersion = 1;
+			const newVersion = 2;
+			mockfs({ 
+				[path.join(dest, String(oldVersion))]: {}, 
+				[path.join(dest, String(newVersion))]: {}, 
+			});
+	
+			await updater.commit(oldVersion);
+			expect(path.join(dest, String(oldVersion))).to.not.be.a.path();
+			expect(path.join(dest, String(newVersion))).to.be.a.directory();
+		});
+
+		it('should not error if there is no data directory for the old version', async function() {
+			const oldVersion = 1;
 			mockfs({
 				[dest]: {}
 			});
-			let result = await updater.snapshot();
-			expect(dest).to.not.be.a.path();
-			expect(expected).to.be.a.path();
-			expect(result).to.equal(expected);
-		});
-
-		it('should return undefined if no current data existed', function() {
-			mockfs({});
-			return expect(updater.snapshot()).to.eventually.be.undefined;
-		});
-	});
-
-	describe('.commit', function() {
-		const buildno = 1;
-		// eslint-disable-next-line mocha/no-setup-in-describe
-		const rollback = `${dest}${Updater.ROLLBACK_SUFFIX}`;
-
-		beforeEach(function() {
-			mockfs({ 
-				[dest]: {}, 
-				[rollback]: {} });
-		});
-
-		it('should write the new data version to .version', async function() {
-			await updater.commit(buildno, rollback);
-			expect(path.join(dest, '.version')).to.be.a.file().with.contents(String(buildno));
-		});
-
-		it('should remove the rollback directory', async function() {
-			await updater.commit(buildno, rollback);
-			expect(rollback).to.not.be.a.path();
-		});
-
-		it('should not error if there is no rollback directory', async function() {
-			await fs.rmdir(rollback);
-			return expect(updater.commit(buildno)).to.be.fulfilled;
+			return expect(updater.commit(oldVersion)).to.be.fulfilled;
 		});
 	});
 
 	describe('.rollback', function() {
-		// eslint-disable-next-line mocha/no-setup-in-describe
-		const rollback = `${dest}${Updater.ROLLBACK_SUFFIX}`;
-
-		beforeEach(function() {
+		it('should remove the data directory for the new version and keep the data directory for the old version', async function() {
+			const newVersion = 2;
+			const oldVersion = 1;
 			mockfs({ 
-				[dest]: { updated: '' }, 
-				[rollback]: { rollback: ''}
+				[path.join(dest, String(oldVersion))]: {}, 
+				[path.join(dest, String(newVersion))]: {}, 
 			});
-		});
 
-		it('should overwrite the data directory with the rollback directory', async function() {
-			expect(await updater.rollback(rollback)).to.be.true;
-			// The rollback directory should no longer exist (because it was renamed)
-			expect(rollback).to.not.be.a.path();
-			// The data directory should have the contents of the rollback directory
-			expect(dest).to.be.a.directory().with.contents([ 'rollback' ]);
-		});
-
-		it('should remove the data directory even if there was no rollback directory', async function() {
-			await fs.rm(rollback, { force: true, recursive: true });
-			
-			expect(await updater.rollback()).to.be.false;
-			expect(dest).to.not.be.a.path();
+			await updater.rollback(newVersion);
+			expect(path.join(dest, String(oldVersion))).to.be.directory();
+			expect(path.join(dest, String(newVersion))).to.not.be.a.path();
 		});
 	});
 
@@ -200,7 +137,7 @@ describe('Updater', function() {
 		beforeEach(function() {
 			mockfs({
 				[path.join(wowsdir, 'bin', String(detected), 'idx')]: {},
-				[dest]: { '.version': String(remembered) }
+				[path.join(dest, String(remembered))]: {}
 			});
 		})
 
@@ -208,16 +145,6 @@ describe('Updater', function() {
 			const options = {};
 			await updater.update(options);
 			expect(updater.needsUpdate).to.have.been.calledWith(detected, remembered, options);
-		});
-
-		it('should take a snapshot', async function() {
-			sinon.stub(updater, 'snapshot').resolves();
-			try {
-				await updater.update();
-				expect(updater.snapshot).to.have.been.called;
-			} finally {
-				updater.snapshot.restore();	
-			}
 		});
 
 		it('should call all update functions', async function() {
@@ -281,19 +208,19 @@ describe('Updater', function() {
 			}
 		});
 
-		it('should return -1 if no update was necessary, 0 if the update failed, and 1 if it was successful', async function() {
+		it('should return the latest version if no update was necessary, the previous version if the update was rolled back, and the new version if it was successful', async function() {
 			const update = sinon.stub();
 			updater.register(update);
 
 			updater.needsUpdate.returns(false);
-			await expect(updater.update()).to.eventually.equal(-1);
+			await expect(updater.update()).to.eventually.equal(remembered);
 			
 			updater.needsUpdate.returns(true);
 			update.rejects();
-			await expect(updater.update()).to.eventually.equal(0);
+			await expect(updater.update()).to.eventually.equal(remembered);
 
 			update.resolves();
-			await expect(updater.update()).to.eventually.equal(1);
+			await expect(updater.update()).to.eventually.equal(detected);
 		});
 	});
 });

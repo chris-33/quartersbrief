@@ -10,8 +10,6 @@ import path from 'path';
 export default class Updater {
 	updates = [];
 
-	static ROLLBACK_SUFFIX = '.rollback';
-
 	/**
 	 * Creates a new `Updater` object.
 	 * @param {String} source The World of Warships base directory
@@ -40,52 +38,25 @@ export default class Updater {
 	}
 
 	/**
-	 * Scans the World of Warships folder (specifically, the bin/ subfolder) for all present versions and the returns the highest one.
-	 * Versions can be identified because they are numerically named folders; the latest is the one with the highest number.
-	 * @return {number} The highest build number found.
+	 * Scans the provided folder for numerically named subdirectories and returns the highest one.
+	 * @return {number} The highest numerically-named subdirectory found.
 	 * @throws If the folder does not exist, or cannot be accessed.
 	 */
-	async detectGameVersion() {
+	async detectVersion(dir) {
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 	
 		// Find the highest-numbered subdirectory of wows/bin
-		let builds = (await fs.readdir(path.join(this.source, 'bin'), { encoding: 'utf8', withFileTypes: true }))
+		let builds = (await fs.readdir(dir, { encoding: 'utf8', withFileTypes: true }))
 			.filter(dirent => dirent.isDirectory())
 			.map(dirent => dirent.name)
 			.filter(name => name.match(/\d+/));
-		dedicatedlog.debug(`Detected build numbers: ${builds.join(', ')}`);
+		dedicatedlog.debug(`Detected build numbers in ${dir}: ${builds.join(', ')}`);
 
 		let result = Math.max(...builds);
-		dedicatedlog.debug(`Highest build number is ${result}`);
+		if (result === -Infinity) result = undefined;
+		dedicatedlog.debug(`Highest build number in ${dir} is ${result}`);
 
 		return result;
-	}
-
-	/**
-	 * Gets the build number of the current data from the `.version` file in the data directory.
-	 * @return {number} The contents of the `.version` file as a number, or `undefined` if the file does not exist.
-	 * @throws If the file cannot be accessed, or if the contents are not a number.
-	 */
-	async recallVersion() {
-		const dedicatedlog = rootlog.getLogger(this.constructor.name);
-
-		// Read the last remembered version from the .version file in the quartersbrief data directory. 
-		// This is the version of the game that the last used data was extracted from.
-		// If that file does not exist, make the last remembered version "0,0,0,0" which will force an update.
-		try {
-			let contents = await fs.readFile(path.join(this.dest, '.version'), 'utf8')
-			let result = Number(contents);
-			if (Number.isNaN(result)) 
-				throw new TypeError(`Expected remembered version to be a number but it was ${contents}`);
-
-			dedicatedlog.debug(`Remembered version is ${result}`);
-			return result;
-		} catch (err) {
-			if (err.code === 'ENOENT') {
-				dedicatedlog.debug(`Could not find remembered version`);
-				return undefined;
-			} else throw err;
-		}
 	}
 
 	/**
@@ -115,51 +86,9 @@ export default class Updater {
 			result = true;
 		}
 
-		if (result === undefined) {
-			result ??= (remembered ?? 0) < detected;
-		}
+		result ??= (remembered ?? 0) < detected;
 		dedicatedlog.debug(`${result ? 'An' : 'No'} update is needed`);
 		return result;
-	}
-
-	/**
-	 * Commits the update by setting `buildno` as the new remembered version and removing the snapshot that was
-	 * created at the beginning of the update.
-	 * @param  {Number} buildno  The build number being updated to. This becomes the new remembered version.
-	 * @param  {String} [rollback] The path of the snapshot directory. If ommitted, snapshot removal is skipped.
-	 */
-	async commit(buildno, rollback) {
-		const dedicatedlog = rootlog.getLogger(this.constructor.name);
-
-		await fs.writeFile(path.join(this.dest, '.version'), String(buildno));
-		dedicatedlog.debug(`Remembering version ${buildno}`);
-
-		if (rollback) {
-			await fs.rm(rollback, { recursive: true, force: true });
-			dedicatedlog.debug(`Removed rollback data`);
-		} else
-			dedicatedlog.debug(`No rollback data to remove`);
-	}
-
-	/**
-	 * Rolls back the update by removing the data directory and reinstating the snapshot. 
-	 * @param  {String} [rollback] The path of the snapshot directory. If this is falsy, no snapshot data
-	 * is reinstated, but the current data directory is still removed.
-	 * @return {boolean}          `true` if snapshot was reinstated, `false` if not.
-	 */
-	async rollback(rollback) {
-		const dedicatedlog = rootlog.getLogger(this.constructor.name);
-
-		await fs.rm(this.dest, { recursive: true, force: true });
-		dedicatedlog.debug(`Removed update data`);
-		if (rollback) {
-			await fs.rename(rollback, this.dest);
-			dedicatedlog.debug(`Reinstated kept rollback data`);
-			return true;
-		} else {
-			dedicatedlog.debug(`Could not roll back because there was no rollback data`);
-			return false;
-		}
 	}
 
 	/**
@@ -184,59 +113,66 @@ export default class Updater {
 	 * 
 	 * @param  {String} [options.updatePolicy] The update policy to use when determining whether an update is needed. Can be `'force'`, `'prohibit'`,
 	 * `'auto'`, or ommitted altogether.
-	 * @returns {Number} -`1` if no update was necessary, `0` if the update failed, `1` if the update completed normally. This means that for a
-	 * failed update, the result is falsy, and for a skipped or successful update the result is truthy.
+	 * @returns {Number} - The highest available data version number
 	 */
 	async update(options) {
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 
-		let detected = await this.detectGameVersion();
-		let remembered = await this.recallVersion();
+		let detected = await this.detectVersion(path.join(this.source, 'bin'));
+		let remembered = await this.detectVersion(this.dest);
 
 		if (this.needsUpdate(detected, remembered, options)) {
-			let rollback = await this.snapshot();
-			await fs.mkdir(this.dest, { recursive: true });
-			let success;
+			await fs.mkdir(path.join(this.dest, String(detected)), { recursive: true });
 			try {
 				// Run updates sequentially, waiting for each
 				for (let i = 0; i < this.updates.length; i++) {
 					let update = this.updates[i];
-					const optns = { prev: remembered, prevPath: rollback, ...options };
-					dedicatedlog.debug(`Calling update function ${update.name || '#' + i}(${[this.source, this.dest, detected, optns ].join(',')})`);
-					await update(this.source, this.dest, detected, optns);
+					const optns = { prev: remembered, prevPath: path.join(this.dest, String(remembered)), ...options };
+					const args = [
+						this.source, 
+						path.join(this.dest, String(detected)), 
+						detected, 
+						optns
+					];
+					dedicatedlog.debug(`Calling update function ${update.name || '#' + i}(${args.join(',')})`);
+					await update.apply(null, args);
 				}
-				success = true;
+				await this.commit(remembered);
+				return detected;
 			} catch (err) {
 				rootlog.error(`Update failed: ${err.message}`)
-				success = false;
+				await this.rollback(detected);
+				return remembered;
 			}
-			if (success)
-				await this.commit(detected, rollback);
-			else
-				await this.rollback(rollback);
-			return Number(success);
 		} else
-			return -1;
+			return remembered;
 	}
-	
+
 	/**
-	 * Takes a snapshot of the current data. The current data directory is renamed, attaching the suffix `'rollback'`.
-	 * 
-	 * @return {String} The full path to the snapshot directory, or `undefined` if there was no current data directory.
+	 * Commits the update by deleting the old version's data directory.
+	 * @param  {number} oldVersion  The previous build number (before the update).
 	 */
-	async snapshot() {
+	async commit(oldVersion) {
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
-		let rollback = `${this.dest}${Updater.ROLLBACK_SUFFIX}`;
-		try {
-			await fs.rename(this.dest, rollback);
-			dedicatedlog.debug(`Kept existing data for potential rollback: ${rollback}`);
-		} catch (err) {
-			if (err.code === 'ENOENT'){
-				rollback = undefined;
-				dedicatedlog.debug(`There was no data from a previous version to keep for rollback`);
-			}
-			else throw err;
+		oldVersion = String(oldVersion);
+
+		if (oldVersion) {
+			await fs.rm(path.join(this.dest, oldVersion), { recursive: true, force: true });
+			dedicatedlog.debug(`Removed previous data`);
+		} else {
+			dedicatedlog.debug(`No previous data to remove`);
 		}
-		return rollback;
-	}	
+	}
+
+	/**
+	 * Rolls back the update by removing the new version's data directory. 
+	 * @param  {number} newVersion The version number that was being updated to.
+	 */
+	async rollback(newVersion) {
+		const dedicatedlog = rootlog.getLogger(this.constructor.name);
+		newVersion = String(newVersion);
+
+		await fs.rm(path.join(this.dest, newVersion), { recursive: true, force: true });
+		dedicatedlog.debug(`Removed update data`);
+	}
 }
