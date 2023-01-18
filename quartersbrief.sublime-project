@@ -3,7 +3,7 @@
 	[
 		{
 			"path": ".",
-			"folder_exclude_patterns": ["node_modules",".git",".vagrant","data"],
+			"folder_exclude_patterns": ["node_modules",".git",".vagrant","dev/vol/data","dev/vol/cache"],
 			"binary_file_patterns": ["dev/docs/*"]
 		}
 	],

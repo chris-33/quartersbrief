@@ -88,14 +88,13 @@ Vagrant.configure("2") do |config|
     echo 'npm run debug-local-test -- $@' > /home/vagrant/.local/bin/debug-local-test  && chmod +x /home/vagrant/.local/bin/debug-local-test
   SHELL
 
-  # Share data directory as per XDG Base Directory Specification
-  # https://specifications.freedesktop.org/basedir-spec/latest/index.html
-  config.vm.synced_folder "data/", "/home/vagrant/.local/share/quartersbrief"
-  # Share config directory as per XDG Base Directory Specification
-  # https://specifications.freedesktop.org/basedir-spec/latest/index.html
-  config.vm.synced_folder "config/", "/home/vagrant/.config/quartersbrief"
+  # Share directories
+  config.vm.synced_folder "dev/vol/data/", "/var/lib/quartersbrief"
+  config.vm.synced_folder "dev/vol/config/", "/home/vagrant/.config/quartersbrief"
+  config.vm.synced_folder "dev/vol/agendas/", "/usr/share/quartersbrief"
+  config.vm.synced_folder "dev/vol/cache/", "/var/cache/quartersbrief"
   # Share "Fake WoWS" directory to simulate the game actually being installed
-  config.vm.synced_folder "wows/", "/opt/World_of_Warships", fsnotify: true
+  config.vm.synced_folder "dev/vol/wows/", "/opt/World_of_Warships", fsnotify: true
 
   # Use SSH forwarding to allow git to use the host's private key from inside the VM
   config.ssh.forward_agent = true
