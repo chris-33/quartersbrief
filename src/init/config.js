@@ -1,9 +1,8 @@
-import envpaths from 'env-paths';
 import path from 'path';
 import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
-import { fileURLToPath } from 'url';
+import { CONFIG_DEFAULT_DIR } from './paths.js';
 import log from 'loglevel';
 import { existsSync, readFileSync } from 'fs';
 
@@ -14,13 +13,6 @@ process.env.NODE_ENV = (process.env.NODE_ENV ?? 'production').toLowerCase();
 // As per https://docs.npmjs.com/cli/v6/using-npm/scripts#packagejson-vars
 const name = process.env.npm_package_name ?? 'quartersbrief';
 
-// Get OS-specific paths for config, data, temp and cache.
-// Use no suffix (default would be '-nodejs') because I think it's ugly and I foresee no name clashes.
-// The documentation warns against this, though.
-const paths = {
-	...envpaths(name, { suffix: '' }),
-	base: path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../')
-};
 const config = {
 	// Defaults:
 	host: '127.0.0.1',
@@ -108,8 +100,8 @@ const config = {
 			return config;
 		})
 		.default('config', path.format({ 
-			dir: paths.config, 
-			name: { development: 'quartersbrief.dev', production: 'quartersbrief' }[process.env.NODE_ENV] ?? `quartersbrief.${process.env.NODE_ENV}`,
+			dir: CONFIG_DEFAULT_DIR, 
+			name: 'quartersbrief',
 			ext: '.json' 
 		}))
 		.help()
@@ -131,6 +123,4 @@ if (config.listen) {
 	config.port = config.listen.split(':')[1];
 }
 
-config.agendasdir = path.join(paths.config, 'agendas');
-
-export { config as default, paths };
+export default config;
