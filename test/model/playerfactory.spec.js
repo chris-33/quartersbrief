@@ -14,7 +14,7 @@ describe('PlayerFactory', function() {
 
 	beforeEach(function() {
 		nock.cleanAll();
-		playerFactory = new PlayerFactory('', '');
+		playerFactory = new PlayerFactory('appid', 'realm');
 	});
 
 	after(function() {

@@ -19,7 +19,7 @@ export default class WargamingAPI {
 	 */
 	tld;
 
-	#applicationID;
+	applicationID;
 
 	static OPERATIONS = {
 		// Important: MUST have trailing slashes, or we get Wargaming API error 407: Method not found
@@ -28,12 +28,12 @@ export default class WargamingAPI {
 	}
 
 	constructor(applicationID, realm) {
-		this.#applicationID = applicationID;
+		this.applicationID = applicationID;
 
-		if (realm.toLowerCase() === 'na')
+		if (realm?.toLowerCase() === 'na')
 			this.tld = 'com';
 		else
-			this.tld = realm.toLowerCase();
+			this.tld = realm?.toLowerCase();
 	}
 
 	/**
@@ -44,11 +44,19 @@ export default class WargamingAPI {
 	 * @param  {Object} params A hash from argument keys to argument values. Array values will be joined
 	 * into a comma-separated string.
 	 * @return {URL}        The URL.
+	 * @throws If realm and/or application ID are not set.
 	 */
 	#getURL(op, params) {
+		if (!this.tld || (!this.applicationID && !params.applicationID)) {
+			let missing = [];
+			if (!this.tld) missing.push('realm');
+			if (!this.applicationID && !params.applicationID) missing.push('API key');
+
+			throw new Error(`${missing.join(' and ')} not set.`);
+		} 
 		const url = new URL(WargamingAPI.OPERATIONS[op.toUpperCase()], `https://api.worldofwarships.${this.tld}/wows/`);
 		if (!Object.keys(params).includes('application_id'))
-			url.searchParams.append('application_id', this.#applicationID);
+			url.searchParams.append('application_id', this.applicationID);
 		for (let param in params) {
 			let val = params[param];
 			if (Array.isArray(val))

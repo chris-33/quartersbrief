@@ -13,7 +13,7 @@ describe('WargamingAPI', function() {
 	});
 
 	beforeEach(function() {
-		api = new WargamingAPI('', '');
+		api = new WargamingAPI('appid', 'realm');
 		nock.cleanAll();
 	});
 
@@ -49,7 +49,18 @@ describe('WargamingAPI', function() {
 	});
 
 	describe('.access', function() {
-		it('should throw an APIError if there is no application ID', async function() {
+		it('should throw an error if realm and/or application ID are not set', async function() {
+			api = new WargamingAPI('appid','');
+			await expect(api.access('', {})).to.be.rejectedWith(/realm/);
+
+			api = new WargamingAPI('', 'realm');
+			await expect(api.access('', {})).to.be.rejectedWith(/API key/);
+
+			api = new WargamingAPI('', '');
+			await expect(api.access('', {})).to.be.rejectedWith(/realm and API key/);
+		});
+		
+		it('should throw an APIError if the application ID is invalid', async function() {
 			apiSrv.get(/./).reply(200, {
 				status: 'error',
 				error: { code: 407, message: 'INVALID_APPLICATION_ID' }
@@ -84,7 +95,7 @@ describe('WargamingAPI', function() {
 		it('should call the correct domain based on the realm', async function() {
 			for (let realm of ['na','eu','ru','asia']) {
 				const req = apiSrv.get(/./).reply(200, {});
-				api = new WargamingAPI('', realm);
+				api = new WargamingAPI('appid', realm);
 				api.access('', {});
 				await expect(req, realm).to.have.been.requestedWithHeadersMatch({ 
 					host: `api.worldofwarships.${realm === 'na' ? 'com' : realm}`
