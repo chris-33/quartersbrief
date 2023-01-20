@@ -2,7 +2,7 @@ import path from 'path';
 import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
-import { CONFIG_DEFAULT_DIR } from './paths.js';
+import { CONFIG_USER_DIR } from './paths.js';
 import log from 'loglevel';
 import { existsSync, readFileSync } from 'fs';
 
@@ -100,7 +100,7 @@ const config = {
 			return config;
 		})
 		.default('config', path.format({ 
-			dir: CONFIG_DEFAULT_DIR, 
+			dir: CONFIG_USER_DIR, 
 			name: 'quartersbrief',
 			ext: '.json' 
 		}))
