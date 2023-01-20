@@ -14,46 +14,40 @@
 				Win64='yes'/>
 		</Property>
 				
-		<SetProperty Id='NODE_MODULES_FOLDER' Value='[APPLICATIONFOLDER]node_modules\' Before='CostInitialize'>
+		<SetProperty Id='NODE_MODULES_DIRECTORY' Value='[APPLICATIONFOLDER]node_modules\' Before='CostInitialize'>
 			<!-- DON'T remove folder during an upgrade -->
 			<![CDATA[(NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")]]>
 		</SetProperty>
 
-		<SetProperty Id='TOOLS_FOLDER' Value='[APPLICATIONFOLDER]tools\' Before='CostInitialize'/>
-			<!-- DO remove folder even during upgrade -->
-
-		<SetProperty Id='QUARTERSBRIEF_CONFIG_FOLDER' Value='[AppDataFolder][ProductName]\' Before='CostInitialize'>
+		<SetProperty Id='QUARTERSBRIEF_DATA_DIRECTORY' Value='[CommonAppDataFolder][ProductName]\Data\' Before='CostInitialize'>
 			<!-- DON'T remove folder during an upgrade -->
 			<![CDATA[(NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")]]>
 		</SetProperty>
 
-		<SetProperty Id='QUARTERSBRIEF_DATA_FOLDER' Value='[LocalAppDataFolder][ProductName]\' Before='CostInitialize'>
+		<SetProperty Id='QUARTERSBRIEF_CACHE_DIRECTORY' Value='[CommonAppDataFolder][ProductName]\Cache\' Before='CostInitialize'>
 			<!-- DON'T remove folder during an upgrade -->
 			<![CDATA[(NOT UPGRADINGPRODUCTCODE) AND (REMOVE="ALL")]]>
 		</SetProperty>
 
 		<Component Id='RemoveFolders' Guid='*' Directory='INSTALLDIR'>
-			<!-- Remove quartersbrief folder in user's AppData\Roaming folder -->
-			<!-- QUARTERSBRIEF_CONFIG_FOLDER will not be set in an upgrade, so RemoveFolderEx will do nothing. -->
-			<util:RemoveFolderEx Property='QUARTERSBRIEF_CONFIG_FOLDER' On='uninstall'/>
-			<!-- Remove quartersbrief folder in user's AppData\Local folder -->
-			<!-- QUARTERSBRIEF_DATA_FOLDER will not be set in an upgrade, so RemoveFolderEx will do nothing. -->
-			<util:RemoveFolderEx Property='QUARTERSBRIEF_DATA_FOLDER' On='uninstall'/>
 			<!-- Remove node_modules sub folder in install directory -->
 			<!-- NODE_MODULES_FOLDER will not be set in an upgrade, so RemoveFolderEx will do nothing. -->
-			<util:RemoveFolderEx Property='NODE_MODULES_FOLDER' On='uninstall'/>
-			<!-- Remove tools sub folder in install directory -->
-			<!-- This will happen even during an upgrade. -->
-			<util:RemoveFolderEx Property='TOOLS_FOLDER' On='uninstall'/>
-			<!-- Remove Quartersbrief.cmd that we created during installation -->
-			<!-- Cannot use Name='[ProductName].cmd' because RemoveFile does not expand properties -->
-			<!-- This file will be removed even during upgrades -->
-			<RemoveFile Id='RemoveCmdFile' Name='Quartersbrief.cmd' On='uninstall'/>
+			<util:RemoveFolderEx Property='NODE_MODULES_DIRECTORY' On='uninstall'/>
+
+			<!-- Remove Data and Cache sub folders in CommonAppData\Quartersbrief directory -->
+			<!-- Properties will not be set in an upgrade, so RemoveFolderEx will do nothing. -->
+			<util:RemoveFolderEx Property='QUARTERSBRIEF_DATA_DIRECTORY' On='uninstall'/>
+			<util:RemoveFolderEx Property='QUARTERSBRIEF_CACHE_DIRECTORY' On='uninstall'/>
+
 			<!-- Remove main installation directory now, but only if it is empty. -->
 			<!-- That's why we're using RemoveFolder instead of RemoveFolderEx here. -->
 			<!-- This folder will theoretically be removed even during upgrades, but in reality the existence of the
 				 node_modules sub folder will usually prevent it. -->
 			<RemoveFolder Id='RemoveMainFolder' Property='APPLICATIONFOLDER' On='uninstall'/>
+
+			<!-- Remove the Quartersbrief common app data  directory now if it is empty. -->
+			<RemoveFolder Id='RemoveQuartersbriefCommonAppData' Directory='QuartersbriefCommonAppData' On='uninstall'/>
+			
 			<RegistryValue 
 				Root='HKLM' 
 				Key='Software\[ProductName]' 

@@ -34,8 +34,7 @@
 
 				<MajorUpgrade AllowDowngrades='no' DowngradeErrorMessage='!(loc.DowngradeErrorMessage)'/>
 
-				<Property Id='WIXUI_INSTALLDIR' Value='INSTALLDIR'/>				
-				<UIRef Id='WixUI_InstallDir'/>
+				<UIRef Id='WixUI_FeatureTree'/>
 				
 				<?include prerequisites.wxi?>
 
@@ -44,6 +43,39 @@
 						<Directory Id='INSTALLDIR' Name='Quartersbrief'>
 						</Directory>
 					</Directory>
+					<Directory Id='CommonAppDataFolder' Name='CommonAppData'>
+						<Directory Id='QuartersbriefCommonAppData' Name='Quartersbrief'>
+							<Directory Id='AGENDADIR' Name='Agendas'/>
+							<!-- Create the Quartersbrief data directory as part of the Core component, and set it to be removed during uninstall -->
+							<Directory Id='QuartersbriefData' Name='Data'>
+								<Component Id='QuartersbriefDataComponent' Feature='Core' Guid='6361237b-acf3-4c40-a686-7b665de1e103'>
+									<CreateFolder/>
+								</Component>
+							</Directory>
+							<!-- Create the Quartersbrief cache directory as part of the Core component, and set it to be removed during uninstall -->
+							<Directory Id='QuartersbriefCache' Name='Cache'>
+								<Component Id='QuartersbriefCacheComponent' Feature='Core' Guid='01e47e05-1fb5-4e94-9f4a-7ac40a3fa904'>
+									<CreateFolder/>
+								</Component>
+							</Directory>							
+						</Directory>
+					</Directory>
+					<Directory Id='LocalAppDataFolder' Name='LocalAppData'>
+						<Directory Id='QuartersbriefLocalAppData' Name='Quartersbrief'>
+							<!-- Create the Quartersbrief config directory as part of the Core component, and set it to be removed during uninstall -->
+							<Component Id='QuartersbriefConfigComponent' Feature='Core' Guid='d4f320bf-dcef-4a87-a777-4b5b128036f4'>
+								<CreateFolder/>
+								<RemoveFolder Id='RemoveQuartersbriefConfig' On='uninstall'/>
+								<RegistryValue Root='HKCU' Key='Software\[ProductName]'
+											Name='InstallFolder'
+											Value='[INSTALLFOLDER]'
+											Type='string'
+											KeyPath='yes'/>									
+							</Component>
+						</Directory>
+					</Directory>
+
+					<!-- Write the full version to registry. This is the semver-compatible version string, not the "version" attribute of the msi package. -->
 					<Component Id='WriteToRegistry'>
 						<RegistryValue 
 							Root='HKLM' 
@@ -55,23 +87,25 @@
 					</Component>
 				</Directory>
 
-				<Feature Id='Complete' Level='1' ConfigurableDirectory='INSTALLDIR'>
+				<Feature Id='Core' Level='1' ConfigurableDirectory='INSTALLDIR' Absent='disallow' AllowAdvertise='no' Title='Quartersbrief' Description='The core files needed to run Quartersbrief'>
 					<ComponentRef Id='WriteToRegistry'/>
 					<ComponentGroupRef Id='QuartersbriefFiles'/>
 					<ComponentRef Id='RemoveFolders'/>
+				</Feature>
+				<Feature Id='Agendas' Level='1' Absent='allow' AllowAdvertise='no' Title='Default agendas' Description='Some default agendas to create sensible briefings for most use cases. If you do not install these, you will have to create at least one agenda of your own to see any briefings.'>
+					<ComponentGroupRef Id='QuartersbriefAgendaFiles'/>
 				</Feature>
 
 				<CustomAction 
 					Id='NpmInstall' 
 					Directory='INSTALLDIR' 
-					ExeCommand='npm.cmd install --no-package-lock --production'
+					ExeCommand='npm.cmd install --no-package-lock --omit=dev'
 					Execute='deferred'
 					Impersonate='no'
 				/>
 
 				<InstallExecuteSequence>
 					<Custom Action='NpmInstall' After='InstallFiles'>NOT Installed</Custom>
-					<Custom Action='CreateQuartersbrief.cmd' Before='CreateShortcuts'>NOT Installed</Custom>
 				</InstallExecuteSequence>
 		</Product>		
 </Wix>

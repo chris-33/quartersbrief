@@ -3,13 +3,6 @@
 		<RegistrySearch Id='NodeJSVersion' Root='HKLM' Key='Software\Node.js' Name='Version' Type='raw' Win64='yes'/>
 	</Property>
 	<Condition Message='!(loc.NodeJSMissing)'>
-		<![CDATA[Installed OR NODEJS_VERSION >= "17.0"]]>
-	</Condition>
-
-	<Property Id='PYTHON_INSTALLED'>
-		<RegistrySearch Id='PythonInstalled' Root='HKCU' Key='Software\Python\PythonCore' Name='DisplayName' Type='raw' Win64='yes'/>
-	</Property>
-	<Condition Message='!(loc.PythonMissing)'>
-		<![CDATA[Installed OR PYTHON_INSTALLED]]>
+		<![CDATA[Installed OR NODEJS_VERSION >= "18.0"]]>
 	</Condition>
 </Include>
