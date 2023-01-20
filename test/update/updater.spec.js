@@ -73,18 +73,10 @@ describe('Updater', function() {
 			expect(updater.needsUpdate(detected, remembered)).to.be.true;
 		});
 
-		it('should return true when the updatePolicy option is set to "force"', function() {
-			const detected = 1;
-			const remembered = 1;
-			const updatePolicy = 'force';
-			expect(updater.needsUpdate(detected, remembered, { updatePolicy })).to.be.true;
-		});
-
-		it('should return false when the updatePolicy option is set to "prohibit"', function() {
+				it('should return false when the update option is set to "false"', function() {
 			const detected = 2;
 			const remembered = 1;
-			const updatePolicy = 'prohibit';
-			expect(updater.needsUpdate(detected, remembered, { updatePolicy })).to.be.false;
+			expect(updater.needsUpdate(detected, remembered, { allowUpdates: false })).to.be.false;
 		});
 	});
 

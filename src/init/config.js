@@ -60,11 +60,10 @@ const config = {
 			type: 'string',
 			description: 'The realm (server) you will be playing on. This is required for topics that access the online Wargaming API.'
 		})
-		.option('update-policy', {
-			type: 'string',
-			choices: [ 'force', 'auto', 'prohibit' ],
-			default: 'auto',
-			description: 'Controls how updates to the game files are handled. Explanation of values:\n\tforce: perform extraction of game data regardless of game version\n\tauto: automatically check the game version, update if necessary\n\tprohibit: do not check the game version, do not update'
+		.option('allow-updates', {
+			type: 'boolean',
+			default: 'yes',
+			description: 'Allow or disallow automatic updates of game data. The default is \'yes\'.'
 		})
 		.option('debug', {
 			coerce: function(value) {

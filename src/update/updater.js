@@ -76,17 +76,13 @@ export default class Updater {
 	needsUpdate(detected, remembered, options) {
 		const dedicatedlog = rootlog.getLogger(this.constructor.name);
 
-		let result;
-		if (options?.updatePolicy === 'prohibit') {
-			dedicatedlog.debug(`Update policy is "prohibit"`);
+		let result = true;
+		if (options?.allowUpdates === false) { // Not the same as !options?.update, because !undefined === true
+			dedicatedlog.debug(`Automatic updates are disabled.`);
 			result = false;
 		}
-		if (options?.updatePolicy === 'force') {
-			dedicatedlog.debug(`Update policy is "force"`);
-			result = true;
-		}
 
-		result ??= (remembered ?? 0) < detected;
+		result = result && (remembered ?? 0) < detected;
 		dedicatedlog.debug(`${result ? 'An' : 'No'} update is needed`);
 		return result;
 	}
