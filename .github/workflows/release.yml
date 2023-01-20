@@ -37,18 +37,28 @@ jobs:
       - name: Assemble package contents
         id: assemble
         run: |
-          echo Release dir: $PKGROOT/opt
-          mkdir -p $PKGROOT/DEBIAN
-          mkdir -p $PKGROOT/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/src $PKGROOT/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/res $PKGROOT/opt/quartersbrief
-          cp -r $GITHUB_WORKSPACE/scripts $PKGROOT/opt/quartersbrief
-          cp $GITHUB_WORKSPACE/package.json $PKGROOT/opt/quartersbrief
-          cp $GITHUB_WORKSPACE/README.md $PKGROOT/opt/quartersbrief
+          echo Release dir: $PKGROOT/usr/lib
+        
+          mkdir -p $PKGROOT/usr/lib/quartersbrief
+          cp -r $GITHUB_WORKSPACE/src $PKGROOT/usr/lib/quartersbrief
+          cp -r $GITHUB_WORKSPACE/res $PKGROOT/usr/lib/quartersbrief
+          cp $GITHUB_WORKSPACE/package.json $PKGROOT/usr/lib/quartersbrief
+          cp $GITHUB_WORKSPACE/README.md $PKGROOT/usr/lib/quartersbrief
+          
+          mkdir -p $PKGROOT/usr/bin
+          ln -s $GITHUB_WORKSPACE/usr/lib/quartersbrief/src/quartersbrief.js /usr/bin/quartersbrief
+          chmod +x $PKGROOT/usr/bin/quartersbrief
+          
+          mkdir -p $PKGROOT/usr/share/quarterbrief
+          cp -r $GITHUB_WORKSPACE/.github/workflows/res/common/agendas $PKGROOT/usr/share/quarterbrief
+          
+          mkdir -p -m 777 $PKGROOT/var/cache/quarterbrief
+          mkdir -p -m 777 $PKGROOT/var/lib/quartersbrief
 
       # Create .deb control scripts
       - name: Create maintainer scripts
         run: |
+          mkdir -p $PKGROOT/DEBIAN
           # preinst
           cp $GITHUB_WORKSPACE/.github/workflows/res/debian/preinst $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/preinst
           # postinst
@@ -79,6 +89,7 @@ jobs:
     env:
       workdir: ${{ github.workspace }}\tmp\
       releasedir: ${{ github.workspace }}\tmp\installer\app\
+      assetdir: ${{ github.workspace }}\tmp\installer\assets\
     outputs: 
       file_name: ${{ steps.light.outputs.file_name }}
     steps:
@@ -129,21 +140,30 @@ jobs:
             exit(1) 
           }
 
-      # Assemble the files to be put into the installer in $PKGROOT/opt
+      # Assemble the files to be put into the installer
       - name: Assemble package contents
         run: |
           mkdir ${{ env.workdir }}
           mkdir ${{ env.releasedir }}
+          mkdir ${{ env.assetdir }}
           xcopy /s /e ${{ github.workspace }}\src ${{ env.releasedir }}src\
           xcopy /s /e ${{ github.workspace }}\res ${{ env.releasedir }}res\
-          xcopy /s /e ${{ github.workspace }}\scripts ${{ env.releasedir }}scripts\
           xcopy ${{ github.workspace }}\package.json ${{ env.releasedir }}
           xcopy ${{ github.workspace }}\README.md ${{ env.releasedir }}
+          xcopy ${{ github.workspace }}\.github\workflows\res\windows\Quartersbrief.cmd ${{ env.releasedir }}
           xcopy ${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf ${{ env.workdir }}
+          xcopy /s /e ${{ github.workspace }}\.github\workflows\res\common\agendas ${{ env.assetdir }}
 
       # Harvest the release dir, creating QuartersbriefFiles.wxs that includes all files to install
       - name: Harvest package contents
         id: heat
+        # Command line switches
+        # -ag: auto-generate GUIDs
+        # -cg: component group name
+        # -var: substitute variable for source, i.e. what to set source attribute of files to
+        # -dr: directory reference to root directory, i.e. where to "insert" the harvested elements in the install structure
+        # -srd: suppress harvesting the root directory (add the contents directly instead of nesting them in the root directory)
+        # -out: output file
         run: |
           & "${env:WIX}bin\heat.exe" `
             dir `
@@ -155,6 +175,16 @@ jobs:
             -srd `
             -out "${{ env.workdir }}QuartersbriefFiles.wxs"
           
+          & "${env:WIX}bin\heat.exe" `
+            dir `
+            "${{ env.assetdir }}" `
+            -ag `
+            -cg QuartersbriefAgendaFiles `
+            -var var.AssetDir `
+            -dr AGENDASDIR `
+            -srd
+            -out "${{ env.workdir }}QuartersbriefAgendasFiles.wxs"
+
       # Compile all .wxs files to .wixobj files
       - name: Compile *.wxs to *.wixobj
         id: candle
@@ -165,9 +195,10 @@ jobs:
             -ext WixUtilExtension `
             -arch x64 `
             -dSourceDir="${{ env.releasedir }}" `
+            -dAssetDir="${{ env.assetdir }}" `
             -dVersion="${{ steps.msi-version.outputs.msi-version }}" `
             -dFullVersion="${{ needs.getversion.outputs.version }}" `
-            "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}QuartersbriefFiles.wxs"
+            "${{ github.workspace }}\.github\workflows\res\windows\*.wxs" "${{ env.workdir }}*.wxs"
 
       # Link all .wixobj files. This will create quartersbrief.msi
       - name: Link *.wixobj to quartersbrief.msi

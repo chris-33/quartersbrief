@@ -1,0 +1,39 @@
+[matches]
+
+[topics]
+
+[topics.concealment]
+filter = { limit = 10 }
+
+[topics.winrate]
+# What to show in the first line (as the primary information). Can be either "ship" or "name". Default is "name".
+primary = "ship"
+# Whether to hide the colored side bars indicating the ship class. 
+# The side bars help in finding a particular ship more quickly, but hiding them makes a little bit more space 
+# available for displaying the contents.
+# Default is false.
+#hideSidebars = true
+
+[topics.radar]
+# The threshold in meters by which a ship's concealment may exceed its radar range 
+# for it to still be considered to "almost" have a stealth radar capability.
+# Default: 0; i.e. ships are never considered to "almost" have a stealth radar capability - they can either stealth
+# radar or they can't.
+almostThreshold = 500
+
+[topics.hydro]
+# Which teams to display hydro ranges for.
+# Can include "enemies", "allies", and "player".
+# The default is all of the above.
+filter = { teams = [ "enemies" ] }
+
+[topics.overmatch_me]
+
+#[topics.overmatch_you]
+
+[topics.knifefighting]
+filter = { classes = [ "Destroyer" ] }
+subdivisions = [ 33, 66, 100 ]
+
+[topics.torpedoes]
+filter = { teams = [ "enemies" ] }
