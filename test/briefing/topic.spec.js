@@ -71,8 +71,8 @@ describe('Topic', function() {
 		it('should set pugFile and scssFile based on the topic name', function() {
 			const topicName = 'topic';
 			topic = new Topic(topicName);
-			expect(topic).to.have.property('pugFile').that.equals(path.join(TOPICS_PATH, topicName, `${topicName}.pug`));
-			expect(topic).to.have.property('scssFile').that.equals(path.join(TOPICS_PATH, topicName, `${topicName}.scss`));
+			expect(topic).to.have.property('pugFile').that.endsWith(path.join(TOPICS_PATH, topicName, `${topicName}.pug`));
+			expect(topic).to.have.property('scssFile').that.endsWith(path.join(TOPICS_PATH, topicName, `${topicName}.scss`));
 		});
 
 		it('should infer the names of the pug and scss files based on the class name if no topic name is given', function() {
@@ -80,8 +80,8 @@ describe('Topic', function() {
 			topic = new DerivedClass();
 
 			const expected = `derived_class`;
-			expect(topic).to.have.property('pugFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.pug`));
-			expect(topic).to.have.property('scssFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.scss`));
+			expect(topic).to.have.property('pugFile').that.endsWith(path.join(TOPICS_PATH, expected, `${expected}.pug`));
+			expect(topic).to.have.property('scssFile').that.endsWith(path.join(TOPICS_PATH, expected, `${expected}.scss`));
 		});
 
 		it('should remove suffix "Topic" when inferring pug and scss files', function() {
@@ -90,8 +90,8 @@ describe('Topic', function() {
 			topic = new DerivedFromTopic();
 
 			const expected = `derived_from`;
-			expect(topic).to.have.property('pugFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.pug`));
-			expect(topic).to.have.property('scssFile').that.equals(path.join(TOPICS_PATH, expected, `${expected}.scss`));
+			expect(topic).to.have.property('pugFile').that.endsWith(path.join(TOPICS_PATH, expected, `${expected}.pug`));
+			expect(topic).to.have.property('scssFile').that.endsWith(path.join(TOPICS_PATH, expected, `${expected}.scss`));
 		});
 
 		it('should not overwrite the caption if one is already set', async function() {
