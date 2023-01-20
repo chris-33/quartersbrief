@@ -33,3 +33,51 @@ $warning-favorable-light: color.scale($warning-favorable, $lightness: $_lightnes
 
 // Color to use for mouse-over highlighting
 $highlighted: fuchsia;
+
+@mixin teamcolor-background {
+	$teamcolor-gradient-direction-default: 20deg;
+	$teamcolor-gradient-start-default: 30%;
+	$teamcolor-gradient-end-default: 70%;
+
+	.ally & { 
+		color: white;
+		background: $ally; 
+	}
+	.enemy & { 
+		color: white;
+		background: $enemy; 
+	}
+	.enemy.ally & { 
+		color: white;
+		background: linear-gradient(
+				var(--teamcolor-gradient-direction, $teamcolor-gradient-direction-default), 
+				$ally var(--teamcolor-gradient-start, $teamcolor-gradient-start-default),
+				$enemy var(--teamcolor-gradient-end, $teamcolor-gradient-end-default));		
+	}
+	:is(.player, .player.enemy.ally) & {
+		color: black;
+		background: $player;
+	}
+}
+
+@mixin teamcolor-text {
+	$teamcolor-gradient-direction-default: 20deg;
+	$teamcolor-gradient-start-default: 30%;
+	$teamcolor-gradient-end-default: 70%;
+
+	&.ally { 
+		color: $ally; 
+	}
+	&.enemy { 
+		color: $enemy; 
+	}
+	&.enemy.ally { 
+		color: transparent;
+		background-image: linear-gradient(to right, $ally 30%, $enemy 50%);
+		background-clip: text;
+		-webkit-background-clip: text;
+	}
+	&:is(.player, .player.enemy.ally) {
+		color: $player;
+	}
+}

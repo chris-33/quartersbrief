@@ -26,6 +26,8 @@
 }
 
 .shipbar {
+	@include colors.teamcolor-background;
+
 	display: inline-block;
 	position: relative;
 	padding: 1pt 0;
@@ -59,30 +61,16 @@
 	}
 }
 
-.ally .shipbar { 
-	background-color: colors.$ally; 
-}
-.enemy .shipbar { 
-	background-color: colors.$enemy; 
-}
-.ally.enemy .shipbar { 
-	background-image: linear-gradient(20deg, colors.$ally 30%, colors.$enemy 70%); 
-}
-.player .shipbar, .player.enemy .shipbar { 
-	background-color: colors.$player; 
-	background-image: none;
+.player .shipbar .comparison {
+	// border-left-style: solid;
+	border-left-color: black;
+	border-left-width: 1px;
+	// Hide the text for the player's own ship:
+	width: 0;
+	overflow-x: hidden;
 
-	.comparison {
-		// border-left-style: solid;
-		border-left-color: black;
-		border-left-width: 1px;
-		// Hide the text for the player's own ship:
-		width: 0;
-		overflow-x: hidden;
-
-		&:last-of-type {
-			display: none;
-		}
+	&:last-of-type {
+		display: none;
 	}
 }
 

@@ -63,6 +63,8 @@ $unit-light: #e8e8e8;
 }
 
 .shipbar {
+	@include colors.teamcolor-background;
+
 	$vertical-padding: 2pt;
 
 	padding: $vertical-padding 0;
@@ -114,35 +116,20 @@ $unit-light: #e8e8e8;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;	
+	justify-content: center;
+
+	@include colors.teamcolor-background;
+	// Override style so it doesn't get the gradient applied as well.
+	.enemy.ally & {
+		background: colors.$enemy;
+	}
 }
 
 // Make the units on range and damage (but not speed) a lighter color for allies and enemies, but not the player
 #{selector.nest('.ally, .enemy', '&:not(.player)', '.range, .explosion', '.unit')} {
 	color: $unit-light;	
 }
-
-.ally { 
-	.shipbar, .explosion {
-		background-color: colors.$ally; 
-	}
-}
-.enemy  { 
-	.shipbar, .explosion {
-		background-color: colors.$enemy; 
-	}
-}
-.ally.enemy {
-	.shipbar { 
-		background-image: linear-gradient(20deg, colors.$ally 30%, colors.$enemy 70%); 
-	}
-}
-.player , .player.enemy {
-	.shipbar, .explosion {
-		background-color: colors.$player; 
-		background-image: none;
-		color: black;
-	}
+.player {
 	// Always make the player's ship come last
 	order: 20;
 }

@@ -32,23 +32,21 @@ aside.details {
 	padding: 0.5em;
 	color: black;
 	background-color: white;
-	border: 1px solid black;
-	box-shadow: 0 0 5px black;
+	border: 1px solid var(--details-border-color, black);	
+	box-shadow: 0 0 5px var(--details-border-color, black);
+
 	z-index: 9999;
 	display: none;
 	text-align: left;
 
 	&.ally {
-		border-color: colors.$ally;
-		box-shadow: 0 0 5px colors.$ally;
+		--details-border-color: #{colors.$ally};
 	}
 	&.enemy {
-		border-color: colors.$enemy;
-		box-shadow: 0 0 5px colors.$enemy;
+		--details-border-color: #{colors.$enemy};
 	}
 	&.player {
-		border-color: colors.$player;
-		box-shadow: 0 0 5px colors.$player;
+		--details-border-color: #{colors.$player};
 	}
 
 	.details-title {

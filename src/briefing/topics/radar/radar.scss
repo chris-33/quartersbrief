@@ -93,13 +93,8 @@ $stealthwarn-color-severe: colors.$warning-severe;
 	.ship {
 		padding: 0.1ex 0.1ch;
 
-		&.ally {
-			color: colors.$ally;
-		}
-
+		@include colors.teamcolor-text;
 		&.enemy {
-			color: colors.$enemy;
-
 			&[class*="stealthwarn"]::after {
 				content: "\e063"; // warning
 				font-family: "dripicons-v2";
@@ -114,16 +109,6 @@ $stealthwarn-color-severe: colors.$warning-severe;
 				color: $stealthwarn-color-severe;
 			}
 		}
-
-		&.enemy.ally:not(.player) {
-			color: transparent;
-			background-image: linear-gradient(to right, colors.$ally 30%, colors.$enemy 50%);
-			background-clip: text;
-			-webkit-background-clip: text;
-		}
-		&.player {
-			color: colors.$player;
-		}	
 	}
 }
 

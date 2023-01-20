@@ -2,12 +2,14 @@
 
 aside.details {
 	&.all {
-		border-color: colors.$warning-severe;
-		box-shadow-color: colors.$warning-severe;
+		--details-border-color: #{colors.$warning-severe};
+
 	}
 	&.some {
-		border-color: colors.$warning-moderate;
-		box-shadow-color: colors.$warning-moderate;
+		--details-border-color: #{colors.$warning-moderate};
+	}
+	&.none {
+		--details-border-color: #{colors.$warning-neutral};
 	}
 }
 .details-line.overmatchers {

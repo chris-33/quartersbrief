@@ -16,16 +16,8 @@ $zoom: 0.496;
 }
 
 .ship {
+	@include colors.teamcolor-text;
 	background-color: white;
-
-	&.ally {
-		color: colors.$ally;
-	}
-	
-	// By having .enemy after .ally, ships that are both will be displayed as enemy
-	&.enemy {
-		color: colors.$enemy;	
-	}
 }
 
 .axis {	

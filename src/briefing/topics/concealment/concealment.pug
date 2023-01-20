@@ -32,15 +32,13 @@ mixin details(entry)
 div
 	each entry in entries
 		- const ship = entry.ship;
-		.ship
-			span.shipbar.label(
-				style=`width: ${(entry.concealment - reduction) * 100/maxConcealment}%`, 
-				data-details=ship.getName(),
-				class = {
-					"ally": teams.allies.includes(ship.getID()),
-					"enemy": teams.enemies.includes(ship.getID()),
-					"player": teams.player === ship.getID()
-				})
+		.ship(data-details=ship.getName(),
+			class = {
+				"ally": teams.allies.includes(ship.getID()),
+				"enemy": teams.enemies.includes(ship.getID()),
+				"player": teams.player === ship.getID()
+			})
+			span.shipbar.label(style=`width: ${(entry.concealment - reduction) * 100/maxConcealment}%`)
 				| #{ship.getLabel()}
 			span.value(class={ "player": ship.getID() === teams.player }) #{entry.concealment.toFixed(2)}
 			span.unit km
