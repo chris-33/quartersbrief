@@ -99,10 +99,6 @@ export default class BriefingBuilder {
 		const topics = agenda.getTopicNames().map(topicName => new (this.getTopic(topicName))(topicName, this.providers));
 
 		const briefing = new EventEmitter();
-		briefing.meta = {
-			startTime: Date.now(),
-			agenda
-		};
 
 		briefing.topics = topics;
 		briefing.html = renderBriefing(briefing);
@@ -137,6 +133,7 @@ export default class BriefingBuilder {
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, rendered));
 			return rendered;
 		})).then(() => {
+			rootlog.info(`Created briefing using agenda ${agenda} in ${Date.now() - t0}ms`);
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing));
 		});
 
