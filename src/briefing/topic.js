@@ -3,6 +3,9 @@ import pug from 'pug';
 import sass from 'sass';
 import { toSass } from 'sass-cast';
 import { screamingSnakeCase } from '../util/util.js';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { BASE_DIR } from '../init/paths.js';
 
 const basename = name => name !== 'Topic' && name.endsWith('Topic') ? name.slice(0, -5) : name;
 
@@ -51,8 +54,9 @@ export default class Topic {
 			providers = topicName;
 			topicName = screamingSnakeCase(basename(this.constructor.name)).toLowerCase();
 		}
-		this.pugFile = `src/briefing/topics/${topicName}/${topicName}.pug`;
-		this.scssFile = `src/briefing/topics/${topicName}/${topicName}.scss`;
+		const topicPath = join(dirname(fileURLToPath(import.meta.url)), 'topics', topicName);
+		this.pugFile = join(topicPath, `${topicName}.pug`);
+		this.scssFile = join(topicPath, `${topicName}.scss`);
 		
 		// Infer caption from class name by removing suffix 'Topic' if present...
 		this.caption = basename(this.constructor.name);
@@ -151,7 +155,7 @@ export default class Topic {
 	 */
 	async renderCss(battle, options) {
 		return sass.compile(this.scssFile, {
-			loadPaths: ['node_modules'],
+			loadPaths: [join(BASE_DIR,'node_modules')],
 			functions: {
 				...await this.getScssData(battle, options)
 			}

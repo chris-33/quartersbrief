@@ -23,8 +23,6 @@ import path from 'path';
 import pug from 'pug';
 import sass from 'sass';
 
-process.chdir(paths.BASE_DIR);
-
 // Make sure the game directory is specified.
 if (!config.wowsdir) {
 	log.error(`Missing required parameters wowsdir. Either pass it using --wowsdir or set it in your quartersbrief.json. Exiting.`);
@@ -72,8 +70,9 @@ const briefingController = new BriefingController(
 const { srv, io } = createServers(config.host, config.port);
 
 const indexTemplate = process.env.NODE_ENV === 'development' ? 
-	(...args) => pug.renderFile('./src/core/index.pug', ...args) : 
-	pug.compileFile('./src/core/index.pug');
+	(...args) => pug.renderFile(path.join(paths.BASE_DIR, 'src/core/index.pug'), ...args) : 
+	pug.compileFile(path.join(paths.BASE_DIR, 'src/core/index.pug'));
+
 srv.get('/', function(req, res) {
 	let html = indexTemplate();
 	res.send(html);
@@ -85,7 +84,7 @@ async function handler() {
 	Object.keys(BriefingBuilder)
 		.filter(key => key.startsWith('EVT_'))
 		.map(key => BriefingBuilder[key])
-		.forEach(eventName => briefing.on(eventName, function(...args) {
+		.forEach(eventName => briefing.on(eventName, function reEmit(...args) {
 			let logstr = `Re-emitted event ${eventName}`;			
 			if (eventName === BriefingBuilder.EVT_BRIEFING_TOPIC)
 				logstr += ` for topic #${args[0]}`;
@@ -101,8 +100,8 @@ srv.get('/quartersbrief.css', function(req, res) {
 	res.type('text/css');
 	// Force recompilation on every request in development mode
 	if (!stylesheet || process.env.NODE_ENV === 'development')
-		stylesheet = sass.compile('src/core/quartersbrief.scss', {
-			loadPaths: ['node_modules'],
+		stylesheet = sass.compile(path.join(paths.BASE_DIR, 'src/core/quartersbrief.scss'), {
+			loadPaths: [path.join(paths.BASE_DIR,'node_modules')],
 			functions: {
 				'scrollSnap()': function() {
 					return config.scrollSnap ? sass.sassTrue : sass.sassFalse

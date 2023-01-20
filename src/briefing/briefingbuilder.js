@@ -4,8 +4,10 @@ import sass from 'sass';
 import rootlog from 'loglevel';
 import clone from 'clone';
 import * as topics from './topics/index.js';
+import { dirname, join } from 'path';
+import { fileURLToPath } from 'url';
 
-const renderBriefing = pug.compileFile('src/briefing/briefing.pug');
+const renderBriefing = pug.compileFile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.pug'));
 
 /**
  * The `BriefingBuilder` constructs a briefing for a given battle and agenda. It dynamically imports the 
@@ -97,9 +99,14 @@ export default class BriefingBuilder {
 		const topics = agenda.getTopicNames().map(topicName => new (this.getTopic(topicName))(topicName, this.providers));
 
 		const briefing = new EventEmitter();
+		briefing.meta = {
+			startTime: Date.now(),
+			agenda
+		};
+
 		briefing.topics = topics;
 		briefing.html = renderBriefing(briefing);
-		briefing.css = sass.compile('src/briefing/briefing.scss').css;
+		briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
 		
 		// Defer emission so there is a chance to attach event listeners
 		setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
