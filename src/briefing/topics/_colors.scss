@@ -6,12 +6,20 @@ $enemy: hsl(0deg,65%,50%);
 $player: #fbd770;
 $neutral: cornflowerblue;
 
-// Colors for ship classes. For BB, CL/CA and DD these conform to the colors used in the game's loading screen silhouettes
-$aircarrier: #555756;
-$battleship: #acb0ae;
-$cruiser: #bdc6e4;
-$destroyer: #d7e6dc;
-$submarine: #e6d0b8;
+// Colors for ship classes. For BB, CL/CA and DD these conform to the colors used in the game's loading screen silhouettes, albeit a little darker
+$class-lightness-adjust: -15%;
+$aircarrier: color.scale(#555756, $lightness: $class-lightness-adjust);
+$battleship: color.scale(#acb0ae, $lightness: $class-lightness-adjust);
+$cruiser: color.scale(#bdc6e4, $lightness: $class-lightness-adjust);
+$destroyer: color.scale(#d7e6dc, $lightness: $class-lightness-adjust);
+$submarine: color.scale(#e6d0b8, $lightness: $class-lightness-adjust);
+$by-class: (
+	'aircarrier' :$aircarrier,
+	'battleship': $battleship,
+	'cruiser': $cruiser,
+	'destroyer': $destroyer,
+	'submarine': $submarine
+);
 
 // Colors for styling secondary and tertiary information
 $aside: slategray;
@@ -54,7 +62,7 @@ $highlighted: fuchsia;
 				$ally var(--teamcolor-gradient-start, $teamcolor-gradient-start-default),
 				$enemy var(--teamcolor-gradient-end, $teamcolor-gradient-end-default));		
 	}
-	:is(.player, .player.enemy.ally) & {
+	.player &, .player.enemy.ally & {
 		color: black;
 		background: $player;
 	}
