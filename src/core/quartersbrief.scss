@@ -18,6 +18,17 @@ $fa-font-path: 'font';
 	font-style: normal;
 }
 
+@font-face {
+    font-family: 'quartersbrief-icons';
+    src: url('font/quartersbrief-icons.eot');
+    src: url('font/quartersbrief-icons.eot?#iefix') format('embedded-opentype'),
+         url('font/quartersbrief-icons.woff') format('woff'),
+         url('font/quartersbrief-icons.ttf') format('truetype'),
+         url('font/quartersbrief-icons.svg#quartersbrief-icons') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
 $textcolor: midnightblue;
 $padding-horizontal: 15pt;
 $padding-vertical: 10pt;

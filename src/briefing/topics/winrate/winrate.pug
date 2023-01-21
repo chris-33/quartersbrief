@@ -4,20 +4,8 @@ mixin playerName(participant)
 	span.name&attributes(attributes) #{participant.player.getName()}	
 
 mixin playerShip(participant)
-	- 
-		let team;
-		if (allies.some(ally => ally.player?.getName() === participant.player.getName()))
-			team = "ally";
-		else if (enemies.some(enemy => enemy.player?.getName() === participant.player.getName()))
-			team = "enemy";
 	span.ship&attributes(attributes)
-		if team === "ally"
-			img(src=`img/icon_${participant.ship.getClass().toLowerCase()}.png`)
-			| &nbsp;
 		| #{participant.ship.getLabel()}
-		if team === "enemy"
-			| &nbsp;
-			img(src=`img/icon_${participant.ship.getClass().toLowerCase()}_mirrored.png`)
 
 
 - 

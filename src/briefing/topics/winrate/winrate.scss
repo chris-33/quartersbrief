@@ -1,5 +1,6 @@
 @use '../colors';
 @use '../fontsizes';
+@use 'sass:map';
 
 @mixin classMargin {
 	$border-width: 0.5ch;
@@ -62,14 +63,45 @@ td {
 		font-size: fontsizes.$small;
 		font-style: italic;
 	}
+
+	
 }
 
 .ship {
-	img {
-		vertical-align: baseline;
-		filter: brightness(80%);
-		height: 0.7em;
-		width: auto;
+	&::before, 
+	&::after {
+		display: inline-block;
+		vertical-align: middle;
+		font-family: 'quartersbrief-icons';
+		color: colors.$aside;
+	}
+	&::before {
+		margin-right: 1ch;
+	}
+	&:after {
+		margin-left: 1ch;
+		transform: rotate(180deg);
+	}
+
+	$classes: (
+		'aircarrier': 'A',
+		'battleship': 'B',
+		'cruiser': 'C',
+		'destroyer': 'D',
+		'submarine': 'E'
+	);
+	@each $class, $glyph in $classes {
+		.ally.#{$class} &::before {
+			content: $glyph;
+			color: map.get(colors.$by-class, $class);
+		} 
+	}
+	
+	@each $class, $glyph in $classes {
+		.enemy.#{$class} &::after {
+			content: $glyph;
+			color: map.get(colors.$by-class, $class);
+		} 
 	}
 }
 
