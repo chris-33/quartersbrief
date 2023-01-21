@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="6.4486871mm"
+   height="3.1754899mm"
+   viewBox="0 0 6.4486871 3.1754899"
+   version="1.1"
+   id="svg3261"
+   inkscape:version="1.2.2 (b0a8486541, 2022-12-01, custom)"
+   sodipodi:docname="aircarrier.svg"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview3263"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     showgrid="false"
+     inkscape:zoom="0.75722503"
+     inkscape:cx="209.97721"
+     inkscape:cy="-61.40843"
+     inkscape:window-width="1840"
+     inkscape:window-height="1016"
+     inkscape:window-x="80"
+     inkscape:window-y="27"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs3258" />
+  <g
+     inkscape:label="Ebene 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-49.536833,-165.08167)">
+    <path
+       style="fill:#000000;stroke-width:0.352778"
+       d="m 49.536833,167.55111 v -0.70555 h 1.763889 1.763888 v 0.70555 0.70556 h -1.763888 -1.763889 z m 3.880555,-0.88194 v -1.5875 h 0.305203 0.305203 l 0.978862,0.76997 0.978864,0.76998 -1.019483,0.81577 -1.019483,0.81577 -0.264583,0.002 -0.264584,0.002 z m -3.880555,-0.88195 v -0.70555 h 1.763889 1.763888 v 0.70555 0.70556 h -1.763888 -1.763889 z"
+       id="path3242" />
+  </g>
+</svg>
