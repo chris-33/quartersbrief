@@ -62,8 +62,8 @@ export function loadScreenSort(ship1, ship2) {
 	// If classes and tiers are equal, the game seems to sort them by nation,
 	// according to the second letter of the reference code
 	if (v1 === v2) {
-		v1 = ship1.getRefCode()[1];
-		v2 = ship2.getRefCode()[1];
+		v1 = ship1.getRefCode().charCodeAt(1);
+		v2 = ship2.getRefCode().charCodeAt(1);
 	}
 
 	return v1 - v2;
