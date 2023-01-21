@@ -21,7 +21,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 1em;
-	margin: 0 max(2rem, 15%);
+	// margin: 0 max(2rem, 15%);
 
 	.ship {
 		display: flex;
@@ -30,13 +30,17 @@
 		width: 100%;
 
 		& > .label {
-			color: colors.$enemy;			
+			color: colors.$enemy;
+			overflow: hidden;
+			width: 15ch;
+			max-width: 20%;
 		}
 
-		& > .armor {
-			max-width: 80%;
+		& > .armor {			
 			max-height: 2.5rem;
-			width: fit-content;
+			max-width: 80%;
+			flex: 1;
+			// width: fit-content;
 		}
 	}
 
