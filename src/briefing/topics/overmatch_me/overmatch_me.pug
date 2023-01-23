@@ -59,13 +59,14 @@ svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor
 	each ships, cls in enemyShipsByClass
 		div(class=cls.slice(0, -1).toLowerCase())
 			h4 #{cls[0].toUpperCase() + cls.slice(1)}
-			each ship in ships
-				.ship
-					span #{ship.getLabel()}
-					span #{ship.artillery.getCaliber()}
-						span.unit mm
-			else
-				.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
+			table
+				each ship in ships
+					tr
+						td.label #{ship.getLabel()}
+						td.value #{ship.artillery.getCaliber()}
+							span.unit mm
+				else
+					.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
 
 each piece, id in armor.side
 	- 

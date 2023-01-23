@@ -24,31 +24,30 @@
 }
 
 .gunlist {
-	margin-top: 2rem;
 	display: flex;
-	column-gap: 2.5em;
-	line-height: 1.5;
+	justify-content: space-between;
+	flex-wrap: wrap;
 
-	& > div {
-		padding: 1rem;
-		width: 33%;
+	table {
+		border-spacing: 1em 1ex;
 	}
 
 	h4 {
 		font-weight: normal;
 		text-decoration: underline;
 		text-align: center;
-		margin: 0;
-		margin-bottom: 2rem;
+		margin: 2rem 0;
 	}
 
-	.ship {
-		& > :first-child {
-			color: colors.$enemy;
-		}
-		
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
+	td.label {
+		color: colors.$enemy;
+		max-width: 15ch;
+		text-overflow: ellipsis;
+		overflow-x: hidden;
+		text-align: left;
+	}
+
+	td.value {
+		text-align: right;
 	}
 }
