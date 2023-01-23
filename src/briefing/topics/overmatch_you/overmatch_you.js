@@ -1,12 +1,18 @@
 import Topic from '../../topic.js';
+import { ShipBuilder } from '../../../util/shipbuilder.js';
+import clone from 'clone';
 
 export default class OvermatchYouTopic extends Topic {
 	caption = 'Overmatch Capability';
 
 	async getPugData(battle, options) {
+		options = clone(options) ?? {};
+		options.filter = options.filter ?? {};
+		options.filter.teams = [ 'enemies' ];
+
 		const locals = await super.getPugData(battle, options);
 
-		locals.ownship = locals.ships.find(ship => ship.getID() === locals.teams.player);
+		locals.ownship = new ShipBuilder(this.gameObjectFactory).build(locals.teams.player, { modules: 'top' });
 		locals.ships = locals.ships
 			.filter(ship => locals.teams.enemies.includes(ship.getID()))
 
