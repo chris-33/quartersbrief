@@ -52,7 +52,6 @@ mixin warningsPanel(entry)
 		each warning in WARNINGS
 			if warning.severity(entry)
 				span(class=warning.severity(entry), data-details=`${entry.ship.getName()}-warning-${warning.name}`) #{warning.symbol}
-	div(style=`position: relative;`)
-		each warning in WARNINGS
-			aside.details.tooltip(data-details-for=`${entry.ship.getName()}-warning-${warning.name}`)
-				| #{ warning.tooltip }
+	each warning in WARNINGS
+		aside.details.tooltip(data-details-for=`${entry.ship.getName()}-warning-${warning.name}`)
+			| #{ warning.tooltip }

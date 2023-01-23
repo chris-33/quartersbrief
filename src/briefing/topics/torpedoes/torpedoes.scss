@@ -6,27 +6,29 @@
 $unit-light: #e8e8e8;
 
 .content {
-	display: flex;
-	flex-direction: column;
+	display: grid;
+	align-items: center;
+	grid-template-columns: minmax(5ch, 15ch) 3fr 3em;
 	row-gap: 2ex;
+
+	& > * {
+		min-width: 0;
+	}
 }
 
 .ship {	
-	display: flex;
-	align-items: center;
+	display: contents;
 
 	.label {
 		white-space: nowrap;
-		// Do not grow. Do not shrink. Base width is clamp(6ch, 15%, 15ch).
-		flex: 0 0 clamp(6ch, 18%, 15ch);
 		overflow-x: hidden;
 		text-overflow: ellipsis;
 		padding-right: 0.5ch;
+		min-width: 8ch;
+		max-width: 15ch;
 	}
 
 	.diagram {
-		// Do not grow. Do not shrink. Base width is auto.
-		flex: 1 0 0;
 		white-space: nowrap;
 		display: flex;
 		align-items: center;
@@ -35,7 +37,6 @@ $unit-light: #e8e8e8;
 	.warnings {
 		$symbol-spacing: 3pt;
 
-		flex: 0 0 2em;
 		// Write from top to bottom, but don't change character orientation
 		writing-mode: vertical-lr;
 		text-orientation: upright;
