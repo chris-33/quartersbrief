@@ -1,6 +1,7 @@
 @use '../colors';
 @use '../fontsizes';
 @use '_details';
+@use 'sass:map';
 
 .ownguns {
 	border: 1px solid colors.$player;
@@ -9,7 +10,7 @@
 	margin-top: 3rem;
 	margin-left: auto;
 	margin-right: auto;
-	max-width: min(100%, 25rem);
+	// max-width: min(100%, 25rem);
 
 	& > span {
 		font-size: fontsizes.$large;
@@ -20,33 +21,58 @@
 .ships {
 	display: flex;
 	flex-direction: column;
-	gap: 1em;
-	// margin: 0 max(2rem, 15%);
+	gap: 0.5rem;
 
 	.ship {
-		display: flex;
-		align-items: end;
-		justify-content: space-between;
-		width: 100%;
+		padding: 0.5rem 1.5rem;
+		position: relative;
+		max-height: 3rem;
+		min-height: 2rem;
+		margin: 0 auto;
 
 		& > .label {
 			color: colors.$enemy;
-			overflow: hidden;
-			width: 15ch;
-			max-width: 20%;
+			position: absolute;
 		}
 
-		& > .armor {			
-			max-height: 2.5rem;
-			max-width: 80%;
-			flex: 1;
-			// width: fit-content;
+		& > .armor {
+			display: inline-block;
+			vertical-align: middle;
+			svg {
+				height: 100%;		
+				width: 100%;
+			}
+		}
+		
+
+		& > .stats {
+			&, * {
+				margin: 0;
+				padding: 0;
+			}
+			display: inline-table;
+			border-spacing: 1em 0;
+			margin-left: 1rem;
+
+			font-size: fontsizes.$small;
+
+			td:last-of-type {
+				text-align: right;
+			}		
 		}
 	}
 
-	// Add some space between the classes
-	@each $class in [ '.aircarrier', '.battleship', '.cruiser' ] {
-		#{$class} + :not(#{$class}) { margin-top: 1rem; }
+	@each $class in [ 'aircarrier', 'battleship', 'cruiser' ] {
+		// Add the colored stripe indicating the ship's class
+		.ship.#{$class} {
+			border: 0.5px solid map.get(colors.$by-class, $class);
+			border-left-width: 0.5ch;
+		}
+
+		// Add some space between the classes
+		.#{$class} + :not(.#{$class}) {			
+			margin-top: 1.5rem; 
+		}
 	}
 }
 
