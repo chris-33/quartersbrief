@@ -13,11 +13,11 @@ $zoom: 0.496;
 	position: absolute;
 	white-space: nowrap;
 	transform: translateY(-50%);
+	background-color: white;
 }
 
 .ship {
 	@include colors.teamcolor-text;
-	background-color: white;
 }
 
 .axis {	
