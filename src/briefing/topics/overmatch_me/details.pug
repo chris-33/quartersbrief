@@ -1,0 +1,28 @@
+aside.details(data-details-for=id, class=overmatched(thickness))
+	.details-title Armor piece #{id}
+
+	.details-line
+		span.caption Thickness:
+		span.value
+			| #{thickness}
+			span.unit mm
+	hr
+	.details-line
+		span.caption Overmatched by:
+		span.value
+			| #{Math.ceil(thickness * 14.3)}
+			span.unit mm
+	.details-line.overmatchers
+		ul
+			each ship in ships
+				li
+					span.caption #{ship.getLabel()}
+					if ship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)
+						span.value.overmatch
+							| yes
+					else
+						span.value.no-overmatch
+							| no
+
+			else
+				| Not overmatched by anyone

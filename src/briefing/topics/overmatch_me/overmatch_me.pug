@@ -1,12 +1,9 @@
 - 
-	const enemyShips = ships
-		.filter(ship => teams.enemies.includes(ship.getID()))
-		.sort((ship1, ship2) => ship2.artillery.getCaliber() - ship1.artillery.getCaliber());
 
-	const enemyShipsByClass = {
-		battleships: enemyShips.filter(ship => ship.getClass() === 'Battleship'),
-		cruisers: enemyShips.filter(ship => ship.getClass() === 'Cruiser'),
-		destroyers: enemyShips.filter(ship => ship.getClass() === 'Destroyer')
+	const shipsByClass = {
+		battleships: ships.filter(ship => ship.getClass() === 'Battleship'),
+		cruisers: ships.filter(ship => ship.getClass() === 'Cruiser'),
+		destroyers: ships.filter(ship => ship.getClass() === 'Destroyer')
 	};
 
 -
@@ -31,9 +28,9 @@
 		return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
 	}
 	function overmatched(thickness) {
-			if (enemyShipsByClass.battleships.every(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
+			if (shipsByClass.battleships.every(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
 				return 'all';
-			else if (enemyShipsByClass.battleships.some(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
+			else if (shipsByClass.battleships.some(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
 				return 'some';
 			else 
 				return 'none';
@@ -56,7 +53,7 @@ svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor
 		li.none no battleships
 
 .gunlist
-	each ships, cls in enemyShipsByClass
+	each ships, cls in shipsByClass
 		div(class=cls.slice(0, -1).toLowerCase())
 			h4 #{cls[0].toUpperCase() + cls.slice(1)}
 			table
@@ -69,36 +66,5 @@ svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor
 					.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
 
 each piece, id in armor.side
-	- 
-		const thickness = locals.ownship.get(`hull.armor.${id}`);
-
-	aside.details(data-details-for=id, class=overmatched(thickness))
-		.details-title Armor piece #{id}
-
-		.details-line
-			span.caption Thickness:
-			span.value
-				| #{thickness}
-				span.unit mm
-		hr
-		.details-line
-			span.caption Overmatched by:
-			span.value
-				| #{Math.ceil(thickness * 14.3)}
-				span.unit mm
-		.details-line.overmatchers
-			ul
-				each ship in enemyShips
-					li
-						span.caption #{ship.getLabel()}
-						if ship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)
-							span.value.overmatch
-								| yes
-								//- | #{ship.artillery.getCaliber()}
-								//- span.unit mm
-						else
-							span.value.no-overmatch
-								| no
-
-				else
-					| Not overmatched by anyone
+	- const thickness = ownship.get(`hull.armor.${id}`);
+	include details
