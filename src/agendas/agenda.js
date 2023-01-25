@@ -1,35 +1,62 @@
+import * as clauses from './clauses.js';
+
 /**
- * An agenda describes how to construct a briefing. It consists of two main constituents: a _matcher_ and _topics_.
- * The matcher determines what ships this agenda pertains to. The topics are the briefing's content.
+ * An agenda describes how to construct a briefing. It consists of two main constituents: a list of _matchers_ and a hash of _topics_.
+ *
+ * The matchers determines what ships this agenda pertains to. Each matcher consists of a list of conditions (called clauses) that a ship must fulfill
+ * in order to be considered a match for that clause. A ship is considered to match a matcher if it matches all clauses of that matcher. A ship is
+ * considered to match an agenda if it matches at least one matcher of the agenda, or if the agenda does not have any matchers.
+ * 
+ * The topics are the briefing's content.
  */
 export default class Agenda {
-	matcher;
+	matchers;
 	topics;
 
-	constructor(matcher, topics) {
-		this.matcher = matcher;
+	/**
+	 * Constructs a new agenda from the given matchers and topics.
+	 * If there is only one matcher in `matchers`, it can be passed directly, i.e. the following two are equivalent:
+	 * ```
+	 * new Agenda([matcher], topics);
+	 * new Agenda(matcher, topics);
+	 * ```
+	 * This is mostly for legacy reasons, however.
+	 * 
+	 * @param  {Array|Object} matchers The array of matchers for this agenda. If this is not an array, it will be
+	 * turned into one. If this is `undefined` or `null` it will be turned into an array containing an empty matcher
+	 * object (which matches everything).
+	 * @param  {Object} topics   The topics for this agenda.
+	 */
+	constructor(matchers, topics) {
+		matchers ??= {};
+		if (!Array.isArray(matchers))
+			matchers = [ matchers ];
+
+		this.matchers = matchers;
 		this.topics = topics;
 	}
 
 	/**
-	 * Checks whether the given battle matches the agenda's matcher section.
-	 * A battle is considered a match if the following conditions are met for
-	 * the player's ship:
-	 * - If the matcher has a ship list, the ship must be in it.
-	 * - If the matcher has a class list, the ship's class must be in it.
-	 * - If the matcher has a tier list, the ship's tier must be in it.
-	 * - If the matcher has a nation list, the ship's nation must be in it.
-	 * Any matcher lists that are missing are considered to match everything.
-	 * @param  {Ship} ship The battle which to check.
-	 * @return {boolean}      `True` if the ship matches, `false` otherwise.
+	 * Checks whether the given battle matches the agenda's matchers section.
+	 * A battle is considered a match if for at least one matcher in this agenda's list of matchers,
+	 * the ship matches all its clauses.
+	 * @param  {Ship} ship The ship which to check.
+	 * @return {boolean}      An array containing all matchers the ship matched, or `null` if 
+	 * it didn't match any. If this agenda does not have any matchers, this method returns an
+	 * array containing an empty object (`[{}]`). Note that this means that if this agenda matches
+	 * the given ship, the result is truthy, and falsy otherwise.
 	 */
 	matches(ship) {
-		if (!this.matcher) return true;
+		let result = [];
+		for (let matcher of this.matchers) {
+			const matches = Object.keys(matcher)
+				.reduce((prev, clause) => prev && clauses[clause](ship, matcher[clause]), true);
 
-		return (this.matcher.ships?.includes(ship.getName()) ?? true)
-			&& (this.matcher.classes?.includes(ship.getSpecies()) ?? true)
-			&& (this.matcher.tiers?.includes(ship.getTier()) ?? true)
-			&& (this.matcher.nations?.includes(ship.getNation()) ?? true);
+			if (matches) 
+				result.push(matcher);			
+		}
+
+		return result.length > 0 ? result : null;
 	}
 
 	/**
