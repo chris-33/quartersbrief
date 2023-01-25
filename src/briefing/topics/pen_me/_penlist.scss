@@ -1,0 +1,29 @@
+table.penlist {
+	border-spacing: 1em 0.5ex;
+	margin: 1.5rem auto;
+	width: 80%;
+
+	th {
+		font-weight: inherit;
+		font-style: normal;
+		text-decoration: underline;
+	}
+
+	td {
+		text-align: right;
+
+		&.empty {
+			text-align: center;
+		}		
+	}
+
+	td, th {
+		width: 4em;
+	}
+	td:first-child, 
+	th:first-child {
+		text-align: left;
+		width: auto;
+	}
+}
+

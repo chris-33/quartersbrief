@@ -1,0 +1,38 @@
+aside.details(data-details-for=id, class=penned(thickness))
+	.details-title Armor piece #{id}
+
+	.details-line
+		span.caption Thickness:
+		span.value
+			| #{thickness}
+			span.unit mm
+	hr
+	.details-line Penetrated by:
+	table
+		colgroup
+			col
+			col
+			col
+		tr
+			th Ship
+			th HE
+			th SAP
+		- const ordered = Object.values(pens).sort((pen1, pen2) => Math.max(pen2.ammos.he ?? 0, pen2.ammos.sap ?? 0) - Math.max(pen1.ammos.he ?? 0, pen1.ammos.sap ?? 0));
+		each pen in ordered
+			tr
+				td #{pen.ship.getLabel()}
+				if pen.ammos.he >= thickness
+					td.pen yes
+				else if pen.ammos.ifhe >= thickness
+					td.pen.ifhe IFHE
+				else if pen.ammos.he
+					td no
+				else
+					td -
+			
+				if pen.ammos.sap >= thickness
+					td.pen yes
+				else if pen.ammos.sap
+					td no
+				else
+					td -

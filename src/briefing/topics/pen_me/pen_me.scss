@@ -1,0 +1,70 @@
+@use 'sass:color';
+@use '../colors';
+@use '../fontsizes';
+@use 'details';
+@use 'legend';
+@use 'penlist';
+
+.view {
+	padding: 0.5ch 2em;
+	margin: 2rem 0;
+	border: 0.5px solid colors.$player;
+
+	h3 {
+		margin: 0;
+		margin-bottom: 1em;
+		text-align: center;	
+		font-size: inherit;
+		font-weight: inherit;
+		text-decoration: underline;
+	}
+}
+
+.piece {
+	$lightness: 66%;
+
+	stroke-width: 0.2%;
+
+	&.all {
+		stroke: colors.$warning-severe;
+		fill: colors.$warning-severe-light;
+	}
+	&.some {
+		stroke: colors.$warning-moderate;
+		fill: colors.$warning-moderate-light;
+	}
+	&.none {
+		stroke: colors.$warning-neutral;
+		fill: colors.$warning-neutral-light;
+	}
+}
+
+.gunlist {
+	margin-top: 2rem;
+	display: flex;
+	column-gap: 2.5em;
+	line-height: 1.5;
+
+	& > div {
+		padding: 1rem;
+		width: 33%;
+	}
+
+	h4 {
+		font-weight: normal;
+		text-decoration: underline;
+		text-align: center;
+		margin: 0;
+		margin-bottom: 2rem;
+	}
+
+	.ship {
+		& > :first-child {
+			color: colors.$enemy;
+		}
+		
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+}

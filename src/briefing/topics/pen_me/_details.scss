@@ -1,0 +1,45 @@
+@use '../colors';
+
+aside.details {
+	&.all {
+		--details-border-color: #{colors.$warning-severe};
+	}
+	&.some {
+		--details-border-color: #{colors.$warning-moderate};
+	}
+	&.none {
+		--details-border-color: #{colors.$warning-neutral};
+	}
+
+	table {
+		display: table;
+		border-spacing: 1em 0;
+		margin-top: 1ex;
+		margin-left: 1em;
+
+		th {
+			font-weight: inherit;
+			text-decoration: underline;
+		}
+		col:first-of-type {
+			width: 60%;
+		}
+		col {
+			width: 20%;
+		}
+		td:first-of-type {
+			color: black;
+			text-align: left;
+		}
+		td {
+			color: colors.$warning-favorable;
+			text-align: center;
+		}
+		.pen.ifhe {
+			color: colors.$warning-moderate;
+		}
+		.pen {
+			color: colors.$warning-severe;
+		}
+	}
+}
