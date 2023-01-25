@@ -53,7 +53,7 @@ class BufferCursor extends _BufferCursor {
 export default async function updateArmor(wows, dest, buildno) {
 	const resource = {
 		include: [ 'content/gameplay/*/ship/*.geometry' ],
-		exclude: [ '*Bow*', '*Mid*', '*Stern*' ]
+		exclude: [ '*_Bow*', '*_MidFront*', '*_MidBack*', '*_Stern*' ]
 	};
 	const tmpdir = path.join(os.tmpdir(), 'armor');
 	dest = path.join(dest, 'armor');
@@ -194,20 +194,20 @@ export default async function updateArmor(wows, dest, buildno) {
 				const armor = armorAndMetadata.armor;
 
 				// Convert all pieces from this:
-				// id: {
-				//  id
-				// 	vertices: [
-				// 		{ x1, y1, z1 }
-				// 		{ x2, y2, z2 }
-				// 		{ x3, y3, z3 }
-				// 		...
-				// 	]
-				// }
+				// 	id: {
+				//  	id
+				// 		vertices: [
+				// 			{ x1, y1, z1 }
+				// 			{ x2, y2, z2 }
+				// 			{ x3, y3, z3 }
+				// 			...
+				// 		]
+				// 	}
 				// to this:
-				// id: [
+				// 	id: [
 				// 		[ [ x1, y1, z1 ], [ x2, y2, z2 ], [ x3, y3, z3 ] ],
 				// 		...
-				// ]
+				// 	]
 				for (let id in armor) {
 					let piece = armor[id];
 					piece.vertices = piece.vertices.map(convertVertex);
