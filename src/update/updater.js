@@ -118,6 +118,7 @@ export default class Updater {
 		let remembered = await this.detectVersion(this.dest);
 
 		if (this.needsUpdate(detected, remembered, options)) {
+			rootlog.info(`Updating data to version ${detected}`);
 			await fs.mkdir(path.join(this.dest, String(detected)), { recursive: true });
 			try {
 				// Run updates sequentially, waiting for each
