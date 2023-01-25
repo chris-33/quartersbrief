@@ -1,5 +1,5 @@
 import AgendaController from '../../src/core/agendacontroller.js';
-import AgendaStore from '../../src/briefing/agendastore.js';
+import AgendaStore from '../../src/agendas/agendastore.js';
 import sinon from 'sinon';
 
 describe('AgendaController', function() {

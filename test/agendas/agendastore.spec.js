@@ -1,4 +1,4 @@
-import AgendaStore from '../../src/briefing/agendastore.js';
+import AgendaStore from '../../src/agendas/agendastore.js';
 import mockfs from 'mock-fs';
 import { readFileSync } from 'fs';
 import TOML from '@iarna/toml';
@@ -9,7 +9,7 @@ describe('AgendaStore', function() {
 
 	before(function() {
 		// "before" hooks run before beforeEach hooks, so this will still read from the real filesystem
-		TEST_DATA = JSON.parse(readFileSync('test/briefing/testdata/agendas.json'));
+		TEST_DATA = JSON.parse(readFileSync('test/agendas/testdata/agendas.json'));
 	});
 
 	beforeEach(function() {

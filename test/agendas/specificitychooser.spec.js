@@ -1,5 +1,5 @@
-import SpecificityChooser from '../../src/briefing/specificitychooser.js';
-import Agenda from '../../src/briefing/agenda.js';
+import SpecificityChooser from '../../src/agendas/specificitychooser.js';
+import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import Ship from '../../src/model/ship.js';
 import GameObjectFactory from '../../src/model/gameobjectfactory.js';
@@ -18,7 +18,7 @@ describe('SpecificityChooser', function() {
 	let strategy;
 	let ship;
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/briefing/testdata/agendas.json'));
+		TEST_DATA = JSON.parse(readFileSync('test/agendas/testdata/agendas.json'));
 		ship = Object.create(Ship.prototype);
 		for (let prop in SHIP_DATA) {
 			const getter = `get${prop.charAt(0).toUpperCase()}${prop.substring(1)}`;

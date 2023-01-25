@@ -1,4 +1,4 @@
-import Agenda from '../../src/briefing/agenda.js';
+import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import Ship from '../../src/model/ship.js';
 import sinon from 'sinon';
