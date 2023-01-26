@@ -3,11 +3,9 @@ import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import Ship from '../../src/model/ship.js';
 import GameObjectFactory from '../../src/model/gameobjectfactory.js';
-import { readFileSync } from 'fs';
 import sinon from 'sinon';
 
 describe('SpecificityChooser', function() {
-	let TEST_DATA;
 	const SHIP_DATA = {
 		name: 'PAAA001_Battleship',
 		class: 'Battleship',
@@ -15,10 +13,10 @@ describe('SpecificityChooser', function() {
 		nation: 'USA'
 	}
 
-	let strategy;
+	let chooser;
 	let ship;
+
 	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/agendas/testdata/agendas.json'));
 		ship = Object.create(Ship.prototype);
 		for (let prop in SHIP_DATA) {
 			const getter = `get${prop.charAt(0).toUpperCase()}${prop.substring(1)}`;
@@ -26,7 +24,7 @@ describe('SpecificityChooser', function() {
 		}
 		let gameObjectFactory = new GameObjectFactory();
 		sinon.stub(gameObjectFactory, 'createGameObject').returns(ship);
-		strategy = new SpecificityChooser(gameObjectFactory);
+		chooser = new SpecificityChooser(gameObjectFactory);
 	});
 
 	it('should throw if created without a GameObjectFactory', function() {
@@ -35,27 +33,20 @@ describe('SpecificityChooser', function() {
 	});
 
 	describe('.scoreOf', function() {
-		it('should return 0 if the agenda has an empty matcher, or no matcher at all', function() {
-			expect(strategy.scoreOf(null, new Agenda(null, null))).to.equal(0);
-			expect(strategy.scoreOf(null, new Agenda(null, {}))).to.equal(0);
+		it('should return 0 for an empty matcher', function() {
+			expect(chooser.scoreOf({})).to.equal(0);
 		});
 
 		it('should award the correct points for matching ships, classes, nations, and tiers', function() {			
-			const matchers = {
+			const clauses = {
 				ships: [ ship.getName() ],
 				classes: [ ship.getClass() ],
 				tiers: [ ship.getTier() ],
 				nations: [ ship.getNation() ]
 			}
-			for (let prop in matchers)
-				expect(strategy.scoreOf(ship, new Agenda({ [prop]: matchers[prop] })), prop).to
-					.equal(SpecificityChooser.POINTS[prop]);
-		});
-
-		it('should return a negative number for not matching a present ships, classes, nations or tiers', function() {
-			[ 'ships', 'classes', 'tiers', 'nations' ].forEach(prop => 
-				expect(strategy.scoreOf(ship, new Agenda({ [prop]: [ 'not matching ship' ]}))).to
-					.be.below(0));
+			for (let clause in clauses)
+				expect(chooser.scoreOf({ [clause]: clauses[clause] }), clause).to
+					.equal(SpecificityChooser.POINTS[clause]);
 		});
 	});
 
@@ -68,41 +59,46 @@ describe('SpecificityChooser', function() {
 		});
 
 		it('should return null if there are no agendas', function() {			
-			expect(strategy.choose(battle, [])).to.be.null;
+			expect(chooser.choose(battle, [])).to.be.null;
 		});
 
 		it('should return null if no agendas fit', function() {
-			let agendas = TEST_DATA.map(agenda => new Agenda(agenda.matches, null));
-			sinon.stub(strategy, 'scoreOf').returns(-10000);
-			try {
-				expect(strategy.choose(battle, agendas)).to.be.null;
-			} finally {
-				strategy.scoreOf.restore();
-			}
+			const agenda = new Agenda();
+			sinon.stub(agenda, 'matches').returns(null);
+
+			expect(chooser.choose(battle, [ agenda ])).to.be.null;
 		});
 
 		it('should return an agenda with score 0 if no others fit', function() {
-			let agendas = TEST_DATA.map(agenda => new Agenda(agenda.matches, null));
-			sinon.stub(strategy, 'scoreOf').returns(-10000);
-			strategy.scoreOf.onFirstCall().returns(0);			
+			const agenda = new Agenda();
+			sinon.stub(agenda, 'matches').returns([{}]);
+
+			sinon.stub(chooser, 'scoreOf').returns(0);
 			try {
-				expect(strategy.choose(battle, agendas)).to.equal(agendas[0]);
+				expect(chooser.choose(battle, [ agenda ])).to.equal(agenda);
 			} finally {
-				strategy.scoreOf.restore();
+				chooser.scoreOf.restore();
 			}			
 		});
 
 		it('should return the agenda with the highest score', function() {
-			let agendas = TEST_DATA.map(agenda => new Agenda(agenda.matches, null))
+			const agendas = [];
+			const matchers = [];
+			for (let i = 0; i < 3; i++) {
+				const matcher = {};
+				const agenda = new Agenda(matcher);
+				agendas.push(agenda);
+				matchers.push(matcher);
+			}
 
-			// Make each agenda's index its score
-			sinon.stub(strategy, 'scoreOf');
-			agendas.forEach((agenda, index) => strategy.scoreOf.withArgs(sinon.match.any, agenda).returns(index));
+			// Make each match's score its index
+			sinon.stub(chooser, 'scoreOf');			
+			matchers.forEach((matcher, index) => chooser.scoreOf.withArgs(sinon.match.same(matcher)).returns(index)); // sinon.match.same: Use strict equality instead of deep equality for arg matching
 			
-			try {				
-				expect(strategy.choose(battle, agendas)).to.equal(agendas[agendas.length - 1]);
+			try {
+				expect(chooser.choose(battle, agendas)).to.equal(agendas.at(-1));
 			} finally {
-				strategy.scoreOf.restore();
+				chooser.scoreOf.restore();
 			}
 		});
 	});
