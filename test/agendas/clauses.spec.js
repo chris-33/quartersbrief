@@ -3,7 +3,7 @@ import DataObject from '../../src/model/dataobject.js';
 
 describe('clauses', function() {
 	describe('has-clause', function() {
-		it('should run the correct comparison on expressions containing an operator and a value', function() {
+		it('should run the correct comparison on expressions containing a comparator and a value', function() {
 			const OPERATORS = [ '<', '<=', '==', '>=', '>' ];
 			const value = 5;
 			OPERATORS.forEach(op => {
@@ -18,7 +18,7 @@ describe('clauses', function() {
 			});
 		});
 
-		it('should check for existence on an expression not containing an operator and value', function() {
+		it('should check for existence on an expression not containing a comparator and value', function() {
 			const data = new DataObject({
 				prop: 'abc'
 			});
@@ -36,8 +36,8 @@ describe('clauses', function() {
 		it('should throw on a malformed expression', function() {
 			const malformed = [
 				'.malformed_property', 'malformed_property.', 
-				'missing operator',
-				'property | illegal operator',
+				'missing comparator',
+				'property | illegal comparator',
 				'dangling_operator <='
 			]
 			malformed.forEach(expr => expect(clauses.has.bind(null, {}, [ expr ]), expr).to.throw())			

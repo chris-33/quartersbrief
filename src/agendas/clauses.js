@@ -15,12 +15,12 @@ export const ships = createClause('name');
 
 export function has(data, required) {
 	// The regular expression for a single has-clause expresion:
-	// - An expression is a sequence of the form <prop><op><val>. <op> and <val> are optional, but must either both be present or both be absent
-	// - <prop>, <op> and <val> may be separated by arbitrary sequences of whitespace, including no whitespace
+	// - An expression is a sequence of the form <prop><comp><val>. <comp> and <val> are optional, but must either both be present or both be absent
+	// - <prop>, <comp> and <val> may be separated by arbitrary sequences of whitespace, including no whitespace
 	// - <prop> is a string of characters. It may include dots, but not as the first or last character
-	// - <op> is one of <, <=, ==, =>, or >
+	// - <comp> is one of <, <=, ==, =>, or >
 	// - <val> is a sequence of at least one character, digit or whitespace
-	const EXPR_REGEX = /^(?<prop>(?!\.)[\w.]+(?<!\.))(?:\s*(?<op><|<=|==|>=|>)\s*(?<val>[\w\s]+))?$/;
+	const EXPR_REGEX = /^(?<prop>(?!\.)[\w.]+(?<!\.))(?:\s*(?<comp><|<=|==|>=|>)\s*(?<val>[\w\s]+))?$/;
 	const COMPARATORS = {
 		'<': (a,b) => a < b,
 		'<=': (a,b) => a <= b,
@@ -34,14 +34,14 @@ export function has(data, required) {
 		required = [ required ];
 	
 	return required
-		// Translate expressions from strings to objects { prop, op, val }
+		// Translate expressions from strings to objects { prop, comp, val }
 		.map(expr => {
 			let result = EXPR_REGEX.exec(expr);
 			if (!result) throw new TypeError(`${expr} is not a valid has-clause`)
 			else return result.groups
 		})
 		// Map each expresion object to the result of its evaluation
-		.map(({ prop, op, val }) => COMPARATORS[op ?? '><'](data.get(prop), val))
+		.map(({ prop, comp, val }) => COMPARATORS[comp ?? '><'](data.get(prop), val))
 		// Will be true iff all entries of the array are truthy
 		.every(Boolean);
 }
