@@ -1,10 +1,8 @@
 import Agenda from '../../src/agendas/agenda.js';
-import Battle from '../../src/model/battle.js';
 import Ship from '../../src/model/ship.js';
-import sinon from 'sinon';
 import { readFileSync } from 'fs';
 
-describe.only('Agenda', function() {
+describe('Agenda', function() {
 	describe('constructor', function() {
 		it('should turn a matchers section that is an object into an array', function() {
 			const matcher = {};
@@ -12,10 +10,6 @@ describe.only('Agenda', function() {
 			const agenda2 = new Agenda([matcher]);
 
 			expect(agenda1).to.deep.equal(agenda2);
-		});
-
-		it('should turn a missing matchers section into an array containing only an empty matcher object', function() {
-			expect(new Agenda()).to.have.property('matchers').that.deep.equals([{}]);
 		});
 	});
 
@@ -64,6 +58,81 @@ describe.only('Agenda', function() {
 				topic2: { prop: 'prop' }
 			});
 			agenda.getTopicNames().forEach(topic => expect(agenda.topics[topic]).to.have.property('prop'));
+		});
+	});
+
+	describe('extend', function() {
+		it('should use the extended agenda\'s matchers if the extending agenda does not have any', function() {
+			const extending = new Agenda();
+			const extended = new Agenda([
+				{ tiers: [ 8 ] }
+			]);
+
+			const result = Agenda.extend(extending, extended);
+
+			expect(result.matchers).to.deep.equal(extended.matchers);
+		});
+
+		it('should use the extending agenda\'s matchers if defined', function() {
+			const extending = new Agenda([
+				{ tiers: [ 8 ] }
+			]);
+			const extended = new Agenda([
+				{ classes: [ 'Destroyer' ] }
+			]);
+			
+			const result = Agenda.extend(extending, extended);
+
+			expect(result.matchers).to.deep.equal(extending.matchers);
+		});
+
+		it('should add topics from the extended agenda if not present in the extending agenda', function() {
+			const topic = { prop: 'val' };
+			const extending = new Agenda(null, {});
+			const extended = new Agenda(null, { topic });
+
+			const result = Agenda.extend(extending, extended);
+
+			expect(result.topics).to.have.property('topic').that.deep.equals(topic);
+		});
+
+		it('should keep topics from the extending agenda even if not present in the extended agenda', function() {
+			const topic = { prop: 'val' };
+			const extending = new Agenda(null, { topic });
+			const extended = new Agenda(null, {});
+
+			const result = Agenda.extend(extending, extended);
+
+			expect(result.topics).to.have.property('topic').that.deep.equals(topic);
+		});
+
+		it('should add topic properties from the extended agenda', function() {
+			const extending = new Agenda(null, { 
+				topic: { prop1: 'val1' } 
+			});
+			const extended = new Agenda(null, { 
+				topic: { prop2: 'val2' } 
+			});
+
+			const result = Agenda.extend(extending, extended);
+
+			expect(result.topics).to.have.property('topic');
+			expect(result.topics.topic).to.have.property('prop1').that.equals('val1');
+			expect(result.topics.topic).to.have.property('prop2').that.equals('val2');
+		});
+
+		it('should not overwrite topic properties already defined by the extending agenda', function() {
+			const extending = new Agenda(null, { 
+				topic: { prop: 'val1' } 
+			});
+			const extended = new Agenda(null, { 
+				topic: { prop: 'val2' } 
+			});
+
+			const result = Agenda.extend(extending, extended);
+
+			expect(result.topics).to.have.property('topic');
+			expect(result.topics.topic).to.have.property('prop').that.equals('val1');			
 		});
 	});
 });

@@ -22,14 +22,12 @@ export default class Agenda {
 	 * ```
 	 * This is mostly for legacy reasons, however.
 	 * 
-	 * @param  {Array|Object} matchers The array of matchers for this agenda. If this is not an array, it will be
-	 * turned into one. If this is `undefined` or `null` it will be turned into an array containing an empty matcher
-	 * object (which matches everything).
+	 * @param  {Array|Object} matchers The array of matchers for this agenda. If this is an object but no an array, it will be
+	 * turned into an array containing only that object.
 	 * @param  {Object} topics   The topics for this agenda.
 	 */
-	constructor(matchers, topics) {
-		matchers ??= {};
-		if (!Array.isArray(matchers))
+	constructor(matchers, topics) {		
+		if (typeof matchers === 'object' && matchers !== null && !Array.isArray(matchers))
 			matchers = [ matchers ];
 
 		this.matchers = matchers;
@@ -47,6 +45,13 @@ export default class Agenda {
 	 * the given ship, the result is truthy, and falsy otherwise.
 	 */
 	matches(ship) {
+		// If this agenda does not have any matchers, return an array of matches consisting only of the empty matcher
+		// (which matches everything).
+		// This is necessary so scoring/choosing can work (which it wouldn't without extra work
+		// if we just returned true)
+		if (!this.matchers) 
+			return [{}];
+
 		let result = [];
 		for (let matcher of this.matchers) {
 			const matches = Object.keys(matcher)
@@ -66,5 +71,32 @@ export default class Agenda {
 	 */
 	getTopicNames() {
 		return Object.keys(this.topics);
+	}
+
+	/**
+	 * Create a new `Agenda` by extending `extending` with `extended`, as per the following rules:
+	 * - If `extending` defines matchers, use them
+	 * - If `extending` does not define matchers, use `extended`'s matchers
+	 * - The new agenda has all topics from `extending` and from `extended`
+	 * - If a topic is defined in both, keep all its properties as in `extending`, adding those from `extended` that
+	 * are not present in `extending`
+	 * 
+	 * @param  {Agenda} extending The agenda to extend
+	 * @param  {Agenda} extended  The agenda to extend from
+	 * @return {Agenda}           The agenda resulting from the extension.
+	 */
+	static extend(extending, extended) {
+		const matchers = extending.matchers ?? extended.matchers;
+		const topics = [];
+		for (const topic of new Set([ ...Object.keys(extending.topics ?? {}), ...Object.keys(extended.topics ?? {}) ]))
+			topics[topic] = Object.assign({}, extended.topics[topic], extending.topics[topic]);
+
+		return new Agenda(matchers, topics);
+	}
+
+	static from(data) {
+		const result = new Agenda(data.matches, data.topics);
+		result.name = data.name;
+		return result;
 	}
 }
