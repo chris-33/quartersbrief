@@ -50,7 +50,7 @@ export default class Agenda {
 		let result = [];
 		for (let matcher of this.matchers) {
 			const matches = Object.keys(matcher)
-				.reduce((prev, clause) => prev && clauses[clause](ship, matcher[clause]), true);
+				.every(clause => clauses[clause](ship, matcher[clause]));
 
 			if (matches) 
 				result.push(matcher);			
