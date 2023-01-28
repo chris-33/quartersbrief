@@ -84,6 +84,13 @@ describe('AgendaController', function() {
 			sources.forEach(source => expect(compiler.load).to.have.been.calledWith(source));				
 		});
 
+		it('should ignore a source that doesn\'t exist', async function() {
+			const sources = [ '/source1' ];
+			// compiler.load.resolves([]);
+
+			return expect(AgendaController.create(sources)).to.be.fulfilled;
+		});
+
 		it('should link all agendas, even across sources', async function() {
 			const sources = [ '/source1', '/source2' ];
 			const agendas = new Array(4).fill({});

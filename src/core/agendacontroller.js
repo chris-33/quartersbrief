@@ -1,4 +1,5 @@
 import * as compiler from '../agendas/compiler.js';
+import rootlog from 'loglevel';
 
 /**
  * The `AgendaController` is in charge of managing a list of agenda sources (`AgendaStore`s), and
@@ -34,7 +35,18 @@ export default class AgendaController {
 
 	static async create(sources, chooser) {
 		sources ??= [];
-		sources = await Promise.all(sources.map(source => compiler.load(source)));
+		sources = await Promise.all(sources.map(async source => {
+			try {
+				return await compiler.load(source);
+			} catch(err) {
+				if (err.code === 'ENOENT') 
+					rootlog.debug(`Agenda source directory at ${source} does not exist`);
+				else if (err.code === 'EACCES')
+					rootlog.debug(`Agenda source directory at ${source} could not be accessed`);
+				else throw err;
+				return [];
+			}
+		}));
 		
 		const agendas = sources.flat();
 		agendas.forEach(agenda => compiler.link(agenda, agendas));
