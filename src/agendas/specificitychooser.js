@@ -54,7 +54,7 @@ export default class SpecificityChooser {
 			.map(agenda => ({ agenda, matches: agenda.matches(ownship) }))
 			// Filter out agendas that didn't match at all
 			.filter(entry => entry.matches)
-			// Calculate a score for all of every agenda's matching matchers
+			// For each agenda, find its highest scoring matcher and remember that score
 			.map(entry => ({ 
 				agenda: entry.agenda, 
 				score: Math.max(...entry.matches.map(matcher => this.scoreOf(matcher))) 
