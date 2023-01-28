@@ -96,14 +96,14 @@ describe('BriefingController @integration', function() {
 		mockfs.restore();
 	});
 
-	beforeEach(function() {
+	beforeEach(async function() {
 		const gameObjectFactory = new GameObjectFactory(MOCK_GAME_DATA);
 
 		briefingController = new BriefingController(
 			new BattleDataReader(replaysdir),
 			new BriefingBuilder({ gameObjectFactory }),
-			new AgendaController(
-				[ new AgendaStore(agendasdir), ],
+			await AgendaController.create(
+				[ agendasdir ],
 				new SpecificityChooser(gameObjectFactory)
 			)
 		);
