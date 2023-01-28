@@ -46,7 +46,7 @@ jobs:
           cp $GITHUB_WORKSPACE/README.md $PKGROOT/usr/lib/quartersbrief
           
           mkdir -p $PKGROOT/usr/bin
-          ln -s $GITHUB_WORKSPACE/usr/lib/quartersbrief/src/quartersbrief.js /usr/bin/quartersbrief
+          ln -s $PKGROOT/usr/lib/quartersbrief/src/quartersbrief.js $PKGROOT/usr/bin/quartersbrief
           chmod +x $PKGROOT/usr/bin/quartersbrief
           
           mkdir -p $PKGROOT/usr/share/quarterbrief
@@ -182,7 +182,7 @@ jobs:
             -cg QuartersbriefAgendaFiles `
             -var var.AssetDir `
             -dr AGENDASDIR `
-            -srd
+            -srd `
             -out "${{ env.workdir }}QuartersbriefAgendasFiles.wxs"
 
       # Compile all .wxs files to .wixobj files
