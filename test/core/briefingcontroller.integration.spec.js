@@ -2,7 +2,6 @@ import mockfs from 'mock-fs';
 import esmock from 'esmock';
 import TOML from '@iarna/toml';
 import GameObjectFactory from '../../src/model/gameobjectfactory.js';
-import AgendaStore from '../../src/agendas/agendastore.js';
 import SpecificityChooser from '../../src/agendas/specificitychooser.js';
 import BattleDataReader from '../../src/core/battledatareader.js';
 import BriefingController from '../../src/core/briefingcontroller.js';
