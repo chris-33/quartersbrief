@@ -11,7 +11,6 @@ import GameObjectFactory from './model/gameobjectfactory.js';
 import ArmorViewer from './armor/armorviewer.js';
 import Labeler from './model/labeler.js';
 import BattleDataReader from './core/battledatareader.js';
-import AgendaStore from './agendas/agendastore.js';
 import SpecificityChooser from './agendas/specificitychooser.js';
 import BriefingBuilder from './briefing/briefingbuilder.js';
 import createServers from './init/servers.js';
@@ -53,8 +52,8 @@ if (labels instanceof Error) {
 }
 
 const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
-const agendaController = new AgendaController(
-	[ new AgendaStore(paths.AGENDAS_DEFAULT_DIR) ], 
+const agendaController = await AgendaController.create(
+	[ paths.AGENDAS_USER_DIR, paths.AGENDAS_DEFAULT_DIR ], 
 	new SpecificityChooser(gameObjectFactory));
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
 const briefingController = new BriefingController(
