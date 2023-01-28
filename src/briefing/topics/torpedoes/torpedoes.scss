@@ -8,7 +8,7 @@ $unit-light: #e8e8e8;
 .content {
 	display: grid;
 	align-items: center;
-	grid-template-columns: minmax(5ch, 15ch) 3fr 3em;
+	grid-template-columns: minmax(5ch, 15ch) 3fr;
 	row-gap: 2ex;
 
 	& > * {
@@ -35,25 +35,17 @@ $unit-light: #e8e8e8;
 	}
 
 	.warnings {
-		$symbol-spacing: 3pt;
+		display: flex;
+		justify-content: space-between;
+		margin-right: 3em;
+		margin-top: 0.5ex;
 
-		// Write from top to bottom, but don't change character orientation
-		writing-mode: vertical-lr;
-		text-orientation: upright;
-
-		letter-spacing: $symbol-spacing;
-		line-height: calc(100% + $symbol-spacing);
-		max-height: 4em;
-		
-		// Allow line breaks
-		white-space: normal;
-		// Allow soft wrap opportunities around every typographic character unit disregarding any prohibition against line breaks
-		// Normally, some of the symbol characters we are using otherwise prohibit line breaks
-		line-break: anywhere;
-		
 		cursor: default;
 
 		font-family: "dripicons-v2";
+		font-size: fontsizes.$small;
+
+		color: colors.$minor;
 		.moderate {
 			color: colors.$warning-moderate;
 		}

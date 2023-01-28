@@ -28,16 +28,16 @@
 			severity: checkThresholds(LESS_IS_BETTER), 
 			symbol: '\ue046', // Stopwatch
 			tooltip: `These torpedoes reload quickly` 
-		}, {
-			name: 'visibility',
-			severity: checkThresholds(LESS_IS_BETTER),
-			symbol: '\ue037', // Eye
-			tooltip: `These torpedoes are detected late`
 		}, { 
 			name: 'flooding', 
 			severity: checkThresholds(MORE_IS_BETTER), 
 			symbol: '\ue059', // Waves
 			tooltip: `These torpedoes have a high chance to cause flooding` 
+		}, {
+			name: 'visibility',
+			severity: checkThresholds(LESS_IS_BETTER),
+			symbol: '\ue037', // Eye
+			tooltip: `These torpedoes are detected late`
 		}, { 
 			name: 'stealthLaunch', 
 			severity: entry => entry.ship.getConcealment() * 1000 <= entry.range && 'severe', 
@@ -50,8 +50,7 @@
 mixin warningsPanel(entry)
 	.warnings
 		each warning in WARNINGS
-			if warning.severity(entry)
-				span(class=warning.severity(entry), data-details=`${entry.ship.getName()}-warning-${warning.name}`) #{warning.symbol}
+			span(class=warning.severity(entry), data-details=`${entry.ship.getName()}-warning-${warning.name}`) #{warning.symbol}
 	each warning in WARNINGS
 		aside.details.tooltip(data-details-for=`${entry.ship.getName()}-warning-${warning.name}`)
 			| #{ warning.tooltip }

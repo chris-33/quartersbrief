@@ -26,7 +26,9 @@ include params
 					"enemy": teams.enemies.includes(entry.ship.getID()),
 					"player": teams.player === entry.ship.getID()
 		})
-			span.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
+			div 
+				.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
+				+warningsPanel(entry)
 			.diagram
 				//- The length of the bar indicates the range of the torpedoes
 				.shipbar(style=`flex: 0 0 calc(${Math.min(MAX_RANGE, entry.range) * 100 / MAX_RANGE}% - ${MAX_EXPLOSION_SIZE / 2}em)`, data-details = entry.ship.getName())
@@ -65,7 +67,7 @@ include params
 						| #{entry.damage > 9999 ? `${(entry.damage / 1000).toFixed(1)}k` : Math.round(entry.damage)}
 				
 			//- Various warning indicators
-			+warningsPanel(entry)
+			//- +warningsPanel(entry)
 
 			aside.details(data-details-for=entry.ship.getName(), class = {
 				"ally": teams.allies.includes(entry.ship.getID()),
