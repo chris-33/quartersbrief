@@ -133,7 +133,7 @@ export default class BriefingBuilder {
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, rendered));
 			return rendered;
 		})).then(() => {
-			rootlog.info(`Created briefing using agenda ${agenda} in ${Date.now() - t0}ms`);
+			rootlog.info(`Created briefing using agenda ${agenda.name} in ${Date.now() - t0}ms`);
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing));
 		});
 
