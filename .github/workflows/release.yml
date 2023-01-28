@@ -181,7 +181,7 @@ jobs:
             -ag `
             -cg QuartersbriefAgendaFiles `
             -var var.AssetDir `
-            -dr AGENDASDIR `
+            -dr AGENDADIR `
             -srd `
             -out "${{ env.workdir }}QuartersbriefAgendasFiles.wxs"
 
