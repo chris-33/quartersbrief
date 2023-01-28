@@ -85,7 +85,7 @@ $highlighted: fuchsia;
 		background-clip: text;
 		-webkit-background-clip: text;
 	}
-	&:is(.player, .player.enemy.ally) {
+	&.player, &.player.enemy.ally {
 		color: $player;
 	}
 }
