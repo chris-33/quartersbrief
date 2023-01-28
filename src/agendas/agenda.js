@@ -73,27 +73,6 @@ export default class Agenda {
 		return Object.keys(this.topics);
 	}
 
-	/**
-	 * Create a new `Agenda` by extending `extending` with `extended`, as per the following rules:
-	 * - If `extending` defines matchers, use them
-	 * - If `extending` does not define matchers, use `extended`'s matchers
-	 * - The new agenda has all topics from `extending` and from `extended`
-	 * - If a topic is defined in both, keep all its properties as in `extending`, adding those from `extended` that
-	 * are not present in `extending`
-	 * 
-	 * @param  {Agenda} extending The agenda to extend
-	 * @param  {Agenda} extended  The agenda to extend from
-	 * @return {Agenda}           The agenda resulting from the extension.
-	 */
-	static extend(extending, extended) {
-		const matchers = extending.matchers ?? extended.matchers;
-		const topics = [];
-		for (const topic of new Set([ ...Object.keys(extending.topics ?? {}), ...Object.keys(extended.topics ?? {}) ]))
-			topics[topic] = Object.assign({}, extended.topics[topic], extending.topics[topic]);
-
-		return new Agenda(matchers, topics);
-	}
-
 	static from(data) {
 		const result = new Agenda(data.matches, data.topics);
 		result.name = data.name;
