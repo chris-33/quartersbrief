@@ -62,6 +62,7 @@ export default class TorpedoesTopic extends Topic {
 		});
 
 		locals.entries = entries;
+		locals.ownship = this.gameObjectFactory.createGameObject(battle.getPlayer().shipId);
 		return locals;
 	}
 }

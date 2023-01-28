@@ -43,6 +43,18 @@
 			severity: entry => entry.ship.getConcealment() * 1000 <= entry.range && 'severe', 
 			symbol: '\ue063', // Warning
 			tooltip: `This ship can launch its torpedoes from stealth`
+		}, {
+			name: 'deepwater',
+			severity: entry => {
+				const ignoredClasses = entry.ship.get('torpedoes.mounts.*.ammoList.*.ignoreClasses', { collate: true });
+				if (ignoredClasses.length === 0)
+					return '';
+				if (ignoredClasses.includes(ownship.getClass()))
+					return 'favorable'
+				return 'severe';
+			},
+			symbol: 'k', // thin arrow down
+			tooltip: 'These torpedoes do not hit all ship classes'
 		}
 	];
 
