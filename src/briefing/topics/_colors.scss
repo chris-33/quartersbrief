@@ -40,7 +40,7 @@ $warning-neutral-light: color.scale($warning-neutral, $lightness: $_lightness);
 $warning-favorable-light: color.scale($warning-favorable, $lightness: $_lightness);
 
 // Color to use for mouse-over highlighting
-$highlighted: fuchsia;
+$highlighted: darkblue;
 
 @mixin teamcolor-background {
 	$teamcolor-gradient-direction-default: 20deg;
