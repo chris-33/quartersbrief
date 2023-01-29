@@ -49,11 +49,11 @@ export default class Modifier {
 		GSMaxDist: 'atba.maxDist', // PCM012_SecondaryGun_Mod_II, PCM028_FireControl_Mod_I_US
 		GMShotDelay: 'artillery.mounts.*.shotDelay', // PCM013_MainGun_Mod_III
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
+		GMPenetrationCoeffHE: 'artillery.mounts.*.ammoList.*.alphaPiercingHE', // Skill 33 HePenetration
 		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
 		GTShotDelay: 'torpedoes.mounts.*.shotDelay', // PCM014_Torpedo_Mod_III, PCM057_Special_Mod_I_Shimakaze, PCM075_Special_Mod_I_Daring, Skill 4 Fill the Tubes
 		// @todo planeVisibilityFactor isn't the visibility BY plane, it's the visibility OF the planes
 		// planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
-		penetrationCoeffHE: 'artillery.mounts.*.ammoList.*.alphaPiercingHE', // Skill 33 HePenetration
 		visibilityDistCoeff: [ // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
 			'hull.visibilityFactor', 
 			'hull.visibilityFactorByPlane' 
