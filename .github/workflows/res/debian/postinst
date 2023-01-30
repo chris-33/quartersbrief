@@ -1,2 +1,2 @@
 #!bin/sh
-cd /opt/quartersbrief && npm install --no-package-lock --omit=dev --no-progress --quiet
+cd /usr/lib/quartersbrief && npm install --no-package-lock --omit=dev --no-progress --quiet

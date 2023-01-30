@@ -49,10 +49,10 @@ jobs:
           ln -s $PKGROOT/usr/lib/quartersbrief/src/quartersbrief.js $PKGROOT/usr/bin/quartersbrief
           chmod +x $PKGROOT/usr/bin/quartersbrief
           
-          mkdir -p $PKGROOT/usr/share/quarterbrief
-          cp -r $GITHUB_WORKSPACE/.github/workflows/res/common/agendas $PKGROOT/usr/share/quarterbrief
+          mkdir -p $PKGROOT/usr/share/quartersbrief
+          cp -r $GITHUB_WORKSPACE/.github/workflows/res/common/agendas $PKGROOT/usr/share/quartersbrief
           
-          mkdir -p -m 777 $PKGROOT/var/cache/quarterbrief
+          mkdir -p -m 777 $PKGROOT/var/cache/quartersbrief
           mkdir -p -m 777 $PKGROOT/var/lib/quartersbrief
 
       # Create .deb control scripts
