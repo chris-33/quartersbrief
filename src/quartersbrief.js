@@ -117,4 +117,5 @@ battleController.on('battlestart', function() {
 
 battleController.on('battleend', function() {
 	io.emit('battleend');
+	handler(); // Show the no-battle briefing
 });

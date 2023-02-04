@@ -15,6 +15,16 @@ const FADE_IN = [
 	{ transform: 'translateY(3rem) scale(1)', offset: 0.2, easing: 'ease-out' },
 	{ opacity: 1, },
 ];
+const REVEAL = [
+	{ transform: 'scale(0, 0.1)', },
+	{ transform: 'scale(1, 0.1)', offset: 0.4 },
+	{ transform: 'scale(1, 0.1)', offset: 0.6 },
+	{ transform: 'scale(1)' }
+];
+const SLIDE_OUT = [
+	{ top: '0' },
+	{ top: '105vh' }
+];
 const ANIMATION_DURATION = 1000;
 
 // Guard against topics getting delivered extremely quickly, i.e. between briefing start and
@@ -32,17 +42,17 @@ export async function onBriefingStart({ html, css }) {
 	await briefingStylesheet.replace(css);
 
 	const briefing = document.getElementById('briefing');
+	briefing.style.position = 'static'; // May still be 'relative' from previous slide out
 	briefing.innerHTML = '';
-	briefing.append(document.createRange().createContextualFragment(html));
-	await briefing.animate([
-		{ transform: 'scale(0, 0.1)', },
-		{ transform: 'scale(1, 0.1)', offset: 0.4 },
-		{ transform: 'scale(1, 0.1)', offset: 0.6 },
-		{ transform: 'scale(1)' }
-	], {
+	await briefing.animate(REVEAL, {
 		duration: ANIMATION_DURATION,
 		easing: 'ease-in-out'
 	}).finished;
+
+	const contents = document.createRange().createContextualFragment(html);
+	const anims = Array.from(contents.children).map(element => element.animate(FADE_IN, ANIMATION_DURATION).finished);
+	briefing.append(contents);
+	await Promise.all(anims);
 
 	ready();
 }
@@ -70,9 +80,19 @@ export async function onBriefingTopic(index, { html, css }) {
 	await topic.animate(FADE_IN, ANIMATION_DURATION).finished;
 }
 
+export async function onBattleEnd() {
+	// Slide briefing out the bottom when battle has ended
+	const briefing = document.getElementById('briefing');
+	briefing.style.position = 'relative';
+
+	return briefing.animate(SLIDE_OUT, {
+		duration: ANIMATION_DURATION,
+		fill: 'forwards'
+	}).finished;
+}
+
 // No-ops. This way we can already register them on the socket instance,
 // so if we ever want to do anything, we just need to change these and not
 // have to remember to register them as event handlers as well. :)
 export async function onBriefingFinish() {}
 export async function onBattleStart() {}
-export async function onBattleEnd() {}
