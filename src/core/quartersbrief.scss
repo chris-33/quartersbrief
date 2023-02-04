@@ -52,6 +52,9 @@ body {
 	flex-direction: column;
 	height: 100vh;
 	background-image: url('img/background.jpg');
+	background-position: center;
+	background-size: cover;
+	overflow: hidden;
 }
 
 header {
@@ -128,16 +131,10 @@ header {
 	padding: 1em 1ex;
 	flex: 1;
 	
-	background-color: white;
-	opacity: 97%;
-
-	outline: 2pt solid white;
-	outline-offset: 2pt;
-
 	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+	grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
 	gap: 5% max(4ch, 4%);
-	
+
 	overflow-x: hidden;
 	overflow-y: scroll;
 	scroll-padding-top: 12pt;

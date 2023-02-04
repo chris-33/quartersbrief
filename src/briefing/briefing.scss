@@ -2,6 +2,14 @@
 @use 'topics/fontsizes';
 @use 'sass:math';
 
+#briefing {
+	background-color: white;
+	opacity: 96%;
+
+	outline: 2pt solid white;
+	outline-offset: 2pt;
+}
+
 .unit {
 	color: #757575;
 	font-size: fontsizes.$small;
