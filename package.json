@@ -2,7 +2,7 @@
   "name": "quartersbrief",
   "main": "quartersbrief.js",
   "type": "module",
-  "version": "0.2.0-alpha.0",
+  "version": "0.2.0-alpha.1",
   "bin": "./src/quartersbrief.js",
   "scripts": {
     "start": "node src/quartersbrief.js",
