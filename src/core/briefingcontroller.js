@@ -1,5 +1,7 @@
 import BriefingBuilder from '../briefing/briefingbuilder.js';
 import { EventEmitter } from 'events';
+import { join } from 'path';
+import { BASE_DIR } from '../init/paths.js';
 import pug from 'pug';
 import sass from 'sass';
 
@@ -9,8 +11,8 @@ export default class BriefingController {
 			const briefing = new EventEmitter();
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
 
-			briefing.html = pug.renderFile('src/briefing/no-agenda.pug');
-			briefing.css = sass.compile('src/briefing/message.scss').css
+			briefing.html = pug.renderFile(join(BASE_DIR, 'src/briefing/no-agenda.pug'));
+			briefing.css = sass.compile(join(BASE_DIR, 'src/briefing/message.scss')).css
 			
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing));
 			return briefing;
@@ -21,8 +23,8 @@ export default class BriefingController {
 			const briefing = new EventEmitter();
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
 
-			briefing.html = pug.renderFile('src/briefing/no-battle.pug');
-			briefing.css = sass.compile('src/briefing/message.scss').css
+			briefing.html = pug.renderFile(join(BASE_DIR, 'src/briefing/no-battle.pug'));
+			briefing.css = sass.compile(join(BASE_DIR, 'src/briefing/message.scss')).css
 			
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing));
 			return briefing;
