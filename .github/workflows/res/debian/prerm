@@ -1,3 +1,2 @@
 #!/bin/sh
-rm -rf /opt/quartersbrief/tools
-rm -rf /opt/quartersbrief/node_modules
+rm -rf /usr/lib/quartersbrief/node_modules
