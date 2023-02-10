@@ -46,11 +46,11 @@ jobs:
           cp $GITHUB_WORKSPACE/README.md $PKGROOT/usr/lib/quartersbrief
           
           mkdir -p $PKGROOT/usr/bin
-          ln -s $PKGROOT/usr/lib/quartersbrief/src/quartersbrief.js $PKGROOT/usr/bin/quartersbrief
+          cp -s $GITHUB_WORKSPACE/.github/workflows/res/debian/quartersbrief $PKGROOT/usr/bin/
           chmod +x $PKGROOT/usr/bin/quartersbrief
           
           mkdir -p $PKGROOT/usr/share/quartersbrief
-          cp -r $GITHUB_WORKSPACE/.github/workflows/res/common/agendas $PKGROOT/usr/share/quartersbrief
+          cp -r $GITHUB_WORKSPACE/.github/workflows/res/common/agendas/* $PKGROOT/usr/share/quartersbrief
           
           mkdir -p -m 777 $PKGROOT/var/cache/quartersbrief
           mkdir -p -m 777 $PKGROOT/var/lib/quartersbrief
@@ -59,11 +59,8 @@ jobs:
       - name: Create maintainer scripts
         run: |
           mkdir -p $PKGROOT/DEBIAN
-          # preinst
           cp $GITHUB_WORKSPACE/.github/workflows/res/debian/preinst $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/preinst
-          # postinst
           cp $GITHUB_WORKSPACE/.github/workflows/res/debian/postinst $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/postinst
-          # prerm
           cp $GITHUB_WORKSPACE/.github/workflows/res/debian/prerm $PKGROOT/DEBIAN/ && chmod +x $PKGROOT/DEBIAN/prerm
  
       - name: Build .deb package
