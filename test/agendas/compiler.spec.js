@@ -177,6 +177,19 @@ describe('Agenda compilation functions', function() {
 			const result = compiler.extend(extending, extended);
 			expect(Object.keys(result.topics)).to.have.ordered.members(Object.keys(extended.topics))
 		});
+
+		it('should prepend topics from the extending agenda that are not present in the extended agenda', function() {
+			const extending = new Agenda(null, {
+				topic3: {},
+			});
+			const extended = new Agenda(null, {
+				topic1: {},
+				topic2: {}
+			});
+
+			const result = compiler.extend(extending, extended);
+			expect(Object.keys(result.topics)).to.have.ordered.members([ 'topic3', 'topic1', 'topic2' ]);
+		});
 	});
 
 	describe('compile', function() {

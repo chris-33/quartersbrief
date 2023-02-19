@@ -45,6 +45,7 @@ export function link(agenda, agendas) {
 	 * - If `extending` defines matchers, use them
 	 * - If `extending` does not define matchers, use `extended`'s matchers
 	 * - The new agenda has all topics from `extending` and from `extended`
+	 * - Topics unique to `extending` are prepended
 	 * - If a topic is defined in both, keep all its properties as in `extending`, adding those from `extended` that
 	 * are not present in `extending`
 	 * 
@@ -57,11 +58,23 @@ export function extend(extending, extended) {
 	if (!extending.matchers && extended.matchers)
 		extending.matchers = extended.matchers;
 
-	const topics = clone(extended.topics) ?? {};
+	const additional = Object.keys(extending.topics ?? {}).filter(topic => !Object.keys(extended.topics ?? {}).includes(topic));
+	const shared = Object.keys(extended.topics ?? {}).filter(topic => Object.keys(extending.topics ?? {}).includes(topic));
 
-	for (let topicName in extending.topics) {
-		topics[topicName] = Object.assign(topics[topicName] ?? {}, extending.topics[topicName])
+	const topics = {};
+	
+	// First add any new topics from the extending agenda
+	// New topics are topics that appear in extending, but not in extended
+	for (let topicName of additional)
+		topics[topicName] = clone(extending.topics[topicName]);
+
+	// Then add all topics from extended
+	Object.assign(topics, clone(extended.topics ?? {}));
+	// For any shared topics, merge settings from extended and extending by overwriting with extending
+	for (let topicName of shared) {
+		topics[topicName] = Object.assign(topics[topicName], extending.topics[topicName])
 	}
+
 	extending.topics = topics;
 	return extending;
 }
