@@ -46,11 +46,26 @@ describe('Agenda', function() {
 	});
 
 	describe('.getTopicNames', function() {
-		it('should return the names of all topics of the agenda', function() {
+		it('should return the names of all topics of the agenda in the order they were defined', function() {
 			expect(new Agenda(null, {
 				topic1: {},
 				topic2: {}
-			}).getTopicNames()).to.be.an('array').with.members([ 'topic1', 'topic2' ]);
+			}).getTopicNames()).to.be.an('array').with.ordered.members([ 'topic1', 'topic2' ]);
+		});		
+
+		it('should reorder the names according to their position attribute', function() {
+			expect(new Agenda(null, {
+				topic1: {},
+				topic2: { position: 0 },
+			}).getTopicNames()).to.be.an('array').with.ordered.members([ 'topic2', 'topic1' ]);
+		});
+
+		it('should respect the first topic when more than one topic reorders to the same position', function() {
+			expect(new Agenda(null, {
+				topic1: {},
+				topic2: { position: 0 },
+				topic3: { position: 0 }
+			}).getTopicNames()).to.be.an('array').with.ordered.members([ 'topic2', 'topic3', 'topic1' ]);
 		});
 
 		it('should have topic data for all returned topic names', function() {

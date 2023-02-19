@@ -66,11 +66,28 @@ export default class Agenda {
 
 	/**
 	 * Returns the names of all topics defined on this agenda. The topic's data
-	 * will be available under `agenda.topics[topicname]`
+	 * will be available under `agenda.topics[topicname]`.
+	 *
+	 * Topics that have defined a `position` attribute will be reordered according to that position.
+	 * 
 	 * @return {String[]} The names of all the topics on this agenda.
 	 */
 	getTopicNames() {
-		return Object.keys(this.topics);
+		const result = Object.keys(this.topics);
+		const processed = [];
+		for (let i = result.length - 1; i >= 0; i--) {
+			const curr = result[i];
+			// Only shift names that have a defined position attribute and have not already been processed
+			if (this.topics[curr].position != undefined && !processed.includes(curr)) {
+				result.splice(this.topics[curr].position, 0, curr);
+				if (this.topics[curr].position < i) i++;
+				result.splice(i, 1);
+
+				// Enough to only push names that are actually being reordered instead of every name
+				processed.push(curr);				
+			}	
+		}
+		return result;
 	}
 
 	static from(data) {
