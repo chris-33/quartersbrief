@@ -13,9 +13,6 @@ const parsers = {
 	'.json': JSON
 };
 
-export default {
-
-}
 export async function load(agendadir) {
 	// Read all files in this AgendaStore's agenda dir:
 	let agendas = await readdir(agendadir);
