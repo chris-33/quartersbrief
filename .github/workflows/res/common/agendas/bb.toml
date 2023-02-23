@@ -17,6 +17,8 @@ primary = "ship"
 [topics.overmatch_you]
 filter={ classes = [ "AirCarrier", "Battleship", "Cruiser" ] }
 
+[topics.pen_me]
+
 [topics.torpedoes]
 filter = { teams = [ "enemies" ] }
 
