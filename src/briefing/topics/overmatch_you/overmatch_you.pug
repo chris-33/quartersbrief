@@ -48,7 +48,7 @@ if caliber
 				.label #{ship.getLabel()}
 
 				if armor instanceof Error
-					| This armor view could not be created: #{err.message}
+					| This armor view could not be created: #{armor.message}
 				else
 					//- Using actual bounding box left side here to left-align the ships
 					.armor: svg(
