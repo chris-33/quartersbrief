@@ -1,9 +1,7 @@
 mixin details(participant)
 	.details-title 
 		div #{participant.player.getName()}
-		div.ship 
-			img(src=`img/icon_${participant.ship.getClass().toLowerCase()}.png`)
-			| &nbsp;
+		div.ship
 			| #{participant.ship.getLabel()}
 
 	.details-line

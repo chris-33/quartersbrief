@@ -62,25 +62,19 @@ td {
 	.secondary {
 		font-size: fontsizes.$small;
 		font-style: italic;
-	}
-
-	
+	}	
 }
 
 .ship {
-	&::before, 
-	&::after {
-		display: inline-block;
-		vertical-align: middle;
+	display: flex;
+	flex-direction: row;
+	column-gap: 1ch;
+	justify-content: flex-start;
+	align-items: center;
+
+	&::before {
 		font-family: 'quartersbrief-icons';
 		color: colors.$aside;
-	}
-	&::before {
-		margin-right: 1ch;
-	}
-	&:after {
-		margin-left: 1ch;
-		transform: rotate(180deg);
 	}
 
 	$classes: (
@@ -91,17 +85,17 @@ td {
 		'submarine': 'E'
 	);
 	@each $class, $glyph in $classes {
-		.ally.#{$class} &::before {
+		.#{$class} &::before {
 			content: $glyph;
 			color: map.get(colors.$by-class, $class);
 		} 
 	}
 	
-	@each $class, $glyph in $classes {
-		.enemy.#{$class} &::after {
-			content: $glyph;
-			color: map.get(colors.$by-class, $class);
-		} 
+	td.enemy & {
+		flex-direction: row-reverse;
+		&::before {
+			transform: rotate(180deg);
+		}
 	}
 }
 
