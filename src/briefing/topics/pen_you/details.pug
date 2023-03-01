@@ -1,0 +1,55 @@
+mixin legend(type) 
+	ul.legend
+		if type === 'he'
+			li.he You penetrate this part of the ship's armor
+			li.ifhe You penetrate this part of the ship's armor with IFHE
+			li You do not penetrate this part of the ship's armor
+		else if type === 'sap'
+			li.sap You penetrate this part of the ship's armor
+			li You do not penetrate this part of the ship's armor
+
+mixin details(ship, armor)
+
+	
+	- 
+		// Mapping ammo type to label
+		const AMMO_NAMES = {
+			he: 'High explosive',
+			sap: 'Semi-armor piercing'
+		};
+		// Mapping ammo type to a function that calculates CSS classes given an armor piece thickness
+		const AMMO_PENS = {
+			he: thickness => ({ 
+				he: thickness <= ownship.he,
+				ifhe: thickness <= ownship.ifhe
+			}),
+			sap: thickness => ({
+				sap: thickness <= ownship.sap
+			})
+		}
+
+	aside.details.enemy(data-details-for=ship.getName())
+		.details-title #{ship.getLabel()}
+		
+		each ammo in [ 'he', 'sap' ]
+			if(ownship[ammo])
+				.details-line(class=ammo)
+					.caption #{AMMO_NAMES[ammo]} shells
+					each view in [ 'side', 'top' ]
+						.armor(class=view)
+							if armor[view] instanceof Error
+								div.error This view could not be created: #{armor[view].message}
+							else
+								- const viewbox = boundingBox(armor[view])
+								svg(
+									version="1.1", 
+									xmlns="http://www.w3.org/2000/svg", 
+									viewBox=`${viewbox.left} ${viewbox.top} ${viewbox.width} ${viewbox.height}`)
+								
+									each piece, id in armor[view]
+										- const thickness = ship.get(`hull.armor.${id}`)
+										path.piece(
+											class=AMMO_PENS[ammo](thickness),
+											d=piece.map(poly => makePath(poly)).join(' '))
+
+					+legend(ammo)

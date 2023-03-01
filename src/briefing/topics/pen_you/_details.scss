@@ -1,0 +1,80 @@
+@use 'sass:string';
+@use '../colors';
+@use '../fontsizes';
+
+@function capitalize($str) {
+	@return string.insert(string.slice($str, 2), string.to-upper-case(string.slice($str, 1, 1)), 1)
+}
+
+aside.details {
+	.details-line {
+		display: block;
+		position: relative;
+		padding: 2ex 1ch 1ex;
+
+		border-width: 1px;
+		border-left-width: 0.5ch;
+		border-style: solid;
+
+		&.he { border-color: orange; }
+		&.sap { border-color: purple; }
+	}
+
+	.details-line + .details-line {
+		margin-top: 3em;
+	}
+
+	.caption {
+		position: absolute;
+		background-color: white;
+		padding: 0 0.5ch;
+		top: 0;
+		transform: translateY(-50%);
+	}
+
+	.armor {
+		display: inherit;
+	}
+
+	.armor::before {
+		all: inherit;
+		font-size: fontsizes.$small;
+		text-decoration: underline;
+		text-align: center;
+		margin: 1ex 0;
+	}
+	
+	@each $view in [ 'side', 'top' ] {
+		.#{$view}::before {
+			content: '#{capitalize($view)} view:';
+		}
+	}
+
+	ul.legend {
+		line-height: 1.5;
+		list-style: none;
+		padding-left: 1em;
+	}
+	li::before { 
+		content: '';
+		display: inline-block;
+		position: relative;
+		vertical-align: middle;
+		left: -1em;
+		width: 1em;
+		height: 1em;
+	}
+	li::before {
+		background-color: colors.$warning-neutral-light;
+		border: 1px solid colors.$warning-neutral;
+	}
+	li.he::before, 
+	li.sap::before {
+		background-color: colors.$warning-severe-light;
+		border: 1px solid colors.$warning-severe;
+	}
+	li.ifhe::before {
+		background-color: colors.$warning-moderate-light;
+		border: 1px solid colors.$warning-moderate;
+	}
+}

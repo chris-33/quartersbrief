@@ -1,0 +1,117 @@
+@use '../colors';
+@use '../fontsizes';
+@use 'sass:map';
+@use 'details';
+
+.ships {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+
+	row-gap: 1em;
+	column-gap: 1em;
+}
+
+.ship {
+	display: grid;
+	grid-template-rows: unquote('[label] 1rem [side] 1fr [top] 1fr');
+	grid-template-columns: unquote('[view] 10.6px [armor] 1fr');
+	column-gap: 1ch;
+	row-gap: 1ex;
+	align-items: end;
+
+	border: 1pt solid black;
+	padding: 1ex 1ch;	
+
+	.label {
+		grid-row: label;
+		grid-column: 1 / span 2;
+	}
+
+	.armor {
+		display: contents; // Needed so we can place the ::before pseudo-element in the grid
+
+		& > :first-child { 
+			grid-column: armor;
+		}
+
+		&::before {
+			grid-column: view;
+			justify-self: start;
+			// Make sure that top of the (rotated) text aligns with the first letter of the ship's name:
+			line-height: 1;
+
+			color: colors.$aside;
+			font-size: fontsizes.$small;
+
+			text-transform: uppercase;
+			writing-mode: vertical-lr;
+			transform: rotate(180deg);			
+		}
+	}
+
+	@each $view in [ 'side', 'top' ] {
+		.#{$view} {
+			& > * {
+				grid-row: #{$view};
+			}
+
+			&::before {
+				content: $view;
+			}
+		}
+	}
+
+	svg {
+		width: 100%;
+	}
+}
+
+@each $class in [ 'aircarrier', 'battleship', 'cruiser', 'destroyer', 'submarine' ] {
+	// Add the colored stripe indicating the ship's class
+	.ship.#{$class} {
+		border: 0.5px solid map.get(colors.$by-class, $class);
+		border-left-width: 0.5ch;
+	}
+}
+
+.battleship + :not(.battleship),
+.cruiser + :not(.cruiser) {
+	grid-column-start: 1;
+}
+
+div.error {
+	font-size: fontsizes.$small;
+	color: colors.$warning-severe;
+}
+
+.piece {
+	stroke-width: 0.2%;
+
+	stroke: colors.$warning-neutral;
+	fill: colors.$warning-neutral-light;
+	
+	&.ifhe {
+		stroke: colors.$warning-moderate;
+		fill: colors.$warning-moderate-light;
+	}	
+
+	&.he,
+	&.sap {
+		stroke: colors.$warning-severe;
+		fill: colors.$warning-severe-light;
+	}
+}
+
+.ownguns {
+	border: 1px solid colors.$player;
+	text-align: center;
+	padding: 1ex 1ch;
+	margin-top: 3rem;
+	margin-left: auto;
+	margin-right: auto;
+
+	& > span:first-of-type {
+		font-size: fontsizes.$large;
+		font-weight: bolder;
+	}
+}

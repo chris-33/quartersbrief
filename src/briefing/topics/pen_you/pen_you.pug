@@ -1,0 +1,98 @@
+include details
+
+-
+	function makePath(poly) {
+		let result = '';
+		for (let vertex of poly) {
+			const x = vertex[0]; const y = vertex[1];
+			if (!result)
+				result = `M ${x},${y}`;
+			else
+				result += ` L ${x},${y}`;
+		}
+		if (result) result += ' Z';
+		return result;
+	}
+	function boundingBox(model) {
+		model = Object.values(model).flat(2);
+		const minX = Math.min(...model.map(vertex => vertex[0]));
+		const minY = Math.min(...model.map(vertex => vertex[1]));
+		const maxX = Math.max(...model.map(vertex => vertex[0]));
+		const maxY = Math.max(...model.map(vertex => vertex[1]));
+		return {
+			left: minX,
+			top: minY,
+			width: maxX - minX,
+			height: maxY - minY
+		};
+	}
+	
+if ownship.he || ownship.sap
+	- 
+		function calculateBiggestBox(view) {
+			return Object.values(armors)
+				.map(armor => armor[view])
+				.filter(armor => !(armor instanceof Error))
+				.map(armor => boundingBox(armor))
+				.reduce((prev, curr) => ({
+					left: Math.min(prev.left, curr.left),
+					top: Math.min(prev.top, curr.top),
+					width: Math.max(prev.width, curr.width),
+					height: Math.max(prev.height, curr.height)
+				}));		
+		}
+		const biggestbox = {
+			side: calculateBiggestBox('side'),
+			top: calculateBiggestBox('top')
+		};
+
+	div.ships
+		each ship in ships
+			.ship(class=ship.getClass().toLowerCase(), data-details=ship.getName())
+				
+				.label #{ship.getLabel()}
+
+				each view in [ 'side', 'top' ]
+					.armor(class=view)
+						- const armor = armors[ship.getName()][view];
+						if armor instanceof Error
+							div.error This armor view could not be created
+						else
+							//- Using actual bounding box's left side here to left-align the ships
+							svg(version="1.1", 
+								xmlns="http://www.w3.org/2000/svg", 
+								viewBox=`${boundingBox(armor).left} ${biggestbox[view].top} ${biggestbox[view].width} ${biggestbox[view].height}`) 								
+
+								each piece, id in armor
+									- const thickness = ship.get(`hull.armor.${id}`)
+									path.piece(
+										class={ 
+											he: thickness <= ownship.he,
+											ifhe: thickness <= ownship.ifhe,
+											sap: thickness <= ownship.sap
+										},
+										d=piece.map(poly => makePath(poly)).join(' '))
+
+				+details(ship, armors[ship.getName()])
+
+	div.ownguns
+		| Your main artillery penetrates 
+		if ownship.he 
+			span #{ownship.he}
+				span.unit mm
+			|  of armor
+			if ownship.sap
+				|  with HE
+			if ownship.ifhe
+				|  (#{ownship.ifhe} 
+				span.unit mm
+				|  with IFHE)
+		if ownship.sap
+			if ownship.he
+				| , 
+			| #{ownship.sap}
+			span.unit mm
+			| with SAP
+
+else
+	.message You do not have HE or SAP shells.
