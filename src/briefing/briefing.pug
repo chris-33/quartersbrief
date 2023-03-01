@@ -1,3 +1,10 @@
+h1 
+	div Tier #{battleinfo.tier} Battle
+	div 
+		time(datetime=new Date().toISOString()) #{new Date().toLocaleTimeString([], { timeStyle: 'short' })}
+		span #{battleinfo.ownship}
+
+
 each topic, index in topics
 	section.topic(id = `topic-${index}`)
 		h2 #{topic.caption}

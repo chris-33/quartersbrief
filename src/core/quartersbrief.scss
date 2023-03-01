@@ -69,7 +69,7 @@ header {
 	#branding {
 		font-style: italic;
 
-		h1 {
+		& > div {
 			margin: 0;
 			display: inline-block;
 

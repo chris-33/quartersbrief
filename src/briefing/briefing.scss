@@ -10,6 +10,31 @@
 	outline-offset: 2pt;
 }
 
+h1 {
+	grid-column: 1 / -1;
+	margin: 1rem 0 3rem;
+
+	& > :first-child {
+		font-size: fontsizes.$huge;
+		font-variant: small-caps;
+		font-weight: bold;
+		text-align: center;
+		text-decoration: underline;
+		letter-spacing: 0.1ch;
+	}
+
+	& > :not(:first-child) {
+		font-weight: bold;
+		text-align: center;
+		
+
+		& > :not(:first-child)::before {
+			content: ' / ';
+			color: colors.$minor;
+		}
+	}
+}
+
 .unit {
 	color: #757575;
 	font-size: fontsizes.$small;

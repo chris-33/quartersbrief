@@ -90,7 +90,7 @@ export default class BriefingBuilder {
 	 * @param  {Agenda} agenda            The agenda by which to build the briefing.
 	 * @return {Object} An object containing the HTML for the briefing scaffoldd in `html`
 	 * and the scoped styling for the briefing in `css`. This object is an event emitter,
-	 * as desribed above.
+	 * as described above.
 	 */
 	build(battle, agenda) {
 		const t0 = Date.now();
@@ -101,6 +101,15 @@ export default class BriefingBuilder {
 		const briefing = new EventEmitter();
 
 		briefing.topics = topics;
+		briefing.battleinfo = {
+			tier: Math.max(...battle
+				.getVehicles()
+				.map(vehicle => vehicle.shipId)
+				.map(shipId => this.providers.gameObjectFactory.createGameObject(shipId))
+				.map(ship => ship.getTier())),
+			ownship: this.providers.gameObjectFactory.createGameObject(battle.getPlayer().shipId).getLabel()
+		};
+
 		briefing.html = renderBriefing(briefing);
 		briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
 		
