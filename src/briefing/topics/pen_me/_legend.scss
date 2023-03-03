@@ -1,4 +1,4 @@
-@use '../colors';
+@use 'colors';
 @use '../fontsizes';
 
 .legend {
@@ -25,7 +25,11 @@
 		background-color: colors.$warning-neutral-light;
 		border: 1px solid colors.$warning-neutral;
 	}
-	li.some::before {
+	li.cl::before {
+		background-color: colors.$warning-moderate-severe-light;
+		border: 1px solid colors.$warning-moderate-severe;
+	}
+	li.ca::before {
 		background-color: colors.$warning-moderate-light;
 		border: 1px solid colors.$warning-moderate;
 	}	

@@ -1,0 +1,6 @@
+@use 'sass:color';
+@use '../colors';
+@forward '../colors';
+
+$warning-moderate-severe-light: color.mix(colors.$warning-moderate-light, colors.$warning-severe-light);
+$warning-moderate-severe: color.mix(colors.$warning-moderate, colors.$warning-severe);

@@ -1,9 +1,8 @@
-@use 'sass:color';
-@use '../colors';
 @use '../fontsizes';
 @use 'details';
 @use 'legend';
 @use 'penlist';
+@use 'colors';
 
 .view {
 	padding: 0.5ch 2em;
@@ -29,7 +28,11 @@
 		stroke: colors.$warning-severe;
 		fill: colors.$warning-severe-light;
 	}
-	&.some {
+	&.cl {
+		stroke: colors.$warning-moderate-severe;
+		fill: colors.$warning-moderate-severe-light;
+	}
+	&.ca {
 		stroke: colors.$warning-moderate;
 		fill: colors.$warning-moderate-light;
 	}

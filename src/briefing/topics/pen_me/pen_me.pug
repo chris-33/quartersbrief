@@ -1,4 +1,6 @@
 -
+	const CA_CALIBER_THRESHOLD = options?.caCaliber ?? 200;
+
 	function makePath(poly) {
 		let result = '';
 		for (let vertex of poly) {
@@ -20,15 +22,19 @@
 		return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
 	}
 	function penned(thickness) {
-		try{
-		const cruiserPen = Object.values(pens).filter(pen => pen.ship.getClass() === 'Cruiser' || pen.ship.getClass() === 'Destroyer' || pen.ship.getClass() === 'Submarine');
-		if (cruiserPen.every(pen => pen.ammos.he >= thickness || pen.ammos.sap >= thickness))
+		const crudes = Object.values(pens).filter(pen => pen.ship.getClass() === 'Cruiser' || pen.ship.getClass() === 'Destroyer');
+		debugger
+		// Penned by all cruisers and destroyers
+		if (crudes.every(pen => pen.ammos.he >= thickness || pen.ammos.sap >= thickness))
 			return 'all';
-		if (cruiserPen.some(pen => pen.ammos.he >= thickness || pen.ammos.sap >= thickness || pen.ammos.ifhe >= thickness))
-			return 'some';
-		else
-			return 'none';
-	} catch(err) { debugger}
+		// Penned by some CL/DD without IFHE
+		if (crudes.some(pen => pen.caliber < CA_CALIBER_THRESHOLD && (pen.ammos.he >= thickness || pen.ammos.sap >= thickness)))
+			return 'cl';
+		// Penned by some CA and/or some CL/DD but only with IFHE
+		if (crudes.some(pen => (pen.caliber < CA_CALIBER_THRESHOLD && pen.ammos.ifhe >= thickness) || (pen.caliber >= CA_CALIBER_THRESHOLD && pen.ammos.he >= thickness)))
+			return 'ca';
+		// Penned only by guns CA with IFHE and bigger
+		return 'none';
 	}
 
 each view in [ 'side', 'top' ]

@@ -1,10 +1,13 @@
-@use '../colors';
+@use 'colors';
 
 aside.details {
 	&.all {
 		--details-border-color: #{colors.$warning-severe};
 	}
-	&.some {
+	&.cl {
+		--details-border-color: colors.$warning-moderate-severe;	
+	}
+	&.ca {
 		--details-border-color: #{colors.$warning-moderate};
 	}
 	&.none {

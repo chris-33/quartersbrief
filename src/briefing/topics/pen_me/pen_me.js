@@ -32,7 +32,7 @@ export default class HEPenMeTopic extends Topic {
 		
 		locals.pens = {};
 		locals.ships.forEach(ship => {
-			const pen = { ship, ammos: {} };
+			const pen = { ship, caliber: ship.artillery.getCaliber(), ammos: {} };
 			const ammos = ship.get('artillery.mounts.*.ammoList', { collate: true }).filter(ammo => ammo.get('ammoType') !== 'AP');
 			ammos.forEach(ammo => {
 				const piercing = ammo.get(`alphaPiercing${ammo.get('ammoType')}`);
