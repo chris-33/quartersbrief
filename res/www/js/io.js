@@ -22,8 +22,8 @@ const REVEAL = [
 	{ transform: 'scale(1)' }
 ];
 const SLIDE_OUT = [
-	{ top: '0' },
-	{ top: '105vh' }
+	{},
+	{ transform: 'translateX(-100vw)' }
 ];
 const ANIMATION_DURATION = 1000;
 
@@ -43,7 +43,6 @@ export async function onBriefingStart({ id, html, css }) {
 
 	// Animate out previous briefing
 	const briefing = document.getElementById('briefing');
-	briefing.style.position = 'relative';
 	await briefing.animate(SLIDE_OUT, {
 		duration: ANIMATION_DURATION,
 		fill: 'forwards'
@@ -53,7 +52,7 @@ export async function onBriefingStart({ id, html, css }) {
 	document.adoptedStyleSheets = [ briefingStylesheet ];
 	await briefingStylesheet.replace(css);
 
-	briefing.style.position = 'static'; // May still be 'relative' from previous slide out
+	// @fixme This introduces a race condition. If a second briefing starts while the reveal animation of the first is still playing, BOTH will be appended to the briefing content area
 	briefing.innerHTML = '';
 	await briefing.animate(REVEAL, {
 		duration: ANIMATION_DURATION,
