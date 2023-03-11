@@ -1,5 +1,5 @@
 module.exports = {
-	src: [ 'src/**/*.js', 'test/**/*.js' ],
+	src: [ 'src/**/*.js', 'res/www/js/**/*.js', 'test/**/*.js' ],
 	options: {
 		marks: [
 			{
