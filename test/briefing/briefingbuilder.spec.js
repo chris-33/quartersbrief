@@ -27,9 +27,12 @@ describe('BriefingBuilder', function() {
 	}
 	const MockTopic = class extends Topic {};	
 
-	before(function() {
+	beforeEach(function() {
 		gameObjectFactory = new GameObjectFactory({});
-		sinon.stub(gameObjectFactory, 'createGameObject').returns(null);
+		sinon.stub(gameObjectFactory, 'createGameObject').returns({ 
+			getTier: () => 0, 
+			getLabel: () => ''
+		});
 	});
 
 	beforeEach(function() {
@@ -39,7 +42,7 @@ describe('BriefingBuilder', function() {
 
 	beforeEach(function() {
 		builder = new BriefingBuilder({ gameObjectFactory });
-		sinon.stub(builder, 'getTopic').returns(MockTopic );
+		sinon.stub(builder, 'getTopic').returns(MockTopic);
 		sinon.stub(MockTopic.prototype);
 		MockTopic.prototype.render.resolves(rendered);
 	});
@@ -49,7 +52,7 @@ describe('BriefingBuilder', function() {
 	});
 
 	describe('.build', function() {
-		it('should emit EVT_BRIEFING_START at the beginning', async function() {
+		it('should emit EVT_BRIEFING_START at the beginning', async function() {			
 			const briefing = builder.build(battle, agenda);
 			const data = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_START);
 			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_START);
@@ -115,11 +118,12 @@ describe('BriefingBuilder', function() {
 
 			const eventData = await p;
 			expect(eventData).to.be.an('array');
-			expect(eventData[0]).to.equal(0);
-			expect(eventData[1]).to.deep.equal(rendered);
+			expect(eventData[0]).to.equal(briefing.id);
+			expect(eventData[1]).to.equal(0);
+			expect(eventData[2]).to.deep.equal(rendered);
 
-			expect(eventData[1].html).to.satisfy(isHtml);
-			expect(eventData[1].css).to.satisfy(isCss);
+			expect(eventData[2].html).to.satisfy(isHtml);
+			expect(eventData[2].css).to.satisfy(isCss);
 		});
 	});
 });

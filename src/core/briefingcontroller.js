@@ -9,6 +9,7 @@ export default class BriefingController {
 	static BRIEFING_BUILDER_NO_AGENDA = new (class extends BriefingBuilder {
 		build() {
 			const briefing = new EventEmitter();
+			briefing.id = 0;
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
 
 			briefing.html = pug.renderFile(join(BASE_DIR, 'src/briefing/no-agenda.pug'));
@@ -21,6 +22,7 @@ export default class BriefingController {
 	static BRIEFING_BUILDER_NO_BATTLE = new (class extends BriefingBuilder {
 		build() {
 			const briefing = new EventEmitter();
+			briefing.id = 1;
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
 
 			briefing.html = pug.renderFile(join(BASE_DIR, 'src/briefing/no-battle.pug'));

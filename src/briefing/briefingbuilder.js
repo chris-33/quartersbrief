@@ -109,6 +109,7 @@ export default class BriefingBuilder {
 				.map(ship => ship.getTier())),
 			ownship: this.providers.gameObjectFactory.createGameObject(battle.getPlayer().shipId).getLabel()
 		};
+		briefing.id = t0;
 
 		briefing.html = renderBriefing(briefing);
 		briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
@@ -139,7 +140,7 @@ export default class BriefingBuilder {
 				rootlog.error(`Building topic ${topicName} failed: ${err} ${err.stack}`);
 				rendered = this.buildErrorTopic(err)				
 			}			
-			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, index, rendered));
+			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, briefing.id, index, rendered));
 			return rendered;
 		})).then(() => {
 			rootlog.info(`Created briefing using ${agenda.name ? `agenda ${agenda.name}` : 'unnamed agenda'} in ${Date.now() - t0}ms`);

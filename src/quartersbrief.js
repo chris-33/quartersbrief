@@ -86,7 +86,7 @@ async function handler() {
 		.forEach(eventName => briefing.on(eventName, function reEmit(...args) {
 			let logstr = `Re-emitted event ${eventName}`;			
 			if (eventName === BriefingBuilder.EVT_BRIEFING_TOPIC)
-				logstr += ` for topic #${args[0]}`;
+				logstr += ` for topic #${args[1]}`;
 			log.debug(logstr);
 			
 			io.emit(eventName, ...args);
@@ -117,5 +117,4 @@ battleController.on('battlestart', function() {
 
 battleController.on('battleend', function() {
 	io.emit('battleend');
-	handler(); // Show the no-battle briefing
 });

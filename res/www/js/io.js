@@ -33,15 +33,26 @@ const ANIMATION_DURATION = 1000;
 // of the old briefing.
 let readyForTopics;
 
-export async function onBriefingStart({ html, css }) {	
+let current;
+
+export async function onBriefingStart({ id, html, css }) {	
+	current = id;
 	let ready;
+
 	readyForTopics = new Promise(resolve => ready = resolve);
+
+	// Animate out previous briefing
+	const briefing = document.getElementById('briefing');
+	briefing.style.position = 'relative';
+	await briefing.animate(SLIDE_OUT, {
+		duration: ANIMATION_DURATION,
+		fill: 'forwards'
+	}).finished;
 
 	const briefingStylesheet = document.adoptedStyleSheets[0] ?? new CSSStyleSheet();
 	document.adoptedStyleSheets = [ briefingStylesheet ];
 	await briefingStylesheet.replace(css);
 
-	const briefing = document.getElementById('briefing');
 	briefing.style.position = 'static'; // May still be 'relative' from previous slide out
 	briefing.innerHTML = '';
 	await briefing.animate(REVEAL, {
@@ -57,15 +68,17 @@ export async function onBriefingStart({ html, css }) {
 	ready();
 }
 
-export async function onBriefingTopic(index, { html, css }) {
+export async function onBriefingTopic(id, index, { html, css }) {
+	if (id !== current) return;
+	// Defer until we're ready to show topics
+	await readyForTopics;
+
 	const stylesheet = new CSSStyleSheet();
 	await stylesheet.replace(css);
 	// Chromium < 99 does not allow to push() to adoptedStyleSheets
 	// https://chromestatus.com/feature/5638996492288000
 	document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, stylesheet ];
 
-	// Defer until we're ready to show topics
-	await readyForTopics;
 
 	const topic = document.querySelector(`#topic-${index} .topic-content`);
 	await topic.animate(FADE_OUT, ANIMATION_DURATION).finished;
@@ -80,19 +93,10 @@ export async function onBriefingTopic(index, { html, css }) {
 	await topic.animate(FADE_IN, ANIMATION_DURATION).finished;
 }
 
-export async function onBattleEnd() {
-	// Slide briefing out the bottom when battle has ended
-	const briefing = document.getElementById('briefing');
-	briefing.style.position = 'relative';
-
-	return briefing.animate(SLIDE_OUT, {
-		duration: ANIMATION_DURATION,
-		fill: 'forwards'
-	}).finished;
-}
 
 // No-ops. This way we can already register them on the socket instance,
 // so if we ever want to do anything, we just need to change these and not
 // have to remember to register them as event handlers as well. :)
 export async function onBriefingFinish() {}
 export async function onBattleStart() {}
+export async function onBattleEnd() {}

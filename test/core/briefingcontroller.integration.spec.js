@@ -116,7 +116,7 @@ describe('BriefingController @integration', function() {
 		expect(briefing.css, 'briefing should have valid css').to.satisfy(isCss);
 		expect(parse(briefing.html).querySelectorAll('.topic'), 'briefing should have a single topic').to.have.lengthOf(1);
 		
-		const topic = await new Promise(resolve => emitter.on(BriefingBuilder.EVT_BRIEFING_TOPIC, (index, topic) => resolve(topic)));
+		const topic = await new Promise(resolve => emitter.on(BriefingBuilder.EVT_BRIEFING_TOPIC, (id, index, topic) => resolve(topic)));
 		expect(topic.html, 'topic\'s html should equal MockTopic\'s output').to.equal(MOCK_TOPIC_HTML);
 		// Normalize topic css by removing newlines and trimming whitespace:
 		topic.css = topic.css.split(/\s+/).join(' ');
