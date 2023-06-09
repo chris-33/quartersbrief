@@ -833,7 +833,7 @@ export default function recover(subject, clip, MIN_LENGTH_SQ) {
 		if (/identical/.test(err.message))
 			return {
 				subject: [],
-				clip
+				clip: clip.map(entry => entry.vertex)
 			}
 		else
 			throw err;
