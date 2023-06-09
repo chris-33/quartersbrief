@@ -6,6 +6,15 @@ export const EVT_BRIEFING_FINISH = 'briefingfinish';
 export const EVT_BATTLE_START = 'battlestart';
 export const EVT_BATTLE_END = 'battleend';
 
+function lock() {
+	let release;
+	const result = new Promise(resolve => {
+		release = resolve;
+	});
+	result.release = release;
+	return result;
+}
+
 const FADE_OUT = [
 	{ opacity: 1, easing: 'ease-in' },
 	{ opacity: 0 }	
@@ -31,15 +40,20 @@ const ANIMATION_DURATION = 1000;
 // the completion of its event handler (because onBriefingStart is asynchronous).
 // This would result in the topic getting "lost", because it would be inserted into the DOM
 // of the old briefing.
-let readyForTopics;
+let briefingLock;
+let topicLocks = [];
 
 let current;
 
 export async function onBriefingStart({ id, html, css }) {	
 	current = id;
-	let ready;
-
-	readyForTopics = new Promise(resolve => ready = resolve);
+	
+	// Lock the briefing, so new topics arriving will have to wait
+	briefingLock = lock();
+	// Wait for those topics that are already being animated in to finish
+	await Promise.all(topicLocks);
+	// Reset topic locks
+	topicLocks = [];
 
 	// Animate out previous briefing
 	const briefing = document.getElementById('briefing');
@@ -64,13 +78,17 @@ export async function onBriefingStart({ id, html, css }) {
 	briefing.append(contents);
 	await Promise.all(anims);
 
-	ready();
+	briefingLock.release();
 }
 
 export async function onBriefingTopic(id, index, { html, css }) {
 	if (id !== current) return;
 	// Defer until we're ready to show topics
-	await readyForTopics;
+	await briefingLock;
+
+	// Add a new topic lock
+	const topicLock = lock();	
+	topicLocks.push(topicLock);
 
 	const stylesheet = new CSSStyleSheet();
 	await stylesheet.replace(css);
@@ -90,6 +108,8 @@ export async function onBriefingTopic(id, index, { html, css }) {
 	topic.append(newTopic);
 	
 	await topic.animate(FADE_IN, ANIMATION_DURATION).finished;
+
+	topicLock.release();
 }
 
 
