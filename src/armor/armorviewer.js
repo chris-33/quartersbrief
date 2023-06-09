@@ -35,6 +35,11 @@ export default class ArmorViewer {
 	 * @type {Number}
 	 */
 	static PRECISION = 1.0e-3;
+	/**
+	 * The minimum area of created polygons. Polygons smaller than this will be considered artifacts of the algorithm and filtered out.
+	 * @type {Number}
+	 */
+	static MIN_AREA = 1.0e-2;
 
 	/**
 	 * Holds created/read views and the raw armor models for ships. Keys are in the form `<ship model name>.<view>`, e.g. `AAA001_Battleship.front`. 
@@ -70,6 +75,17 @@ export default class ArmorViewer {
 	 * is now an array of **polygons**. Polygons are arrays of two-dimensional vertices.
 	 */
 	async createView(model, viewAxis) {
+		function area(poly) {
+			let area = 0;
+			for (let i = 0; i < poly.length; i++) {
+				let curr = poly[i];
+				let next = poly[(i + 1) % poly.length];
+				area += (next[1] + curr[1]) * (next[0] - curr[0]);
+			}
+			return area / 2;
+		}
+
+
 		// Do an initial fitting of the model into the grid. (This is still in three dimensions.)
 		let _model = model;
 		model = {};
@@ -199,7 +215,11 @@ export default class ArmorViewer {
 					}
 				} while (retries-- > 0);
 			}
-			model[id] = polybool.polygon(result).regions;
+			model[id] = polybool
+				.polygon(result)
+				.regions
+				// Filter out artifacts
+				.filter(region => Math.abs(area(region)) >= ArmorViewer.MIN_AREA);
 		}
 
 		return model;
