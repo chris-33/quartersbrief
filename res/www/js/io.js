@@ -15,75 +15,78 @@ function lock() {
 	return result;
 }
 
-const FADE_OUT = [
-	{ opacity: 1, easing: 'ease-in' },
-	{ opacity: 0 }	
-];
-const FADE_IN = [
-	{ opacity: 0, transform: 'translateY(3rem) scale(0.7)', easing: 'linear' },
-	{ transform: 'translateY(3rem) scale(1)', offset: 0.2, easing: 'ease-out' },
-	{ opacity: 1, },
-];
-const REVEAL = [
-	{ transform: 'scale(0, 0.1)', },
-	{ transform: 'scale(1, 0.1)', offset: 0.4 },
-	{ transform: 'scale(1, 0.1)', offset: 0.6 },
-	{ transform: 'scale(1)' }
-];
-const SLIDE_OUT = [
-	{},
-	{ transform: 'translateX(-100vw)' }
-];
-const ANIMATION_DURATION = 1000;
-
-// Guard against topics getting delivered extremely quickly, i.e. between briefing start and
-// the completion of its event handler (because onBriefingStart is asynchronous).
-// This would result in the topic getting "lost", because it would be inserted into the DOM
-// of the old briefing.
+// Locks to prevent briefing/topic animations from being superimposed on each other. This also prevents a race condition
+// between briefing and topics, where extremely fast-arriving topics (i.e. arriving while the old briefing is still being 
+// animated out) would never get shown, because they would be added to the old briefing.
+// 
+// Concurrency rules:
+// - A new briefing may only be animated in if the old is not still being animated in
+// - A new briefing may only be animated in if no topics on the old briefing are still being animated in
+// - A new topic may only be animated in if the briefing is done being animated in
+// - More than one topic may be animated in at a time
 let briefingLock;
 let topicLocks = [];
 
 let current;
 
 export async function onBriefingStart({ id, html, css }) {	
+	// Remember the id of the latest received briefing so we can discard incoming topics for all others
 	current = id;
-	
-	// Lock the briefing, so new topics arriving will have to wait
+	// Wait for the briefing to become available for exchange
+	// (This will delay the briefing start animation if another briefing is currently being animated in)	
+	await briefingLock;
+	// Lock the briefing, so new briefings/topics arriving will have to wait
 	briefingLock = lock();
-	// Wait for those topics that are already being animated in to finish
+	// Wait for any topics that are still being animated on the previous briefing in to finish
 	await Promise.all(topicLocks);
 	// Reset topic locks
 	topicLocks = [];
 
 	// Animate out previous briefing
 	const briefing = document.getElementById('briefing');
-	await briefing.animate(SLIDE_OUT, {
-		duration: ANIMATION_DURATION,
-		fill: 'forwards'
-	}).finished;
+
+	let anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-vanish');
+	if (anim) {
+		anim.play();
+		await anim.finished;
+	}
 
 	const briefingStylesheet = document.adoptedStyleSheets[0] ?? new CSSStyleSheet();
 	document.adoptedStyleSheets = [ briefingStylesheet ];
 	await briefingStylesheet.replace(css);
-
-	// @fixme This introduces a race condition. If a second briefing starts while the reveal animation of the first is still playing, BOTH will be appended to the briefing content area
+	
 	briefing.innerHTML = '';
-	await briefing.animate(REVEAL, {
-		duration: ANIMATION_DURATION,
-		easing: 'ease-in-out'
-	}).finished;
+	anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-appear');
+	if (anim) {
+		anim.play();
+		await anim.finished;
+	}
 
 	const contents = document.createRange().createContextualFragment(html);
-	const anims = Array.from(contents.children).map(element => element.animate(FADE_IN, ANIMATION_DURATION).finished);
 	briefing.append(contents);
+	// Animate in all direct children of the briefing
+	const anims = Array
+		.from(briefing.children)
+		.map(element => {
+			let anim = element.getAnimations().find(anim => anim.animationName === 'briefing-content-appear');
+			if (anim) {
+				anim.play();
+				return anim.finished;
+			}
+			return null;
+		})
+		.filter(p => p !== null);
+
 	await Promise.all(anims);
 
 	briefingLock.release();
 }
 
 export async function onBriefingTopic(id, index, { html, css }) {
+	// Discard topics for briefings other than the current one
 	if (id !== current) return;
-	// Defer until we're ready to show topics
+	// Defer until the briefing is ready to receive topics
+	// (This will prevent topics from getting animated in while the briefing itself is still being animated in)
 	await briefingLock;
 
 	// Add a new topic lock
@@ -96,9 +99,13 @@ export async function onBriefingTopic(id, index, { html, css }) {
 	// https://chromestatus.com/feature/5638996492288000
 	document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, stylesheet ];
 
-
 	const topic = document.querySelector(`#topic-${index} .topic-content`);
-	await topic.animate(FADE_OUT, ANIMATION_DURATION).finished;
+	// Animate out the topic loading indicator, if an animation for that has been set
+	let anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-vanish');
+	if (anim) {
+		anim.play();
+		await anim.finished;
+	}	
 	topic.classList.remove('loading');
 	
 	// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
@@ -107,8 +114,14 @@ export async function onBriefingTopic(id, index, { html, css }) {
 	topic.innerHTML = '';
 	topic.append(newTopic);
 	
-	await topic.animate(FADE_IN, ANIMATION_DURATION).finished;
+	// Animate in the topic content, if an animation for that has been set
+	anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-appear');
+	if (anim) {
+		anim.play();
+		await anim.finished;
+	}
 
+	// Release the topic lock after all animations have finished
 	topicLock.release();
 }
 

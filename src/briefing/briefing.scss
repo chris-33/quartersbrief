@@ -8,6 +8,50 @@
 
 	outline: 2pt solid white;
 	outline-offset: 2pt;
+
+	// Assign animation briefing-appear/briefing-vanish to briefing container
+	animation: 1s forwards paused briefing-appear, 1s forwards paused briefing-vanish;
+
+	// Assign animation briefing-content-appear to all direct children
+	& > * {
+		animation: 1s forwards paused briefing-content-appear;
+	}
+}
+
+// The animation to use when the briefing container is delivered
+@keyframes briefing-appear {
+	from { transform: scale(0, 0.1); }
+	50% { transform: scale(1, 0.1); }
+	to { transform: scale(1, 1); }	
+}
+// The animation to use when the briefing is removed
+@keyframes briefing-vanish {
+	to { transform: translateX(-100vw); }
+}
+// The animation to use to animate in the briefing content after the container has been shown
+@keyframes briefing-content-appear {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+// The animation to use when a new topic is delivered
+@keyframes topic-content-appear {
+	from {
+		opacity: 0;
+		transform: translateY(3rem) scale(0.7);
+		animation-timing-function: linear;
+	}
+	20% {
+		transform: translateY(3rem) scale(1);
+		animation-timing-function: ease-out;
+	}
+	to {
+		opacity: 1;
+	}
+}
+// The animation to use for animating out the spinner displayed while the topic loading
+@keyframes topic-content-vanish {
+	from { opacity: 1; }
+	to { opacity: 0; }
 }
 
 h1 {
@@ -38,6 +82,15 @@ h1 {
 .unit {
 	color: #757575;
 	font-size: fontsizes.$small;
+}
+
+// Assign animation topic-content-appear when topic is NOT loading anymore
+.topic-content {
+	animation: 1s forwards paused topic-content-appear;
+}
+// Assign animation topic-content-vanish when topic is still loading
+.topic-content.loading {
+	animation: 1s forwards paused topic-content-vanish;
 }
 
 .topic-content.loading {
