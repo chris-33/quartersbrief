@@ -34,52 +34,54 @@ export async function onBriefingStart({ id, html, css }) {
 	current = id;
 	// Wait for the briefing to become available for exchange
 	// (This will delay the briefing start animation if another briefing is currently being animated in)	
-	await briefingLock;
+	// await briefingLock;
 	// Lock the briefing, so new briefings/topics arriving will have to wait
 	briefingLock = lock();
-	// Wait for any topics that are still being animated on the previous briefing in to finish
-	await Promise.all(topicLocks);
-	// Reset topic locks
-	topicLocks = [];
+	try {
+		// Wait for any topics that are still being animated on the previous briefing in to finish
+		await Promise.all(topicLocks);
+		// Reset topic locks
+		topicLocks = [];
 
-	// Animate out previous briefing
-	const briefing = document.getElementById('briefing');
+		// Animate out previous briefing
+		const briefing = document.getElementById('briefing');
 
-	let anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-vanish');
-	if (anim) {
-		anim.play();
-		await anim.finished;
+		let anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-vanish');
+		if (anim) {
+			anim.play();
+			await anim.finished;
+		}
+
+		const briefingStylesheet = document.adoptedStyleSheets[0] ?? new CSSStyleSheet();
+		document.adoptedStyleSheets = [ briefingStylesheet ];
+		await briefingStylesheet.replace(css);
+		
+		briefing.innerHTML = '';
+		anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-appear');
+		if (anim) {
+			anim.play();
+			await anim.finished;
+		}
+
+		const contents = document.createRange().createContextualFragment(html);
+		briefing.append(contents);
+		// Animate in all direct children of the briefing
+		const anims = Array
+			.from(briefing.children)
+			.map(element => {
+				let anim = element.getAnimations().find(anim => anim.animationName === 'briefing-content-appear');
+				if (anim) {
+					anim.play();
+					return anim.finished;
+				}
+				return null;
+			})
+			.filter(p => p !== null);
+
+		await Promise.all(anims);
+	} finally {
+		briefingLock.release();
 	}
-
-	const briefingStylesheet = document.adoptedStyleSheets[0] ?? new CSSStyleSheet();
-	document.adoptedStyleSheets = [ briefingStylesheet ];
-	await briefingStylesheet.replace(css);
-	
-	briefing.innerHTML = '';
-	anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-appear');
-	if (anim) {
-		anim.play();
-		await anim.finished;
-	}
-
-	const contents = document.createRange().createContextualFragment(html);
-	briefing.append(contents);
-	// Animate in all direct children of the briefing
-	const anims = Array
-		.from(briefing.children)
-		.map(element => {
-			let anim = element.getAnimations().find(anim => anim.animationName === 'briefing-content-appear');
-			if (anim) {
-				anim.play();
-				return anim.finished;
-			}
-			return null;
-		})
-		.filter(p => p !== null);
-
-	await Promise.all(anims);
-
-	briefingLock.release();
 }
 
 export async function onBriefingTopic(id, index, { html, css }) {
@@ -92,37 +94,38 @@ export async function onBriefingTopic(id, index, { html, css }) {
 	// Add a new topic lock
 	const topicLock = lock();	
 	topicLocks.push(topicLock);
+	try {
+		const stylesheet = new CSSStyleSheet();
+		await stylesheet.replace(css);
+		// Chromium < 99 does not allow to push() to adoptedStyleSheets
+		// https://chromestatus.com/feature/5638996492288000
+		document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, stylesheet ];
 
-	const stylesheet = new CSSStyleSheet();
-	await stylesheet.replace(css);
-	// Chromium < 99 does not allow to push() to adoptedStyleSheets
-	// https://chromestatus.com/feature/5638996492288000
-	document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, stylesheet ];
-
-	const topic = document.querySelector(`#topic-${index} .topic-content`);
-	// Animate out the topic loading indicator, if an animation for that has been set
-	let anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-vanish');
-	if (anim) {
-		anim.play();
-		await anim.finished;
-	}	
-	topic.classList.remove('loading');
-	
-	// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
-	const newTopic = document.createRange().createContextualFragment(html);
-	makeDetails(newTopic);
-	topic.innerHTML = '';
-	topic.append(newTopic);
-	
-	// Animate in the topic content, if an animation for that has been set
-	anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-appear');
-	if (anim) {
-		anim.play();
-		await anim.finished;
+		const topic = document.querySelector(`#topic-${index} .topic-content`);
+		// Animate out the topic loading indicator, if an animation for that has been set
+		let anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-vanish');
+		if (anim) {
+			anim.play();
+			await anim.finished;
+		}	
+		topic.classList.remove('loading');
+		
+		// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
+		const newTopic = document.createRange().createContextualFragment(html);
+		makeDetails(newTopic);
+		topic.innerHTML = '';
+		topic.append(newTopic);
+		
+		// Animate in the topic content, if an animation for that has been set
+		anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-appear');
+		if (anim) {
+			anim.play();
+			await anim.finished;
+		}
+	} finally {
+		// Release the topic lock after all animations have finished
+		topicLock.release();
 	}
-
-	// Release the topic lock after all animations have finished
-	topicLock.release();
 }
 
 
