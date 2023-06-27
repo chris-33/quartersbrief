@@ -39,7 +39,7 @@ export default class ArmorViewer {
 	 * The minimum area of created polygons. Polygons smaller than this will be considered artifacts of the algorithm and filtered out.
 	 * @type {Number}
 	 */
-	static MIN_AREA = 1.0e-2;
+	static MIN_AREA = 5.0e-3;
 	/**
 	 * The lookahead length when checking result polygons for aberrant chains.
 	 * @type {Number}
