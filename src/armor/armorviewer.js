@@ -1,5 +1,5 @@
 import polybool from 'polybooljs';
-import { convertDown, fuse } from 'geometry-3d';
+import { convertDown, fuse, smooth } from 'geometry-3d';
 import { Pool, Worker, spawn } from 'threads';
 import Ship from '../model/ship.js';
 import { readFile, writeFile, mkdir } from 'fs/promises';
@@ -40,6 +40,11 @@ export default class ArmorViewer {
 	 * @type {Number}
 	 */
 	static MIN_AREA = 1.0e-2;
+	/**
+	 * The lookahead length when checking result polygons for aberrant chains.
+	 * @type {Number}
+	 */
+	static LOOKAHEAD = 3;
 
 	/**
 	 * Holds created/read views and the raw armor models for ships. Keys are in the form `<ship model name>.<view>`, e.g. `AAA001_Battleship.front`. 
@@ -219,6 +224,7 @@ export default class ArmorViewer {
 				.polygon(result)
 				.regions
 				// Filter out artifacts
+				.map(region => smooth(region, ArmorViewer.PRECISION**2, ArmorViewer.LOOKAHEAD))
 				.filter(region => Math.abs(area(region)) >= ArmorViewer.MIN_AREA);
 		}
 
