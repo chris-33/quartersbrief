@@ -30,8 +30,8 @@ $fa-font-path: 'font';
 }
 
 $textcolor: midnightblue;
-$padding-horizontal: 15pt;
-$padding-vertical: 10pt;
+$padding-horizontal: 0.5rem;
+$padding-vertical: 1ex;
 
 :root {
 	scroll-behavior: smooth;
@@ -59,6 +59,7 @@ body {
 
 header {
 	display: flex;
+	max-height: 3rem;
 	justify-content: space-between;
 	align-items: center;
 
@@ -66,32 +67,26 @@ header {
 	color: white;
 	margin: $padding-vertical $padding-horizontal 36pt;
 
+
 	#branding {
 		font-style: italic;
 
-		& > div {
-			margin: 0;
-			display: inline-block;
-
-			& > :first-child {
-				font-variant: small-caps;
-				font-size: 18pt;
-				letter-spacing: 2pt;
-				font-weight: 200;
-			}
-
-			& > :nth-child(2) {
-				font-size: 36pt;
-				letter-spacing: 8pt;
-				font-weight: 700;
-				line-height: 1ex;
-			}
+		height: 100%;
+	
+		& > img {
+			height: 100%;
+			filter: unquote('invert()');
 		}
 
-		#logo {
-			margin-right: 12pt;
+		& > img[src$="logo.svg"] {
+			// Align the logo bottom edge with the baseline
+			vertical-align: baseline;
+		}
+
+		& > img[src$="logotype.svg"] {
+			// Align the bottom edge of "quartersbrief" with the bottom edge of the box
 			vertical-align: bottom;
-			filter: #{"invert()"}; // Necessary for deconfliction with sass builtin invert() function
+			margin-left: $padding-horizontal;
 		}
 	}
 
