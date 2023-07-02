@@ -107,7 +107,8 @@ export default class BriefingBuilder {
 				.map(vehicle => vehicle.shipId)
 				.map(shipId => this.providers.gameObjectFactory.createGameObject(shipId))
 				.map(ship => ship.getTier())),
-			ownship: this.providers.gameObjectFactory.createGameObject(battle.getPlayer().shipId).getLabel()
+			ownship: this.providers.gameObjectFactory.createGameObject(battle.getPlayer().shipId).getLabel(),
+			map: this.providers.gameObjectFactory.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()]
 		};
 		briefing.id = t0;
 

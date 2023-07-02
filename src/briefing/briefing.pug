@@ -3,6 +3,7 @@ h1
 	div 
 		time(datetime=new Date().toISOString()) #{new Date().toLocaleTimeString([], { timeStyle: 'short' })}
 		span #{battleinfo.ownship}
+		span #{battleinfo.map}
 
 
 each topic, index in topics
