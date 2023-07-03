@@ -133,7 +133,7 @@ export default class BriefingBuilder {
 				);
 
 				// rendered.html = renderTopic({ index, caption, html: rendered.html });
-				rendered.css = sass.compileString(`#topic-${index} { ${rendered.css ?? ''} }`).css;
+				rendered.css = sass.compileString(`#topic-${index}, #topic-${index}-overlay { ${rendered.css ?? ''} }`).css;
 
 				briefing.topics[index] = rendered;
 				dedicatedlog.debug(`Built topic ${topicName} in ${Date.now() - t0}ms`);

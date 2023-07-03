@@ -114,6 +114,11 @@ export async function onBriefingTopic(id, index, { html, css }) {
 		// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
 		const newTopic = document.createRange().createContextualFragment(html);
 		makeDetails(newTopic);
+		// Move all details overlays from the topic proper to the dedicated overlay pane
+		newTopic.querySelectorAll(`aside.details`).forEach(details => {
+			details.remove();
+			document.getElementById(`topic-${index}-overlay`).append(details);
+		});
 		topic.innerHTML = '';
 		topic.append(newTopic);
 		

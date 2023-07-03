@@ -11,5 +11,10 @@ each topic, index in topics
 		h2 #{topic.caption}
 		.topic-content.loading
 			.spinner &#xe011;
-
-script(src='js/details.js')
+	
+	//- Create a div for each topic that will receive the topic's details overlays.
+	//- This is to make sure details overlays always sit in front of all topics.
+	//- (Simply setting z-index is not enough because we can't guarantee that all topics
+	//- will be in the same stacking context. 
+	//- See https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_positioned_layout/Understanding_z-index/Stacking_context)
+	div.topic-overlay(id = `topic-${index}-overlay`)
