@@ -26,6 +26,19 @@ if ships.length > 0
 					enemy: teams.enemies.includes(hydro.ship.getID())
 				}, data-details-for=hydro.ship.getName())
 					include details
+	script
+		include layout.js
+		| (function layout() {
+		| 	const labels = Array.from(document.currentScript.parentElement.querySelectorAll('.label'));
+		| 	let bounds = window.getComputedStyle(document.currentScript.parentElement);
+		|	bounds = DOMRect.fromRect({
+		|		x: Number.parseFloat(bounds.left) + Number.parseFloat(bounds.width) / 2,
+		|		y: Number.parseFloat(bounds.top),
+		|		width: Number.parseFloat(bounds.width) / 2,
+		|		height: Number.parseFloat(bounds.height) / 2
+		|	});
+		| 	layoutLabels(labels, bounds);
+		| })();
 
 else
 	.no-hydros
