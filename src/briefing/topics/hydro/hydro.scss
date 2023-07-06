@@ -12,6 +12,7 @@ $zoom: 0.496;
 .label {
 	position: absolute;
 	white-space: nowrap;
+	transform: translateY(-50%);
 }
 
 .ship {
