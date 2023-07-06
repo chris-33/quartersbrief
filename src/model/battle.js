@@ -18,4 +18,8 @@ export default class Battle {
 	getVehicles() {
 		return this._data.vehicles;
 	}
+
+	getMapName() {
+		return this._data.mapName;
+	}
 }

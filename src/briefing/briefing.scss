@@ -114,6 +114,14 @@ h1 {
 	}
 }
 
+.topic-overlay {
+	position: absolute;
+	inset: 0px;
+	z-index: 1;
+	// Prevent overlay from blocking hover events on the actual topics
+	pointer-events: none;
+}
+
 aside.details {
 	padding: 0.5em;
 	color: black;

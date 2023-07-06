@@ -37,9 +37,38 @@ function getBoundingBox(poly) {
 	return result;
 }
 
+/**
+ * Helper class that holds cached bounding boxes for triangles.
+ */
+class BBoxCache {
+	/**
+	 * Constructs a new BBoxCache and populates it with the bounding boxes of `mesh`.
+	 */
+	constructor(mesh) {
+		this.cache = new Map();
+		for (const tri of mesh) 
+			this.cache.set(tri, getBoundingBox(tri));
+	}
+
+	/** 
+	 * Gets the cached bounding box for `tri`. On cache miss, the bounding box is constructed and the cache is updated.
+	 * (This can happen if the underlying mesh changes, e.g. when comparing meshes against themselves.) 
+	 */
+	get(tri) {
+		let result = this.cache.get(tri);
+		if (!result) {
+			result = getBoundingBox(tri);
+			this.cache.set(tri, result);
+		}
+		return result;
+	}
+}
+
 export default function occlude(subject, other, viewAxis) {
 	const view = [0,1,2].map(dim => dim === viewAxis ? 1 : 0);
 	let i = 0;
+
+	const bboxes = new BBoxCache(other);
 
 	while (i < subject.length) {
 		dedicatedlog.debug(`Checking triangle ${i} of mesh ${subject.id} against mesh ${other.id}`);
@@ -83,7 +112,7 @@ export default function occlude(subject, other, viewAxis) {
 			.filter(tri => tri !== T)
 			// Filter out triangles whose bounding boxes do not overlap T's bounding box
 			.filter(tri => {
-				const bboxTri = getBoundingBox(tri);
+				const bboxTri = bboxes.get(tri);
 				// Compare the bounding boxes in all dimensions except the view axis. 
 				// If the bounding boxes do not overlap, the triangles cannot intersect
 				for (let i = 0; i < bboxT.length; i++) {

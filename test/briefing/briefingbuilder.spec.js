@@ -33,6 +33,9 @@ describe('BriefingBuilder', function() {
 			getTier: () => 0, 
 			getLabel: () => ''
 		});
+		gameObjectFactory.labeler = {
+			labels: {}
+		}
 	});
 
 	beforeEach(function() {

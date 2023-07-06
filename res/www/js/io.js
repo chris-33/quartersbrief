@@ -32,9 +32,11 @@ let current;
 export async function onBriefingStart({ id, html, css }) {	
 	// Remember the id of the latest received briefing so we can discard incoming topics for all others
 	current = id;
+
 	// Wait for the briefing to become available for exchange
 	// (This will delay the briefing start animation if another briefing is currently being animated in)	
-	// await briefingLock;
+	await briefingLock;
+
 	// Lock the briefing, so new briefings/topics arriving will have to wait
 	briefingLock = lock();
 	try {
@@ -85,11 +87,24 @@ export async function onBriefingStart({ id, html, css }) {
 }
 
 export async function onBriefingTopic(id, index, { html, css }) {
-	// Discard topics for briefings other than the current one
-	if (id !== current) return;
 	// Defer until the briefing is ready to receive topics
 	// (This will prevent topics from getting animated in while the briefing itself is still being animated in)
 	await briefingLock;
+
+	// Await the briefing lock a second time.
+	// This is a workaround to avoid a race condition between topics and briefing.
+	// Because onBriefingStart first awaits the current briefing lock (to avoid animating a new briefing over a
+	// still-animating previous one), there is a window of time where the new briefing has not yet been locked,
+	// and onBriefingTopic can be executed. 
+	// The end result is topics get "lost" because the handler errors, as the DOM to insert the topic into doesn't
+	// exist yet.
+	// Awaiting the lock a second time solves the issue, but it is an ugly hack. We really need a better way to
+	// ensure handlers run when they are supposed to.
+	// @todo Better arbitration for briefing and topics loading in
+	await briefingLock;
+
+	// Discard topics for briefings other than the current one
+	if (id !== current) return;
 
 	// Add a new topic lock
 	const topicLock = lock();	
@@ -113,6 +128,11 @@ export async function onBriefingTopic(id, index, { html, css }) {
 		// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
 		const newTopic = document.createRange().createContextualFragment(html);
 		makeDetails(newTopic);
+		// Move all details overlays from the topic proper to the dedicated overlay pane
+		newTopic.querySelectorAll(`aside.details`).forEach(details => {
+			details.remove();
+			document.getElementById(`topic-${index}-overlay`).append(details);
+		});
 		topic.innerHTML = '';
 		topic.append(newTopic);
 		
