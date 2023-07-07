@@ -46,7 +46,7 @@ jobs:
           cp $GITHUB_WORKSPACE/README.md $PKGROOT/usr/lib/quartersbrief
           
           mkdir -p $PKGROOT/usr/bin
-          cp -s $GITHUB_WORKSPACE/.github/workflows/res/debian/quartersbrief $PKGROOT/usr/bin/
+          cp $GITHUB_WORKSPACE/.github/workflows/res/debian/quartersbrief $PKGROOT/usr/bin/
           chmod +x $PKGROOT/usr/bin/quartersbrief
           
           mkdir -p $PKGROOT/usr/share/quartersbrief
