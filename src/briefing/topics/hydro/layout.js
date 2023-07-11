@@ -52,7 +52,7 @@ function layoutRects(rects, bounds, spacing = 0) {
 		// We will use this to calculate the new x coordinate.
 		const r = Math.sqrt((bounds.height - (rect.top - bounds.top)) ** 2 + (rect.left - bounds.left) ** 2);
 		result.push({
-			x: Math.sqrt(r**2 - (bounds.height - (y - bounds.top)) ** 2) + bounds.left,
+			x: Math.sqrt(Math.max(0, r**2 - (bounds.height - (y - bounds.top)) ** 2)) + bounds.left,
 			y: y - bounds.top
 		});
 
