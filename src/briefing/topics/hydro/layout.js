@@ -25,16 +25,18 @@ function group(rects) {
 function layoutRects(rects, bounds, spacing = 0) {
 	const result = [];
 
-	// Calculate the difference between the sum of individual heights and the total height
-	// This is how much space we are missing	
+	// Calculate the actual (current) height (including space) that labels are taking up
 	const actual = rects[rects.length - 1].bottom - rects[0].top;
+	// Calculate the sum of their individual heights. 
 	const nominal = rects.reduce((prev, curr) => prev + curr.height, 0);
-	const overlap = Math.abs(actual - nominal) + (rects.length - 1) * spacing;
-
 	// Reduce spacing if there is not enough room to use preferred value
 	spacing = Math.min(spacing, (bounds.height - nominal) / (rects.length - 1));
 
-	// Check how much space is available on the top and bottom
+	// Calculate the difference between the sum of individual heights and the total height
+	// This is how much space we are missing	
+	const overlap = Math.abs(actual - nominal) + (rects.length - 1) * spacing;
+
+	// Check how much space is available on the top and bottom with the way things are currently layed out
 	const availTop = rects[0].top - bounds.top;
 	const availBottom = bounds.bottom - rects[rects.length - 1].bottom;
 
@@ -49,7 +51,6 @@ function layoutRects(rects, bounds, spacing = 0) {
 		// Calculate length of radial through Pythagorean theorem.
 		// We will use this to calculate the new x coordinate.
 		const r = Math.sqrt((bounds.height - (rect.top - bounds.top)) ** 2 + (rect.left - bounds.left) ** 2);
-
 		result.push({
 			x: Math.sqrt(r**2 - (bounds.height - (y - bounds.top)) ** 2) + bounds.left,
 			y: y - bounds.top
@@ -82,8 +83,8 @@ function layoutLabels(labels, bounds) {
 
 		const anchors = layoutRects(rects, bounds, SPACING);
 		for (let i = 0; i < group.length; i++) {
-			group[i].style.left = anchors[i].x;
-			group[i].style.top = anchors[i].y;
+			group[i].style.left = `${anchors[i].x}px`;
+			group[i].style.top = `${anchors[i].y}px`;
 		}
 	}
 }
