@@ -86,6 +86,7 @@ div.error {
 
 .piece {
 	stroke-width: 0.2%;
+	fill-rule: evenodd;
 
 	stroke: colors.$warning-neutral;
 	fill: colors.$warning-neutral-light;

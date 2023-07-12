@@ -21,6 +21,7 @@
 
 .piece {
 	$lightness: 66%;
+	fill-rule: evenodd;
 
 	stroke-width: 0.2%;
 
