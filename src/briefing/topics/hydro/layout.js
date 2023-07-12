@@ -4,7 +4,7 @@ function group(rects) {
 	for (let i = 0; i < rects.length; i++) {
 		const rect = rects[i];
 		
-		if (i > 0 && curr.at(-1).right < rect.left) {
+		if (i > 0 && curr[curr.length - 1].right < rect.left) {
 			curr = [];
 			groups.push(curr);
 		}
