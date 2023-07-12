@@ -37,6 +37,9 @@ export async function onBriefingStart({ id, html, css }) {
 	// (This will delay the briefing start animation if another briefing is currently being animated in)	
 	await briefingLock;
 
+	const briefing = document.getElementById('briefing');
+	const previousVisibility = briefing.style.visibility;
+
 	// Lock the briefing, so new briefings/topics arriving will have to wait
 	briefingLock = lock();
 	try {
@@ -45,44 +48,38 @@ export async function onBriefingStart({ id, html, css }) {
 		// Reset topic locks
 		topicLocks = [];
 
-		// Animate out previous briefing
-		const briefing = document.getElementById('briefing');
+		// Add class "exiting" and wait for animations to finish (if any)
+		briefing.classList.add('exiting');
+		await Promise.all(briefing.getAnimations().map(anim => anim.finished));
 
-		let anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-vanish');
-		if (anim) {
-			anim.play();
-			await anim.finished;
-		}
+		// Hide element to prevent flash of content as stylesheet gets replaced
+		briefing.style.visibility = 'hidden';
+		briefing.classList.remove('exiting');
 
 		const briefingStylesheet = document.adoptedStyleSheets[0] ?? new CSSStyleSheet();
 		document.adoptedStyleSheets = [ briefingStylesheet ];
 		await briefingStylesheet.replace(css);
 		
 		briefing.innerHTML = '';
-		anim = briefing.getAnimations().find(anim => anim.animationName === 'briefing-appear');
-		if (anim) {
-			anim.play();
-			await anim.finished;
-		}
+		briefing.style.visibility = previousVisibility;
+
+		// Add class "entering" and wait for animations to finish (if any)
+		briefing.classList.add('entering');
+		await Promise.all(briefing.getAnimations().map(anim => anim.finished));
 
 		const contents = document.createRange().createContextualFragment(html);
 		briefing.append(contents);
-		// Animate in all direct children of the briefing
-		const anims = Array
+		// Wait for enter animation of all direct children of the briefing
+		await Promise.all(Array
 			.from(briefing.children)
-			.map(element => {
-				let anim = element.getAnimations().find(anim => anim.animationName === 'briefing-content-appear');
-				if (anim) {
-					anim.play();
-					return anim.finished;
-				}
-				return null;
-			})
-			.filter(p => p !== null);
+			.flatMap(element => element.getAnimations())
+			.map(anim => anim.finshed));
 
-		await Promise.all(anims);
+		briefing.classList.remove('entering');
 	} finally {
 		briefingLock.release();
+		// Restore visibility in case of an error within the try-block
+		briefing.style.visibility = previousVisibility;
 	}
 }
 
@@ -106,6 +103,8 @@ export async function onBriefingTopic(id, index, { html, css }) {
 	// Discard topics for briefings other than the current one
 	if (id !== current) return;
 
+	const topic = document.querySelector(`#topic-${index} .topic-content`);
+
 	// Add a new topic lock
 	const topicLock = lock();	
 	topicLocks.push(topicLock);
@@ -116,14 +115,13 @@ export async function onBriefingTopic(id, index, { html, css }) {
 		// https://chromestatus.com/feature/5638996492288000
 		document.adoptedStyleSheets = [ ...document.adoptedStyleSheets, stylesheet ];
 
-		const topic = document.querySelector(`#topic-${index} .topic-content`);
-		// Animate out the topic loading indicator, if an animation for that has been set
-		let anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-vanish');
-		if (anim) {
-			anim.play();
-			await anim.finished;
-		}	
+		// Add class "exiting" and wait for animations to finish (if any)
+		topic.classList.add('exiting');
+		await Promise.all(topic.getAnimations().map(anim => anim.finished));
 		topic.classList.remove('loading');
+		topic.classList.remove('exiting');
+
+		// No need to turn off visibility
 		
 		// Turn new topic HTML into a DocumentFragment, run makeDetails on it and then replace the topic's loading spinner with the actual topic contents
 		const newTopic = document.createRange().createContextualFragment(html);
@@ -136,12 +134,10 @@ export async function onBriefingTopic(id, index, { html, css }) {
 		topic.innerHTML = '';
 		topic.append(newTopic);
 		
-		// Animate in the topic content, if an animation for that has been set
-		anim = topic.getAnimations().find(anim => anim.animationName === 'topic-content-appear');
-		if (anim) {
-			anim.play();
-			await anim.finished;
-		}
+		// Add class "entering" and wait for animations to finish (if any)
+		topic.classList.add('entering');
+		await Promise.all(topic.getAnimations().map(anim => anim.finished));
+		topic.classList.remove('entering');
 	} finally {
 		// Release the topic lock after all animations have finished
 		topicLock.release();
