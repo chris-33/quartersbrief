@@ -3,15 +3,20 @@
 	justify-content: space-between;
 	flex-wrap: wrap;
 
-	table {
-		border-spacing: 1em 1ex;
-	}
-
 	h4 {
 		font-weight: normal;
 		text-decoration: underline;
 		text-align: center;
 		margin: 2rem 0;
+	}
+
+	td {
+		padding: 0.5ex 0;
+		padding-right: 1em;
+
+		&:last-of-type {
+			padding-right: 0;
+		}
 	}
 
 	td.label {
