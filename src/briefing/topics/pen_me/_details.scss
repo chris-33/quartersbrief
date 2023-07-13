@@ -5,7 +5,7 @@ aside.details {
 		--details-border-color: #{colors.$warning-severe};
 	}
 	&.cl {
-		--details-border-color: colors.$warning-moderate-severe;	
+		--details-border-color: #{colors.$warning-moderate-severe};
 	}
 	&.ca {
 		--details-border-color: #{colors.$warning-moderate};
