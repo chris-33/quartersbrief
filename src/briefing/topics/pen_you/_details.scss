@@ -16,8 +16,8 @@ aside.details {
 		border-left-width: 0.5ch;
 		border-style: solid;
 
-		&.he { border-color: orange; }
-		&.sap { border-color: purple; }
+		&.he { border-color: colors.$he; }
+		&.sap { border-color: colors.$sap; }
 	}
 
 	.details-line + .details-line {

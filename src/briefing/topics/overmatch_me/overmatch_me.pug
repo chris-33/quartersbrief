@@ -53,17 +53,21 @@ svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor
 		li.none no battleships
 
 .gunlist
-	each ships, cls in shipsByClass
-		div(class=cls.slice(0, -1).toLowerCase())
-			h4 #{cls[0].toUpperCase() + cls.slice(1)}
-			table
-				each ship in ships
-					tr
-						td.label #{ship.getLabel()}
-						td.value #{ship.artillery.getCaliber()}
-							span.unit mm
-				else
-					.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
+	- const show = options?.filter?.classes?.map(cls => `${cls.toLowerCase()}s`);
+	each ships, cls in shipsByClass		
+		//- Do not show ship classes that were excluded through filter
+		//- Otherwise, they will show the heading, but then say there are none
+		if !show || show.includes(cls)
+			div(class=cls.slice(0, -1).toLowerCase())
+				h4 #{cls[0].toUpperCase() + cls.slice(1)}
+				table
+					each ship in ships
+						tr
+							td.label #{ship.getLabel()}
+							td.value #{ship.artillery.getCaliber()}
+								span.unit mm
+					else
+						.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
 
 each piece, id in armor.side
 	- const thickness = ownship.get(`hull.armor.${id}`);

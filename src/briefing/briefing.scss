@@ -9,12 +9,19 @@
 	outline: 2pt solid white;
 	outline-offset: 2pt;
 
-	// Assign animation briefing-appear/briefing-vanish to briefing container
-	animation: 1s forwards paused briefing-appear, 1s forwards paused briefing-vanish;
-
-	// Assign animation briefing-content-appear to all direct children
-	& > * {
-		animation: 1s forwards paused briefing-content-appear;
+	// Use animation briefing-appear to animate in briefing
+	// Additionally, animate in direct children afterward using animation briefing-content-appear
+	&.entering {
+		$animation-time: 1s;
+		animation: $animation-time briefing-appear;
+		& > * {
+			animation: 1s forwards briefing-content-appear;	
+			animation-delay: $animation-time;
+		}
+	}
+	// Use animation briefing-vanish to animate out briefing
+	&.exiting {
+		animation: 0.5s briefing-vanish;
 	}
 }
 
@@ -84,13 +91,13 @@ h1 {
 	font-size: fontsizes.$small;
 }
 
-// Assign animation topic-content-appear when topic is NOT loading anymore
-.topic-content {
-	animation: 1s forwards paused topic-content-appear;
+// Use animation topic-content-appear to animate in topics
+.topic-content.entering {
+	animation: 1s topic-content-appear;
 }
-// Assign animation topic-content-vanish when topic is still loading
-.topic-content.loading {
-	animation: 1s forwards paused topic-content-vanish;
+// Use animation topic-content-vanish to animate out topics
+.topic-content.exiting {
+	animation: 1s topic-content-vanish;
 }
 
 .topic-content.loading {
