@@ -1,6 +1,6 @@
 import * as filters from './topic-filters.js';
 import pug from 'pug';
-import sass from 'sass';
+import * as sass from 'sass';
 import { toSass } from 'sass-cast';
 import { screamingSnakeCase } from '../util/util.js';
 import { join, dirname } from 'path';

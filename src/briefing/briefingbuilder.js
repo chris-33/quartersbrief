@@ -1,6 +1,6 @@
 import { EventEmitter } from 'events';
 import pug from 'pug';
-import sass from 'sass';
+import * as sass from 'sass';
 import rootlog from 'loglevel';
 import clone from 'clone';
 import * as topics from './topics/index.js';

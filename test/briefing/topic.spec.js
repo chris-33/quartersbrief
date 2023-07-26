@@ -43,7 +43,10 @@ describe('Topic', function() {
 		Topic = (await esmock('../../src/briefing/topic.js', {
 			'../../src/briefing/topic-filters.js': filters,
 			'pug': { default: pug },
-			'sass': { default: sass }
+			'sass': { 
+					default: null, // Prevent "import sass from 'sass' is deprecated" warning
+					...sass
+				}
 		})).default;
 	});
 

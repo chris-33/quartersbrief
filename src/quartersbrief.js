@@ -20,7 +20,7 @@ import BriefingController from './core/briefingcontroller.js';
 import { existsSync } from 'fs';
 import path from 'path';
 import pug from 'pug';
-import sass from 'sass';
+import * as sass from 'sass';
 
 // Make sure the game directory is specified.
 if (!config.wowsdir) {
