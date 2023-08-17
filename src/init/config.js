@@ -75,7 +75,7 @@ const config = {
 					value = value.split(',');
 				return value;
 			},
-			description: 'Output debug information. It can also be used in an alternate form --debug <dedicatedlogs>, where <dedicatedlogs> is a comma-separated list of dedicated loggers to switch on. Use --debug all to turn on all dedicated loggers. Available dedicated loggers are: GameObjectFactory, assertInvariants'
+			description: 'Output debug information. It can also be used in an alternate form --debug <dedicatedlogs>, where <dedicatedlogs> is a comma-separated list of dedicated loggers to switch on. Use --debug all to turn on all dedicated loggers.'
 		})
 		.config('config', function loadConfig(filename) {
 			// Do not expect the default config file to exist. If it doesn't, we will treat it as if it was empty.
