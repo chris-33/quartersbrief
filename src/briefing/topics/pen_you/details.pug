@@ -9,23 +9,26 @@ mixin legend(type)
 			li You do not penetrate this part of the ship's armor
 
 mixin details(ship, armor)
-
-	
 	- 
 		// Mapping ammo type to label
 		const AMMO_NAMES = {
 			he: 'High explosive',
 			sap: 'Semi-armor piercing'
 		};
-		// Mapping ammo type to a function that calculates CSS classes given an armor piece thickness
-		const AMMO_PENS = {
-			he: thickness => ({ 
-				he: thickness <= ownship.he,
-				ifhe: thickness <= ownship.ifhe
-			}),
-			sap: thickness => ({
-				sap: thickness <= ownship.sap
-			})
+		// Given a ship and an ammo type, return a classifier function
+		function classifier(ship, ammo) {
+			const thickness = id => ship.get(`hull.armor.${id}`);
+			switch (ammo) {
+				case 'he':
+					return (piece, id) => ({
+						he: thickness(id) <= ownship.he,
+						ifhe: thickness(id) <= ownship.ifhe
+					});
+				case 'sap':
+					return (piece, id) => ({
+						sap: thickenss(id) <= ownship.sap
+					});
+			};
 		}
 
 	aside.details.enemy(data-details-for=ship.getName())
@@ -40,16 +43,6 @@ mixin details(ship, armor)
 							if armor[view] instanceof Error
 								div.error This view could not be created: #{armor[view].message}
 							else
-								- const viewbox = boundingBox(armor[view])
-								svg(
-									version="1.1", 
-									xmlns="http://www.w3.org/2000/svg", 
-									viewBox=`${viewbox.left} ${viewbox.top} ${viewbox.width} ${viewbox.height}`)
-								
-									each piece, id in armor[view]
-										- const thickness = ship.get(`hull.armor.${id}`)
-										path.piece(
-											class=AMMO_PENS[ammo](thickness),
-											d=piece.map(poly => makePath(poly)).join(' '))
+								+armorview(armor[view], classifier(ship, ammo))
 
 					+legend(ammo)

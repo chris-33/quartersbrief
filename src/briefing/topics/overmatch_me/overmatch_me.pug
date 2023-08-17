@@ -1,74 +1,49 @@
-- 
+extends ../armortopic
 
-	const shipsByClass = {
-		battleships: ships.filter(ship => ship.getClass() === 'Battleship'),
-		cruisers: ships.filter(ship => ship.getClass() === 'Cruiser'),
-		destroyers: ships.filter(ship => ship.getClass() === 'Destroyer')
-	};
+block content
+	- 
+		const shipsByClass = {
+			battleships: ships.filter(ship => ship.getClass() === 'Battleship'),
+			cruisers: ships.filter(ship => ship.getClass() === 'Cruiser'),
+			destroyers: ships.filter(ship => ship.getClass() === 'Destroyer')
+		};
 
--
-	function makePath(poly) {
-		let result = '';
-		for (let vertex of poly) {
-			const x = vertex[0]; const y = vertex[1];
-			if (!result)
-				result = `M ${x},${y}`;
-			else
-				result += ` L ${x},${y}`;
-		}
-		if (result) result += ' Z';
-		return result;
-	}
-	function boundingBox(model) {
-		model = Object.values(model).flat(2);
-		const minX = Math.min(...model.map(vertex => vertex[0]));
-		const minY = Math.min(...model.map(vertex => vertex[1]));
-		const maxX = Math.max(...model.map(vertex => vertex[0]));
-		const maxY = Math.max(...model.map(vertex => vertex[1]));
-		return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
-	}
-	function overmatched(thickness) {
+		function overmatched(piece, id) {
+			const thickness = ownship.get(`hull.armor.${id}`);
 			if (shipsByClass.battleships.every(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
 				return 'all';
 			else if (shipsByClass.battleships.some(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
 				return 'some';
 			else 
 				return 'none';
-	}
+		}
 
-svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor.side))
+	+armorview(armor.side, overmatched)
+
+	.legend
+		| Overmatched by:
+		ul
+			li.all all battleships
+			li.some some battleships
+			li.none no battleships
+
+	.gunlist
+		- const show = options?.filter?.classes?.map(cls => `${cls.toLowerCase()}s`);
+		each ships, cls in shipsByClass		
+			//- Do not show ship classes that were excluded through filter
+			//- Otherwise, they will show the heading, but then say there are none
+			if !show || show.includes(cls)
+				div(class=cls.slice(0, -1).toLowerCase())
+					h4 #{cls[0].toUpperCase() + cls.slice(1)}
+					table
+						each ship in ships
+							tr
+								td.label #{ship.getLabel()}
+								td.value #{ship.artillery.getCaliber()}
+									span.unit mm
+						else
+							.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
+
 	each piece, id in armor.side
-		- if (piece.length === 0) continue;
 		- const thickness = ownship.get(`hull.armor.${id}`);
-		path.piece(
-			data-details=id,
-			class=overmatched(thickness),
-			d=piece.map(poly => makePath(poly)).join(' '))
-
-.legend
-	| Overmatched by:
-	ul
-		li.all all battleships
-		li.some some battleships
-		li.none no battleships
-
-.gunlist
-	- const show = options?.filter?.classes?.map(cls => `${cls.toLowerCase()}s`);
-	each ships, cls in shipsByClass		
-		//- Do not show ship classes that were excluded through filter
-		//- Otherwise, they will show the heading, but then say there are none
-		if !show || show.includes(cls)
-			div(class=cls.slice(0, -1).toLowerCase())
-				h4 #{cls[0].toUpperCase() + cls.slice(1)}
-				table
-					each ship in ships
-						tr
-							td.label #{ship.getLabel()}
-							td.value #{ship.artillery.getCaliber()}
-								span.unit mm
-					else
-						.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
-
-each piece, id in armor.side
-	- const thickness = ownship.get(`hull.armor.${id}`);
-	include details
+		include details

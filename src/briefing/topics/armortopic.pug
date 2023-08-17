@@ -1,0 +1,69 @@
+-
+	function boundingBox(model) {
+		model = Object.values(model).flat(2);
+		const X = model.map(vertex => vertex[0]);
+		const Y = model.map(vertex => vertex[1]);
+		const minX = Math.min(...X);
+		const minY = Math.min(...Y);
+		const maxX = Math.max(...X);
+		const maxY = Math.max(...Y);
+	
+		return {
+			left: minX,
+			top: minY, 
+			width: maxX - minX,
+			height: maxY - minY
+		};
+	}
+
+//- Draw the given armor view as an SVG, using a classifier function to assign a CSS class to each armor piece
+//- The options object may have the following:
+//- 	- classifier: The classifier function. It will get passed the piece and the id and must return a string.
+//-		- boundingBox: The bounding box to use. This can be useful if several armor views are drawn and need to be aligned. If this is not set, a default will be calculated. 
+//-
+//- If classifier is the only option, it can be passed directly instead of inside an object
+mixin armorview(view, options)
+	-
+		// If options is a function, it is the classifier function
+		if (typeof options === 'function') 
+			options = { classifier: options };
+		
+		// Initialize options object
+		options ??= {};
+		// Default classifier function is one that always returns the empty string
+		options.classifier ??= () => '';
+		// Calculate default bounding box if none was passed
+		options.boundingBox ??= boundingBox(view);
+
+	svg(
+		version="1.1", xmlns="http://www.w3.org/2000/svg", 
+		viewBox=`${options.boundingBox.left} ${options.boundingBox.top} ${options.boundingBox.width} ${options.boundingBox.height}`
+	)&attributes(attributes)
+		
+		each piece, id in view
+			+armorpiece(piece, id)(class=options.classifier(piece, id))
+	
+
+//- Drawn an armor piece
+mixin armorpiece(piece, id)
+	-
+		function drawPiece(poly) {
+			let result = '';
+			for (let vertex of poly) {
+				const x = vertex[0]; const y = vertex[1];
+				if (!result)
+					result = `M ${x},${y}`;
+				else
+					result += ` L ${x},${y}`;
+			}
+			if (result) result += ' Z';
+			return result;
+		}
+
+	if piece.length > 0
+		path.piece(
+			data-details=id, 
+			d=piece.map(poly => drawPiece(poly)).join(' ')
+		)&attributes(attributes)
+
+block content
