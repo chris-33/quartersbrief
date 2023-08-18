@@ -11,12 +11,8 @@ describe('updateGameParams', function() {
 	const wowsdir = '/wows';
 	const dest = '/data';
 
-	const expected = {
-		PAAA001_GameObject1: {},
-		PAAA002_GameObject2: {},
-	}
-
 	let data;
+	let expected;
 
 	let extract;
 	
@@ -26,6 +22,7 @@ describe('updateGameParams', function() {
 
 	before(async function() {
 		data = await fs.readFile('test/update/testdata/GameParams.data');
+		expected = JSON.parse(await fs.readFile('test/update/testdata/GameParams.json'));
 	});
 
 	beforeEach(function() {

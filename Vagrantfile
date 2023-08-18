@@ -68,6 +68,12 @@ Vagrant.configure("2") do |config|
     cd /usr/local/ && curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
   SHELL
 
+  # Install python3 and polib which are required for the fixture generation scripts
+  config.vm.provision "shell", name: "Install python3 and required packages", inline: <<-SHELL
+    sudo apt-get install -y python3 python3-pip
+    pip install polib
+  SHELL
+
   # Set NODE_ENV to 'development' by default
   # Shut up wine
   config.vm.provision "shell", name: "Set environment variables", inline: <<-SHELL

@@ -1,4 +1,9 @@
 #!/usr/bin/env python3
+
+# This script generates fixtures for update-armor.spec.js
+# It takes a JSON representation of an armor file as created by update-armor.js, and converts it into
+# the .geometry format used by World of Warships.
+
 import struct
 import json
 import sys
