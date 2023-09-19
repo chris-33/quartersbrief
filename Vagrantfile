@@ -38,7 +38,7 @@ Vagrant.configure("2") do |config|
     done < <(echo "#{userconfig}")
   SHELL
 
-  # Install NodeJS
+  # Install Node.JS
   config.vm.provision "shell", name: "Install Node.JS", env: { "NODE_MAJOR" => "18" }, inline: <<-SHELL
     # Install necessary packages for downloading and verifying new repository information
     apt-get install -y ca-certificates curl gnupg
@@ -52,6 +52,16 @@ Vagrant.configure("2") do |config|
     sudo apt-get update
     # Install Node.js from the new repository
     sudo apt-get install -y nodejs
+  SHELL
+
+  # Install Wine
+  config.vm.provision "shell", name: "Install Wine", inline: <<-SHELL
+    dpkg --add-architecture i386
+    mkdir -pm755 /etc/apt/keyrings
+    wget -O /etc/apt/keyrings/winehq-archive.key https://dl.winehq.org/wine-builds/winehq.key
+    wget -NP /etc/apt/sources.list.d/ https://dl.winehq.org/wine-builds/ubuntu/dists/jammy/winehq-jammy.sources
+    apt-get update
+    apt-get install -y --install-recommends winehq-stable
   SHELL
 
   # Install some development tools
