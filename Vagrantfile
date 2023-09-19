@@ -39,14 +39,24 @@ Vagrant.configure("2") do |config|
   SHELL
 
   # Install NodeJS
-  config.vm.provision "shell", name: "Install Node.JS", inline: <<-SHELL
-    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+  config.vm.provision "shell", name: "Install Node.JS", env: { "NODE_MAJOR" => "18" }, inline: <<-SHELL
+    # Install necessary packages for downloading and verifying new repository information
+    apt-get install -y ca-certificates curl gnupg
+    # Create a directory for the new repository's keyring, if it doesn't exist
+    mkdir -p /etc/apt/keyrings
+    # Download the new repository's GPG key and save it in the keyring directory
+    curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+    # Add the new repository's source list with its GPG key for package verification
+    echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_${NODE_MAJOR}.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+    # Update local package index to recognize the new repository
+    sudo apt-get update
+    # Install Node.js from the new repository
     sudo apt-get install -y nodejs
   SHELL
 
   # Install some development tools
   config.vm.provision "shell", name: "Install development tools", inline: <<-SHELL
-      sudo npm install --global grunt-cli 0x
+    npm install --global grunt-cli 0x
   SHELL
 
   # act is a tool to run github actions locally for debugging purposes. 
@@ -57,19 +67,19 @@ Vagrant.configure("2") do |config|
   #   https://docs.docker.com/engine/install/linux-postinstall/#manage-docker-as-a-non-root-user
   #   https://github.com/nektos/act#bash-script
   config.vm.provision "shell", name: "Install act tool to run GitHub actions locally", inline: <<-SHELL
-    sudo apt install ca-certificates curl gnupg lsb-release
+    apt install ca-certificates curl gnupg lsb-release
     curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
-    sudo groupadd docker
-    sudo usermod -aG docker vagrant
+    apt-get update
+    apt-get install -y docker-ce docker-ce-cli containerd.io
+    groupadd docker
+    usermod -aG docker vagrant
 
     cd /usr/local/ && curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
   SHELL
 
   # Install python3 and polib which are required for the fixture generation scripts
-  config.vm.provision "shell", name: "Install python3 and required packages", inline: <<-SHELL
+  config.vm.provision "shell", name: "Install python3 and required packages", privileged: false, inline: <<-SHELL
     sudo apt-get install -y python3 python3-pip
     pip install polib
   SHELL
