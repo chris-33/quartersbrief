@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
+  config.vm.box = "ubuntu/lunar64"
   
   # Need this plugin to forward file system events from the host to the guest
   # Otherwise watching for file changes is not going to work
@@ -39,7 +39,8 @@ Vagrant.configure("2") do |config|
   SHELL
 
   # Install Node.JS
-  config.vm.provision "shell", name: "Install Node.JS", env: { "NODE_MAJOR" => "18" }, inline: <<-SHELL
+  # Force to an older version because of https://github.com/hashicorp/vagrant/issues/13263
+  config.vm.provision "shell", name: "Install Node.JS", env: { "NODE_MAJOR" => "16" }, inline: <<-SHELL
     # Install necessary packages for downloading and verifying new repository information
     apt-get install -y ca-certificates curl gnupg
     # Create a directory for the new repository's keyring, if it doesn't exist
@@ -51,7 +52,7 @@ Vagrant.configure("2") do |config|
     # Update local package index to recognize the new repository
     sudo apt-get update
     # Install Node.js from the new repository
-    sudo apt-get install -y nodejs
+    sudo apt-get install -y nodejs npm
   SHELL
 
   # Install Wine
@@ -90,8 +91,7 @@ Vagrant.configure("2") do |config|
 
   # Install python3 and polib which are required for the fixture generation scripts
   config.vm.provision "shell", name: "Install python3 and required packages", privileged: false, inline: <<-SHELL
-    sudo apt-get install -y python3 python3-pip
-    pip install polib
+    sudo apt-get install -y python3 python3-pip python3-polib
   SHELL
 
   # Set NODE_ENV to 'development' by default
