@@ -1,5 +1,5 @@
 import Ship from '../model/ship.js';
-import Procurer from './procurer.js';
+import Supplier from './supplier.js';
 import fs from 'fs/promises';
 import path from 'path';
 import rootlog from 'loglevel';
@@ -117,10 +117,10 @@ export default class ArmorProvider {
 	 * armor views if no cached ones exist using the given `viewer`.
 	 */
 	constructor(armordir, cachedir, viewer) {
-		this.procurer = new Procurer(recover);
-		this.procurer.armordir = armordir;
-		this.procurer.cachedir = cachedir;
-		this.procurer.viewer = viewer;
+		this.supplier = new Supplier(recover);
+		this.supplier.armordir = armordir;
+		this.supplier.cachedir = cachedir;
+		this.supplier.viewer = viewer;
 	}
 	
 	/**
@@ -143,7 +143,7 @@ export default class ArmorProvider {
 			throw new TypeError(`Unknown view "${view}" requested for ship ${ship}`);
 		
 		const designator = `${ship}.${view}`;
-		const result = await this.procurer.get(designator);
+		const result = await this.supplier.get(designator);
 
 		return result.view;
 	}

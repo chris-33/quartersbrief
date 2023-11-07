@@ -1,7 +1,7 @@
 import ArmorProvider from '../../src/providers/armorprovider.js';
 import mockfs from 'mock-fs';
 import sinon from 'sinon';
-import { readFileSync, writeFileSync, rmSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 import path from 'path';
 import Ship from '../../src/model/ship.js';
 
@@ -32,7 +32,7 @@ describe('ArmorProvider', function() {
 				metadata: { hash: 'hash' },
 				view: Promise.resolve({})
 			}
-			sinon.stub(provider.procurer, 'get').resolves(expected);
+			sinon.stub(provider.supplier, 'get').resolves(expected);
 		});
 
 		it('should be callable with a ship object', async function() {			
@@ -53,7 +53,7 @@ describe('ArmorProvider', function() {
 		});
 	});
 
-	describe('procurer recovery', function() {
+	describe('supplier recovery', function() {
 		const baseDesignator = 'AAA001_Battleship';
 		
 		let CACHE_DATA;
@@ -76,6 +76,8 @@ describe('ArmorProvider', function() {
 			}, { createCwd: false });
 		});
 
+		afterEach(mockfs.restore);
+		
 		it('should read a cached view if one is available', async function() {
 			const view = 'side';
 			const designator = `${baseDesignator}.${view}`;
@@ -86,11 +88,12 @@ describe('ArmorProvider', function() {
 				ext: '.json'
 			}), JSON.stringify(CACHE_DATA));
 			
-			return expect(provider.procurer.recover(designator)).to.eventually.deep.equal(CACHE_DATA);
+			expect(provider.supplier.viewer.view).to.not.have.been.called;
+			return expect(provider.supplier.recover(designator)).to.eventually.deep.equal(CACHE_DATA);
 		});
 		
 		it('should read the base armor file when requested', function() {
-			let result = provider.procurer.recover(`${baseDesignator}.raw`);
+			let result = provider.supplier.recover(`${baseDesignator}.raw`);
 			return expect(result).to.eventually.deep.equal(TEST_DATA);
 		});
 
@@ -98,19 +101,14 @@ describe('ArmorProvider', function() {
 			const view = 'side';
 			const designator = `${baseDesignator}.${view}`;
 
-			provider.procurer.viewer.view.resolves(CACHE_DATA.view);
+			provider.supplier.viewer.view.resolves(CACHE_DATA.view);
 
-			let result = await provider.procurer.recover(designator);
+			let result = await provider.supplier.recover(designator);
 			// Wait for view creation to be completed
 			result.view = await result.view;
 
+			expect(provider.supplier.viewer.view).to.have.been.called;
 			expect(result).to.deep.equal(CACHE_DATA);
-			// Check that cache file has been updated
-			expect(path.format({
-				dir: CACHE_DIR,
-				name: designator,
-				ext: '.json'
-			})).to.be.a.file().with.contents(JSON.stringify(result));
 		});
 
 		it('should create a new view if the cache file is out of date', async function() {
@@ -125,19 +123,32 @@ describe('ArmorProvider', function() {
 				...CACHE_DATA, metadata: { ...CACHE_DATA.metadata, hash: 'outdated hash' }
 			}));
 
-			provider.procurer.viewer.view.resolves(CACHE_DATA.view);
+			provider.supplier.viewer.view.resolves(CACHE_DATA.view);
 
-			let result = await provider.procurer.recover(designator);
+			let result = await provider.supplier.recover(designator);
 			// Wait for view creation to be completed
 			result.view = await result.view;
 
+			expect(provider.supplier.viewer.view).to.have.been.called;
 			expect(result).to.deep.equal(CACHE_DATA);			
+		});
+
+		it('should write a created view to cache', async function() {
+			const view = 'side';
+			const designator = `${baseDesignator}.${view}`;
+
+			provider.supplier.viewer.view.resolves(CACHE_DATA.view);
+
+			let result = await provider.supplier.recover(designator);
+			// Wait for view creation to be completed
+			result.view = await result.view;
+
 			// Check that cache file has been updated
 			expect(path.format({
 				dir: CACHE_DIR,
 				name: designator,
 				ext: '.json'
 			})).to.be.a.file().with.contents(JSON.stringify(result));
-		});
+		})
 	});
 });

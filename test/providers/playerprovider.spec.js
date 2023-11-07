@@ -9,7 +9,7 @@ describe('PlayerProvider', function() {
 		provider = new PlayerProvider('appid', 'realm');
 	});
 
-	describe('PlayerProvider.PlayerProcurer.Request', function() {
+	describe('PlayerProvider.PlayerSupplier.Request', function() {
 		let api;
 		let request;
 
@@ -17,7 +17,7 @@ describe('PlayerProvider', function() {
 			api = {
 				access: sinon.stub().resolves([])
 			}
-			request = new PlayerProvider.PlayerProcurer.Request(api);
+			request = new PlayerProvider.PlayerSupplier.Request(api);
 		});
 
 		it('should request all previously added accounts when executing', async function() {
@@ -160,15 +160,15 @@ describe('PlayerProvider', function() {
 		});
 	});
 
-	describe('PlayerProvider.PlayerProcurer', function() {
-		let procurer;
+	describe('PlayerProvider.PlayerSupplier', function() {
+		let supplier;
 		let api;
 
 		beforeEach(function() {
 			api = {
 				access: sinon.stub()
 			}
-			procurer = new PlayerProvider.PlayerProcurer(api);
+			supplier = new PlayerProvider.PlayerSupplier(api);
 		});
 
 		describe('cache item validation', function() {			
@@ -182,34 +182,34 @@ describe('PlayerProvider', function() {
 
 			it('should consider an item without timestamp invalid', function() {
 				const p = Promise.resolve();
-				expect(procurer.validate(p)).to.be.false;
+				expect(supplier.validate(p)).to.be.false;
 			});
 
 			it('should consider an item valid if its timestamp is not older than the time-to-live', function() {
 				const p = Promise.resolve();
 				p.timestamp = Date.now();
-				expect(procurer.validate(p)).to.be.true;
+				expect(supplier.validate(p)).to.be.true;
 
-				this.clock.tick(PlayerProvider.PlayerProcurer.TTL);
-				expect(procurer.validate(p)).to.be.true;
+				this.clock.tick(PlayerProvider.PlayerSupplier.TTL);
+				expect(supplier.validate(p)).to.be.true;
 
 				this.clock.tick(1);
-				expect(procurer.validate(p)).to.be.false;
+				expect(supplier.validate(p)).to.be.false;
 			});
 		});
 
 		describe('recovery', function() {
 			it('should attach a timestamp to the returned promise', function() {
-				const request = new PlayerProvider.PlayerProcurer.Request();
-				const p = procurer.recover(request, 'designator');
+				const request = new PlayerProvider.PlayerSupplier.Request();
+				const p = supplier.recover(request, 'designator');
 				expect(p).to.have.property('timestamp');
 			});
 
 			it('should add the designator to recover to the request', function() {
-				const request = new PlayerProvider.PlayerProcurer.Request();
+				const request = new PlayerProvider.PlayerSupplier.Request();
 				sinon.spy(request, 'add');
 				const designator = 'designator';
-				procurer.recover(request, designator);
+				supplier.recover(request, designator);
 				
 				expect(request.add).to.have.been.calledWith(designator);
 			});
@@ -221,14 +221,14 @@ describe('PlayerProvider', function() {
 		const p2 = { account_id: 2, nickname: 'player2' };
 
 		beforeEach(function() {
-			sinon.stub(PlayerProvider.PlayerProcurer.Request.prototype, 'execute').resolves();
-			sinon.stub(provider.procurer, 'get')
+			sinon.stub(PlayerProvider.PlayerSupplier.Request.prototype, 'execute').resolves();
+			sinon.stub(provider.supplier, 'get')
 				.onFirstCall().resolves(p1)
 				.onSecondCall().resolves(p2);
 		});
 
 		afterEach(function() {
-			PlayerProvider.PlayerProcurer.Request.prototype.execute.restore();
+			PlayerProvider.PlayerSupplier.Request.prototype.execute.restore();
 		});
 
 		it('should return instances of Player over the correct data', async function() {			

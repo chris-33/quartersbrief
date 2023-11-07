@@ -1,4 +1,4 @@
-import Procurer from './procurer.js';
+import Supplier from './supplier.js';
 import Player from '../model/player.js';
 import WargamingAPI from '../util/wgapi.js';
 import rootlog from 'loglevel';
@@ -6,7 +6,7 @@ import rootlog from 'loglevel';
 export default class PlayerProvider {
 	constructor(applicationID, realm) {
 		this.api = new WargamingAPI(applicationID, realm);
-		this.procurer = new PlayerProvider.PlayerProcurer();
+		this.supplier = new PlayerProvider.PlayerSupplier();
 	}
 
 	async getPlayers(designators) {
@@ -20,9 +20,9 @@ export default class PlayerProvider {
 
 		designators = designators.filter(designator => !bots.includes(designator));
 
-		const request = new PlayerProvider.PlayerProcurer.Request(this.api);
-		this.procurer.recover = this.procurer.recover.bind(this.procurer, request);
-		let result = Promise.all(designators.map(designator => this.procurer.get(designator)));
+		const request = new PlayerProvider.PlayerSupplier.Request(this.api);
+		this.supplier.recover = this.supplier.recover.bind(this.supplier, request);
+		let result = Promise.all(designators.map(designator => this.supplier.get(designator)));
 		await request.execute();
 
 		result = (await result)
@@ -36,9 +36,9 @@ export default class PlayerProvider {
 }
 
 /**
- * Helper class that extends Procurer with request handling.
+ * Helper class that extends Supplier with request handling.
  */
-PlayerProvider.PlayerProcurer = class extends Procurer {
+PlayerProvider.PlayerSupplier = class extends Supplier {
 	static TTL = 5 * 60 * 1000; // time to live in ms
 
 	recover(request, designator) {
@@ -49,18 +49,18 @@ PlayerProvider.PlayerProcurer = class extends Procurer {
 	}
 
 	validate(item) {
-		return item.timestamp + PlayerProvider.PlayerProcurer.TTL >= Date.now();
+		return item.timestamp + PlayerProvider.PlayerSupplier.TTL >= Date.now();
 	}
 }
 
 /**
- * Helper class that allows to collect multiple player procurements into a single request, instead of making a multitude of
+ * Helper class that allows to collect multiple player supply requests into a single conglomerate request, instead of making a multitude of
  * individual network calls.
  *
- * Procurement requests can be added with `add()`. The request is executed with `execute()`. After it executes, no more procurement
+ * Procurement requests can be added with `add()`. The request is executed with `execute()`. After it executes, no more supply
  * requests may be added.
  */
-PlayerProvider.PlayerProcurer.Request = class {
+PlayerProvider.PlayerSupplier.Request = class {
 	designators = [];
 	
 	/**
