@@ -86,7 +86,11 @@ describe('updateGameParams', function() {
 		});
 
 		expect(await updateGameParams(wowsdir, dest, buildno)).to.be.ok;
-		expect(path.join(dest, 'GameParams.json')).to.be.a.file().with.contents(JSON.stringify(expected));
+		for (let go of Object.values(expected)) {
+			expect(path.join(dest, 'params', `${go.name}.json`), go.name).to.be.a.file().with.contents(JSON.stringify(go));
+			expect(path.join(dest, 'params',`${go.index}.json`), go.index).to.be.a.file().with.contents(JSON.stringify(go));
+			expect(path.join(dest, 'params',`${go.id}.json`), go.id).to.be.a.file().with.contents(JSON.stringify(go));
+		}
 	});
 
 	it('should delete the extracted files from the tmp folder', async function() {
