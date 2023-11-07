@@ -2,7 +2,7 @@ import AgendaController from '../../src/core/agendacontroller.js';
 import SpecificityChooser from '../../src/agendas/specificitychooser.js';
 import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import sinon from 'sinon';
 import mockfs from 'mock-fs';
 
@@ -61,7 +61,7 @@ describe('AgendaController @integration', function() {
 			getNation: function() { return 'nation' },
 			getClass: function() { return 'class' }
 		};
-		const MOCK_GAME_OBJECT_FACTORY = new GameObjectFactory();
+		const MOCK_GAME_OBJECT_FACTORY = new GameObjectProvider();
 		const MOCK_BATTLE = new Battle();
 
 		before(function() {
@@ -95,7 +95,7 @@ describe('AgendaController @integration', function() {
 			});
 			const controller = await AgendaController.create([ userspace, defaultspace ], chooser);
 
-			const agenda = controller.choose(MOCK_BATTLE);
+			const agenda = await controller.choose(MOCK_BATTLE);
 
 			// Should have chosen the less specific agenda, because it comes from a source with higher precedence:
 			expect(agenda).to.deep.equal(Agenda.from(lessSpecific));

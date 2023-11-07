@@ -12,10 +12,10 @@ export default class ShipBuilder {
 
 	/**
 	 * Creates a new `ShipBuilder` instance.
-	 * @param  {GameObjectFactory} gameObjectFactory The game object factory to use when creating game objects during the building process.
+	 * @param  {GameObjectProvider} gameObjectProvider The game object factory to use when creating game objects during the building process.
 	 */
-	constructor(gameObjectFactory) {
-		this.gameObjectFactory = gameObjectFactory;
+	constructor(gameObjectProvider) {
+		this.gameObjectProvider = gameObjectProvider;
 	}
 
 	/**
@@ -42,7 +42,7 @@ export default class ShipBuilder {
 	 * set to command the ship. If `build.captain` is not set, a default captain will be created and used.
 	 * @return {Ship}       A `Ship` instance, configured to the passed `build`.
 	 */
-	build(ship, build) {
+	async build(ship, build) {
 		// If the second parameter is omitted, the method was called in the form build(build)
 		// and the ship parameter is actually the build
 		if (!build && typeof ship === 'object' && !(ship instanceof Ship)) {
@@ -50,19 +50,22 @@ export default class ShipBuilder {
 			ship = build.ship;
 		}
 		if (typeof ship === 'string' || typeof ship === 'number')
-			ship = this.gameObjectFactory.createGameObject(ship);
+			ship = await this.gameObjectProvider.createGameObject(ship);
 
 		Ship.errorIfNotShip(ship);
 
 		if (build.modules)
 			ship.equipModules(build.modules);
 
-		build.modernizations
-			?.map(designator => this.gameObjectFactory.createGameObject(designator))
-			.forEach(modernization => ship.equipModernization(modernization));
+		if (build.modernizations) {
+			const modernizations = await Promise.all(build
+				.modernizations
+				.map(designator => this.gameObjectProvider.createGameObject(designator)));
+			modernizations.forEach(modernization => ship.equipModernization(modernization));
+		}
 
 		// If a captain is specified as part of the build, use that
-		let captain = build.captain && this.gameObjectFactory.createGameObject(build.captain);
+		let captain = build.captain && await this.gameObjectProvider.createGameObject(build.captain);
 		// If there are skills to learn...
 		if (build.skills) {
 			// ...and no captain was specified, find the default captain for that ship
@@ -71,18 +74,21 @@ export default class ShipBuilder {
 			captain = captain ?? ship.get('defaultCrew'); 
 			// If not, use the nation-agnostic default captain
 			// (There are default captains for each nation, but they seem to all be copies of this one)
-			captain = captain ?? this.gameObjectFactory.createGameObject(ShipBuilder.DEFAULT_CAPTAIN);
+			captain = captain ?? await this.gameObjectProvider.createGameObject(ShipBuilder.DEFAULT_CAPTAIN);
 
 			build.skills.forEach(skill => captain.learn(skill));
 		}
 		if (captain) ship.setCaptain(captain);
 
 		if (build.camouflage)			
-			ship.setCamouflage(this.gameObjectFactory.createGameObject(build.camouflage));
+			ship.setCamouflage(await this.gameObjectProvider.createGameObject(build.camouflage));
 		
-		build.signals
-			?.map(designator => this.gameObjectFactory.createGameObject(designator))
-			.forEach(signal => ship.hoist(signal));
+		if (build.signals) {
+			const signals = await Promise.all(build
+				.signals
+				.map(designator => this.gameObjectProvider.createGameObject(designator)));
+			signals.forEach(signal => ship.hoist(signal));
+		}
 		
 		return ship;
 	}

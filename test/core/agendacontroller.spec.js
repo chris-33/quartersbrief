@@ -30,13 +30,13 @@ describe('AgendaController', function() {
 			sources.forEach(source => expect(chooser.choose).to.have.been.calledWith(battle, source));
 		});
 
-		it('should choose from each source in turn, and only if the previous source had no matches', function() {
+		it('should choose from each source in turn, and only if the previous source had no matches', async function() {
 			const battle = {};
 			const agenda = {};
 
 			// Part one of this test: If a source returned a matching agenda, the controller should stop looking
-			chooser.choose.returns(agenda);
-			let result = controller.choose(battle);
+			chooser.choose.resolves(agenda);
+			let result = await controller.choose(battle);
 			expect(chooser.choose).to.have.been.calledOnce;
 			expect(result).to.equal(agenda);
 
@@ -46,7 +46,7 @@ describe('AgendaController', function() {
 			// The second part of this test: If the source did not return a matching agenda, the controller should try the next source
 			chooser.choose.onFirstCall().returns(null);
 			chooser.choose.onSecondCall().returns(agenda);
-			result = controller.choose(battle);
+			result = await controller.choose(battle);
 			expect(chooser.choose).to.have.been.calledTwice;
 			expect(result).to.equal(agenda);
 		});
