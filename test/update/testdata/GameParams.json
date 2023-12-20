@@ -1,0 +1,12 @@
+{
+	"PAAA001_GameObject1": {
+		"name": "PAAA001_GameObject1",
+		"index": "PAAA001",
+		"id" : 1
+	},
+	"PAAA002_GameObject2": {
+		"name": "PAAA002_GameObject2",
+		"index": "PAAA002",
+		"id" : 2
+	}
+}

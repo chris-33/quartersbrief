@@ -11,12 +11,8 @@ describe('updateGameParams', function() {
 	const wowsdir = '/wows';
 	const dest = '/data';
 
-	const expected = {
-		PAAA001_GameObject1: {},
-		PAAA002_GameObject2: {},
-	}
-
 	let data;
+	let expected;
 
 	let extract;
 	
@@ -26,6 +22,7 @@ describe('updateGameParams', function() {
 
 	before(async function() {
 		data = await fs.readFile('test/update/testdata/GameParams.data');
+		expected = JSON.parse(await fs.readFile('test/update/testdata/GameParams.json'));
 	});
 
 	beforeEach(function() {
@@ -89,7 +86,11 @@ describe('updateGameParams', function() {
 		});
 
 		expect(await updateGameParams(wowsdir, dest, buildno)).to.be.ok;
-		expect(path.join(dest, 'GameParams.json')).to.be.a.file().with.contents(JSON.stringify(expected));
+		for (let go of Object.values(expected)) {
+			expect(path.join(dest, 'params', `${go.name}.json`), go.name).to.be.a.file().with.contents(JSON.stringify(go));
+			expect(path.join(dest, 'params',`${go.index}.json`), go.index).to.be.a.file().with.contents(JSON.stringify(go));
+			expect(path.join(dest, 'params',`${go.id}.json`), go.id).to.be.a.file().with.contents(JSON.stringify(go));
+		}
 	});
 
 	it('should delete the extracted files from the tmp folder', async function() {

@@ -1,4 +1,4 @@
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 
 /**
  * The `SpecificityChooser` selects the agenda that most specifically matches the player's ship in the battle. 
@@ -17,11 +17,11 @@ export default class SpecificityChooser {
 	}
 	static PENALTY = -10000;
 
-	constructor(gameObjectFactory) {
-		if (!gameObjectFactory || !(gameObjectFactory instanceof GameObjectFactory))
-			throw new TypeError(`Need a GameObjectFactory to create a ${this.constructor.name} but got ${gameObjectFactory}`);
+	constructor(gameObjectProvider) {
+		if (!gameObjectProvider || !(gameObjectProvider instanceof GameObjectProvider))
+			throw new TypeError(`Need a GameObjectProvider to create a ${this.constructor.name} but got ${gameObjectProvider}`);
 
-		this.gameObjectFactory = gameObjectFactory;
+		this.gameObjectProvider = gameObjectProvider;
 	}
 
 	/**
@@ -46,8 +46,8 @@ export default class SpecificityChooser {
 	 * @return {Agenda}        Returns the agenda with the highest specificity score that matched
 	 * the ship, or `null` if no agendas matched.
 	 */
-	choose(battle, agendas) {
-		const ownship = this.gameObjectFactory.createGameObject(battle.getPlayer().shipId);
+	async choose(battle, agendas) {
+		const ownship = await this.gameObjectProvider.createGameObject(battle.getPlayer().shipId);
 
 		return agendas
 			// Map each agenda to an object containing the agenda and all its matchers that matched this battle, if any

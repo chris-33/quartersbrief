@@ -1,61 +1,39 @@
--
-	const CA_CALIBER_THRESHOLD = options?.caCaliber ?? 200;
+extends ../armortopic
 
-	function makePath(poly) {
-		let result = '';
-		for (let vertex of poly) {
-			const x = vertex[0]; const y = vertex[1];
-			if (!result)
-				result = `M ${x},${y}`;
-			else
-				result += ` L ${x},${y}`;
+block content
+	-
+		const CA_CALIBER_THRESHOLD = options?.caCaliber ?? 200;
+
+		function penned(piece, id) {
+			const thickness = ownship.get(`hull.armor.${id}`);
+			const crudes = Object.values(pens).filter(pen => pen.ship.getClass() === 'Cruiser' || pen.ship.getClass() === 'Destroyer');
+			debugger
+			// Penned by all cruisers and destroyers
+			if (crudes.every(pen => pen.ammos.he >= thickness || pen.ammos.sap >= thickness))
+				return 'all';
+			// Penned by some CL/DD without IFHE
+			if (crudes.some(pen => pen.caliber < CA_CALIBER_THRESHOLD && (pen.ammos.he >= thickness || pen.ammos.sap >= thickness)))
+				return 'cl';
+			// Penned by some CA and/or some CL/DD but only with IFHE
+			if (crudes.some(pen => (pen.caliber < CA_CALIBER_THRESHOLD && pen.ammos.ifhe >= thickness) || (pen.caliber >= CA_CALIBER_THRESHOLD && pen.ammos.he >= thickness)))
+				return 'ca';
+			// Penned only by guns CA with IFHE and bigger
+			return 'none';
 		}
-		if (result) result += ' Z';
-		return result;
-	}
-	function boundingBox(model) {
-		model = Object.values(model).flat(2);
-		const minX = Math.min(...model.map(vertex => vertex[0]));
-		const minY = Math.min(...model.map(vertex => vertex[1]));
-		const maxX = Math.max(...model.map(vertex => vertex[0]));
-		const maxY = Math.max(...model.map(vertex => vertex[1]));
-		return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`;
-	}
-	function penned(thickness) {
-		const crudes = Object.values(pens).filter(pen => pen.ship.getClass() === 'Cruiser' || pen.ship.getClass() === 'Destroyer');
-		debugger
-		// Penned by all cruisers and destroyers
-		if (crudes.every(pen => pen.ammos.he >= thickness || pen.ammos.sap >= thickness))
-			return 'all';
-		// Penned by some CL/DD without IFHE
-		if (crudes.some(pen => pen.caliber < CA_CALIBER_THRESHOLD && (pen.ammos.he >= thickness || pen.ammos.sap >= thickness)))
-			return 'cl';
-		// Penned by some CA and/or some CL/DD but only with IFHE
-		if (crudes.some(pen => (pen.caliber < CA_CALIBER_THRESHOLD && pen.ammos.ifhe >= thickness) || (pen.caliber >= CA_CALIBER_THRESHOLD && pen.ammos.he >= thickness)))
-			return 'ca';
-		// Penned only by guns CA with IFHE and bigger
-		return 'none';
-	}
 
-each view in [ 'side', 'top' ]
-	.view
-		h3 #{view[0].toUpperCase() + view.slice(1)} view:
-		svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewBox=boundingBox(armor[view]))
-			each piece, id in armor[view]
-				- if (piece.length === 0) continue;
-				- const thickness = ownship.get(`hull.armor.${id}`);
-				path.piece(
-					data-details=id,
-					class=penned(thickness),
-					d=piece.map(poly => makePath(poly)).join(' '))
+	each view in [ 'side', 'top' ]
+		.view
+			h3 #{view[0].toUpperCase() + view.slice(1)} view:
 
-include legend
+			+armorview(armor[view], penned)
 
-include penlist
+	include legend
 
-//- Convert piece IDs into a set and back into an array to remove duplicate.
-//- Duplicates will cause an error when the topic is received, and we can't just use a set directly because pug doesn't know how to iterate over them
-- const uniqueIDs = Array.from(new Set([ ...Object.keys(armor.side), ...Object.keys(armor.top) ]))
-each id in uniqueIDs
-	- const thickness = ownship.get(`hull.armor.${id}`);
-	include details	
+	include penlist
+
+	//- Convert piece IDs into a set and back into an array to remove duplicate.
+	//- Duplicates will cause an error when the topic is received, and we can't just use a set directly because pug doesn't know how to iterate over them
+	- const uniqueIDs = Array.from(new Set([ ...Object.keys(armor.side), ...Object.keys(armor.top) ]))
+	each id in uniqueIDs
+		- const thickness = ownship.get(`hull.armor.${id}`);
+		include details	

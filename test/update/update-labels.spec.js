@@ -1,21 +1,17 @@
 import updateLabels from '../../src/update/update-labels.js';
 import mockfs from 'mock-fs';
 import path from 'path';
+import fs from 'fs/promises';
 
 describe('updateLabels', function() {
 	const buildno = 1;
 	const wowsdir = '/wows';
 	const dest = '/data';
 
-	// Can't pre-polulate mock filesystem directly here, because subsequent calls overwrite
-	// instead of adding. I.e. if we did mockfs({[config.wowsdir]: {...}}) here, the subsequent
-	// call in the test cases would cause mockfs to drop preferences.xml
-	let prepopulated;
-	beforeEach(function() {
-		prepopulated = {
-			[path.join(wowsdir, 'bin', String(buildno))]: {},
-			[dest]: {},
-		};
+	let expected;
+
+	before(async function() {
+		expected = JSON.parse(await fs.readFile('test/update/testdata/global.json'));
 	});
 
 	afterEach(function() {
@@ -23,15 +19,17 @@ describe('updateLabels', function() {
 	});
 
 	it('should turn labels from the game directory into global-en.json', async function() {		
-		const expected = {
-			'': 'Content-Type: text/plain; charset=utf-8\nPlural-Forms: nplurals=2; plural=n != 1;\n',
-			IDS_1: 'str1'			
-		}
 		mockfs({
-			...prepopulated,
 			[path.join(wowsdir, `/bin/${buildno}/res/texts/en/LC_MESSAGES/global.mo`)]: mockfs.load('test/update/testdata/global.mo'),
 		});
 		expect(await updateLabels(wowsdir, dest, buildno)).to.be.ok;
-		expect(path.join(dest, 'global-en.json')).to.be.a.file().with.contents(JSON.stringify(expected));
+
+		const file = path.join(dest, 'global-en.json');
+		expect(file).to.be.a.file();
+
+		const actual = JSON.parse(await fs.readFile(file));
+		// Delete metadata because we are not interested in that part
+		delete actual[''];
+		expect(actual).to.deep.equal(expected);		
 	});
 });

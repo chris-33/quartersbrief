@@ -1,12 +1,12 @@
-import PlayerFactory from '../../src/model/playerfactory.js';
+import PlayerProvider from '../../src/providers/playerprovider.js';
 import Player from'../../src/model/player.js';
 import { existsSync, readFileSync } from 'fs';
 import chalk from 'chalk';
 import dedent from 'dedent-js';
 
-describe('PlayerFactory @integration', function() {
+describe('PlayerProvider @end-to-end', function() {
 	let applicationId;
-	let playerFactory;
+	let playerProvider;
 
 	before(function() {
 		applicationId = 
@@ -25,22 +25,12 @@ describe('PlayerFactory @integration', function() {
 	});
 
 	beforeEach(function() {
-		playerFactory = new PlayerFactory(applicationId, 'eu');
-	});
-
-	describe('.getAccountIDs', function() {
-		it('should get account IDs for all requested names', async function() {
-			const expected = {
-				Wiochi: 503367319,
-				starboardwing: 563562880
-			};
-			return expect(playerFactory.getAccounts([ 'Wiochi', 'starboardwing' ])).to.eventually.deep.equal(expected);
-		});
+		playerProvider = new PlayerProvider(applicationId, 'eu');
 	});
 
 	describe('.getPlayers', function() {
 		it('should get player data', async function() {
-			let result = await playerFactory.getPlayers([ 'Wiochi', 'starboardwing' ]);
+			let result = await playerProvider.getPlayers([ 'Wiochi', 'starboardwing' ]);
 			expect(result).to.be.an('object')
 			expect(result).to.have.property('Wiochi').that.is.an.instanceof(Player);
 			expect(result.Wiochi.getBattles()).to.be.at.least(1);

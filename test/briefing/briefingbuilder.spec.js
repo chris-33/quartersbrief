@@ -1,6 +1,6 @@
 import Topic from '../../src/briefing/topic.js';
 import BriefingBuilder from '../../src/briefing/briefingbuilder.js';
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import sinon from 'sinon';
@@ -17,7 +17,7 @@ function waitFor(emitter, evt) {
 
 describe('BriefingBuilder', function() {
 	let builder;
-	let gameObjectFactory;
+	let gameObjectProvider;
 	let battle;
 	let agenda;
 
@@ -28,12 +28,12 @@ describe('BriefingBuilder', function() {
 	const MockTopic = class extends Topic {};	
 
 	beforeEach(function() {
-		gameObjectFactory = new GameObjectFactory({});
-		sinon.stub(gameObjectFactory, 'createGameObject').returns({ 
+		gameObjectProvider = new GameObjectProvider({});
+		sinon.stub(gameObjectProvider, 'createGameObject').resolves({ 
 			getTier: () => 0, 
 			getLabel: () => ''
 		});
-		gameObjectFactory.labeler = {
+		gameObjectProvider.labeler = {
 			labels: {}
 		}
 	});
@@ -44,7 +44,7 @@ describe('BriefingBuilder', function() {
 	});
 
 	beforeEach(function() {
-		builder = new BriefingBuilder({ gameObjectFactory });
+		builder = new BriefingBuilder({ gameObjectProvider });
 		sinon.stub(builder, 'getTopic').returns(MockTopic);
 		sinon.stub(MockTopic.prototype);
 		MockTopic.prototype.render.resolves(rendered);
@@ -67,6 +67,16 @@ describe('BriefingBuilder', function() {
 			const data = waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
 			await expect(briefing).to.emit(BriefingBuilder.EVT_BRIEFING_FINISH);
 			await expect(data).to.eventually.be.an('array').with.members([briefing]);
+		});
+
+		it('should build an error message if there is an error while rendering the briefing scaffolding', async function() {
+			const err = new Error();
+			gameObjectProvider.createGameObject.rejects(err);
+
+			const briefing = builder.build(battle, agenda);
+			await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_TOPIC);
+			await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
+			expect(briefing.html).to.contain('Oh no!')
 		});
 
 		it('should build an error message if the topic builder has an error', async function() {

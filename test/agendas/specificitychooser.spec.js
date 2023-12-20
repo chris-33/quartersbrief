@@ -2,7 +2,7 @@ import SpecificityChooser from '../../src/agendas/specificitychooser.js';
 import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import Ship from '../../src/model/ship.js';
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import sinon from 'sinon';
 
 describe('SpecificityChooser', function() {
@@ -16,20 +16,20 @@ describe('SpecificityChooser', function() {
 	let chooser;
 	let ship;
 
-	before(function() {
+	beforeEach(function() {
 		ship = Object.create(Ship.prototype);
 		for (let prop in SHIP_DATA) {
 			const getter = `get${prop.charAt(0).toUpperCase()}${prop.substring(1)}`;
 			sinon.stub(ship, getter).returns(SHIP_DATA[prop]);
 		}
-		let gameObjectFactory = new GameObjectFactory();
-		sinon.stub(gameObjectFactory, 'createGameObject').returns(ship);
-		chooser = new SpecificityChooser(gameObjectFactory);
+		let gameObjectProvider = new GameObjectProvider();
+		sinon.stub(gameObjectProvider, 'createGameObject').returns(ship);
+		chooser = new SpecificityChooser(gameObjectProvider);
 	});
 
-	it('should throw if created without a GameObjectFactory', function() {
+	it('should throw if created without a GameObjectProvider', function() {
 		expect(() => new SpecificityChooser(), 'undefined').to.throw();
-		expect(() => new SpecificityChooser({}), 'not a GameObjectFactory').to.throw();
+		expect(() => new SpecificityChooser({}), 'not a GameObjectProvider').to.throw();
 	});
 
 	describe('.scoreOf', function() {
@@ -59,14 +59,14 @@ describe('SpecificityChooser', function() {
 		});
 
 		it('should return null if there are no agendas', function() {			
-			expect(chooser.choose(battle, [])).to.be.null;
+			return expect(chooser.choose(battle, [])).to.eventually.be.null;
 		});
 
 		it('should return null if no agendas fit', function() {
 			const agenda = new Agenda();
 			sinon.stub(agenda, 'matches').returns(null);
 
-			expect(chooser.choose(battle, [ agenda ])).to.be.null;
+			return expect(chooser.choose(battle, [ agenda ])).to.eventually.be.null;
 		});
 
 		it('should return an agenda with score 0 if no others fit', function() {
@@ -74,32 +74,25 @@ describe('SpecificityChooser', function() {
 			sinon.stub(agenda, 'matches').returns([{}]);
 
 			sinon.stub(chooser, 'scoreOf').returns(0);
-			try {
-				expect(chooser.choose(battle, [ agenda ])).to.equal(agenda);
-			} finally {
-				chooser.scoreOf.restore();
-			}			
+			return expect(chooser.choose(battle, [ agenda ])).to.eventually.equal(agenda);
 		});
 
-		it('should return the agenda with the highest score', function() {
+		it('should return the agenda with the highest score', async function() {
 			const agendas = [];
 			const matchers = [];
 			for (let i = 0; i < 3; i++) {
 				const matcher = {};
 				const agenda = new Agenda(matcher);
+				agenda.id = i;
 				agendas.push(agenda);
 				matchers.push(matcher);
 			}
 
 			// Make each match's score its index
-			sinon.stub(chooser, 'scoreOf');			
+			sinon.stub(chooser, 'scoreOf');
 			matchers.forEach((matcher, index) => chooser.scoreOf.withArgs(sinon.match.same(matcher)).returns(index)); // sinon.match.same: Use strict equality instead of deep equality for arg matching
 			
-			try {
-				expect(chooser.choose(battle, agendas)).to.equal(agendas.at(-1));
-			} finally {
-				chooser.scoreOf.restore();
-			}
+			await expect(chooser.choose(battle, agendas)).to.eventually.equal(agendas.at(-1));
 		});
 	});
 });

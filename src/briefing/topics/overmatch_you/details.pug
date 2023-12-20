@@ -5,16 +5,7 @@ mixin details(ship, armor)
 		- const viewbox = boundingBox(armor)
 		
 		.details-line
-			svg.armor(
-				version="1.1", 
-				xmlns="http://www.w3.org/2000/svg", 
-				viewBox=`${viewbox.left} ${viewbox.top} ${viewbox.width} ${viewbox.height}`)
-			
-				each piece, id in armor
-					- const thickness = ship.get(`hull.armor.${id}`)
-					path.piece(
-						class=caliber >= Math.ceil(14.3 * thickness) ? 'overmatched' : '',
-						d=piece.map(poly => makePath(poly)).join(' '))
+			+armorview(armor, classifier(ship)).armor
 
 		.details-line
 			ul

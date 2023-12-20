@@ -8,9 +8,9 @@ export default class WinrateTopic extends Topic {
 			participant.ship = ships.find(ship => ship.getID() === participant.shipId);
 		}
 
-		const players = await this.playerFactory.getPlayers(battle.getVehicles().map(vehicle => vehicle.name));
+		const players = await this.playerProvider.getPlayers(battle.getVehicles().map(vehicle => vehicle.name));
 
-		const ships = battle.getVehicles().map(vehicle => this.gameObjectFactory.createGameObject(vehicle.shipId));
+		const ships = await Promise.all(battle.getVehicles().map(vehicle => this.gameObjectProvider.createGameObject(vehicle.shipId)));
 		const allies = battle.getAllies();
 		allies.push(battle.getPlayer());
 		const enemies = battle.getEnemies();

@@ -1,6 +1,6 @@
 import * as filters from './topic-filters.js';
 import pug from 'pug';
-import sass from 'sass';
+import * as sass from 'sass';
 import { toSass } from 'sass-cast';
 import { screamingSnakeCase } from '../util/util.js';
 import { join, dirname } from 'path';
@@ -47,7 +47,7 @@ export default class Topic {
 	 * `this.pugFile` and `this.scssFile`.
 	 * @param  {Object} providers Any data providers to be made available when `getData` is
 	 * called. Any properties from this object are copied over to the new topic. This should
-	 * be at least `{ gameObjectFactory }`, but may have other providers as well.
+	 * be at least `{ gameObjectProvider }`, but may have other providers as well.
 	 */
 	constructor(topicName, providers) {
 		if (typeof topicName !== 'string') {
@@ -97,9 +97,9 @@ export default class Topic {
 			.filter(filters.duplicates)
 			.filter(filters.teams(teams, options?.filter?.teams))
 
-		if (this.gameObjectFactory)
-			ships = ships
-				.map(id => this.gameObjectFactory.createGameObject(id))
+		if (this.gameObjectProvider)
+			ships = (await Promise.all(ships
+				.map(id => this.gameObjectProvider.createGameObject(id))))
 				.filter(filters.classes(options?.filter?.classes))
 				.sort(filters.loadScreenSort);
 

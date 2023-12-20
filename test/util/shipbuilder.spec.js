@@ -1,6 +1,6 @@
 import ShipBuilder from '../../src/util/shipbuilder.js';
 import Ship from '../../src/model/ship.js';
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import sinon from 'sinon';
 
 describe('ShipBuilder', function() {
@@ -9,117 +9,122 @@ describe('ShipBuilder', function() {
 		let ship;
 
 		beforeEach(function() {
-			shipBuilder = new ShipBuilder(new GameObjectFactory({}));
-			sinon.stub(shipBuilder.gameObjectFactory, 'createGameObject').returnsArg(0);
+			shipBuilder = new ShipBuilder(new GameObjectProvider());
+			sinon.stub(shipBuilder.gameObjectProvider, 'createGameObject');
 
 			ship = new Ship({ ShipUpgradeInfo: {} });
 		});
 
-		afterEach(function() {
-			shipBuilder.gameObjectFactory.createGameObject.restore();
+		it('should create a ship from the build if none was passed', async function() {
+			shipBuilder.gameObjectProvider.createGameObject.resolves(ship);
+			return expect(shipBuilder.build({ ship: 'PAAA001' })).to.eventually.exist;
 		});
 
-		it('should create a ship from the build if none was passed', function() {
-			shipBuilder.gameObjectFactory.createGameObject.resetBehavior();
-			shipBuilder.gameObjectFactory.createGameObject.returns(ship);
-			expect(shipBuilder.build({ ship: 'PAAA001' })).to.exist;
+		it('should use the passed ship if it is a Ship instance, create it if ship was passed as a reference name, reference code or id', async function() {
+			shipBuilder.gameObjectProvider.createGameObject.resolves(ship);
+
+			expect(await shipBuilder.build(ship, {})).to.equal(ship);
+			expect(shipBuilder.gameObjectProvider.createGameObject).to.not.have.been.called;
+			await shipBuilder.build('PAAA001', {});
+			expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith('PAAA001');
+			await shipBuilder.build('PAAA001_Battleship', {});
+			expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith('PAAA001_Battleship');
+			await shipBuilder.build(1, {});
+			expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith(1);
 		});
 
-		it('should use the passed ship if it is a Ship instance, create it if ship was passed as a reference name, reference code or id', function() {
-			shipBuilder.gameObjectFactory.createGameObject.resetBehavior();
-			shipBuilder.gameObjectFactory.createGameObject.returns(ship);
-			expect(shipBuilder.build(ship, {})).to.equal(ship);
-			expect(shipBuilder.gameObjectFactory.createGameObject).to.not.have.been.called;
-			shipBuilder.build('PAAA001', {});
-			expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith('PAAA001');
-			shipBuilder.build('PAAA001_Battleship', {});
-			expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith('PAAA001_Battleship');
-			shipBuilder.build(1, {});
-			expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith(1);
-		});
-
-		it('should equip the specified module configuration of the build', function() {
+		it('should equip the specified module configuration of the build', async function() {
+			const configuration = { modules: 'testconfiguration' };
 			sinon.stub(ship, 'equipModules');
-			try {
-				shipBuilder.build(ship, { modules: 'testconfiguration' });
-				expect(ship.equipModules).to.have.been.calledWith('testconfiguration');
-			} finally { ship.equipModules.restore(); }
+
+			await shipBuilder.build(ship, configuration);
+			expect(ship.equipModules).to.have.been.calledWith(configuration.modules);
 		});
 
-		it('should equip all modernizations of the build', function() {
+		it('should equip all modernizations of the build', async function() {
 			sinon.stub(ship, 'equipModernization');
 			const build = {
 				modernizations: [ 'PCM001', 'PCM002' ]
 			};
+			const expected = {
+				'PCM001': {}, 
+				'PCM002': {}
+			}
+			shipBuilder.gameObjectProvider.createGameObject
+				.withArgs('PCM001').resolves(expected.PCM001)
+				.withArgs('PCM002').resolves(expected.PCM002);
 
-			try {
-				shipBuilder.build(ship, build);
-				build.modernizations.forEach((modernization, index) => {
-					expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith(modernization);
-					expect(ship.equipModernization).to.have.been.calledWith(shipBuilder.gameObjectFactory.createGameObject.getCall(index).returnValue);					
-				});
-			} finally { ship.equipModernization.restore(); }
+			await shipBuilder.build(ship, build);
+			build.modernizations.forEach(async modernization => {
+				expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith(modernization);
+				expect(ship.equipModernization).to.have.been.calledWith(expected[modernization]);
+			});
 		});
 
-		it('should set the camouflage of the build', function() {
+		it('should set the camouflage of the build', async function() {
 			sinon.stub(ship, 'setCamouflage');
 			const build = {
 				camouflage: 'PAEP001'
 			};
-			try {
-				shipBuilder.build(ship, build);
-				expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith(build.camouflage);
-				expect(ship.setCamouflage).to.have.been.calledWith(shipBuilder.gameObjectFactory.createGameObject.firstCall.returnValue);
-			} finally { ship.setCamouflage.restore(); }
+			const expected = {};
+			shipBuilder.gameObjectProvider.createGameObject.withArgs(build.camouflage).resolves(expected);
+
+			await shipBuilder.build(ship, build);
+			expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith(build.camouflage);
+			expect(ship.setCamouflage).to.have.been.calledWith(expected);
 		});
 
-		it('should hoist all signals of the build', function() {
+		it('should hoist all signals of the build', async function() {
 			sinon.stub(ship, 'hoist');
 			const build = {
 				signals: [ 'PCE001', 'PCE002' ]
 			};
+			const expected = {
+				'PCE001': {},
+				'PCE002': {}
+			}			
+			shipBuilder.gameObjectProvider.createGameObject
+				.withArgs('PCE001').resolves(expected.PCE001)
+				.withArgs('PCE002').resolves(expected.PCE002);
 
-			try {
-				shipBuilder.build(ship, build);
-				build.signals.forEach((signal, index) => {
-					expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith(signal);
-					expect(ship.hoist).to.have.been.calledWith(shipBuilder.gameObjectFactory.createGameObject.getCall(index).returnValue);
-				});
-			} finally { ship.hoist.restore(); }
+			await shipBuilder.build(ship, build);
+			build.signals.forEach(async signal => {
+				expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith(signal);				
+				expect(ship.hoist).to.have.been.calledWith(expected[signal]);
+			});
 		});
 
-		it('should set the captain of the build', function() {
+		it('should set the captain of the build', async function() {
 			const build = {
 				captain: 'PAW001'
 			};
+			const expected = {};
+			shipBuilder.gameObjectProvider.createGameObject.withArgs('PAW001').resolves(expected);
 			sinon.stub(ship, 'setCaptain');
-			try {
-				shipBuilder.build(ship, build);
-				expect(shipBuilder.gameObjectFactory.createGameObject).to.have.been.calledWith(build.captain);
-				expect(ship.setCaptain).to.have.been.calledWith(shipBuilder.gameObjectFactory.createGameObject.firstCall.returnValue);
-			} finally { ship.setCaptain.restore(); }
+
+			await shipBuilder.build(ship, build);
+			expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith(build.captain);
+			expect(ship.setCaptain).to.have.been.calledWith(expected);
 		});
 
-		it('should learn the specified skills for the captain', function() {
-			// Fake captain to be returned by the GameObjectFactory when the default captain is requested
+		it('should learn the specified skills for the captain', async function() {
+			// Fake captain to be returned by the GameObjectProvider when the default captain is requested
 			let captain = {
 				learn: sinon.stub()
 			}
 			// Make createGameObject return the fake captain when requested
-			shipBuilder.gameObjectFactory.createGameObject
+			shipBuilder.gameObjectProvider.createGameObject
 				.withArgs(ShipBuilder.DEFAULT_CAPTAIN)
-				.returns(captain);			
+				.resolves(captain);			
 			sinon.stub(ship, 'setCaptain');
 			
 			const build = {
 				skills: [ 1, 2 ]
 			}
 
-			try {
-				shipBuilder.build(ship, build);
-				expect(ship.setCaptain).to.have.been.calledWith(captain);
-				build.skills.forEach(skill => expect(captain.learn).to.have.been.calledWith(skill));
-			} finally { ship.setCaptain.restore(); }
+			await shipBuilder.build(ship, build);
+			expect(ship.setCaptain).to.have.been.calledWith(captain);
+			build.skills.forEach(skill => expect(captain.learn).to.have.been.calledWith(skill));
 		});
 	});
 });

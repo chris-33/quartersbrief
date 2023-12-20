@@ -3,7 +3,7 @@ import { EventEmitter } from 'events';
 import { join } from 'path';
 import { BASE_DIR } from '../init/paths.js';
 import pug from 'pug';
-import sass from 'sass';
+import * as sass from 'sass';
 
 export default class BriefingController {
 	static BRIEFING_BUILDER_NO_AGENDA = new (class extends BriefingBuilder {

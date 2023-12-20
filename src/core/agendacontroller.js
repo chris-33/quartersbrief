@@ -16,9 +16,9 @@ export default class AgendaController {
 	 * @param  {Battle} battle The battle to select an `Agenda` for.
 	 * @return {Agenda}        The agenda that the chooser selected.
 	 */
-	choose(battle) {
+	async choose(battle) {
 		for (let source of this.sources) {
-			const choice = this.chooser.choose(battle, source);
+			const choice = await this.chooser.choose(battle, source);
 			if (choice)
 				return choice;
 		}

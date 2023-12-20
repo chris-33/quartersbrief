@@ -116,36 +116,6 @@ export default class Ship extends GameObject {
 		self.#modernizations = [];
 		self.#signals = [];
 		self.equipModules(descriptor);
-
-		// Set the flavors of all consumables this ship has
-		// This is necessary because within the game data, consumable definitions are arrays of length 2
-		// consisting of the consumable reference name (already expanded by GameObjectFactory) and the name
-		// of the flavor.
-		// 
-		// To avoid forcing all lazy references to expand at this point, we wrap the lazy-expansion getter 
-		// in another getter that sets the flavor right after expansion. When the lazy expansion replaces the
-		// property definition, this getter will disappear as well. 
-		this.get('ShipAbilities.AbilitySlot*.abils.*', { collate: false, includeOwnProperties: false }).forEach(ability => {
-			// Abilities are arrays of length 2, with the consumable definition in slot 0 and the flavor in slot 1
-			const consumableProperty = Object.getOwnPropertyDescriptor(ability, '0');
-			if (consumableProperty.get) {
-				Object.defineProperty(ability, '0', {
-					get: function() {
-						// Pass 'this' through to the original accessor
-						// (Otherwise it would get called with 'this' set to this property descriptor)
-						const consumable = consumableProperty.get.call(this);
-						dedicatedlog.debug(`Set flavor ${ability[1]} on consumable ${consumable.getName()} on first read`);
-						consumable.setFlavor(ability[1]);
-						return consumable;
-					},
-					enumerable: true,
-					configurable: true,
-				});
-			} else if (consumableProperty.value)
-				// If this is for whatever reason already a value property, 
-				// call setFlavor if it exists, or do nothing if setFlavor doesn't exist
-				consumableProperty.value.setFlavor?.call(consumableProperty.value, ability[1]);
-		});
 	}
 
 	/**
