@@ -1,6 +1,6 @@
 import Topic from '../../src/briefing/topic.js';
 import BriefingBuilder from '../../src/briefing/briefingbuilder.js';
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import sinon from 'sinon';
@@ -28,7 +28,7 @@ describe('BriefingBuilder', function() {
 	const MockTopic = class extends Topic {};	
 
 	beforeEach(function() {
-		gameObjectProvider = new GameObjectFactory({});
+		gameObjectProvider = new GameObjectProvider({});
 		sinon.stub(gameObjectProvider, 'createGameObject').resolves({ 
 			getTier: () => 0, 
 			getLabel: () => ''

@@ -105,7 +105,11 @@ describe('BriefingController @integration', function() {
 	});
 
 	beforeEach(async function() {
-		const gameObjectProvider = new GameObjectProvider(datadir);
+		const mockLabeler = {
+			labels: {},
+			label: x => x
+		}
+		const gameObjectProvider = new GameObjectProvider(datadir, mockLabeler);
 
 		briefingController = new BriefingController(
 			new BattleDataReader(replaysdir),
