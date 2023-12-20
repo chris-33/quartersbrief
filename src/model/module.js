@@ -1,4 +1,5 @@
 import DataObject, { includeOwnPropertiesByDefault } from './dataobject.js';
+import Gun from './gun.js';
 
 class Module extends DataObject {
 	constructor(ship, data) {
@@ -14,8 +15,7 @@ class Module extends DataObject {
  */
 class Weapon extends Module {
 	get mounts() {
-		return Object.values(this._data).filter(obj => 
-				typeof obj === 'object' && 'typeinfo' in obj && obj.typeinfo.type === 'Gun');
+		return Object.values(this._data).filter(obj => obj instanceof Gun);
 	}
 }
 Object.defineProperty(Weapon.prototype, 'mounts', { enumerable: true });
