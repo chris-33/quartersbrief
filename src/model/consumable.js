@@ -17,7 +17,7 @@ export default class Consumable extends GameObject {
 		'torpedoReloadTime' // Torpedo Reload Booster
 	];
 
-	#flavor;
+	_flavor;
 
 	/**
 	 * Sets the flavor that defines the characteristics of this consumable.
@@ -35,15 +35,15 @@ export default class Consumable extends GameObject {
 			// Expose any properties that are in the set flavor
 			if (key in this._data[flavor]) {
 				Object.defineProperty(this, key, {
-					get: () => this._data[this.#flavor][key],
-					set: val => { this._data[this.#flavor][key] = val },
+					get: () => this._data[this._flavor][key],
+					set: val => { this._data[this._flavor][key] = val },
 					enumerable: true,
 					configurable: true
 				});
 			}
 		}
 				
-		this.#flavor = flavor;
+		this._flavor = flavor;
 	}
 
 	isType(type) {
@@ -59,19 +59,19 @@ export default class Consumable extends GameObject {
 	get(key, options) {
 		let path = DotNotation.elements(key);
 		if (Consumable.EXPOSED_FLAVOR_PROPERTIES.includes(path[0])) {
-			if (!this.#flavor)
+			if (!this._flavor)
 				throw new Error(`Trying to get property ${key} on consumable ${this.getName()} while no flavor is set`);
-			path.unshift(this.#flavor);
+			path.unshift(this._flavor);
 		}
 
 		return super.get(DotNotation.join(path), options);
 	}
 
 	apply(key, func, options) {
-		if (!this.#flavor)
+		if (!this._flavor)
 			throw new Error(`Trying to apply function on property ${key} on consumable ${this.getName()} while no flavor is set`);
 		else
-			key = this.#flavor + '.' + key;
+			key = this._flavor + '.' + key;
 		return super.apply(key, func, options);		
 	}
 

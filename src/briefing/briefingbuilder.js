@@ -63,7 +63,8 @@ export default class BriefingBuilder {
 	 */
 	buildErrorTopic(err) {
 		return {
-			html: `There was an error while making the topic: ${err}`
+			html: `There was an error while making the topic.`,
+			css: `* { color: red; }`
 		};
 	}
 
@@ -100,23 +101,38 @@ export default class BriefingBuilder {
 
 		const briefing = new EventEmitter();
 
-		briefing.topics = topics;
-		briefing.battleinfo = {
-			tier: Math.max(...battle
-				.getVehicles()
-				.map(vehicle => vehicle.shipId)
-				.map(shipId => this.providers.gameObjectFactory.createGameObject(shipId))
-				.map(ship => ship.getTier())),
-			ownship: this.providers.gameObjectFactory.createGameObject(battle.getPlayer().shipId).getLabel(),
-			map: this.providers.gameObjectFactory.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()]
-		};
 		briefing.id = t0;
-
-		briefing.html = renderBriefing(briefing);
-		briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
+		briefing.topics = topics;
 		
-		// Defer emission so there is a chance to attach event listeners
-		setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
+		const briefingReady = Promise.all(battle
+					.getVehicles()
+					.map(vehicle => vehicle.shipId)
+					.map(shipId => this.providers.gameObjectProvider.createGameObject(shipId)))
+				.then(ships => ships.map(ship => ship.getTier()))
+				.then(async tiers => ({					
+					tier: Math.max(...tiers),
+					ownship: (await this.providers.gameObjectProvider.createGameObject(battle.getPlayer().shipId)).getLabel(),
+					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()] 				
+				}))
+				.then(battleinfo => {
+					briefing.battleinfo = battleinfo;
+					briefing.html = renderBriefing(briefing);
+					briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
+					return briefing;
+				})
+				.catch(err => {
+					rootlog.error(`Could not create briefing: ${err.message}`);
+
+					// TODO: Replace this with a nicer version
+					briefing.html = 'Oh no! Something terrible happened: ' + err.message;
+					briefing.css = '';
+					return briefing;
+				})
+				.then(briefing => {
+					// Defer emission so there is a chance to attach event listeners
+					setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_START, briefing));
+					return briefing;
+				});
 
 		// Do NOT return or await this Promise, because we need to return briefing synchronously.
 		// The async nature of the building process is reflected through event emissions.
@@ -126,7 +142,7 @@ export default class BriefingBuilder {
 
 			let rendered;
 
-			try {
+			try {				
 				rendered = await topic.render(
 					clone(battle), // Pass a separate copy of the battle to each topic builder
 					agenda.topics[topicName]
@@ -139,8 +155,10 @@ export default class BriefingBuilder {
 				dedicatedlog.debug(`Built topic ${topicName} in ${Date.now() - t0}ms`);
 			} catch (err) {
 				rootlog.error(`Building topic ${topicName} failed: ${err} ${err.stack}`);
-				rendered = this.buildErrorTopic(err)				
-			}			
+				rendered = this.buildErrorTopic(err);
+			}
+			// Make sure EVT_BRIEFING_START gets issued first
+			await briefingReady;			
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_TOPIC, briefing.id, index, rendered));
 			return rendered;
 		})).then(() => {

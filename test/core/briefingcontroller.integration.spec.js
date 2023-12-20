@@ -1,7 +1,7 @@
 import mockfs from 'mock-fs';
 import esmock from 'esmock';
 import TOML from '@iarna/toml';
-import GameObjectFactory from '../../src/model/gameobjectfactory.js';
+import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import SpecificityChooser from '../../src/agendas/specificitychooser.js';
 import BattleDataReader from '../../src/core/battledatareader.js';
 import BriefingController from '../../src/core/briefingcontroller.js';
@@ -15,6 +15,7 @@ import Topic from '../../src/briefing/topic.js';
 describe('BriefingController @integration', function() {
 	const agendasdir = '/agendas';
 	const replaysdir = '/replays';
+	const datadir = '/data'
 	let BriefingBuilder;
 	let briefingController;
 
@@ -87,6 +88,14 @@ describe('BriefingController @integration', function() {
 			},
 			[replaysdir]: {
 				'tempArenaInfo.json': JSON.stringify(MOCK_TEMP_ARENA_INFO)
+			},
+			[datadir]: {
+				[MOCK_GAME_DATA.PAAA001_Battleship.name + '.json']: JSON.stringify(MOCK_GAME_DATA.PAAA001_Battleship),
+				[MOCK_GAME_DATA.PAAA001_Battleship.index + '.json']: JSON.stringify(MOCK_GAME_DATA.PAAA001_Battleship),
+				[MOCK_GAME_DATA.PAAA001_Battleship.id + '.json']: JSON.stringify(MOCK_GAME_DATA.PAAA001_Battleship),
+				[MOCK_GAME_DATA.PAAA002_Cruiser.name + '.json']: JSON.stringify(MOCK_GAME_DATA.PAAA002_Cruiser),
+				[MOCK_GAME_DATA.PAAA002_Cruiser.index + '.json']: JSON.stringify(MOCK_GAME_DATA.PAAA002_Cruiser),
+				[MOCK_GAME_DATA.PAAA002_Cruiser.id + '.json']: JSON.stringify(MOCK_GAME_DATA.PAAA002_Cruiser),
 			}
 		});
 	});
@@ -96,14 +105,18 @@ describe('BriefingController @integration', function() {
 	});
 
 	beforeEach(async function() {
-		const gameObjectFactory = new GameObjectFactory(MOCK_GAME_DATA);
+		const mockLabeler = {
+			labels: {},
+			label: x => x
+		}
+		const gameObjectProvider = new GameObjectProvider(datadir, mockLabeler);
 
 		briefingController = new BriefingController(
 			new BattleDataReader(replaysdir),
-			new BriefingBuilder({ gameObjectFactory }),
+			new BriefingBuilder({ gameObjectProvider }),
 			await AgendaController.create(
 				[ agendasdir ],
-				new SpecificityChooser(gameObjectFactory)
+				new SpecificityChooser(gameObjectProvider)
 			)
 		);
 	});

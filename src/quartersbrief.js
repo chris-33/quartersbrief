@@ -6,9 +6,9 @@ import './init/log.js';
 import update from './init/update.js';
 import log from 'loglevel';
 import loadData from './init/load.js';
-import PlayerFactory from './model/playerfactory.js';
-import GameObjectFactory from './model/gameobjectfactory.js';
-import ArmorViewer from './armor/armorviewer.js';
+import PlayerProvider from './providers/playerprovider.js';
+import GameObjectProvider from './providers/gameobjectprovider.js';
+import ArmorProvider from './providers/armorprovider.js';
 import Labeler from './model/labeler.js';
 import BattleDataReader from './core/battledatareader.js';
 import SpecificityChooser from './agendas/specificitychooser.js';
@@ -40,7 +40,7 @@ let datadir = path.join(paths.DATA_DIR, String(version));
 let data, labels;
 try {
 	const t0 = Date.now();
-	({ data, labels } = await loadData(datadir));
+	labels = await loadData(datadir);
 	log.info(`Loaded game data in ${Date.now() - t0}ms.`);
 } catch(err) {
 	log.error(`Could not load data from ${paths.DATA_DIR}: ${err.message}. Try running quartersbrief with update-policy=force`);
@@ -51,17 +51,17 @@ if (labels instanceof Error) {
 	labels = undefined;
 }
 
-const gameObjectFactory = new GameObjectFactory(data, new Labeler(labels));
+const gameObjectProvider = new GameObjectProvider(path.join(datadir, 'params'), new Labeler(labels));
 const agendaController = await AgendaController.create(
 	[ paths.AGENDAS_USER_DIR, paths.AGENDAS_DEFAULT_DIR ], 
-	new SpecificityChooser(gameObjectFactory));
+	new SpecificityChooser(gameObjectProvider));
 const battleController = new BattleController(path.join(config.wowsdir, 'replays')); // No problem to hardcode this, because it is always the same according to https://eu.wargaming.net/support/en/products/wows/article/15038/
 const briefingController = new BriefingController(
 	new BattleDataReader(path.join(config.wowsdir, 'replays')),
 	new BriefingBuilder({
-		gameObjectFactory,
-		playerFactory: new PlayerFactory(config.apiKey, config.realm),
-		armorViewer: new ArmorViewer(path.join(datadir, 'armor'), path.join(paths.CACHE_DIR, 'armor'))
+		gameObjectProvider,
+		playerProvider: new PlayerProvider(config.apiKey, config.realm),
+		armorProvider: new ArmorProvider(path.join(datadir, 'armor'), path.join(paths.CACHE_DIR, 'armor'))
 	}),
 	agendaController
 );

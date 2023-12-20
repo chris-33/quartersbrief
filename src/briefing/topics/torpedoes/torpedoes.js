@@ -15,15 +15,15 @@ const TORPEDO_BUILD = {
 
 export default class TorpedoesTopic extends Topic {
 	async getPugData(battle, options) {
-		let shipBuilder = new ShipBuilder(this.gameObjectFactory);
+		let shipBuilder = new ShipBuilder(this.gameObjectProvider);
 		const locals = await super.getPugData(battle, options);
 		locals.ships = locals.ships.filter(ship => ship.torpedoes)
 
-		const entries = locals.ships.map(ship => {
+		const entries = await Promise.all(locals.ships.map(async ship => {
 			const entry = { 
 				ship,
-				builds: ship.discoverModules('torpedoes').map((module, index) => {
-					shipBuilder.build(ship, { 
+				builds: await Promise.all(ship.discoverModules('torpedoes').map(async (module, index) => {
+					await shipBuilder.build(ship, { 
 						modules: `torpedoes: ${index}, others: top`,
 						...TORPEDO_BUILD,
 						...CONCEALMENT_BUILD
@@ -41,14 +41,14 @@ export default class TorpedoesTopic extends Topic {
 							visibility: torpedo.getVisibility(),
 							flooding: torpedo.getFloodChance()
 						}))
-					}
+					}					
 					ship.torpedoes.get('mounts').forEach(mount => {
-						let side = [ 'port', 'center', 'starboard' ][Math.sign(mount.position[1] - 1) + 1]; // Any mount position smaller/larger than 1 results in port/stbd (resp.), position 1 is center
-						build.tubes[side].push(mount.numBarrels);
+						let side = [ 'port', 'center', 'starboard' ][Math.sign(mount.get('position')[1] - 1) + 1]; // Any mount position smaller/larger than 1 results in port/stbd (resp.), position 1 is center
+						build.tubes[side].push(mount.get('numBarrels'));
 					});
 
 					return build;
-				})
+				}))
 			};
 			
 			[ 'range', 'damage', 'speed', 'flooding' ].forEach(property => entry[property] = Math.max(...entry.builds.flatMap(build => build.torpedoes).map(torpedo => torpedo[property])));
@@ -57,12 +57,14 @@ export default class TorpedoesTopic extends Topic {
 			entry.reload = Math.min(...entry.builds.map(build => build.reload));
 			// Find the build with largest total number of tubes
 			const sum = (arr) => arr.reduce((prev,curr) => prev + curr, 0);
-			entry.tubes = entry.builds.map(build => Object.values(build.tubes).flat()).reduce((prev, curr) => sum(curr) > sum(prev) ? curr : prev);
+			entry.tubes = entry.builds
+				.map(build => Object.values(build.tubes).flat())
+				.reduce((prev, curr) => sum(curr) > sum(prev) ? curr : prev);
 			return entry;
-		});
+		}));
 
 		locals.entries = entries;
-		locals.ownship = this.gameObjectFactory.createGameObject(battle.getPlayer().shipId);
+		locals.ownship = await this.gameObjectProvider.createGameObject(battle.getPlayer().shipId);
 		return locals;
 	}
 }

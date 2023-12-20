@@ -65,6 +65,7 @@ export default async function updateGameParams(wows, dest, buildno) {
 
 	const resource = 'content/GameParams.data';
 	const tmpdir = os.tmpdir();
+	dest = path.join(dest, 'params');
 
 	// This is basically a translation of the work by EdibleBug in https://github.com/EdibleBug/WoWS-GameParams/blob/master/OneFileToRuleThemAll.py
 	// All props go to him.
@@ -102,33 +103,31 @@ export default async function updateGameParams(wows, dest, buildno) {
 		gpd => gpd[0],
 		// Check invariants
 		passthrough(each(gameObject => Object.values(invariants).filter(imported => typeof imported === 'function').forEach(invariant => invariant(gameObject)))),
-		// @todo Write game param files individually instead of in one big file
-		// passthrough(each(writeJSON(gameObject => path.format({
-		// 		dir: dest, 
-		// 		name: gameObject.name,
-		// 		ext: '.json'
-		// })))),
-		// each(async gameObject => {
-		// 	if (gameObject.index !== gameObject.name)
-		// 		await fs.link(path.format({
-		// 			dir: dest, 
-		// 			name: gameObject.name,
-		// 			ext: '.json'
-		// 		}), path.format({
-		// 			dir: dest, 
-		// 			name: gameObject.index,
-		// 			ext: '.json'
-		// 		}))
-		// 	await fs.link(path.format({
-		// 		dir: dest, 
-		// 		name: gameObject.name,
-		// 		ext: '.json'
-		// 	}), path.format({
-		// 		dir: dest, 
-		// 		name: gameObject.id,
-		// 		ext: '.json'
-		// 	}))
-		// })
-		writeJSON(path.join(dest, 'GameParams.json'))
+		passthrough(each(writeJSON(gameObject => path.format({
+				dir: dest, 
+				name: gameObject.name,
+				ext: '.json'			
+		})))),
+		each(async gameObject => {
+			if (gameObject.index !== gameObject.name)
+				await fs.symlink(path.format({
+					dir: dest, 
+					name: gameObject.name,
+					ext: '.json'
+				}), path.format({
+					dir: dest, 
+					name: gameObject.index,
+					ext: '.json'
+				}))
+			await fs.symlink(path.format({
+				dir: dest, 
+				name: gameObject.name,
+				ext: '.json'
+			}), path.format({
+				dir: dest, 
+				name: gameObject.id,
+				ext: '.json'
+			}))
+		})
 	]);
 }

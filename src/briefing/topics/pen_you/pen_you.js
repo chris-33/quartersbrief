@@ -13,14 +13,14 @@ export default class PenYouTopic extends Topic {
 
 		const locals = await super.getPugData(battle, options);
 
-		const shipBuilder = new ShipBuilder(this.gameObjectFactory);
-		let ownship = shipBuilder.build(locals.teams.player, { modules: 'top' });
+		const shipBuilder = new ShipBuilder(this.gameObjectProvider);
+		let ownship = await shipBuilder.build(locals.teams.player, { modules: 'top' });
 		
 		locals.ownship = {
 			he: ownship.get('artillery.mounts.*.ammoList', { collate: true }).find(ammo => ammo.get('ammoType') === 'HE')?.get('alphaPiercingHE'),
 			sap: ownship.get('artillery.mounts.*.ammoList', { collate: true }).find(ammo => ammo.get('ammoType') === 'CS')?.get('alphaPiercingCS')
 		}
-		ownship = shipBuilder.build(ownship, { skills: [ SKILLS.INERTIA_FUSE_FOR_HE_SHELLS ] });
+		ownship = await shipBuilder.build(ownship, { skills: [ SKILLS.INERTIA_FUSE_FOR_HE_SHELLS ] });
 		locals.ownship.ifhe = ownship.get('artillery.mounts.*.ammoList', { collate: true }).find(ammo => ammo.get('ammoType') === 'HE')?.get('alphaPiercingHE');
 		
 		locals.armors = {};
@@ -28,8 +28,8 @@ export default class PenYouTopic extends Topic {
 			locals.armors[ship.getName()] = {};
 
 		for (let view of [ 'side', 'top' ])
-			await Promise.all(locals.ships.map(ship => this.armorViewer
-				.view(ship, view)
+			await Promise.all(locals.ships.map(ship => this.armorProvider
+				.getArmorView(ship, view)
 				.catch(err => err) 
 				.then(armor => locals.armors[ship.getName()][view] = armor)));
 

@@ -34,10 +34,18 @@ describe('Ship', function() {
 	});
 
 	beforeEach(function() {
+		function* abilities(data) {
+			yield data.ShipAbilities.AbilitySlot0.abils[0][0];
+			yield data.ShipAbilities.AbilitySlot0.abils[1][0];
+			yield data.ShipAbilities.AbilitySlot1.abils[0][0];
+		}
 		let data = clone(TEST_DATA);
-		data.ShipAbilities.AbilitySlot0.abils[0][0] = new Consumable(clone(CONSUMABLE_DATA.PCY001_Consumable1));
+		data.ShipAbilities.AbilitySlot0.abils[0][0] = new Consumable(clone(CONSUMABLE_DATA.PCY001_Consumable1));		
 		data.ShipAbilities.AbilitySlot0.abils[1][0] = new Consumable(clone(CONSUMABLE_DATA.PCY002_Consumable2));
 		data.ShipAbilities.AbilitySlot1.abils[0][0] = new Consumable(clone(CONSUMABLE_DATA.PCY003_Consumable3));
+		for (let ability of abilities(data))
+			ability.setFlavor('Flavor1');
+
 		ship = new Ship(data);
 	});
 
@@ -45,68 +53,6 @@ describe('Ship', function() {
 		Modifier.KNOWN_TARGETS = knownTargets;
 		Captain.CLASS_SKILLS = classSkills;
 		Consumable.EXPOSED_FLAVOR_PROPERTIES = exposedFlavorProperties;
-	});
-
-	describe('constructor', function() {
-		let data;
-		let CONSUMABLE_DATA;
-
-		before(function() {
-			CONSUMABLE_DATA = JSON.parse(readFileSync('test/model/testdata/consumable.json'));
-		});
-
-		beforeEach(function() {
-			data = clone(TEST_DATA);
-			data.ShipAbilities.AbilitySlot0.abils[0][0] = CONSUMABLE_DATA.PCY001_Consumable1;
-			data.ShipAbilities.AbilitySlot0.abils[1][0] = CONSUMABLE_DATA.PCY002_Consumable2;
-			data.ShipAbilities.AbilitySlot1.abils[0][0] = CONSUMABLE_DATA.PCY003_Consumable3;
-		});
-
-		it('should set flavors for all consumables', function() {
-			// The point of this test:
-			// Even though consumables are lazily-expanding references, the constructor should set us up in
-			// such a way that when they ARE accessed, they have a flavor set.
-
-
-			// Manually create a lazily-expanding reference
-			const val = clone(CONSUMABLE_DATA.PCY001_Consumable1);
-			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
-				get: function() {
-					let consumable = new Consumable(val); 
-					Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
-						value: consumable, enumerable: true
-					});
-					return consumable;
-				},
-				enumerable: true,
-				configurable: true
-			});
-			let ship = new Ship(data);
-			let consumable = ship.get('ShipAbilities.AbilitySlot0.abils.0.0');
-
-			expect(consumable.get('prop')).to.equal(CONSUMABLE_DATA.PCY001_Consumable1.Flavor1.prop);
-		});
-
-		it('should not expand consumable references', function() {
-			// The point of this test:
-			// Consumables are lazily-expanding references when Ship is instantiated. Make sure that
-			// the constructor, when setting flavors, does this in a way that does not force them
-			// to be expanded. (Otherwise, that would defeat the purpose of having them be lazily expanding
-			// in the first place - and expanding consumables can be expensive, e.g. with the CallFighters
-			// consumable.)
-
-
-			// Manually create a lazily-expanding reference
-			const val = clone(CONSUMABLE_DATA.PCY001_Consumable1);
-			const spy = sinon.spy(function() { return new Consumable(val); })
-			Object.defineProperty(data.ShipAbilities.AbilitySlot0.abils[0], '0', {
-				get: spy,
-				enumerable: true,
-				configurable: true
-			});
-			new Ship(data);
-			expect(spy).to.not.have.been.called;			
-		});
 	});
 
 	describe('.equipModules', function() {

@@ -52,8 +52,8 @@ describe('Topic', function() {
 
 	beforeEach(function() {
 		topic = new Topic({
-			gameObjectFactory: {
-				createGameObject: sinon.stub().returnsArg(0)
+			gameObjectProvider: {
+				createGameObject: sinon.stub().resolvesArg(0)
 			}
 		});
 	});
@@ -125,7 +125,7 @@ describe('Topic', function() {
 	});
 
 	describe('.getPugData', function() {
-		describe('with GameObjectFactory', function() {
+		describe('with GameObjectProvider', function() {
 			it('should have applied all filters', async function() {
 				const options = {
 					filter: {
@@ -134,7 +134,7 @@ describe('Topic', function() {
 					}
 				}
 				const ids = battle.getVehicles().map(vehicle => vehicle.shipId);
-				const ships = battle.getVehicles().map(vehicle => topic.gameObjectFactory.createGameObject(vehicle.shipId));
+				const ships = await Promise.all(battle.getVehicles().map(vehicle => topic.gameObjectProvider.createGameObject(vehicle.shipId)));
 
 				await topic.getPugData(battle, options);
 				[
@@ -165,11 +165,11 @@ describe('Topic', function() {
 
 				expect(result).to
 					.have.property('ships')
-					.that.deep.equals(battle.getVehicles().map(({ shipId }) => topic.gameObjectFactory.createGameObject(shipId)));
+					.that.deep.equals(await Promise.all(battle.getVehicles().map(({ shipId }) => topic.gameObjectProvider.createGameObject(shipId))));
 			});
 		});
 
-		describe('without GameObjectFactory', function() {
+		describe('without GameObjectProvider', function() {
 			beforeEach(function() {
 				topic = new Topic();
 			});
