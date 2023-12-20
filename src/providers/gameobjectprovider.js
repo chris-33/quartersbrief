@@ -1,65 +1,18 @@
 import rootlog from 'loglevel';
 import GameObjectSupplier from './gameobjectsupplier.js';
-import clone from 'clone';
-
 import GameObject from '../model/gameobject.js';
-import Ship from '../model/ship.js';
-import Modernization from '../model/modernization.js';
-import Consumable from '../model/consumable.js';
-import Captain from '../model/captain.js';
-import Camouflage from '../model/camouflage.js';
-import Signal from '../model/signal.js';
-import Gun from '../model/gun.js';
-import Torpedo from '../model/torpedo.js';
+import clone from 'lodash.clonedeepwith';
+
 
 /**
  * @see GameObject
  */
 export default class GameObjectProvider {
-	/**
-	 * The default object conversion table, mapping `typeinfo.type` values to their corresponding
-	 * constructors. 
-	 * If the target of the mapping is an object, the `typeinfo.species` value will also be examined for determining
-	 * the constructor. 
-	 * The following example uses the `Baz` constructor for game objects where `typeinfo.type === 'Foo'` and `typeinfo.species === 'Bar'`:
-	 * ```
-	 * 	{
-	 * 		'Foo': {
-	 * 			'Bar': Baz
-	 * 	  	}
-	 *  }
-	 * ```
-	 * @type {Object}
-	 */
-	static CONVERSIONS = {
-		'Ship': Ship,
-		'Modernization': Modernization,
-		'Ability': Consumable,
-		'Crew': Captain,
-		'Exterior': { 
-			'Camouflage': Camouflage,
-			'Permoflage': Camouflage,
-			'Skin': Camouflage,
-			'Flags': Signal
-		},
-		'Gun': Gun,
-		'Projectile': {
-			'Torpedo': Torpedo
-		}
-	}
 
-	static EXPANSIONS = {
-		'Gun': [
-			'ammoList.*'
-		],
-		'Ship': [
-			'*_Artillery.*[typeinfo.type===Gun]',
-			'ShipAbilities.AbilitySlot*.abils' 
-		]
-	}
-
-	constructor(sourcepath) {		
-		this.supplier = new GameObjectSupplier(sourcepath, GameObjectProvider.EXPANSIONS, GameObjectProvider.CONVERSIONS);
+	constructor(sourcepath, labeler) {
+		// Only here for @legacy briefing headline generation
+		this.labeler = labeler;
+		this.supplier = new GameObjectSupplier(sourcepath, labeler);
 	}
 
 	/**
@@ -78,7 +31,7 @@ export default class GameObjectProvider {
 	 * @throws Will throw an error ("Invalid argument") if a malformed
 	 * designator is passed.
 	 */
-	async createGameObject(designator) {	
+	async createGameObject(designator) {			
 		let dedicatedlog = rootlog.getLogger(this.constructor.name);
 
 		let t0 = Date.now();
@@ -86,16 +39,22 @@ export default class GameObjectProvider {
 		
 		// Check if we have a valid designator
 		if (!designator || (typeof designator !== 'number' && !GameObject.REFERENCE_CODE_REGEX.test(designator) && !GameObject.REFERENCE_NAME_REGEX.test(designator))) 
-			throw new Error(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
-		
+			throw new TypeError(`Invalid argument. ${designator} is not a valid designator. Provide either a numeric ID, a reference name or a reference code.`);
+
 		let gameObject = await this.supplier.get(designator);
+
 		if (!gameObject) {
 			rootlog.error(`Could not find game object for ${designator}`);
 			return null;
 		}
 
-		// @todo Remove explicit data copying once GameObject has been moved over to object-selectors
-		gameObject = new gameObject.constructor(clone(gameObject._data));		
+
+		// Clone the object, providing a special cloning function for contained GameObjects
+		gameObject = clone(gameObject, function cloneGameObject(obj) {
+			if (obj instanceof GameObject)
+				return new obj.constructor(clone(obj._data))
+			// Returns undefined otherwise, which indicates falling back to default cloning mechanism
+		});
 
 		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.getName()} in ${Date.now() - t0}ms`);
 		return gameObject; 
