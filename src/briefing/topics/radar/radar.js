@@ -14,23 +14,23 @@ const RADAR_BUILD = {
 
 export default class RadarTopic extends Topic {
 	async getPugData(battle, options) {
-		let shipBuilder = new ShipBuilder(this.gameObjectFactory);
+		let shipBuilder = new ShipBuilder(this.gameObjectProvider);
 		const locals = await super.getPugData(battle, options);
 
 		locals.ships = locals.ships.filter(ship => 'rls' in ship.consumables)
 
 		let radars = {};
-		locals.ships.forEach(ship => {
+		await Promise.all(locals.ships.map(async ship => {
 			let range = 10 * Math.round(conversions.BWToMeters(ship.consumables.rls.distShip) / 10);
 			radars[range] ??= {};
 			radars[range][ship.consumables.rls.workTime] ??= [];
 			radars[range][ship.consumables.rls.workTime].push({
 				ship,
 				baseTime: ship.consumables.rls.workTime,
-				maxTime: shipBuilder.build(ship, RADAR_BUILD).consumables.rls.workTime
+				maxTime: (await shipBuilder.build(ship, RADAR_BUILD)).consumables.rls.workTime
 			});
-		});
-		locals.ships.forEach(ship => shipBuilder.build(ship, CONCEALMENT_BUILD));
+		}));
+		locals.ships = await Promise.all(locals.ships.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD)));
 
 		locals.radars = radars;
 		return locals;

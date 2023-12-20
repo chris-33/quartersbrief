@@ -14,27 +14,27 @@ const HYDRO_BUILD = {
 
 export default class HydroTopic extends Topic {
 	async getPugData(battle, options) {
-		let shipBuilder = new ShipBuilder(this.gameObjectFactory);
+		let shipBuilder = new ShipBuilder(this.gameObjectProvider);
 
 		const locals = await super.getPugData(battle, options);
 		locals.ships = locals.ships.filter(ship => 'sonar' in ship.consumables)
 
 		let hydros = {};
-		locals.ships.forEach(ship => {
-			ship = shipBuilder.build(ship, BASE_BUILD)
+		await Promise.all(locals.ships.map(async ship => {
+			ship = await shipBuilder.build(ship, BASE_BUILD)
 			// Round range to 50m precision, to avoid drawing separate circles for what is effectively the same range
 			// if ships' consumables' distShip is slightly different (which will be magnified by the conversion to meters)
 			let range = 50 * Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip) / 50);
 			const hydro = {
 				ship: ship,
 				baseTime: ship.consumables.sonar.workTime,
-				maxTime: shipBuilder.build(ship, HYDRO_BUILD).consumables.sonar.workTime,
+				maxTime: (await shipBuilder.build(ship, HYDRO_BUILD)).consumables.sonar.workTime,
 				cooldown: ship.consumables.sonar.reloadTime
 			};
 
 			hydros[range] ??= [];
 			hydros[range].push(hydro);
-		});
+		}));
 		locals.hydros = hydros;
 
 		return locals;
