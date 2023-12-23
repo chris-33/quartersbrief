@@ -1,7 +1,7 @@
 import Topic from '../../topic.js';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
 import { SKILLS } from '../../../model/captain.js';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 const TOP_BUILD = {
 	modules: 'top'

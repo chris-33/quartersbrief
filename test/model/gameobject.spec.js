@@ -1,5 +1,5 @@
 import GameObject from '../../src/model/gameobject.js';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 describe('GameObject', function() {
 	const TEST_DATA = { 

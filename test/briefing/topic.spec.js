@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 import Battle from '../../src/model/battle.js';
 import esmock from 'esmock';
 import sinon from 'sinon';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import { toSass } from 'sass-cast';
 import path from 'path';
 

@@ -1,6 +1,6 @@
 import GameObject from '../model/gameobject.js';
 import rootlog from 'loglevel';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import { arrayIntersect } from '../util/util.js';
 import InvariantError from './infra/invarianterror.js';
 

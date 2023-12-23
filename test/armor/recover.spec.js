@@ -1,5 +1,5 @@
 import { interconnect, label, splitHybrids, fuse, measure, separate, clean, default as recover } from '../../src/armor/recover.js';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import { dist2 } from 'geometry-3d/2d';
 
 describe('occlude zero-length recovery', function() {

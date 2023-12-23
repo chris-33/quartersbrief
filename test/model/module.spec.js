@@ -1,4 +1,4 @@
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import { Module, Weapon } from '../../src/model/module.js';
 
 /* eslint-disable mocha/max-top-level-suites */

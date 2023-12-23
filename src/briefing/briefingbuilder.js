@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import pug from 'pug';
 import * as sass from 'sass';
 import rootlog from 'loglevel';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import * as topics from './topics/index.js';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';

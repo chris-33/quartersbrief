@@ -2,7 +2,7 @@ import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import Consumable from '../../src/model/consumable.js';
 import { readFileSync } from 'fs';
 import mockfs from 'mock-fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import sinon from 'sinon';
 
 describe('Ship @integration', function() {

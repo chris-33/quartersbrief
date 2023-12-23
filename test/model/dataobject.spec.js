@@ -1,5 +1,5 @@
 import DataObject, { includeOwnPropertiesByDefault } from '../../src/model/dataobject.js';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import sinon from 'sinon';
 
 describe('DataObject', function() {

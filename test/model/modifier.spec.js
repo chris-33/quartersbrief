@@ -1,7 +1,7 @@
 import Modifier from '../../src/model/modifier.js';
 import Ship from '../../src/model/ship.js';
 import { readFileSync } from 'fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import sinon from 'sinon';
 
 describe('Modifier', function() {
