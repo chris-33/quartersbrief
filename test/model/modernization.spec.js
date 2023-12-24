@@ -4,7 +4,7 @@ import GameObject from '../../src/model/gameobject.js';
 import Modifier from '../../src/model/modifier.js';
 
 import { readFileSync } from 'fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 describe('Modernization', function() {
 	let TEST_DATA;

@@ -3,22 +3,19 @@ import DataObject from './dataobject.js';
  * This is a thin wrapper around game object definitions as they can be read from
  * `GameParams.data`. 
  *
- * `GameObject` provides easy access to even nested and array properties using dot
- * notation. {@link #get}
- *
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
- * object. (This is checked at application startup through invariant assertion checking.)
+ * object.
  */
 export default class GameObject extends DataObject {
 	/**
 	 * Regex to find game object reference codes.
 	 * References all start with the capital letter P, followed
-	 * by two or three more capital letters and three digits. 
+	 * by two or three more capital letters and two to four digits. 
 	 * 
 	 * Example: PASC206, PAD049
 	 * @type {RegExp}
 	 */
-	static REFERENCE_CODE_REGEX = new RegExp('^P[A-Z]{2,3}[0-9]{2,3}$');
+	static REFERENCE_CODE_REGEX = new RegExp('^P[A-Z]{2,3}[0-9]{2,4}$');
 	/**
 	 * Regex to find reference names. A reference name is either just a
 	 * reference code, or a reference code follwoed by an underscore and at least one 

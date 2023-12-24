@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import deepequal from 'deep-equal';
 import occlude, { MIN_LENGTH, MAX_RETRIES } from '../../src/armor/occlude.js';
 import sinon from 'sinon';

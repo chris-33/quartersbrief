@@ -3,7 +3,7 @@ import Agenda from '../../src/agendas/agenda.js';
 import TOML from '@iarna/toml';
 import YAML from 'yaml';
 import mockfs from 'mock-fs';
-import clone from 'clone'; 
+import clone from 'lodash/cloneDeep.js';
 
 describe('Agenda compilation functions', function() {
 	after(function() {

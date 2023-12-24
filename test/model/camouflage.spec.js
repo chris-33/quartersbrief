@@ -2,7 +2,7 @@ import Camouflage from '../../src/model/camouflage.js';
 import Ship from '../../src/model/ship.js';
 import Modifier from '../../src/model/modifier.js';
 import { readFileSync } from 'fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 describe('Camouflage', function() {
 	let TEST_DATA;

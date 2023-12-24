@@ -1,6 +1,6 @@
 import { getModuleLines, discoverModules } from '../../src/model/ship-research.js';
 import { readFileSync } from 'fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 describe('.getModuleLines', function() {
 	let TEST_DATA;

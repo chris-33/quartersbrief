@@ -4,7 +4,7 @@ import TOML from '@iarna/toml';
 import YAML from 'yaml';
 import path from 'path';
 import circular from 'is-circular';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 const parsers = {
 	'.yml': YAML,

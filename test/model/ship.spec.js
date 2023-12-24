@@ -6,7 +6,7 @@ import Consumable from '../../src/model/consumable.js';
 import Signal from '../../src/model/signal.js';
 import Modifier from '../../src/model/modifier.js';
 import sinon from 'sinon';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import { readFileSync } from 'fs';
 import createModule from '../../src/model/module.js';
 

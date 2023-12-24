@@ -1,7 +1,7 @@
 import rootlog from 'loglevel';
 import GameObjectSupplier from './gameobjectsupplier.js';
 import GameObject from '../model/gameobject.js';
-import clone from 'lodash.clonedeepwith';
+import clone from 'lodash/cloneDeepWith.js';
 
 
 /**

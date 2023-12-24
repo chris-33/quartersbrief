@@ -76,7 +76,7 @@ describe('BriefingBuilder', function() {
 			const briefing = builder.build(battle, agenda);
 			await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_TOPIC);
 			await waitFor(briefing, BriefingBuilder.EVT_BRIEFING_FINISH);
-			expect(briefing.html).to.contain('Oh no!')
+			expect(briefing.html).to.contain('error')
 		});
 
 		it('should build an error message if the topic builder has an error', async function() {

@@ -1,0 +1,19 @@
+@use 'sass:color';
+@use 'topics/fontsizes';
+@use 'briefing';
+
+// This stylesheet governs the error screen shown when a briefing could not be created due to an error
+$text-color: #ff4040;
+
+p {
+	grid-column: 1 / -1;
+	text-align: center;
+	align-self: center;
+
+	font-size: fontsizes.$huge;
+	color: $text-color;
+}
+
+#briefing {
+	outline-color: $text-color;
+}

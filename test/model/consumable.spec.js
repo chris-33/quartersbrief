@@ -1,6 +1,6 @@
 import Consumable from '../../src/model/consumable.js';
 import { readFileSync } from 'fs';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 
 describe('Consumable', function() {
 	let TEST_DATA;

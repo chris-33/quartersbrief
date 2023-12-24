@@ -7,7 +7,7 @@ import {
 	weaponAmmosAreOrdered 
 } from '../../src/update/invariants-gameparams.js';
 import InvariantError from '../../src/update/infra/invarianterror.js';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import { readFileSync } from 'fs';
 
 

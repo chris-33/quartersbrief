@@ -2,7 +2,7 @@ import { EventEmitter } from 'events';
 import pug from 'pug';
 import * as sass from 'sass';
 import rootlog from 'loglevel';
-import clone from 'clone';
+import clone from 'lodash/cloneDeep.js';
 import * as topics from './topics/index.js';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -26,7 +26,6 @@ const renderBriefing = pug.compileFile(join(dirname(fileURLToPath(import.meta.ur
 export default class BriefingBuilder {
 	static EVT_BRIEFING_START = 'briefingstart';
 	static EVT_BRIEFING_TOPIC = 'briefingtopic';
-	// Unprefixed to conform to API standard. See https://nodejs.org/dist/latest-v18.x/docs/api/events.html#error-events
 	static EVT_BRIEFING_FINISH = 'briefingfinish';
 	
 	/**
@@ -63,8 +62,8 @@ export default class BriefingBuilder {
 	 */
 	buildErrorTopic(err) {
 		return {
-			html: `There was an error while making the topic.`,
-			css: `* { color: red; }`
+			html: `<p>There was an error while making the topic.</p>`,
+			css: `p { color: red; }`
 		};
 	}
 
@@ -109,12 +108,13 @@ export default class BriefingBuilder {
 					.map(vehicle => vehicle.shipId)
 					.map(shipId => this.providers.gameObjectProvider.createGameObject(shipId)))
 				.then(ships => ships.map(ship => ship.getTier()))
-				.then(async tiers => ({					
+				.then(async tiers => ({
 					tier: Math.max(...tiers),
 					ownship: (await this.providers.gameObjectProvider.createGameObject(battle.getPlayer().shipId)).getLabel(),
 					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()] 				
 				}))
 				.then(battleinfo => {
+					throw new Error('ERR')
 					briefing.battleinfo = battleinfo;
 					briefing.html = renderBriefing(briefing);
 					briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
@@ -123,9 +123,9 @@ export default class BriefingBuilder {
 				.catch(err => {
 					rootlog.error(`Could not create briefing: ${err.message}`);
 
-					// TODO: Replace this with a nicer version
-					briefing.html = 'Oh no! Something terrible happened: ' + err.message;
-					briefing.css = '';
+					// @todo: Replace this with a nicer version
+					briefing.html = pug.renderFile(join(dirname(fileURLToPath(import.meta.url)), 'error.pug'), err);
+					briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'error.scss')).css;
 					return briefing;
 				})
 				.then(briefing => {
@@ -164,7 +164,7 @@ export default class BriefingBuilder {
 		})).then(() => {
 			rootlog.info(`Created briefing using ${agenda.name ? `agenda ${agenda.name}` : 'unnamed agenda'} in ${Date.now() - t0}ms`);
 			setImmediate(() => briefing.emit(BriefingBuilder.EVT_BRIEFING_FINISH, briefing));
-		});
+		}).catch(err => rootlog.error(`Error while building briefing: ${err}`)); // This should really never happen, because all "dangerous" parts are wrappen in try-catch up above
 
 		return briefing;
 	}
