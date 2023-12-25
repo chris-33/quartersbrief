@@ -9,6 +9,7 @@ import loadData from './init/load.js';
 import PlayerProvider from './providers/playerprovider.js';
 import GameObjectProvider from './providers/gameobjectprovider.js';
 import ArmorProvider from './providers/armorprovider.js';
+import ArmorViewer from './armor/armorviewer.js';
 import Labeler from './model/labeler.js';
 import BattleDataReader from './core/battledatareader.js';
 import SpecificityChooser from './agendas/specificitychooser.js';
@@ -61,7 +62,7 @@ const briefingController = new BriefingController(
 	new BriefingBuilder({
 		gameObjectProvider,
 		playerProvider: new PlayerProvider(config.apiKey, config.realm),
-		armorProvider: new ArmorProvider(path.join(datadir, 'armor'), path.join(paths.CACHE_DIR, 'armor'))
+		armorProvider: new ArmorProvider(path.join(datadir, 'armor'), path.join(paths.CACHE_DIR, 'armor'), new ArmorViewer())
 	}),
 	agendaController
 );
