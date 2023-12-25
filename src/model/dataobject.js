@@ -33,12 +33,8 @@ export function includeOwnPropertiesByDefault(obj) {
 
 export default class DataObject {
 	constructor(data) {
-		Object.defineProperty(this, '_data', {
-			value: data,
-			writable: true,
-			configurable: true,
-			enumerable: false
-		});		
+		// Must not be non-enumerable, otherwise cloning won't work correctly
+		this._data = data;
 	}
 
 	get(key, options) {		
