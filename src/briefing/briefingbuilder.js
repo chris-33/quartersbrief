@@ -114,7 +114,6 @@ export default class BriefingBuilder {
 					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()] 				
 				}))
 				.then(battleinfo => {
-					throw new Error('ERR')
 					briefing.battleinfo = battleinfo;
 					briefing.html = renderBriefing(briefing);
 					briefing.css = sass.compile(join(dirname(fileURLToPath(import.meta.url)), 'briefing.scss')).css;
