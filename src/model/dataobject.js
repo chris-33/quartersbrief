@@ -1,12 +1,4 @@
-import DotNotation from '../util/dotnotation.js';
-import deepequal from 'deep-equal';
-
-export function collate(data) {
-	if (!data.every(item => deepequal(item, data[0])))
-		throw new Error(`Expected all values to be equal while collating but they were not: [${data.join(', ')}]`);
-	// We can just project to the first item, since we just checked that they're all equal anyway
-	return data[0];
-}
+import { compile, get, set, perform } from 'object-selectors';
 
 /**
  * Modifies `obj` so that the `includeOwnProperties` option is enabled by default in `get` and `multiply`. 
@@ -31,61 +23,48 @@ export function includeOwnPropertiesByDefault(obj) {
 	}
 }
 
+/**
+ * Exposes all properties in `properties` on the class's instances. `properties` is a hash from property names to selectors. 
+ * Reading an exposed property will `get` that selector, writing to it will `set` the value on that selector.
+ * @param  {DataObject} cls        The class to expose the property on. Must be a subclass of `DataObject`.
+ * @param  {Object} properties A hash from property names to selectors.
+ * @return {DataObject}            The class that was passed in.
+ * @throws A `TypeError` if `cls` is not a constructor (a function), or not derived from `DataObject`.
+ */
+export function expose(cls, properties) {
+	if (typeof cls !== 'function')
+		throw new TypeError(`Can only expose properties on classes, but got ${typeof cls}`);	
+	if (!(cls.prototype instanceof DataObject))
+		throw new TypeError(`Can only expose properties on classes derived from DataObject, but got ${cls.name || '<anonymous class>'}`);
+
+	for (const property in properties) {
+		const selector = compile(`_data.${properties[property]}`);
+
+		Object.defineProperty(cls.prototype, property, {
+			get: function() { return selector.get(this); },
+			set: function(val) { selector.set(this, val); },
+			enumerable: true
+		});
+	}
+	return cls;
+}
+
 export default class DataObject {
 	constructor(data) {
-		// Must not be non-enumerable, otherwise cloning won't work correctly
-		this._data = data;
+		Object.defineProperty(this, '_data', {
+			value: data,
+			writable: true,
+			configurable: true,
+			enumerable: false
+		});
 	}
 
-	get(key, options) {		
-		options ??= {};
-		options.collate ??= !DotNotation.isComplex(key);
-
-		let targets = [ this._data ];
-		if (options?.includeOwnProperties) targets.push(this);
-
-		// If key is an empty string, return the DataObject itself.
-		if (key === '') return options.collate ? this : [ this ];
-		let path = DotNotation.elements(key);
-		while (path.length > 0) {
-			let currKey = path.shift();
-			targets = targets.flatMap(target => target instanceof DataObject && target !== this ?
-				// Hand off the operation to the target if the target is itself a DataObject 
-				// But only if the target isn't this DataObject itself (happens when options.includeOwnProperties === true)
-				target.get(currKey, { collate: false }) : 
-				// Otherwise, select all properties of the target that match the current key
-				DotNotation.resolve(currKey, target).map(key => target[key]));			
-		}
-
-		if (options.collate) {
-			targets = collate(targets);
-		}
-		return targets;
+	get(key, options) {
+		return get(key, this, options);
 	}
 
 	apply(key, func, options) {
-		let path = DotNotation.elements(key);
-		let prop = path.pop();
-		
-		// Resolve to parent objects for a compound key. 
-		// Otherwise, we are trying to multiply a property that sits directly in this DataObject,
-		// so make the target this._data
-		//
-		// If the includeOwnProperties option is set, we pass this through to the get call, which will
-		// resolve to all parent objects under _data OR under this. If key is not a compound key,
-		// initialize targets to this and this._data
-		let targets = DotNotation.isCompound(key) ? 
-			this.get(DotNotation.join(path), { collate: false, includeOwnProperties: options?.includeOwnProperties }) :
-			options?.includeOwnProperties ? [ this._data, this ] : [ this._data ]
-		// If target is a DataObject (and not this DataObject itself), hand off the function application to it. Otherwise,
-		// apply func to all matching properties.
-		targets = targets.flatMap(target => target instanceof DataObject && target !== this ? 
-				target.apply(prop, func) :
-				DotNotation.resolve(prop, target).map(key => target[key] = func(target[key])));
-
-		if (options?.collate)
-			targets = collate(targets);
-		return targets;		
+		return perform(key, func, this, options);
 	}
 
 	multiply(key, factor, options) {
@@ -97,6 +76,6 @@ export default class DataObject {
 	}
 
 	set(key, value, options) {
-		return this.apply(key, () => value, options);
+		return set(key, this, value, options);
 	}
 }
