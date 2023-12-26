@@ -65,7 +65,7 @@ describe('AgendaController @integration', function() {
 		const MOCK_BATTLE = new Battle();
 
 		before(function() {
-			sinon.stub(MOCK_GAME_OBJECT_FACTORY, 'createGameObject').returns(MOCK_GAME_OBJECT);
+			sinon.stub(MOCK_GAME_OBJECT_FACTORY, 'createGameObject').resolves(MOCK_GAME_OBJECT);
 			sinon.stub(MOCK_BATTLE, 'getPlayer').returns({})
 		});
 

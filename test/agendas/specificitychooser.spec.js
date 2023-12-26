@@ -23,7 +23,7 @@ describe('SpecificityChooser', function() {
 			sinon.stub(ship, getter).returns(SHIP_DATA[prop]);
 		}
 		let gameObjectProvider = new GameObjectProvider();
-		sinon.stub(gameObjectProvider, 'createGameObject').returns(ship);
+		sinon.stub(gameObjectProvider, 'createGameObject').resolves(ship);
 		chooser = new SpecificityChooser(gameObjectProvider);
 	});
 
