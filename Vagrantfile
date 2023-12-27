@@ -67,7 +67,7 @@ Vagrant.configure("2") do |config|
 
   # Install some development tools
   config.vm.provision "shell", name: "Install development tools", inline: <<-SHELL
-    npm install --global grunt-cli 0x
+    npm install --global grunt-cli 0x release-it
   SHELL
 
   # act is a tool to run github actions locally for debugging purposes. 
