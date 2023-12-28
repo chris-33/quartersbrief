@@ -21,7 +21,7 @@ export default class PlayerProvider {
 		designators = designators.filter(designator => !bots.includes(designator));
 
 		const request = new PlayerProvider.PlayerSupplier.Request(this.api);
-		this.supplier.recover = this.supplier.recover.bind(this.supplier, request);
+		this.supplier.recover = PlayerProvider.PlayerSupplier.prototype.recover.bind(this.supplier, request);
 		let result = Promise.all(designators.map(designator => this.supplier.get(designator)));
 		await request.execute();
 
