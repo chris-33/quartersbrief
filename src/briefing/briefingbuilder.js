@@ -104,14 +104,14 @@ export default class BriefingBuilder {
 		briefing.topics = topics;
 		
 		const briefingReady = Promise.all(battle
-					.getVehicles()
+					.vehicles
 					.map(vehicle => vehicle.shipId)
 					.map(shipId => this.providers.gameObjectProvider.createGameObject(shipId)))
-				.then(ships => ships.map(ship => ship.getTier()))
+				.then(ships => ships.map(ship => ship.tier))
 				.then(async tiers => ({
 					tier: Math.max(...tiers),
-					ownship: (await this.providers.gameObjectProvider.createGameObject(battle.getPlayer().shipId)).getLabel(),
-					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()] 				
+					ownship: (await this.providers.gameObjectProvider.createGameObject(battle.player.shipId)).label,
+					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.mapName}`.toUpperCase()] 				
 				}))
 				.then(battleinfo => {
 					briefing.battleinfo = battleinfo;

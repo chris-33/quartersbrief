@@ -10,10 +10,10 @@ import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
  */
 export default class SpecificityChooser {	
 	static POINTS = {
-				ships: 100,
-				classes: 10,
-				tiers: 10,
-				nations: 10		
+		ships: 100,
+		classes: 10,
+		tiers: 10,
+		nations: 10		
 	}
 	static PENALTY = -10000;
 
@@ -47,7 +47,7 @@ export default class SpecificityChooser {
 	 * the ship, or `null` if no agendas matched.
 	 */
 	async choose(battle, agendas) {
-		const ownship = await this.gameObjectProvider.createGameObject(battle.getPlayer().shipId);
+		const ownship = await this.gameObjectProvider.createGameObject(battle.player.shipId);
 
 		return agendas
 			// Map each agenda to an object containing the agenda and all its matchers that matched this battle, if any

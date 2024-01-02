@@ -86,13 +86,13 @@ export default class Topic {
 	 */
 	async getPugData(battle, options) {
 		const teams = {
-			allies: battle.getAllies().map(vehicle => vehicle.shipId),
-			enemies: battle.getEnemies().map(vehicle => vehicle.shipId),
-			player: battle.getPlayer().shipId
+			allies: battle.allies.map(vehicle => vehicle.shipId),
+			enemies: battle.enemies.map(vehicle => vehicle.shipId),
+			player: battle.player.shipId
 		}
 		teams.allies.push(teams.player);
 
-		let ships = battle.getVehicles()
+		let ships = battle.vehicles
 			.map(vehicle => vehicle.shipId)
 			.filter(filters.duplicates)
 			.filter(filters.teams(teams, options?.filter?.teams))

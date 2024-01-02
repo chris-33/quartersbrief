@@ -28,7 +28,7 @@ export default class PlayerProvider {
 		result = (await result)
 			.map(player => new Player(player))
 			.concat(bots.map(bot => Player.createBot(bot)))
-			.map(player => [ player.getName(), player ]);
+			.map(player => [ player.name, player ]);
 
 		return Object.fromEntries(result);
 	}
