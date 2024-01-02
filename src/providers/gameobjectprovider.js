@@ -52,11 +52,11 @@ export default class GameObjectProvider {
 		// Clone the object, providing a special cloning function for contained GameObjects
 		gameObject = clone(gameObject, function cloneGameObject(obj) {
 			if (obj instanceof GameObject)
-				return new obj.constructor(clone(obj._data))
+				return new obj.constructor(clone(obj._data, cloneGameObject))
 			// Returns undefined otherwise, which indicates falling back to default cloning mechanism
 		});
 
-		rootlog.debug(`Retrieved ${gameObject.getType().toLowerCase()} ${gameObject.getName()} in ${Date.now() - t0}ms`);
+		rootlog.debug(`Retrieved ${gameObject.type.toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
 		return gameObject; 
 	}
 }
