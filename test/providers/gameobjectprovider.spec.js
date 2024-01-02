@@ -66,8 +66,9 @@ describe('GameObjectProvider', function() {
 			const gameObject = await gameObjectProvider.createGameObject('PAAA001_Test1');
 			expect(gameObject._data).to
 				.have.property('reference')
-				.that.is.an.instanceOf(Reference)
-				.and.deep.equals(new Reference(REFERENCE_DATA))
+				.that.is.an.instanceOf(Reference);
+			expect(gameObject._data.reference._data)
+				.and.deep.equals(REFERENCE_DATA);
 		});
 	});
 });

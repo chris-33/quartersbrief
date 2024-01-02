@@ -33,11 +33,11 @@ describe('PlayerProvider @end-to-end', function() {
 			let result = await playerProvider.getPlayers([ 'Wiochi', 'starboardwing' ]);
 			expect(result).to.be.an('object')
 			expect(result).to.have.property('Wiochi').that.is.an.instanceof(Player);
-			expect(result.Wiochi.getBattles()).to.be.at.least(1);
-			expect(result.Wiochi.getVictories()).to.be.at.least(1);
+			expect(result.Wiochi.battles).to.be.at.least(1);
+			expect(result.Wiochi.victories).to.be.at.least(1);
 			expect(result).to.have.property('starboardwing').that.is.an.instanceof(Player);
-			expect(result.starboardwing.getBattles()).to.be.at.least(1);
-			expect(result.starboardwing.getVictories()).to.be.at.least(1);
+			expect(result.starboardwing.battles).to.be.at.least(1);
+			expect(result.starboardwing.victories).to.be.at.least(1);
 		});
 	});
 });

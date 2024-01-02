@@ -2,6 +2,18 @@ import * as clauses from '../../src/agendas/clauses.js';
 import DataObject from '../../src/model/dataobject.js';
 
 describe('clauses', function() {
+	before(function() {
+		Object.defineProperty(DataObject.prototype, 'prop', {
+			get: function() { return this._data.prop },
+			set: function(prop) { this._data.prop = prop },
+			enumerable: true,
+			configurable: true
+		});
+	});
+	after(function() {
+		delete DataObject.prototype.prop;
+	});
+
 	describe('has-clause', function() {
 		it('should run the correct comparison on expressions containing a comparator and a value', function() {
 			const OPERATORS = [ '<', '<=', '==', '>=', '>' ];
@@ -48,6 +60,13 @@ describe('clauses', function() {
 				prop1: 'abc',
 				prop2: 5
 			});
+			[ 'prop1', 'prop2' ].forEach(prop => Object.defineProperty(data, prop, {
+				get: function() { return this._data[prop] },
+				set: function(prop) { this._data[prop] = prop },
+				enumerable: true,
+				configurable: true
+			}));
+
 			expect(clauses.has(data, [
 				'prop1 == abc',
 				'prop2 < 6'
@@ -56,6 +75,6 @@ describe('clauses', function() {
 				'prop1 == abc',
 				'prop2 < 5'
 			])).to.be.false;
-		})
+		});
 	});
 });

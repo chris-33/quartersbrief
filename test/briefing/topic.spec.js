@@ -133,8 +133,8 @@ describe('Topic', function() {
 						classes: []
 					}
 				}
-				const ids = battle.getVehicles().map(vehicle => vehicle.shipId);
-				const ships = await Promise.all(battle.getVehicles().map(vehicle => topic.gameObjectProvider.createGameObject(vehicle.shipId)));
+				const ids = battle.vehicles.map(vehicle => vehicle.shipId);
+				const ships = await Promise.all(battle.vehicles.map(vehicle => topic.gameObjectProvider.createGameObject(vehicle.shipId)));
 
 				await topic.getPugData(battle, options);
 				[
@@ -158,14 +158,14 @@ describe('Topic', function() {
 				expect(result).to.have.property('options', options);
 
 				expect(result).to.have.property('teams').that.deep.equals({
-					player: battle.getPlayer().shipId,
-					allies: battle.getAllies().map(vehicle => vehicle.shipId).concat([ battle.getPlayer().shipId ]),
-					enemies: battle.getEnemies().map(vehicle => vehicle.shipId)
+					player: battle.player.shipId,
+					allies: battle.allies.map(vehicle => vehicle.shipId).concat([ battle.player.shipId ]),
+					enemies: battle.enemies.map(vehicle => vehicle.shipId)
 				});
 
 				expect(result).to
 					.have.property('ships')
-					.that.deep.equals(await Promise.all(battle.getVehicles().map(({ shipId }) => topic.gameObjectProvider.createGameObject(shipId))));
+					.that.deep.equals(await Promise.all(battle.vehicles.map(({ shipId }) => topic.gameObjectProvider.createGameObject(shipId))));
 			});
 		});
 
@@ -181,7 +181,7 @@ describe('Topic', function() {
 						classes: []
 					}
 				}
-				const ids = battle.getVehicles().map(vehicle => vehicle.shipId);
+				const ids = battle.vehicles.map(vehicle => vehicle.shipId);
 
 				await topic.getPugData(battle, options);
 				[
@@ -204,12 +204,12 @@ describe('Topic', function() {
 				expect(result).to.have.property('options', options);
 
 				expect(result).to.have.property('teams').that.deep.equals({
-					player: battle.getPlayer().shipId,
-					allies: battle.getAllies().map(vehicle => vehicle.shipId).concat([ battle.getPlayer().shipId ]),
-					enemies: battle.getEnemies().map(vehicle => vehicle.shipId)
+					player: battle.player.shipId,
+					allies: battle.allies.map(vehicle => vehicle.shipId).concat([ battle.player.shipId ]),
+					enemies: battle.enemies.map(vehicle => vehicle.shipId)
 				});
 
-				expect(result).to.have.property('ships').that.deep.equals(battle.getVehicles().map(vehicle => vehicle.shipId));
+				expect(result).to.have.property('ships').that.deep.equals(battle.vehicles.map(vehicle => vehicle.shipId));
 			});
 		});
 	});
