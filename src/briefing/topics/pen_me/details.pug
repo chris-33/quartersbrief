@@ -20,7 +20,7 @@ aside.details(data-details-for=id, class=penned(thickness))
 		- const ordered = Object.values(pens).sort((pen1, pen2) => Math.max(pen2.ammos.he ?? 0, pen2.ammos.sap ?? 0) - Math.max(pen1.ammos.he ?? 0, pen1.ammos.sap ?? 0));
 		each pen in ordered
 			tr
-				td #{pen.ship.getLabel()}
+				td #{pen.ship.label}
 				if pen.ammos.he >= thickness
 					td.pen yes
 				else if pen.ammos.ifhe >= thickness

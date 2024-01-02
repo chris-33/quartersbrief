@@ -4,7 +4,7 @@ block content
 	include details
 
 	- 
-		const caliber = ownship.artillery?.getCaliber();
+		const caliber = ownship.artillery?.caliber;
 		// Creates an overmatch classifier function for the passed ship
 		function classifier(ship) {
 			return (piece, id) => caliber >= Math.ceil(14.3 * ship.get(`hull.armor.${id}`)) ? 'overmatched' : '';
@@ -24,10 +24,10 @@ block content
 
 		div.ships
 			each ship in ships
-				.ship(class=ship.getClass().toLowerCase(), data-details=ship.getName())
-					- const armor = armors[ship.getName()];
+				.ship(class=ship.class.toLowerCase(), data-details=ship.name)
+					- const armor = armors[ship.name];
 					
-					.label #{ship.getLabel()}
+					.label #{ship.label}
 
 					if armor instanceof Error
 						| This armor view could not be created: #{armor.message}

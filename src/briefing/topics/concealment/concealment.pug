@@ -1,5 +1,5 @@
 mixin details(entry)
-	.details-title #{entry.ship.getLabel()}
+	.details-title #{entry.ship.label}
 
 	.details-line
 		span.caption Surface detectability:
@@ -32,19 +32,19 @@ mixin details(entry)
 div
 	each entry in entries
 		- const ship = entry.ship;
-		.ship(data-details=ship.getName(),
+		.ship(data-details=ship.name,
 			class = {
-				"ally": teams.allies.includes(ship.getID()),
-				"enemy": teams.enemies.includes(ship.getID()),
-				"player": teams.player === ship.getID()
+				"ally": teams.allies.includes(ship.id),
+				"enemy": teams.enemies.includes(ship.id),
+				"player": teams.player === ship.id
 			})
 			span.shipbar.label(style=`width: ${(entry.concealment - reduction) * 100/maxConcealment}%`)
-				| #{ship.getLabel()}
-			span.value(class={ "player": ship.getID() === teams.player }) #{entry.concealment.toFixed(2)}
+				| #{ship.label}
+			span.value(class={ "player": ship.id === teams.player }) #{entry.concealment.toFixed(2)}
 			span.unit km
-			aside.details(data-details-for=ship.getName(), class = {
-				"ally": teams.allies.includes(ship.getID()),
-				"enemy": teams.enemies.includes(ship.getID()),
-				"player": teams.player === ship.getID()
+			aside.details(data-details-for=ship.name, class = {
+				"ally": teams.allies.includes(ship.id),
+				"enemy": teams.enemies.includes(ship.id),
+				"player": teams.player === ship.id
 			})
 				+details(entry)

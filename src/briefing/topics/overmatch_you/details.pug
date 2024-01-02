@@ -1,6 +1,6 @@
 mixin details(ship, armor)
-	aside.details.enemy(data-details-for=ship.getName())
-		.details-title #{ship.getLabel()}
+	aside.details.enemy(data-details-for=ship.name)
+		.details-title #{ship.label}
 		
 		- const viewbox = boundingBox(armor)
 		

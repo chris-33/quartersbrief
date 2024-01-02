@@ -1,14 +1,14 @@
 mixin details(participant)
 	.details-title 
-		div #{participant.player.getName()}
+		div #{participant.player.name}
 		div.ship
-			| #{participant.ship.getLabel()}
+			| #{participant.ship.label}
 
 	.details-line
 		span.caption Winrate:
 		span.value
-			| #{(100 * participant.player.getWinrate()).toFixed(2)}
+			| #{(100 * participant.player.winrate).toFixed(2)}
 			span.unit %
 	.details-line
 		span.caption Battles:
-		span.value #{participant.player.getBattles()}
+		span.value #{participant.player.battles}

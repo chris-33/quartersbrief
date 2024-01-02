@@ -49,7 +49,7 @@
 				const ignoredClasses = entry.ship.get('torpedoes.mounts.*.ammoList.*.ignoreClasses', { collate: true });
 				if (ignoredClasses.length === 0)
 					return '';
-				if (ignoredClasses.includes(ownship.getClass()))
+				if (ignoredClasses.includes(ownship.class))
 					return 'favorable'
 				return 'severe';
 			},
@@ -62,7 +62,7 @@
 mixin warningsPanel(entry)
 	.warnings
 		each warning in WARNINGS
-			span(class=warning.severity(entry), data-details=`${entry.ship.getName()}-warning-${warning.name}`) #{warning.symbol}
+			span(class=warning.severity(entry), data-details=`${entry.ship.name}-warning-${warning.name}`) #{warning.symbol}
 	each warning in WARNINGS
-		aside.details.tooltip(data-details-for=`${entry.ship.getName()}-warning-${warning.name}`)
+		aside.details.tooltip(data-details-for=`${entry.ship.name}-warning-${warning.name}`)
 			| #{ warning.tooltip }

@@ -34,13 +34,13 @@ block content
 
 		div.ships
 			each ship in ships
-				.ship(class=ship.getClass().toLowerCase(), data-details=ship.getName())
+				.ship(class=ship.class.toLowerCase(), data-details=ship.name)
 					
-					.label #{ship.getLabel()}
+					.label #{ship.label}
 
 					each view in [ 'side', 'top' ]
 						.armor(class=view)
-							- const armor = armors[ship.getName()][view];
+							- const armor = armors[ship.name][view];
 							if armor instanceof Error
 								div.error This armor view could not be created
 							else
@@ -49,7 +49,7 @@ block content
 									classifier: classifier(ship)
 								})
 
-					+details(ship, armors[ship.getName()])
+					+details(ship, armors[ship.name])
 
 		div.ownguns
 			| Your main artillery penetrates 

@@ -6,8 +6,7 @@ block content
 
 		function penned(piece, id) {
 			const thickness = ownship.get(`hull.armor.${id}`);
-			const crudes = Object.values(pens).filter(pen => pen.ship.getClass() === 'Cruiser' || pen.ship.getClass() === 'Destroyer');
-			debugger
+			const crudes = Object.values(pens).filter(pen => pen.ship.class === 'Cruiser' || pen.ship.class === 'Destroyer');			
 			// Penned by all cruisers and destroyers
 			if (crudes.every(pen => pen.ammos.he >= thickness || pen.ammos.sap >= thickness))
 				return 'all';

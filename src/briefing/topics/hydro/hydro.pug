@@ -17,14 +17,14 @@ if ships.length > 0
 		div.label(style=`left: ${(100 + Math.cos(1/4 * Math.PI) * length(range)) / 2}%; top: ${(100 - Math.sin(1/4 * Math.PI) * length(range)) / 2}%`)
 			each hydro in hydros[range]
 				span.ship(class={
-					"ally": teams.allies.includes(hydro.ship.getID()),
-					"enemy": teams.enemies.includes(hydro.ship.getID())
-				}, data-details=hydro.ship.getName()) #{hydro.ship.getLabel()}
+					"ally": teams.allies.includes(hydro.ship.id),
+					"enemy": teams.enemies.includes(hydro.ship.id)
+				}, data-details=hydro.ship.name) #{hydro.ship.label}
 				br
 				aside.details(class={
-					ally: teams.allies.includes(hydro.ship.getID()),
-					enemy: teams.enemies.includes(hydro.ship.getID())
-				}, data-details-for=hydro.ship.getName())
+					ally: teams.allies.includes(hydro.ship.id),
+					enemy: teams.enemies.includes(hydro.ship.id)
+				}, data-details-for=hydro.ship.name)
 					include details
 	script
 		include layout.js
