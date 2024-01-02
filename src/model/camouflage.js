@@ -22,8 +22,8 @@ export default class Camouflage extends GameObject {
 		
 		if (!this.isPermoflage()) return true;
 
-		let permoflages = ship.getPermoflages();
-		return permoflages.some(permoflage => permoflage.getID() === this.getID());
+		let permoflages = ship.permoflages;
+		return permoflages.some(permoflage => permoflage.id === this.id);
 	}
 
 	/**
@@ -31,7 +31,7 @@ export default class Camouflage extends GameObject {
 	 * @return {boolean} `True` if this camouflage is a permanent camouflage, `false` if it is an expendable one.
 	 */
 	isPermoflage() {
-		return this.get('typeinfo.species') === 'Permoflage';
+		return this.typeinfo.species === 'Permoflage';
 	}
 
 	/**
@@ -41,7 +41,7 @@ export default class Camouflage extends GameObject {
 	 * @see Modifier
 	 */
 	getModifiers() {
-		let modifiers = this.get('modifiers');
+		let modifiers = this._data.modifiers;
 		return Object.keys(modifiers)
 					.flatMap(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);

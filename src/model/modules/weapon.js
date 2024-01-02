@@ -1,5 +1,5 @@
 import { expose } from '../dataobject.js';
-import Module from '../module.js';
+import Module from './module.js';
 import Gun from '../gun.js';
 
 /**

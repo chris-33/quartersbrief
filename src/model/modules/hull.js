@@ -1,4 +1,4 @@
-import Module from '../module.js';
+import Module from './module.js';
 import { expose } from '../dataobject.js';
 
 export default class Hull extends Module {}

@@ -135,8 +135,3 @@ export function getModuleLines(upgradeInfo) {
 	}
 	return moduleLines;
 }
-
-export function discoverModules(type, upgradeInfo) {
-	let moduleLines = getModuleLines(upgradeInfo);
-	return moduleLines[type];
-}

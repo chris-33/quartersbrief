@@ -15,7 +15,7 @@ describe('Battle', function() {
 
 	describe('.getPlayer', function() {
 		it('should return the vehicle with the player ID', function() {
-			expect(battle.getPlayer()).to.deep.equal(TEST_DATA.vehicles[7]);
+			expect(battle.player).to.deep.equal(TEST_DATA.vehicles[7]);
 		});
 
 	});
@@ -23,7 +23,7 @@ describe('Battle', function() {
 	describe('.getAllies', function() {
 		it('should return all vehicles with relation 1', function() {
 			let expected = TEST_DATA.vehicles.filter(vehicle => vehicle.relation === 1);
-			expect(battle.getAllies()).to.be.an('array').with.deep.members(expected);
+			expect(battle.allies).to.be.an('array').with.deep.members(expected);
 		});
 	});
 
@@ -31,7 +31,7 @@ describe('Battle', function() {
 	describe('.getEnemies', function() {
 		it('should return all vehicles with relation 2', function() {
 			let expected = TEST_DATA.vehicles.filter(vehicle => vehicle.relation === 2);
-			expect(battle.getEnemies()).to.be.an('array').with.deep.members(expected);
+			expect(battle.enemies).to.be.an('array').with.deep.members(expected);
 		});
 	});
 });

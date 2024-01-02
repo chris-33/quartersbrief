@@ -1,6 +1,7 @@
-import DataObject from './dataobject.js';
+import DataObject, { expose } from './dataobject.js';
+
 /**
- * This is a thin wrapper around game object definitions as they can be read from
+ * This is the base class for game object definitions as they can be read from
  * `GameParams.data`. 
  *
  * All game objects have a `name`, `index`, and `id` property, as well as a `typeinfo` 
@@ -27,12 +28,14 @@ export default class GameObject extends DataObject {
 	 */
 	static REFERENCE_NAME_REGEX = new RegExp(GameObject.REFERENCE_CODE_REGEX.source.slice(0,-1) + '(?:_\\w+)?$');
 
-	getID() { return this._data.id;	}
-	getName() { return this._data.name; }
-	getNation() { return this._data.typeinfo.nation; }
-	getSpecies() { return this._data.typeinfo.species; }
-	getType() { return this._data.typeinfo.type; }
-	getLabel() { return this._data.label; }
-	getRefCode() { return this._data.index; }
-	getTypeInfo() { return this._data.typeinfo; }
 }
+
+expose(GameObject, {
+	'id': 'id',
+	'name': 'name',
+	'typeinfo': 'typeinfo',
+	'type': 'typeinfo.type',
+	'species': 'typeinfo.species',
+	'nation': 'typeinfo.nation',
+	'label': 'label'
+});

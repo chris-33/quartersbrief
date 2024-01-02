@@ -6,24 +6,20 @@ import clone from 'lodash/cloneDeep.js';
 
 describe('Camouflage', function() {
 	let TEST_DATA;
-	let SHIP_DATA;
 
 	before(function() {
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/camouflage.json'));
-		SHIP_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 	});
 
 	describe('.eligible', function() {
 		let ship;
 
-		beforeEach(function() {
-			ship = new Ship(SHIP_DATA);
-		});
-
 		it('should always consider expendable camouflages eligible', function() {
 			let data = clone(TEST_DATA);
+			ship = Object.create(Ship.prototype);
 			data.typeinfo.species = 'Camouflage';
 			let camouflage = new Camouflage(data);
+
 			expect(camouflage.eligible(ship)).to.be.true;
 		});
 
@@ -32,15 +28,14 @@ describe('Camouflage', function() {
 			data.typeinfo.species = 'Permoflage';
 			let camouflage = new Camouflage(data);
 
-
-			ship = clone(SHIP_DATA);
-			ship.permoflages = [camouflage];
-			ship = new Ship(ship);
+			ship = Object.create(Ship.prototype, {
+				permoflages: { value: [ camouflage ] }
+			});
 			expect(camouflage.eligible(ship)).to.be.true;
 			
-			ship = clone(SHIP_DATA);
-			ship.permoflages = [];
-			ship = new Ship(ship);
+			ship = Object.create(Ship.prototype, {
+				permoflages: { value: [] }
+			});
 			expect(camouflage.eligible(ship)).to.be.false;
 		});
 	});

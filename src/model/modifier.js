@@ -27,8 +27,8 @@ import Ship from '../model/ship.js';
 export default class Modifier {
 	static DEFAULT_DESCRIPTOR = {
 		calc: (ship, baseValue) => 
-			typeof baseValue === 'object' && ship.getClass() in baseValue ? 
-			baseValue[ship.getClass()] : 
+			typeof baseValue === 'object' && ship.class in baseValue ? 
+			baseValue[ship.class] : 
 			baseValue,
 		mode: 'multiply'
 	}
@@ -70,7 +70,7 @@ export default class Modifier {
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 		healthPerLevel: { // Skill 25 DefenseHp
 			target: 'hull.health',
-			calc: (ship, baseValue) => ship.getTier() * Modifier.DEFAULT_DESCRIPTOR.calc(ship, baseValue),
+			calc: (ship, baseValue) => ship.tier * Modifier.DEFAULT_DESCRIPTOR.calc(ship, baseValue),
 			mode: 'add'
 		},
 	}

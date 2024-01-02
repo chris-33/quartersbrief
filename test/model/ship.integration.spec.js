@@ -25,15 +25,6 @@ describe('Ship @integration', function() {
 		};
 	});
 
-	before(function() {
-		exposedFlavorProperties = Consumable.EXPOSED_FLAVOR_PROPERTIES;
-		Consumable.EXPOSED_FLAVOR_PROPERTIES = Object.keys(CONSUMABLE_DATA.PCY001_Consumable1.Flavor1);
-	});
-
-	after(function() {
-		Consumable.EXPOSED_FLAVOR_PROPERTIES = exposedFlavorProperties;
-	});
-
 	beforeEach(function() {
 		const files = {};
 		for (let obj of Object.values(TEST_DATA)) {
@@ -60,11 +51,10 @@ describe('Ship @integration', function() {
 		it('should be a hash of all consumables, with the consumableType as the key', function() {
 			for (let consumableName in CONSUMABLE_DATA) {
 				let consumable = CONSUMABLE_DATA[consumableName];
-				const expected = new Consumable(consumable);
-				expected.setFlavor('Flavor1');
-				expect(ship.consumables, consumable.Flavor1.consumableType).to
-					.have.property(consumable.Flavor1.consumableType)
-					.that.deep.equals(expected);
+				Object.assign(consumable, consumable.Flavor1);
+
+				expect(ship.consumables, consumable.consumableType).to.have.property(consumable.consumableType);
+				expect(ship.consumables[consumable.consumableType]._data).to.deep.equal(consumable);
 			}
 		});
 	});

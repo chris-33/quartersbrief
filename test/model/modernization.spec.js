@@ -15,17 +15,17 @@ describe('Modernization', function() {
 		SHIP_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 	});
 
-	it('should be a GameObject', function() {
-		expect(new GameObject({})).to
-			.be.an.instanceof(GameObject);
-	});
-
 	describe('.eligible', function() {
 		let ship;
 		let data;
 
 		before(function() {
-			ship = new Ship(SHIP_DATA);	
+			ship = Object.create(Ship.prototype, {
+				name: { value: 'PAAA001_Test1' },
+				tier: { value: 8 },
+				class: { value: 'Battleship' },
+				nation: { value: 'USA' },
+			});//new Ship(SHIP_DATA);	
 		});
 
 		beforeEach(function() {
@@ -34,43 +34,38 @@ describe('Modernization', function() {
 
 		it('should always find modernizations with slot -1 ineligible', function() {
 			data.slot = -1;
-			expect(new Modernization(data).eligible(ship)).to
-				.be.false;
+			expect(new Modernization(data).eligible(ship)).to.be.false;
 		});
 
 		it('should always find whitelisted ships eligible', function() {
-			data.ships = [ ship.getName() ];
+			data.ships = [ ship.name ];
 			data.shiplevel = [];
 			data.shiptype = [];
-			expect(new Modernization(data).eligible(ship)).to
-				.be.true;
+
+			expect(new Modernization(data).eligible(ship)).to.be.true;
 		});
 
 		it('should always find blacklisted ships ineligible', function() {
-			data.excludes = [ ship.getName() ];
-			expect(new Modernization(data).eligible(ship)).to
-				.be.false;
+			data.excludes = [ ship.name ];
+
+			expect(new Modernization(data).eligible(ship)).to.be.false;
 		});
 
-		it('should find a ship whose tier, nation and type match eligible', function() {
-			expect(new Modernization(data).eligible(ship)).to
-				.be.true;
+		it('should find a ship whose tier, nation and type match eligible', function() {			
+			expect(new Modernization(data).eligible(ship)).to.be.true;
 		});
 
 		it('should find a ship whose tier, nation, or type do not match ineligible', function() {
-			data.shiplevel = [9,10];
-			expect(new Modernization(data).eligible(ship)).to
-				.be.false;
+			data.shiplevel = [ 9, 10 ];
+			expect(new Modernization(data).eligible(ship)).to.be.false;
 
-			data.shiplevel.push[8];
+			data.shiplevel = [ 8 ];
 			data.nation = ['Germany'];
-			expect(new Modernization(data).eligible(ship)).to
-				.be.false;
+			expect(new Modernization(data).eligible(ship)).to.be.false;
 
 			data.nation = [];
 			data.shiptype = ['Destroyer'];
-			expect(new Modernization(data).eligible(ship)).to
-				.be.false;
+			expect(new Modernization(data).eligible(ship)).to.be.false;
 		});
 	});
 
