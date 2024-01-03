@@ -39,7 +39,7 @@ block content
 						each ship in ships
 							tr
 								td.label #{ship.label}
-								td.value #{ship.artillery.getCaliber()}
+								td.value #{ship.artillery.caliber}
 									span.unit mm
 						else
 							.message(class=cls.slice(0, -1)) There are no #{cls} in this battle
