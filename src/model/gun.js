@@ -5,7 +5,7 @@ import { get } from 'object-selectors';
 export default class Gun extends GameObject {
 	get ammos() {
 		let ammos = {};
-		get('ammoList.*', this).forEach(ammo => ammos[ammo.ammoType] = ammo);
+		get('ammoList.*', this._data).forEach(ammo => ammos[ammo.ammoType] = ammo);
 		return ammos;
 	}
 }
