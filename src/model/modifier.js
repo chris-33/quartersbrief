@@ -62,7 +62,7 @@ export default class Modifier {
 		torpedoSpeedMultiplier: 'torpedoes.mounts.*.ammos.*.speed', // PCM070_Torpedo_Mod_IV, Skill 24 Swift Fish
 		sonarWorkTimeCoeff: 'consumables.sonar.workTime', // PCM041_SonarSearch_Mod_I, Skill 6 ConsumablesDuration
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
-		ConsumablesWorkTime: 'consumables.*.workTime', // PCM072_AbilityWorktimeBoost_Mod_I
+		ConsumablesWorkTime: 'consumables.*[workTime].workTime', // PCM072_AbilityWorktimeBoost_Mod_I
 		// Everything up to PCM035_SteeringGear_Mod_III
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 		healthPerLevel: { // Skill 25 DefenseHp
@@ -133,7 +133,7 @@ export default class Modifier {
 		let value = this.calc(ship, this.value);
 		if (typeof value !== 'number') throw new TypeError(`Modifier value was not a number: ${value}`);
 
-		ship[this.mode].call(ship, this.target, value, options ?? { collate: false });
+		ship[this.mode].call(ship, this.target, value, options ?? { collate: false, mode: 'lenient' });
 	}
 
 	/** 
