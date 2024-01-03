@@ -17,10 +17,11 @@ export default class HEPenMeTopic extends Topic {
 
 		const shipBuilder = new ShipBuilder(this.gameObjectProvider);
 		const locals = await super.getPugData(battle, options);
-		locals.ships = await Promise.all(locals.ships.filter(ship => 'artillery' in ship)
+		locals.ships = await Promise.all(locals.ships
+			.filter(ship => 'artillery' in ship)
 			.filter(ship => {
-				const ammos = ship.get('artillery.mounts.*.ammoList.*.ammoType');
-				return ammos.includes('HE') || ammos.includes('CS');
+				const ammos = ship.get('artillery.mounts.*.ammos.*.ammoType');
+				return ammos.includes('he') || ammos.includes('sap');
 			})
 			.map(ship => shipBuilder.build(ship, TOP_BUILD)));
 
@@ -30,22 +31,20 @@ export default class HEPenMeTopic extends Topic {
 			top: await this.armorProvider.getArmorView(locals.ownship, 'top'),
 		};
 		
-		locals.pens = {};
-		await Promise.all(locals.ships.map(async ship => {
-			const pen = { ship, caliber: ship.artillery.getCaliber(), ammos: {} };
-			const ammos = ship.get('artillery.mounts.*.ammoList', { collate: true }).filter(ammo => ammo.get('ammoType') !== 'AP');
+		locals.pens = Object.fromEntries(await Promise.all(locals.ships.map(async ship => {
+			const pen = { ship, caliber: ship.artillery.caliber, ammos: {} };
+			const ammos = Object.values(ship.get('artillery.mounts.*.ammos', { collate: true })).filter(ammo => ammo.ammoType !== 'ap');
 			ammos.forEach(ammo => {
-				const piercing = ammo.get(`alphaPiercing${ammo.get('ammoType')}`);
-				let ammoType = ammo.get('ammoType');
-				if (ammoType === 'CS') ammoType = 'SAP';
-				pen.ammos[ammoType.toLowerCase()] = piercing;
+				const piercing = ammo.pen;
+				let ammoType = ammo.ammoType;
+				pen.ammos[ammoType] = piercing;
 			});
 			// Get pen with IFHE:
 			ship = await shipBuilder.build(ship, { skills: [ SKILLS.INERTIA_FUSE_FOR_HE_SHELLS ]});
-			pen.ammos.ifhe = ship.get('artillery.mounts.*.ammoList', { collate: true }).find(ammo => ammo.get('ammoType') === 'HE')?.get('alphaPiercingHE');
+			pen.ammos.ifhe = ship.get('artillery.mounts.*.ammos.he.pen', { collate: true });
 
-			locals.pens[ship.getName()] = pen;			
-		}));
+			return [ ship.name, pen ];
+		})));
 
 		return locals;
 	}
