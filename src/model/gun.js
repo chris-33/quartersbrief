@@ -1,11 +1,13 @@
 import { expose } from './dataobject.js';
 import GameObject from './gameobject.js';
-import { get } from 'object-selectors';
+import { compile } from 'object-selectors';
+
+const AMMO_LIST = compile('ammoList.*');
 
 export default class Gun extends GameObject {
 	get ammos() {
 		let ammos = {};
-		get('ammoList.*', this._data).forEach(ammo => ammos[ammo.ammoType] = ammo);
+		AMMO_LIST.get(this._data).forEach(ammo => ammos[ammo.ammoType] = ammo);
 		return ammos;
 	}
 }
