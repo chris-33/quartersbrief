@@ -32,6 +32,7 @@ export default class GameObject extends DataObject {
 
 expose(GameObject, {
 	'id': 'id',
+	'refcode': 'index',
 	'name': 'name',
 	'typeinfo': 'typeinfo',
 	'type': 'typeinfo.type',
