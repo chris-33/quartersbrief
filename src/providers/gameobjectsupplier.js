@@ -15,7 +15,7 @@ import Camouflage from '../model/camouflage.js';
 import Signal from '../model/signal.js';
 import Gun from '../model/gun.js';
 import Torpedo from '../model/torpedo.js';
-
+import Shell from '../model/shell.js';
 
 const dedicatedlog = rootlog.getLogger('GameObjectSupplier');
 
@@ -80,7 +80,8 @@ GameObjectSupplier.Processors = class {
 		},
 		'Gun': Gun,
 		'Projectile': {
-			'Torpedo': Torpedo
+			'Torpedo': Torpedo,
+			'Artillery': Shell
 		}
 	}
 	
@@ -144,7 +145,7 @@ GameObjectSupplier.Processors = class {
 			].map(compileSelector),
 
 			'Ship': [
-				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand ] },
+				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
 				{ selector: 'defaultCrew', processors: [ expand, convert ] },
 				// Change ship consumables from the format in which they are in the game files [ <consumable reference>, <flavor> ]
