@@ -94,7 +94,7 @@ if ships.length > 0
 					class=radars[range][workTime].flatMap(entry => teamClasses(entry.ship)), 
 					onmouseenter='highlight(this)',
 					onmouseleave='highlight(this)',
-					data-for=radars[range][workTime].map(entry => entry.ship.getName()).join(' '))
+					data-for=radars[range][workTime].map(entry => entry.ship.name).join(' '))
 					
 					path.base(d=`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`)
 					text(x=end.x + 0.25, y=end.y - 0.25) #{workTime}s
