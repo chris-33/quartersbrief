@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
+import DataObject from '../model/dataobject.js';
 import pug from 'pug';
 import * as sass from 'sass';
 import rootlog from 'loglevel';
-import clone from 'lodash/cloneDeep.js';
+import clone from 'lodash/cloneDeepWith.js';
 import * as topics from './topics/index.js';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -143,7 +144,10 @@ export default class BriefingBuilder {
 
 			try {				
 				rendered = await topic.render(
-					clone(battle), // Pass a separate copy of the battle to each topic builder
+					clone(battle, function cloneDataObject(obj) {
+						if (obj instanceof DataObject)
+							return new obj.constructor(clone(obj._data, cloneDataObject))
+					}), // Pass a separate copy of the battle to each topic builder
 					agenda.topics[topicName]
 				);
 
