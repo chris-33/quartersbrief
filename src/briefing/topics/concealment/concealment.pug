@@ -16,13 +16,13 @@ mixin details(entry)
 	.details-line
 		span.caption Smoke firing penalty:
 		span.value
-			| #{entry.ship.get('hull.visibilityCoefGKInSmoke').toFixed(2)}
+			| #{entry.ship.get('hull.concealment.smokeFiring').toFixed(2)}
 			span.unit km
 
 	.details-line
 		span.caption Air detectability:
 		span.value
-			| #{entry.ship.get('hull.visibilityFactorByPlane').toFixed(2)}
+			| #{entry.ship.get('hull.concealment.air').toFixed(2)}
 			span.unit km
 
 //- A constant value that all ship concealments will be reduced by. This reduces bar length and exaggerates concealment differences.
