@@ -5,15 +5,15 @@ export default class WinrateTopic extends Topic {
 	async getPugData(battle, options) {
 		function enrich(participant) {
 			participant.player = players[participant.name];
-			participant.ship = ships.find(ship => ship.getID() === participant.shipId);
+			participant.ship = ships.find(ship => ship.id === participant.shipId);
 		}
 
-		const players = await this.playerProvider.getPlayers(battle.getVehicles().map(vehicle => vehicle.name));
+		const players = await this.playerProvider.getPlayers(battle.vehicles.map(vehicle => vehicle.name));
 
-		const ships = await Promise.all(battle.getVehicles().map(vehicle => this.gameObjectProvider.createGameObject(vehicle.shipId)));
-		const allies = battle.getAllies();
-		allies.push(battle.getPlayer());
-		const enemies = battle.getEnemies();
+		const ships = await Promise.all(battle.vehicles.map(vehicle => this.gameObjectProvider.createGameObject(vehicle.shipId)));
+		const allies = battle.allies;
+		allies.push(battle.player);
+		const enemies = battle.enemies;
 
 		allies.forEach(enrich);
 		enemies.forEach(enrich);
@@ -24,7 +24,7 @@ export default class WinrateTopic extends Topic {
 		return {
 			allies,
 			enemies,
-			player: battle.getPlayer(),
+			player: battle.player,
 			options
 		}
 	}

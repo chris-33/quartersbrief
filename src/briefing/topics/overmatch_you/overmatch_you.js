@@ -14,13 +14,13 @@ export default class OvermatchYouTopic extends Topic {
 
 		locals.ownship = await new ShipBuilder(this.gameObjectProvider).build(locals.teams.player, { modules: 'top' });
 		locals.ships = locals.ships
-			.filter(ship => locals.teams.enemies.includes(ship.getID()))
+			.filter(ship => locals.teams.enemies.includes(ship.id))
 
 		locals.armors = {};
 		await Promise.all(locals.ships.map(ship => this.armorProvider
 			.getArmorView(ship, 'side')
 			.catch(err => err) 
-			.then(armor => locals.armors[ship.getName()] = armor)));
+			.then(armor => locals.armors[ship.name] = armor)));
 
 		return locals;
 	}

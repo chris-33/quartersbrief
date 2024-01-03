@@ -8,9 +8,9 @@ const CONCEALMENT_BUILD = {
 	skills: [ SKILLS.CONCEALMENT_EXPERT ]
 }
 const TORPEDO_BUILD = {
-	modernizations: [ 'PCM014_Torpedo_Mod_III', 'PCM070_Torpedo_Mod_IV', 'PCM057_Special_Mod_I_Shimakaze', 'PCM075_Special_Mod_I_Daring' ],
-	skills: [ SKILLS.SWIFT_FISH, SKILLS.FILL_THE_TUBES, SKILLS.ENHANCED_TORPEDO_EXPLOSIVE_CHARGE, SKILLS.LIQUIDATOR ],
-	signals: [ 'PCEF017_VL_SignalFlag', 'PCEF019_JW1_SignalFlag' ]
+	// modernizations: [ 'PCM014_Torpedo_Mod_III', 'PCM070_Torpedo_Mod_IV', 'PCM057_Special_Mod_I_Shimakaze', 'PCM075_Special_Mod_I_Daring' ],
+	// skills: [ SKILLS.SWIFT_FISH, SKILLS.FILL_THE_TUBES, SKILLS.ENHANCED_TORPEDO_EXPLOSIVE_CHARGE, SKILLS.LIQUIDATOR ],
+	// signals: [ 'PCEF017_VL_SignalFlag', 'PCEF019_JW1_SignalFlag' ]
 }
 
 export default class TorpedoesTopic extends Topic {

@@ -23,7 +23,7 @@ export default class KnifefightingTopic extends Topic {
 			const entry = { ship, base: {}, max: {} };			
 
 			const guns = ship.get('artillery.mounts.*.numBarrels').reduce((prev, curr) => prev + curr, 0);
-			entry.base.health = ship.getHealth();
+			entry.base.health = ship.health;
 			entry.base.reload = ship.get('artillery.mounts.*.shotDelay', { collate: true });
 
 			entry.base.dpm = {};
@@ -36,7 +36,7 @@ export default class KnifefightingTopic extends Topic {
 			entry.base.knifefighting = knifefighting(entry.base);
 
 			await shipBuilder.build(ship, HEALTH_BUILD);
-			entry.max.health = ship.getHealth();
+			entry.max.health = ship.health;
 
 			await shipBuilder.build(ship, DPM_BUILD);
 			entry.max.reload = ship.get('artillery.mounts.*.shotDelay', { collate: true });

@@ -20,7 +20,7 @@ export default class OvermatchMeTopic extends Topic {
 			.filter(ship => 'artillery' in ship)
 			.map(ship => shipBuilder.build(ship, TOP_BUILD)));
 		
-		locals.ships.sort((ship1, ship2) => ship2.artillery.getCaliber() - ship1.artillery.getCaliber());
+		locals.ships.sort((ship1, ship2) => ship2.artillery.caliber - ship1.artillery.caliber);
 
 		locals.ownship = await shipBuilder.build(locals.teams.player, { modules: 'top' });
 		locals.armor = {
