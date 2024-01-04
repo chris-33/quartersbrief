@@ -3,11 +3,11 @@ import Module from './module.js';
 import Gun from '../gun.js';
 
 /**
- * This is the base class for any weapon module. Weapons are any module on a ship that fire projectiles
+ * This is the base class for any armament module. Armaments are any module on a ship that fire projectiles
  * from one or more weapon mounts.
- * For example, torpedo launchers, main and secondary artillery, and depth charge launchers are all weapons.
+ * For example, torpedo launchers, main and secondary artillery, and depth charge launchers are all armaments.
  */
-export default class Weapon extends Module {
+export default class Armament extends Module {
 	get mounts() {
 		return Object.values(this._data).filter(obj => obj instanceof Gun);
 	}
@@ -22,7 +22,7 @@ export default class Weapon extends Module {
 			}, {})
 	}
 }
-expose(Weapon, {
+expose(Armament, {
 	'reload': 'shotDelay'
 });
-Object.defineProperty(Weapon.prototype, 'mounts', { enumerable: true });
+[ 'mounts', 'dpm' ].forEach(prop => Object.defineProperty(Armament.prototype, prop, { enumerable: true }));

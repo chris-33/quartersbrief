@@ -19,7 +19,7 @@ export default class Gun extends GameObject {
 		return result;
 	}
 }
-Object.defineProperty(Gun.prototype, 'ammos', { enumerable: true });
+[ 'ammos', 'dpm' ].forEach(prop => Object.defineProperty(Gun.prototype, prop, { enumerable: true }));
 expose(Gun, {
 	'barrels': 'numBarrels',
 	'position': 'position',

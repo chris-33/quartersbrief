@@ -1,7 +1,7 @@
-import Weapon from './weapon.js';
+import Armament from './armament.js';
 
-export default class Artillery extends Weapon {
+export default class Artillery extends Armament {
 	/** Main artillery caliber in mm. */
 	get caliber() { return 1000 * this.get('mounts.*.caliber', { collate: true }); }
 }
-Object.defineProperty(Artillery.prototype, 'caliber', { enumerable: true });
+[ 'caliber' ].forEach(prop => Object.defineProperty(Artillery.prototype, prop, { enumerable: true }));
