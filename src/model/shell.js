@@ -31,5 +31,5 @@ export default class Shell extends GameObject {
 Object.defineProperty(Shell.prototype, 'ammoType', { enumerable: true });
 Object.defineProperty(Shell.prototype, 'pen', { enumerable: true });
 expose(Shell, {
-	'alphaDamage': 'alphaDamage'
+	'damage': 'alphaDamage'
 });
