@@ -1,6 +1,6 @@
 import Module from './module.js';
 import { expose } from '../dataobject.js';
-import { get, set, compile } from 'object-selectors';
+import { compile } from 'object-selectors';
 
 const
 	VISIBILITY_FACTOR = compile('visibilityFactor'),
