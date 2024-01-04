@@ -11,6 +11,16 @@ export default class Weapon extends Module {
 	get mounts() {
 		return Object.values(this._data).filter(obj => obj instanceof Gun);
 	}
+
+	get dpm() {
+		return this.mounts
+			.map(mount => mount.dpm)
+			.reduce((prev, curr) => {
+				for (let ammoType in curr) 
+					prev[ammoType] = (prev[ammoType] ?? 0) + curr[ammoType]
+				return prev;
+			}, {})
+	}
 }
 expose(Weapon, {
 	'reload': 'shotDelay'
