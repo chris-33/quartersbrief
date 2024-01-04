@@ -41,7 +41,7 @@ export default class HEPenMeTopic extends Topic {
 			});
 			// Get pen with IFHE:
 			ship = await shipBuilder.build(ship, { skills: [ SKILLS.INERTIA_FUSE_FOR_HE_SHELLS ]});
-			pen.ammos.ifhe = ship.get('artillery.mounts.*.ammos.he.pen', { collate: true });
+			pen.ammos.ifhe = ship.get('artillery.mounts.*[ammos.he].ammos.he.pen', { collate: true });
 
 			return [ ship.name, pen ];
 		})));
