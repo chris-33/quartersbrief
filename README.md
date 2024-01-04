@@ -80,7 +80,7 @@ E.g. to debug locally, you can simply run `debug-local-test` from anywhere.
 npm test
 ```
 
-Tests include integration testing that hits the actual live online Wargaming API. These require an API key. This can be provided in three ways:
+Some tests hit the actual live online Wargaming API. These require an API key. This can be provided in three ways:
 
 1. By setting it in the environment variable `WG_APPLICATION_ID`.
 2. By passing it as an argument using `--application_id`. (Note: When using `npm`, you need to add a double hyphen `--` before this option, e.g. `npm test -- --application_id=12345`.)
