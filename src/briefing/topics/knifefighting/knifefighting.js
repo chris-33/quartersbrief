@@ -19,31 +19,24 @@ export default class KnifefightingTopic extends Topic {
 		let shipBuilder = new ShipBuilder(this.gameObjectProvider);
 
 		const locals = await super.getPugData(battle, options);
+		locals.ships = locals.ships.filter(ship => 'artillery' in ship);
+
 		const entries = await Promise.all(locals.ships.map(async ship => {
 			const entry = { ship, base: {}, max: {} };			
 
-			const guns = ship.get('artillery.mounts.*.numBarrels').reduce((prev, curr) => prev + curr, 0);
-			entry.base.health = ship.health;
-			entry.base.reload = ship.get('artillery.mounts.*.shotDelay', { collate: true });
+			entry.base.health = ship.hull.health;
+			entry.base.reload = ship.get('artillery.mounts.*.reload', { collate: true });
 
-			entry.base.dpm = {};
-			ship.get('artillery.mounts.*.ammoList')[0].forEach(ammo => {
-				let ammoType = ammo.get('ammoType').toLowerCase();
-				if (ammoType === 'cs') ammoType = 'sap';
-				entry.base.dpm[ammoType] = ammo.get('alphaDamage') * guns * 60 / entry.base.reload;
-			});
+			entry.base.dpm = ship.get('artillery.dpm');
 			entry.base.dpm.pertinent = Math.max(entry.base.dpm.cs ?? 0, entry.base.dpm.he ?? 0) || entry.base.dpm.ap;
 			entry.base.knifefighting = knifefighting(entry.base);
 
 			await shipBuilder.build(ship, HEALTH_BUILD);
-			entry.max.health = ship.health;
+			entry.max.health = ship.hull.health;
 
 			await shipBuilder.build(ship, DPM_BUILD);
-			entry.max.reload = ship.get('artillery.mounts.*.shotDelay', { collate: true });
-			entry.max.dpm = {};
-			ship.get('artillery.mounts.*.ammoList')[0].forEach(ammo => {
-				entry.max.dpm[ammo.get('ammoType').toLowerCase()] = ammo.get('alphaDamage') * guns * 60 / entry.max.reload;
-			});
+			entry.max.reload = ship.get('artillery.mounts.*.reload', { collate: true });
+			entry.max.dpm = ship.get('artillery.dpm');
 			entry.max.dpm.pertinent = Math.max(entry.max.dpm.cs ?? 0, entry.max.dpm.he ?? 0) || entry.max.dpm.ap;
 			entry.max.knifefighting = knifefighting(entry.max);
 

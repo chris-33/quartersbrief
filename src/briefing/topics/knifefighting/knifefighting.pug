@@ -11,7 +11,7 @@
 		})
 			span.label(data-details = entry.ship.name) #{entry.ship.label}
 			div
-				.shipbar(style=`width: ${100 * entry.max.knifefighting / MAX_VALUE}%;`, data-details = entry.ship.name &nbsp;
+				.shipbar(style=`width: ${100 * entry.max.knifefighting / MAX_VALUE}%;`, data-details = entry.ship.name) &nbsp;
 					//- Only display break-even points if an entry for the player is displayed
 					if playerEntry
 						each subdivision in subdivisions
