@@ -6,7 +6,7 @@
 	}
 
 .details-title
-	| #{entry.ship.getLabel()}
+	| #{entry.ship.label}
 
 each build, index in entry.builds
 	if index > 0
@@ -34,7 +34,7 @@ each build, index in entry.builds
 	each torpedo in build.torpedoes
 		.details-line 
 			.details-caption Torpedo:
-			.details-value #{torpedo.torpedo.getLabel()}
+			.details-value #{torpedo.torpedo.label}
 		.indent
 			.details-line
 				.details-caption Range:
@@ -75,7 +75,7 @@ each build, index in entry.builds
 if (entry.ship.consumables.torpedoReloader)
 	-const reloadBooster = entry.ship.consumables.torpedoReloader;
 	hr
-	.details-line #{reloadBooster.getLabel()}
+	.details-line #{reloadBooster.label}
 	.details-line
 		.details-caption Torpedo reload time:
 		.details-value
@@ -94,7 +94,7 @@ if (entry.ship.consumables.torpedoReloader)
 		- const sameSlot = entry.ship.consumables.getContending('torpedoReloader').asArray().filter(consumable => consumable.consumableType !== 'torpedoReloader');
 		ul
 			each contender in sameSlot
-				li(style=`list-style-image: url(img/consumables/consumable_${contender.getName()}.png);`)
-					| #{contender.getLabel()}
+				li(style=`list-style-image: url(img/consumables/consumable_${contender.name}.png);`)
+					| #{contender.label}
 			else
 				span.no-contenders none

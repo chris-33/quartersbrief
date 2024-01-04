@@ -22,16 +22,16 @@ include params
 .content
 	each entry in entries
 		.ship(class = {
-					"ally": teams.allies.includes(entry.ship.getID()),
-					"enemy": teams.enemies.includes(entry.ship.getID()),
-					"player": teams.player === entry.ship.getID()
+					"ally": teams.allies.includes(entry.ship.id),
+					"enemy": teams.enemies.includes(entry.ship.id),
+					"player": teams.player === entry.ship.id
 		})
 			div 
-				.label(data-details = entry.ship.getName()) #{entry.ship.getLabel()}
+				.label(data-details = entry.ship.name) #{entry.ship.label}
 				+warningsPanel(entry)
 			.diagram
 				//- The length of the bar indicates the range of the torpedoes
-				.shipbar(style=`flex: 0 0 calc(${Math.min(MAX_RANGE, entry.range) * 100 / MAX_RANGE}% - ${MAX_EXPLOSION_SIZE / 2}em)`, data-details = entry.ship.getName())
+				.shipbar(style=`flex: 0 0 calc(${Math.min(MAX_RANGE, entry.range) * 100 / MAX_RANGE}% - ${MAX_EXPLOSION_SIZE / 2}em)`, data-details = entry.ship.name)
 					//- These are in reverse order because flex-direction is set to row-reverse on .shipbar
 					//- (This is to make sure range is always right-aligned, even if speed and tubes are hidden)				
 					
@@ -61,7 +61,7 @@ include params
 					style=`
 						width: calc(1em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)}); 
 						height: calc(1em * ${MIN_EXPLOSION_SIZE + VAR_EXPLOSION_SIZE * damagePercentage(entry.damage)});`, 
-					data-details = entry.ship.getName())
+					data-details = entry.ship.name)
 					
 					div
 						| #{entry.damage > 9999 ? `${(entry.damage / 1000).toFixed(1)}k` : Math.round(entry.damage)}
@@ -69,10 +69,10 @@ include params
 			//- Various warning indicators
 			//- +warningsPanel(entry)
 
-			aside.details(data-details-for=entry.ship.getName(), class = {
-				"ally": teams.allies.includes(entry.ship.getID()),
-				"enemy": teams.enemies.includes(entry.ship.getID()),
-				"player": teams.player === entry.ship.getID()
+			aside.details(data-details-for=entry.ship.name, class = {
+				"ally": teams.allies.includes(entry.ship.id),
+				"enemy": teams.enemies.includes(entry.ship.id),
+				"player": teams.player === entry.ship.id
 			})
 				include details
 

@@ -1,5 +1,6 @@
 import Captain from '../../src/model/captain.js';
 import Ship from '../../src/model/ship.js';
+import { getModuleLines } from '../../src/model/ship-research.js';
 import Modifier from '../../src/model/modifier.js';
 import { readFileSync } from 'fs';
 import clone from 'lodash/cloneDeep.js';
@@ -12,7 +13,9 @@ describe('Captain', function() {
 	let TEST_DATA;
 
 	before(function() {
-		ship = new Ship(JSON.parse(readFileSync('test/model/testdata/ship.json')));		
+		ship = JSON.parse(readFileSync('test/model/testdata/ship.json'));
+		ship.ShipUpgradeInfo = getModuleLines(ship.ShipUpgradeInfo);
+		ship = new Ship(ship);
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/captain.json'));
 
 		classSkills = Captain.CLASS_SKILLS;
@@ -54,7 +57,7 @@ describe('Captain', function() {
 		it('should learn a skill that is provided by number', function() {
 			let skill = 1;
 			captain.learn(skill);
-			skill = captain.skills.find(s => s.getSkillnumber() === skill);
+			skill = captain.skills.find(s => s.skillNumber === skill);
 			expect(captain.learned).to.include(skill);
 		});
 
@@ -71,7 +74,7 @@ describe('Captain', function() {
 			let s1 = captain.skills[0];
 			let s2 = captain.skills[1];
 			expect(captain.learned).to.be.empty;
-			captain.learn([s1, s2.getSkillnumber()]);
+			captain.learn([s1, s2.skillNumber]);
 			expect(captain.learned).to.be.an('array').with.deep.members([s1, s2]);
 		});
 	});
@@ -86,7 +89,7 @@ describe('Captain', function() {
 		});
 
 		it('should return a skill that has been learned before', function() {
-			let skill = new Captain.Skill(captain.get('Skills.BattleshipSkill1'));
+			let skill = new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1);
 			captain.learn(skill);
 			expect(captain.getLearnedForShip(ship)).to.deep.include(skill);
 		});
@@ -114,7 +117,7 @@ describe('Captain', function() {
 			// the values of the other eligiblity traits.
 
 			const data = clone(TEST_DATA);
-			data.CrewPersonality.ships.ships = [ ship.getName() ];
+			data.CrewPersonality.ships.ships = [ ship.name ];
 
 			captain = new Captain(changeTraits(clone(data), {}));
 			expect(captain.eligible(ship), 'ships').to.be.true;
@@ -143,7 +146,7 @@ describe('Captain', function() {
 			captain = new Captain(changeTraits(clone(TEST_DATA), {
 				peculiarity: ['somepeculiarity'],
 				groups: ['somegroup'],
-				nation: [ ship.getNation() ],
+				nation: [ ship.nation ],
 				ships: []
 			}));
 			expect(captain.eligible(ship)).to.be.true;
@@ -159,7 +162,7 @@ describe('Captain', function() {
 			captain = new Captain(changeTraits(clone(TEST_DATA), {
 				peculiarity: ['somepeculiarity'],
 				groups: ['someothergroup'],
-				nation: [ ship.getNation() ],
+				nation: [ ship.nation ],
 				ships: []
 			}));			
 			expect(captain.eligible(ship)).to.be.false;
@@ -167,7 +170,7 @@ describe('Captain', function() {
 			captain = new Captain(changeTraits(clone(TEST_DATA), {
 				peculiarity: ['someotherpeculiarity'],
 				groups: ['somegroup'],
-				nation: [ ship.getNation() ],
+				nation: [ ship.nation ],
 				ships: []
 			}));			
 			expect(captain.eligible(ship)).to.be.false;			
@@ -208,16 +211,16 @@ describe('Captain', function() {
 	describe('Captain.Skill', function() {
 		describe('.eligible', function() {
 			it('should be true for skills that match the ship and false otherwise', function() {
-				let skill = new Captain.Skill(captain.get('Skills.BattleshipSkill1'));
+				let skill = new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1);
 				expect(skill.eligible(ship), 'matching ship').to.be.true;
-				skill = new Captain.Skill(captain.get('Skills.CruiserSkill'));
+				skill = new Captain.Skill(TEST_DATA.Skills.CruiserSkill);
 				expect(skill.eligible(ship), 'non-matching ship').to.be.false;
 			});
 		});
 
 		describe('.getModifiers', function() {
 			it('should return modifier objects only for those modifiers where it is known how to deal with them', function() {
-				let skill = new Captain.Skill(captain.get('Skills.BattleshipSkill1'));
+				let skill = new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1);
 				expect(skill.getModifiers()).to
 					.be.an('array')
 					.with.lengthOf(1);
@@ -226,4 +229,3 @@ describe('Captain', function() {
 	});
 
 });
-

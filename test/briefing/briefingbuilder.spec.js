@@ -116,7 +116,7 @@ describe('BriefingBuilder', function() {
 			const battle1 = MockTopic.prototype.render.firstCall.firstArg;
 			const battle2 = MockTopic.prototype.render.secondCall.firstArg;
 			expect(battle1).to.not.equal(battle2);
-			expect(battle1).to.deep.equal(battle2);
+			expect(battle1._data).to.deep.equal(battle2._data);
 		});
 
 		it('should emit EVT_BRIEFING_TOPIC when a topic has finished rendering', async function() {

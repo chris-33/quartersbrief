@@ -27,8 +27,8 @@ import Ship from '../model/ship.js';
 export default class Modifier {
 	static DEFAULT_DESCRIPTOR = {
 		calc: (ship, baseValue) => 
-			typeof baseValue === 'object' && ship.getClass() in baseValue ? 
-			baseValue[ship.getClass()] : 
+			typeof baseValue === 'object' && ship.class in baseValue ? 
+			baseValue[ship.class] : 
 			baseValue,
 		mode: 'multiply'
 	}
@@ -42,7 +42,7 @@ export default class Modifier {
 	 * only that string.
 	 */
 	static KNOWN_TARGETS = {
-		floodChanceFactor: 'torpedoes.mounts.*.ammoList.*.uwCritical', // Skill 60 Liquidator, PCEF017_VL_SignalFlag, PCEF019_JW1_SignalFlag
+		floodChanceFactor: 'torpedoes.mounts.*.ammos.*.floodChance', // Skill 60 Liquidator, PCEF017_VL_SignalFlag, PCEF019_JW1_SignalFlag
 		// @todo GMRotationSpeed:  // PCM006_MainGun_Mod_II, PCM013_MainGun_Mod_III, PCM034_Guidance_Mod_0
 		// @todo AAAuraDamage // PCM011_AirDefense_Mod_II
 		// @todo AABubbleDamage // PCM011_AirDefense_Mod_II
@@ -51,26 +51,23 @@ export default class Modifier {
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
 		GMPenetrationCoeffHE: 'artillery.mounts.*.ammoList.*.alphaPiercingHE', // Skill 33 HePenetration
 		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
-		GTShotDelay: 'torpedoes.mounts.*.shotDelay', // PCM014_Torpedo_Mod_III, PCM057_Special_Mod_I_Shimakaze, PCM075_Special_Mod_I_Daring, Skill 4 Fill the Tubes
+		GTShotDelay: 'torpedoes.mounts.*.reload', // PCM014_Torpedo_Mod_III, PCM057_Special_Mod_I_Shimakaze, PCM075_Special_Mod_I_Daring, Skill 4 Fill the Tubes
 		// @todo planeVisibilityFactor isn't the visibility BY plane, it's the visibility OF the planes
 		// planeVisibilityFactor: 'hull.visibilityFactorByPlane', // PCM027_ConcealmentMeasures_Mod_I
 		visibilityDistCoeff: [ // PCM027_ConcealmentMeasures_Mod_I, Skill 12 DetectionVisibilityRange
-			'hull.visibilityFactor', 
-			'hull.visibilityFactorByPlane' 
+			'hull.concealment.sea', 
+			'hull.concealment.air' 
 		], 
-		torpedoDamageCoeff: [ // Skill 30 Enhanced Torpedo Explosive Charge
-			'torpedoes.mounts.*.ammoList.*.alphaDamage',
-			'torpedoes.mounts.*.ammoList.*.damage',
-		],
-		torpedoSpeedMultiplier: 'torpedoes.mounts.*.ammoList.*.speed', // PCM070_Torpedo_Mod_IV, Skill 24 Swift Fish
+		torpedoDamageCoeff: 'torpedoes.mounts.*.ammos.*.damage', // Skill 30 Enhanced Torpedo Explosive Charge
+		torpedoSpeedMultiplier: 'torpedoes.mounts.*.ammos.*.speed', // PCM070_Torpedo_Mod_IV, Skill 24 Swift Fish
 		sonarWorkTimeCoeff: 'consumables.sonar.workTime', // PCM041_SonarSearch_Mod_I, Skill 6 ConsumablesDuration
 		rlsWorkTimeCoeff: 'consumables.rls.workTime', // PCM042_RLSSearch_Mod_I, Skill 6 ConsumablesDuration
-		ConsumablesWorkTime: 'consumables.*.workTime', // PCM072_AbilityWorktimeBoost_Mod_I
+		ConsumablesWorkTime: 'consumables.*[workTime].workTime', // PCM072_AbilityWorktimeBoost_Mod_I
 		// Everything up to PCM035_SteeringGear_Mod_III
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 		healthPerLevel: { // Skill 25 DefenseHp
 			target: 'hull.health',
-			calc: (ship, baseValue) => ship.getTier() * Modifier.DEFAULT_DESCRIPTOR.calc(ship, baseValue),
+			calc: (ship, baseValue) => ship.tier * Modifier.DEFAULT_DESCRIPTOR.calc(ship, baseValue),
 			mode: 'add'
 		},
 	}
@@ -136,7 +133,7 @@ export default class Modifier {
 		let value = this.calc(ship, this.value);
 		if (typeof value !== 'number') throw new TypeError(`Modifier value was not a number: ${value}`);
 
-		ship[this.mode].call(ship, this.target, value, options ?? { collate: false });
+		ship[this.mode].call(ship, this.target, value, options ?? { collate: false, mode: 'lenient' });
 	}
 
 	/** 

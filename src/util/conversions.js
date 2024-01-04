@@ -1,5 +1,1 @@
-const conversions = {
-	BWToMeters: bw => bw * 30,
-}
-
-export { conversions };
+export const BW_TO_METERS = 30;

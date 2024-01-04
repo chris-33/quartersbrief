@@ -65,7 +65,7 @@ describe('topic-filters', function() {
 		let ships;
 
 		beforeEach(function() {
-			ships = CLASSES.map(cls => ({ getClass: sinon.stub().returns(cls) }));
+			ships = CLASSES.map(cls => ({ class: cls }));
 		});
 
 		it('should return a function', function() {
@@ -85,8 +85,8 @@ describe('topic-filters', function() {
 			let result = ships.filter(filters.classes(show));
 			
 			expect(result).to.be.an('array');
-			expect(result).to.each.satisfy(ship => show.includes(ship.getClass()));
-			expect(result).to.each.satisfy(ship => !hide.includes(ship.getClass()));
+			expect(result).to.each.satisfy(ship => show.includes(ship.class));
+			expect(result).to.each.satisfy(ship => !hide.includes(ship.class));
 		});
 	});
 
@@ -100,9 +100,9 @@ describe('topic-filters', function() {
 				cls => tiers.flatMap(
 				tier => nations.flatMap(
 				nation => ({
-					getClass: sinon.stub().returns(cls),
-					getTier: sinon.stub().returns(tier),
-					getRefCode: sinon.stub().returns(`P${nation}AA`)
+					class: cls,
+					tier,
+					refcode: `P${nation}AA`
 				}))));
 		});
 
@@ -112,21 +112,21 @@ describe('topic-filters', function() {
 				let before = result.slice(0, index);
 				let after = result.slice(index + 1);
 			
-				expect(before).to.each.satisfy(other => CLASSES.indexOf(other.getClass()) <= CLASSES.indexOf(ship.getClass()));
-				expect(after).to.each.satisfy(other => CLASSES.indexOf(other.getClass()) >= CLASSES.indexOf(ship.getClass()));
+				expect(before).to.each.satisfy(other => CLASSES.indexOf(other.class) <= CLASSES.indexOf(ship.class));
+				expect(after).to.each.satisfy(other => CLASSES.indexOf(other.class) >= CLASSES.indexOf(ship.class));
 			});
 		});
 
 		it('should sort by tier within each class', function() {
 			let result = ships.sort(filters.loadScreenSort);
 			CLASSES.forEach(cls => {
-				let byClass = result.filter(ship => ship.getClass() === cls);
+				let byClass = result.filter(ship => ship.class === cls);
 				byClass.forEach((ship, index) => {
 					let before = byClass.slice(0, index);
 					let after = byClass.slice(index + 1);
 				
-					expect(before).to.each.satisfy(other => other.getTier() >= ship.getTier());
-					expect(after).to.each.satisfy(other => other.getTier() <= ship.getTier());
+					expect(before).to.each.satisfy(other => other.tier >= ship.tier);
+					expect(after).to.each.satisfy(other => other.tier <= ship.tier);
 				});
 			});
 		});
@@ -134,13 +134,13 @@ describe('topic-filters', function() {
 		it('should sort by nation within each tier and class', function() {
 			let result = ships.sort(filters.loadScreenSort);
 			CLASSES.forEach(cls => tiers.forEach(tier => {
-				let byClassAndTier = result.filter(ship => ship.getClass() === cls && ship.getTier() === tier);
+				let byClassAndTier = result.filter(ship => ship.class === cls && ship.tier === tier);
 				byClassAndTier.forEach((ship, index) => {
 					let before = byClassAndTier.slice(0, index);
 					let after = byClassAndTier.slice(index + 1);
 				
-					expect(before).to.each.satisfy(other => other.getRefCode()[1] <= ship.getRefCode()[1]);
-					expect(after).to.each.satisfy(other => other.getRefCode()[1] >= ship.getRefCode()[1]);
+					expect(before).to.each.satisfy(other => other.refcode[1] <= ship.refcode[1]);
+					expect(after).to.each.satisfy(other => other.refcode[1] >= ship.refcode[1]);
 				});
 			}));
 		});

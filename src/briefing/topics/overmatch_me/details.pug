@@ -16,8 +16,8 @@ aside.details(data-details-for=id, class=overmatched(thickness))
 		ul
 			each ship in ships
 				li
-					span.caption #{ship.getLabel()}
-					if ship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)
+					span.caption #{ship.label}
+					if ship.artillery.caliber >= Math.ceil(thickness * 14.3)
 						span.value.overmatch
 							| yes
 					else

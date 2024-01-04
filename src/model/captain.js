@@ -1,4 +1,5 @@
 import GameObject from './gameobject.js';
+import DataObject, { expose } from './dataobject.js';
 import Ship from './ship.js';
 import Modifier from './modifier.js';
 
@@ -134,13 +135,13 @@ export default class Captain extends GameObject {
 	 * on the ship's type (i.e. cruiser, destroyer, ...).
 	 * @param  {Ship} ship The ship for which to get trainable skills
 	 * @return {Skill[]}      The skills which can be trained on this ship.
-	 * @throws Throws a TypeError if `ship` is not a `Ship` or if `ship.getSpecies()` returns a value
+	 * @throws Throws a TypeError if `ship` is not a `Ship` or if `ship.species` is a value
 	 * other than `destroyer`, `cruiser`, `battleship`, `aircarrier`, `submarine` or `auxiliary`.
 	 */
 	getLearnableForShip(ship) {
 		Ship.errorIfNotShip(ship);
 
-		let species = ship.getSpecies();
+		let species = ship.species;
 		if (!Object.keys(Captain.CLASS_SKILLS).includes(species))
 			throw new TypeError(`Unknown ship species ${species}. Could not get trainable skills`);
 
@@ -175,7 +176,7 @@ export default class Captain extends GameObject {
 
 		for (let s of skill) {
 			if (typeof s === 'number')
-				s = this.skills.find(x => x.getSkillnumber() === s);
+				s = this.skills.find(x => x.skillNumber === s);
 
 			if (s && !this.learned.includes(s))
 				this.learned.push(s);			
@@ -193,14 +194,14 @@ export default class Captain extends GameObject {
 		Ship.errorIfNotShip(ship);
 
 		// If there is a whitelist, the ship must be in it
-		if (this.get('CrewPersonality.ships.ships').length > 0)
-			return this.get('CrewPersonality.ships.ships').includes(ship.getName());
+		if (this._data.CrewPersonality.ships.ships.length > 0)
+			return this._data.CrewPersonality.ships.ships.includes(ship.name);
 		
 		// Where a property of CrewPersonality.ships is empty, it won't limit what ships the captain can command,
 		// but if it is set, it must contain the ship's value for that property
-		return (this.get('CrewPersonality.ships.groups').length === 0 || this.get('CrewPersonality.ships.groups').includes(ship.get('group')))
-			&& (this.get('CrewPersonality.ships.nation').length === 0 || this.get('CrewPersonality.ships.nation').includes(ship.getNation()))
-			&& (this.get('CrewPersonality.ships.peculiarity').length === 0 || this.get('CrewPersonality.ships.peculiarity').includes(ship.get('peculiarity')))
+		return (this._data.CrewPersonality.ships.groups.length === 0 || this._data.CrewPersonality.ships.groups.includes(ship.group))
+			&& (this._data.CrewPersonality.ships.nation.length === 0 || this._data.CrewPersonality.ships.nation.includes(ship.nation))
+			&& (this._data.CrewPersonality.ships.peculiarity.length === 0 || this._data.CrewPersonality.ships.peculiarity.includes(ship.peculiarity))
 	}
 
 	/**
@@ -213,9 +214,9 @@ export default class Captain extends GameObject {
 	 * @return {Boolean} `True` if this captain is a default captain, `false` otherwise.
 	 */
 	isDefault() {
-		return this.get('CrewPersonality.peculiarity') === 'default' 
-			&& this.get('CrewPersonality.personName') === ''
-			&& this.get('CrewPersonality.tags').length === 0;
+		return this._data.CrewPersonality.peculiarity === 'default' 
+			&& this._data.CrewPersonality.personName === ''
+			&& this._data.CrewPersonality.tags.length === 0;
 	}
 
 	constructor(data) {
@@ -225,7 +226,7 @@ export default class Captain extends GameObject {
 		this.learned = [];
 		// Turn the skills from the data into an array of Skill objects.
 		// This will also lose the name, but that shouldn't be a problem.
-		this.skills = Object.values(this.get('Skills')).map(skill => new Captain.Skill(skill));
+		this.skills = Object.values(this._data.Skills).map(skill => new Captain.Skill(skill));
 	}
 }
 
@@ -233,11 +234,7 @@ export default class Captain extends GameObject {
  * A single skill that a captain has. Each skill modifies the ship the captain commands. Some skills are conditional: 
  * They only take effect when certain circumstances apply. This is not modeled in this class.
  */
-Captain.Skill = class {
-	constructor(data) {
-		this._data = data;
-	}
-
+Captain.Skill = class extends DataObject {
 	/**
 	 * Indicates whether this skill can be used when commanding the provided ship.
 	 * @param  {Ship} ship The ship for which to check.
@@ -247,7 +244,7 @@ Captain.Skill = class {
 	eligible(ship) {
 		Ship.errorIfNotShip(ship);
 
-		return Captain.CLASS_SKILLS[ship.getSpecies()].includes(this.getSkillnumber());
+		return Captain.CLASS_SKILLS[ship.species].includes(this.skillNumber);
 	}
 
 	/**
@@ -262,6 +259,7 @@ Captain.Skill = class {
 					.flatMap(key => Modifier.from(key, modifiers[key]))
 					.filter(modifier => modifier.target !== undefined && modifier.target !== null);
 	}
-
-	getSkillnumber() { return this._data.skillType; }
 }
+expose(Captain.Skill, {
+	'skillNumber': 'skillType'
+});

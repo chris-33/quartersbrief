@@ -1,25 +1,20 @@
-export default class Battle {
-	constructor(data) {
-		this._data = data;
-	}
+import DataObject, { expose } from './dataobject.js';
 
-	getPlayer() {
+export default class Battle extends DataObject {
+	
+	get player () { 
 		return this._data.vehicles.find(vehicle => vehicle.relation === this._data.playerID);
 	}
 
-	getAllies() {
+	get allies() {
 		return this._data.vehicles.filter(vehicle => vehicle.relation === 1);
 	}
 
-	getEnemies() {
+	get enemies() {
 		return this._data.vehicles.filter(vehicle => vehicle.relation === 2);
 	}
-
-	getVehicles() {
-		return this._data.vehicles;
-	}
-
-	getMapName() {
-		return this._data.mapName;
-	}
 }
+expose(Battle, {
+	'vehicles': 'vehicles',
+	'mapName': 'mapName'
+})

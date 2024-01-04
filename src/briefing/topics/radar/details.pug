@@ -1,6 +1,6 @@
-- const stealthRadarWindow = range - ship.getConcealment() * 1000;
+- const stealthRadarWindow = range - ship.concealment * 1000;
 .details-title
-	| #{ship.getLabel()}
+	| #{ship.label}
 
 .details-line
 	span.caption Range:
@@ -58,7 +58,7 @@ hr
 	- const sameSlot = ship.consumables.getContending('rls').asArray().filter(consumable => consumable.consumableType !== 'rls');
 	ul
 		each contender in sameSlot
-			li(style=`list-style-image: url(img/consumables/consumable_${contender.getName()}.png);`)
-				| #{contender.getLabel()}
+			li(style=`list-style-image: url(img/consumables/consumable_${contender.name}.png);`)
+				| #{contender.label}
 		else
 			span.no-contenders none

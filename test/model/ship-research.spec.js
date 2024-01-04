@@ -1,4 +1,4 @@
-import { getModuleLines, discoverModules } from '../../src/model/ship-research.js';
+import { getModuleLines } from '../../src/model/ship-research.js';
 import { readFileSync } from 'fs';
 import clone from 'lodash/cloneDeep.js';
 
@@ -56,22 +56,5 @@ describe('.getModuleLines', function() {
 
 		expect(result[data.ShipUpgradeInfo.SUO_STOCK.ucType]).to
 			.have.deep.ordered.members([expected.SUO_STOCK, expected.SUO_MIDDLE, expected.SUO_TOP]);
-	});
-});
-
-describe('.discoverModules', function() {
-	let TEST_DATA;
-
-	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
-	});
-
-	it('should return all researchable modules for the specified type', function() {
-		const expected = [
-			TEST_DATA.ShipUpgradeInfo.SUO_STOCK,
-			TEST_DATA.ShipUpgradeInfo.SUO_MIDDLE,
-			TEST_DATA.ShipUpgradeInfo.SUO_TOP
-		];
-		expect(discoverModules(TEST_DATA.ShipUpgradeInfo.SUO_STOCK.ucType, TEST_DATA.ShipUpgradeInfo)).to.have.ordered.deep.members(expected);
 	});
 });

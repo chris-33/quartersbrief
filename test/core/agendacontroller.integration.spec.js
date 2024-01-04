@@ -58,15 +58,15 @@ describe('AgendaController @integration', function() {
 
 	describe('.choose', function() {
 		const MOCK_GAME_OBJECT = {
-			getNation: function() { return 'nation' },
-			getClass: function() { return 'class' }
+			nation: 'nation',
+			class: 'class'
 		};
 		const MOCK_GAME_OBJECT_FACTORY = new GameObjectProvider();
-		const MOCK_BATTLE = new Battle();
+		const MOCK_BATTLE = new Battle({});
 
 		before(function() {
 			sinon.stub(MOCK_GAME_OBJECT_FACTORY, 'createGameObject').resolves(MOCK_GAME_OBJECT);
-			sinon.stub(MOCK_BATTLE, 'getPlayer').returns({})
+			Object.defineProperty(MOCK_BATTLE, 'player', { value: {} });
 		});
 
 		const lessSpecific = {

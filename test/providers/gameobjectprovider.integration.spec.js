@@ -72,7 +72,7 @@ describe('GameObjectProvider @integration', function() {
 				
 				const gameObject = await gameObjectProvider.createGameObject(CONSUMABLE_DATA[designatorType]);
 
-				expect(gameObject).to.deep.equal(new Consumable(CONSUMABLE_DATA));
+				expect(gameObject._data).to.deep.equal(CONSUMABLE_DATA);
 			})
 		);
 
@@ -109,11 +109,10 @@ describe('GameObjectProvider @integration', function() {
 					const ship = Object.assign({}, SHIP_DATA, artillery);
 					populate([ ship, ammo ]);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name)).get('AB1_Artillery.HP_AGM_1.ammoList');
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery.HP_AGM_1._data.ammoList;
 
-					expect(result).to
-						.be.an('array').with.lengthOf(1)
-						.that.deep.includes(new GameObject(ammo));
+					expect(result).to.be.an('array').with.lengthOf(1);
+					expect(result[0]._data).to.deep.equal(ammo);
 				});
 
 				it('should expand inline gun definitions into Gun objects', async function() {
@@ -125,56 +124,17 @@ describe('GameObjectProvider @integration', function() {
 					const ship = Object.assign({}, SHIP_DATA, artillery);
 					populate(ship);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name)).get('AB1_Artillery');
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery;
 
 					expect(result).to
 						.have.property('HP_AGM_1')
-						.that.is.an.instanceOf(Gun)
-						.and.deep.equals(new Gun(artillery.AB1_Artillery.HP_AGM_1));
+						.that.is.an.instanceOf(Gun);
+					expect(result.HP_AGM_1._data).to
+						.deep.equal(artillery.AB1_Artillery.HP_AGM_1);
 				});
 			});
 
-			describe('consumable flavoring @legacy', function() {
-				let exposed;
-				before(function() {
-					exposed = Consumable.EXPOSED_FLAVOR_PROPERTIES;
-					Consumable.EXPOSED_FLAVOR_PROPERTIES = ['prop'];
-				});
-				after(function() {
-					Consumable.EXPOSED_FLAVOR_PROPERTIES = exposed;
-				})
-
-				it('should set the flavor on the consumable', async function() {
-					const abil = [ 'PAAA002_Test2', 'flavor' ];
-					const ship = Object.assign({}, SHIP_DATA, {
-						ShipAbilities: { 
-							AbilitySlot0: {
-								abils: [ abil ]
-							}
-						}
-					});
-					const consumable = {
-						flavor: { prop: 'testproperty' },
-						name: 'PAAA002_Test2',
-						typeinfo: { type: 'Ability' }
-					}
-					const expected = new Consumable(consumable);
-
-					expected.setFlavor('flavor');
-					populate([ ship, consumable ]);
-
-					const result = (await gameObjectProvider.createGameObject(ship.name)).get('ShipAbilities.AbilitySlot0.abils.0');
-
-					expect(result).to.be.an('array').with.lengthOf(2);
-					expect(result[0]).to
-						.be.an.instanceOf(Consumable)
-						.that.deep.equals(expected);
-
-					expect(() => result.prop).to.not.throw();
-				});
-			});
-
-			describe.skip('consumable flavoring', function() {
+			describe('consumable flavoring', function() {
 				it('should copy the flavor properties onto the consumable', async function() {
 					const abil = [ 'PAAA002_Test2', 'flavor' ];
 					const ship = Object.assign({}, SHIP_DATA, {
@@ -191,159 +151,48 @@ describe('GameObjectProvider @integration', function() {
 					}
 					populate([ ship, consumable ]);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name)).get('ShipAbilities.AbilitySlot0.abils.0');
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.ShipAbilities.AbilitySlot0.abils[0];
+
+					expect(result).to.be.an.instanceOf(Consumable);
+					expect(result._data).to.deep.equal(Object.assign({}, consumable, consumable.flavor));
+				});
+			});
+
+			describe('ship research lines', function() {
+				it('should build the ship\'s research tree', async function() {
+					const stock = {
+						canBuy: true,
+						components: {
+							engine: [ 'AB1_Engine' ]
+						},
+						nextShips: [],
+						prev: '',
+						ucType: '_Engine'
+					}
+					const top = {
+						canBuy: true,
+						components: {
+							engine: [ 'AB2_Engine' ]
+						},
+						nextShips: [],
+						prev: 'ENG_STOCK',
+						ucType: '_Engine'
+					}
+					const ship = Object.assign({}, SHIP_DATA, {
+						ShipUpgradeInfo: {
+							ENG_TOP: top,
+							ENG_STOCK: stock,
+						}
+					});
+					populate(ship);
+
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.ShipUpgradeInfo;
 
 					expect(result).to
-						.be.an.instanceOf(Consumable)
-						.that.deep.equals(new Consumable(Object.assign({}, consumable, consumable.flavor)));
+						.be.an('object').with.property('_Engine')
+						.that.is.an('array').with.deep.ordered.members([ stock, top ]);
 				});
 			});
 		});
 	});
-
-
-
-
-
-
-
-
-
-
-
-
-	// 	describe('reference expansion', function() {
-	// 		const target = {
-	// 			id: 1,
-	// 			index: 'PAAA001',
-	// 			name: 'PAAA001_Test1',
-	// 			typeinfo: {
-	// 				type: 'Target'
-	// 			}
-	// 		};
-	// 		const referrer = {
-	// 			id: 2,
-	// 			index: 'PAAA002',
-	// 			name: 'PAAA002_Test2',
-	// 			reference: 'PAAA001_Test1',
-	// 			typeinfo: {
-	// 				type: 'Referrer'
-	// 			}
-	// 		};
-	// 		let expansions;
-	// 		before(function() {
-	// 			expansions = GameObjectProvider.EXPANSIONS;
-	// 			GameObjectProvider.EXPANSIONS = {
-	// 				Referrer: [
-	// 					'reference'
-	// 				]
-	// 			}
-	// 		});
-	// 		after(function() {
-	// 			GameObjectProvider.EXPANSIONS = expansions;
-	// 		});
-
-	// 		it('should expand references to GameObjects', async function() {
-	// 			populate([ referrer, target ]);
-
-	// 			const result = await gameObjectProvider.createGameObject('PAAA002_Test2');
-	// 			expect(result._data).to
-	// 				.have.property('reference')
-	// 				.that.deep.equals(new GameObject(target))
-	// 				.and.is.an.instanceOf(GameObject);
-	// 		});
-
-	// 		it('should "expand" inline references to GameObjects', async function() {
-	// 			const inlineReferrer = {
-	// 				...referrer,
-	// 				reference: target,
-	// 			};
-	// 			populate(inlineReferrer);
-
-	// 			const result = await gameObjectProvider.createGameObject('PAAA002_Test2');
-	// 			expect(result._data).to
-	// 				.have.property('reference')
-	// 				.that.deep.equals(new GameObject(target))
-	// 				.and.is.an.instanceOf(GameObject);
-	// 		});
-
-	// 		it('should throw an error if a reference target could not be retrieved', async function() {
-	// 			// target is missing from disk
-	// 			populate(referrer);
-
-	// 			const result = gameObjectProvider.createGameObject('PAAA002_Test2');
-	// 			return expect(result).to.be.rejected;
-	// 		});
-	// 	});
-
-	// 	describe('conversion', function() {
-	// 		const Type1 = class extends GameObject {};
-	// 		const Type2 = class extends GameObject {};
-
-	// 		let conversions;
-	// 		before(function() {
-	// 			conversions = GameObjectProvider.CONVERSIONS;
-	// 			GameObjectProvider.CONVERSIONS = {
-	// 				'Type1': Type1,
-	// 				'Type2': {
-	// 					'Species1': Type2
-	// 				}
-	// 			}
-	// 		});
-	// 		after(function() {
-	// 			GameObjectProvider.CONVERSIONS = conversions;
-	// 		});
-
-
-	// 		it('should convert objects with an unknown typeinfo.type property to instances of GameObject', async function() {
-	// 			const obj = {
-	// 				id: 1,
-	// 				index: 'PAAA001',
-	// 				name: 'PAAA001_Test1',
-	// 				typeinfo: {
-	// 					type: 'Unknown'
-	// 				}
-	// 			}
-
-	// 			populate(obj);
-
-	// 			const result = await gameObjectProvider.createGameObject(obj.name);
-	// 			expect(result).to.be.an.instanceOf(GameObject);
-	// 		});
-
-	// 		it('should convert into the correct class as per typeinfo.type', async function() {
-	// 			const obj = {
-	// 				id: 1,
-	// 				index: 'PAAA001',
-	// 				name: 'PAAA001_Test1',
-	// 				typeinfo: {
-	// 					type: 'Type1'
-	// 				}
-	// 			}
-
-	// 			populate(obj);
-
-	// 			const result = await gameObjectProvider.createGameObject(obj.name);
-	// 			expect(result).to.be.an.instanceOf(Type1);
-	// 		});
-
-	// 		it('should convert into the correct class as per typeinfo.species if there are several known types for the typeinfo.type', async function() {
-	// 			const obj = {
-	// 				id: 1,
-	// 				index: 'PAAA001',
-	// 				name: 'PAAA001_Test1',
-	// 				typeinfo: {
-	// 					type: 'Type2',
-	// 					species: 'Species1'
-	// 				}
-	// 			}
-
-	// 			populate(obj);
-
-	// 			const result = await gameObjectProvider.createGameObject(obj.name);
-	// 			expect(result).to.be.an.instanceOf(Type2);
-	// 		});
-	// 	});
-	// });
-
 });

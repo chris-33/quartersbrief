@@ -3,16 +3,16 @@ extends ../armortopic
 block content
 	- 
 		const shipsByClass = {
-			battleships: ships.filter(ship => ship.getClass() === 'Battleship'),
-			cruisers: ships.filter(ship => ship.getClass() === 'Cruiser'),
-			destroyers: ships.filter(ship => ship.getClass() === 'Destroyer')
+			battleships: ships.filter(ship => ship.class === 'Battleship'),
+			cruisers: ships.filter(ship => ship.class === 'Cruiser'),
+			destroyers: ships.filter(ship => ship.class === 'Destroyer')
 		};
 
 		function overmatched(piece, id) {
 			const thickness = ownship.get(`hull.armor.${id}`);
-			if (shipsByClass.battleships.every(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
+			if (shipsByClass.battleships.every(battleship => battleship.artillery.caliber >= Math.ceil(thickness * 14.3)))
 				return 'all';
-			else if (shipsByClass.battleships.some(battleship => battleship.artillery.getCaliber() >= Math.ceil(thickness * 14.3)))
+			else if (shipsByClass.battleships.some(battleship => battleship.artillery.caliber >= Math.ceil(thickness * 14.3)))
 				return 'some';
 			else 
 				return 'none';
@@ -38,8 +38,8 @@ block content
 					table
 						each ship in ships
 							tr
-								td.label #{ship.getLabel()}
-								td.value #{ship.artillery.getCaliber()}
+								td.label #{ship.label}
+								td.value #{ship.artillery.caliber}
 									span.unit mm
 						else
 							.message(class=cls.slice(0, -1)) There are no #{cls} in this battle

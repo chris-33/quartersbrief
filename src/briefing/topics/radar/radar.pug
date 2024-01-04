@@ -19,7 +19,7 @@
 	const STEALTH_RADAR_ALMOST = options?.almostThreshold || 0;
 
 	function warningClass(ship, dist) {
-		let concealment = 1000 * ship.getConcealment(); // in meters
+		let concealment = 1000 * ship.concealment; // in meters
 		dist = Number(dist);
 		if (concealment < dist)
 			return "stealthwarn-severe";
@@ -29,11 +29,11 @@
 	}
 	function teamClasses(ship) {
 		let result = [];
-		if (teams.allies.includes(ship.getID()))
+		if (teams.allies.includes(ship.id))
 			result.push('ally');
-		if (teams.enemies.includes(ship.getID()))
+		if (teams.enemies.includes(ship.id))
 			result.push('enemy');
-		if (teams.player === ship.getID())
+		if (teams.player === ship.id)
 			result.push('player');
 		return result;
 	}
@@ -94,7 +94,7 @@ if ships.length > 0
 					class=radars[range][workTime].flatMap(entry => teamClasses(entry.ship)), 
 					onmouseenter='highlight(this)',
 					onmouseleave='highlight(this)',
-					data-for=radars[range][workTime].map(entry => entry.ship.getName()).join(' '))
+					data-for=radars[range][workTime].map(entry => entry.ship.name).join(' '))
 					
 					path.base(d=`M ${start.x} ${start.y} A ${radius} ${radius} 0 0 0 ${end.x} ${end.y}`)
 					text(x=end.x + 0.25, y=end.y - 0.25) #{workTime}s
@@ -113,11 +113,11 @@ if ships.length > 0
 						class=warningClass(ship, range), 
 						onmouseenter='highlight(this)',
 						onmouseleave='highlight(this)',
-						data-details=ship.getName(),
-						data-for=ship.getName())
-						| #{ship.getLabel()}
+						data-details=ship.name,
+						data-for=ship.name)
+						| #{ship.label}
 					br
-					aside.details(class=teamClasses(ship), data-details-for=ship.getName())
+					aside.details(class=teamClasses(ship), data-details-for=ship.name)
 						include details
 	script
 		include highlight.js

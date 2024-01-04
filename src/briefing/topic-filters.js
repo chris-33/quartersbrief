@@ -34,7 +34,7 @@ export function teams(teams, show) {
  */
 export function classes(classes) {
 	classes ??= [];
-	return ship => classes.length === 0 || classes.includes(ship.getClass());
+	return ship => classes.length === 0 || classes.includes(ship.class);
 }
 
 /**
@@ -53,8 +53,8 @@ export function loadScreenSort(ship1, ship2) {
 		'Destroyer': 200,
 		'Submarine': 100
 	}
-	let v1 = classValue[ship1.getClass()] + ship1.getTier();
-	let v2 = classValue[ship2.getClass()] + ship2.getTier();
+	let v1 = classValue[ship1.class] + ship1.tier;
+	let v2 = classValue[ship2.class] + ship2.tier;
 	// Reverse sort order (higher class and tier first)
 	v1 *= -1;
 	v2 *= -1;
@@ -62,8 +62,8 @@ export function loadScreenSort(ship1, ship2) {
 	// If classes and tiers are equal, the game seems to sort them by nation,
 	// according to the second letter of the reference code
 	if (v1 === v2) {
-		v1 = ship1.getRefCode().charCodeAt(1);
-		v2 = ship2.getRefCode().charCodeAt(1);
+		v1 = ship1.refcode.charCodeAt(1);
+		v2 = ship2.refcode.charCodeAt(1);
 	}
 
 	return v1 - v2;

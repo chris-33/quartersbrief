@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
+import DataObject from '../model/dataobject.js';
 import pug from 'pug';
 import * as sass from 'sass';
 import rootlog from 'loglevel';
-import clone from 'lodash/cloneDeep.js';
+import clone from 'lodash/cloneDeepWith.js';
 import * as topics from './topics/index.js';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
@@ -104,14 +105,14 @@ export default class BriefingBuilder {
 		briefing.topics = topics;
 		
 		const briefingReady = Promise.all(battle
-					.getVehicles()
+					.vehicles
 					.map(vehicle => vehicle.shipId)
 					.map(shipId => this.providers.gameObjectProvider.createGameObject(shipId)))
-				.then(ships => ships.map(ship => ship.getTier()))
+				.then(ships => ships.map(ship => ship.tier))
 				.then(async tiers => ({
 					tier: Math.max(...tiers),
-					ownship: (await this.providers.gameObjectProvider.createGameObject(battle.getPlayer().shipId)).getLabel(),
-					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.getMapName()}`.toUpperCase()] 				
+					ownship: (await this.providers.gameObjectProvider.createGameObject(battle.player.shipId)).label,
+					map: this.providers.gameObjectProvider.labeler?.labels[`IDS_${battle.mapName}`.toUpperCase()] 				
 				}))
 				.then(battleinfo => {
 					briefing.battleinfo = battleinfo;
@@ -143,7 +144,10 @@ export default class BriefingBuilder {
 
 			try {				
 				rendered = await topic.render(
-					clone(battle), // Pass a separate copy of the battle to each topic builder
+					clone(battle, function cloneDataObject(obj) {
+						if (obj instanceof DataObject)
+							return new obj.constructor(clone(obj._data, cloneDataObject))
+					}), // Pass a separate copy of the battle to each topic builder
 					agenda.topics[topicName]
 				);
 

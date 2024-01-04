@@ -1,4 +1,4 @@
-import DataObject, { includeOwnPropertiesByDefault } from './dataobject.js';
+import DataObject, { expose } from './dataobject.js';
 import GameObject from './gameobject.js';
 import Modernization from './modernization.js';
 import Captain from './captain.js';
@@ -6,8 +6,7 @@ import Camouflage from './camouflage.js';
 import Signal from './signal.js';
 import Consumable from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
-import { getModuleLines, discoverModules } from './ship-research.js';
-import createModule from './module.js';
+import createModule from './create-module.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
 
@@ -81,6 +80,7 @@ const dedicatedlog = rootlog.getLogger('Ship');
  * @see Ship.gamedata
  */
 export default class Ship extends GameObject {
+
 	/**
 	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
 	 */
@@ -185,8 +185,8 @@ export default class Ship extends GameObject {
 		if (signal && !(signal instanceof Signal)) throw new TypeError(`Expected a Signal but got a ${signal}`);
 
 		// Don't hoist if already hoisted
-		if (this.#signals.some(s => s.getID() === signal.getID())) {
-			rootlog.debug(`Did not hoist signal ${signal.getName()} on ship ${this.getName()} because it was already hoisted`);
+		if (this.#signals.some(s => s.id === signal.id)) {
+			rootlog.debug(`Did not hoist signal ${signal.name} on ship ${this.name} because it was already hoisted`);
 			return;
 		}
 
@@ -194,7 +194,7 @@ export default class Ship extends GameObject {
 			modifier.applyTo(this);
 
 		this.#signals.push(signal);
-		rootlog.debug(`Hoisted signal ${signal.getName()} on ship ${this.getName()}`);
+		rootlog.debug(`Hoisted signal ${signal.name} on ship ${this.name}`);
 	}
 
 	/**
@@ -203,14 +203,14 @@ export default class Ship extends GameObject {
 	 * @param  {Signal} signal The signal to lower.
 	 */
 	lower(signal) {		
-		let index = this.#signals.findIndex(s => s.getID() === signal.getID());
+		let index = this.#signals.findIndex(s => s.id === signal.id);
 		if (index > -1) {			
 			for (let modifier of signal.getModifiers())
 				modifier.invert().applyTo(this);
 
 			this.#signals.splice(index, 1);
 
-			rootlog.debug(`Lowered signal ${signal.getName()} on ship ${this.getName()}`);
+			rootlog.debug(`Lowered signal ${signal.name} on ship ${this.name}`);
 		}
 	}
 
@@ -232,7 +232,7 @@ export default class Ship extends GameObject {
 			throw new TypeError(`Tried to equip ${modernization} but it is not a Modernization`);
 		
 		// Don't equip if already equipped or not eligible
-		if (self.#modernizations.some(equipped => equipped.getName() === modernization.getName()) || !modernization.eligible(self))
+		if (self.#modernizations.some(equipped => equipped.name === modernization.name) || !modernization.eligible(self))
 			return false;
 
 		let modifiers = modernization.getModifiers();
@@ -256,7 +256,7 @@ export default class Ship extends GameObject {
 		
 		
 		// Need to find the modernization by ID first because the object references might not be the same
-		let index = this.#modernizations.findIndex(equipped => equipped.getID() === modernization.getID());
+		let index = this.#modernizations.findIndex(equipped => equipped.id === modernization.id);
 		
 		// Don't equip if already equipped or not eligible
 		if (index === -1)
@@ -303,7 +303,7 @@ export default class Ship extends GameObject {
 	 */
 	equipModules(descriptor) {
 		let self = this;
-		let moduleLines = this.getModuleLines();
+		let moduleLines = this._data.ShipUpgradeInfo;
 
 		// Expand shorthand notations such as descriptor === 'stock' and
 		// descriptor === 'top'
@@ -381,7 +381,7 @@ export default class Ship extends GameObject {
 		let toApply = descriptor.map(retrieve);
 		
 		// Start building the configuration
-		let configuration = {};		
+		let configuration = {};
 		for (let module of toApply) {
 			// For every component definition in every module
 			for (let componentKey in module.components) {
@@ -440,13 +440,12 @@ export default class Ship extends GameObject {
 		signals.forEach(signal => this.hoist(signal));
 	}
 
-	getModuleLines() { return getModuleLines(this.get('ShipUpgradeInfo')); }
 	discoverModules(type) { 
 		// If type is not a ucType, convert it to one.
 		// E.g. if called as discoverModules('torpedoes'), make it discoverModules('_Torpedoes')
 		if (!type.startsWith('_'))
 			type = `_${type[0].toUpperCase()}${type.slice(1)}`;
-		return discoverModules(type, this.get('ShipUpgradeInfo'));
+		return this._data.ShipUpgradeInfo[type];
 	}
 
 	/**
@@ -458,19 +457,10 @@ export default class Ship extends GameObject {
 	 * @return {Object} A hash from consumable type to consumable.
 	 */
 	get consumables() {		
-		return new Ship.Consumables(this.get('ShipAbilities'));
+		return new Ship.Consumables(this._data.ShipAbilities);
 	}
 
-	getClass() { return this.get('typeinfo.species'); }
-	getTier() { return this.get('level'); }
-	/**
-	 * Get a list of permanent camouflages that are mountable on this ship.
-	 * @return {Array} An array of permanent camouflages.
-	 */
-	getPermoflages() { return this.get('permoflages'); }
-	getSpeed() { return this.get('hull.maxSpeed') * (1 - this.get('engine.speedCoef')); }
-	getHealth() { return this.get('hull.health'); }
-	getConcealment() { return this.get('hull.visibilityFactor'); }
+	get speed() { return this.hull.get('maxSpeed') * (1 - this.engine.get('speedCoef')); }
 
 	// @todo Implement the following properties again
 	// ArtilleryRange: function() { return this.get('artillery.maxDist') * this.get('fireControl.maxDistCoef') },
@@ -487,9 +477,17 @@ export default class Ship extends GameObject {
 	 */
 	static errorIfNotShip(ship) { if (!(ship instanceof Ship)) throw new TypeError(`Expected a Ship but got ${ship}`); }
 }
+expose(Ship, {
+	'class': 'typeinfo.species',
+	'tier': 'level',
+	'permoflages': 'permoflages',
+	'group': 'group',
+	'peculiarity': 'peculiarity',
+	// 'health': 'hull.health',
+	// 'concealment': 'hull.visibilityFactor'
+})
 // Make the consumables property enumerable
 Object.defineProperty(Ship.prototype, 'consumables', { enumerable: true });
-includeOwnPropertiesByDefault(Ship.prototype);
 
 /**
  * Helper class that exposes a ship's consumables as a hash from consumable type to the `Consumable` object.
@@ -498,7 +496,7 @@ Ship.Consumables = class extends DataObject {
 	constructor(data) {
 		super(data);
 		this
-			.get('AbilitySlot*.abils.*.0', { collate: false })
+			.get.call(this._data, 'AbilitySlot*.abils.*', { mode: 'lenient' })
 			.forEach(consumable => this[consumable.consumableType] = consumable);
 	}
 
@@ -513,8 +511,8 @@ Ship.Consumables = class extends DataObject {
 		if (consumable instanceof Consumable)
 			consumable = consumable.consumableType;
 		let result = this
-			.get('AbilitySlot*')
-			.find(abilitySlot => abilitySlot.abils.some(abil => abil[0].consumableType === consumable));
+			.get.call(this._data, 'AbilitySlot*')
+			.find(abilitySlot => abilitySlot.abils.some(abil => abil.consumableType === consumable));
 		if (result)
 			return result.slot;
 		else
@@ -530,7 +528,7 @@ Ship.Consumables = class extends DataObject {
 	 */
 	getSlot(slot) {
 		let result = this
-			.get('AbilitySlot*')
+			.get.call(this._data, 'AbilitySlot*')
 			.find(abilitySlot => abilitySlot.slot === slot);
 
 		if (result)
@@ -559,9 +557,6 @@ Ship.Consumables = class extends DataObject {
 	 * @return {Consumable[]} The consumables in this `Ship.Consumables`.
 	 */
 	asArray() {
-		return this.get('AbilitySlot*.abils.*.0');
+		return this.get.call(this._data, 'AbilitySlot*.abils.*', { mode: 'lenient' });
 	}
 }
-includeOwnPropertiesByDefault(Ship.Consumables.prototype);
-
-export { Ship }

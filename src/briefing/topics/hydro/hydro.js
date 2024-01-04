@@ -1,6 +1,6 @@
 import Topic from '../../topic.js';
 import { ShipBuilder } from '../../../util/shipbuilder.js';
-import { conversions } from '../../../util/conversions.js';
+import { BW_TO_METERS } from '../../../util/conversions.js';
 import { SKILLS } from '../../../model/captain.js';
 
 const BASE_BUILD = {
@@ -24,7 +24,7 @@ export default class HydroTopic extends Topic {
 			ship = await shipBuilder.build(ship, BASE_BUILD)
 			// Round range to 50m precision, to avoid drawing separate circles for what is effectively the same range
 			// if ships' consumables' distShip is slightly different (which will be magnified by the conversion to meters)
-			let range = 50 * Math.round(conversions.BWToMeters(ship.consumables.sonar.distShip) / 50);
+			let range = 50 * Math.round(BW_TO_METERS * ship.consumables.sonar.distShip / 50);
 			const hydro = {
 				ship: ship,
 				baseTime: ship.consumables.sonar.workTime,

@@ -8,9 +8,12 @@ import sinon from 'sinon';
 describe('SpecificityChooser', function() {
 	const SHIP_DATA = {
 		name: 'PAAA001_Battleship',
-		class: 'Battleship',
 		tier: 8,
-		nation: 'USA'
+		typeinfo: {
+			type: 'Ship',
+			nation: 'USA',
+			species: 'Battleship',
+		}
 	}
 
 	let chooser;
@@ -18,10 +21,8 @@ describe('SpecificityChooser', function() {
 
 	beforeEach(function() {
 		ship = Object.create(Ship.prototype);
-		for (let prop in SHIP_DATA) {
-			const getter = `get${prop.charAt(0).toUpperCase()}${prop.substring(1)}`;
-			sinon.stub(ship, getter).returns(SHIP_DATA[prop]);
-		}
+		ship._data = SHIP_DATA;
+
 		let gameObjectProvider = new GameObjectProvider();
 		sinon.stub(gameObjectProvider, 'createGameObject').resolves(ship);
 		chooser = new SpecificityChooser(gameObjectProvider);
@@ -39,10 +40,10 @@ describe('SpecificityChooser', function() {
 
 		it('should award the correct points for matching ships, classes, nations, and tiers', function() {			
 			const clauses = {
-				ships: [ ship.getName() ],
-				classes: [ ship.getClass() ],
-				tiers: [ ship.getTier() ],
-				nations: [ ship.getNation() ]
+				ships: [ ship.name ],
+				classes: [ ship.class ],
+				tiers: [ ship.tier ],
+				nations: [ ship.nation ]
 			}
 			for (let clause in clauses)
 				expect(chooser.scoreOf({ [clause]: clauses[clause] }), clause).to
@@ -55,7 +56,7 @@ describe('SpecificityChooser', function() {
 
 		before(function() {
 			battle = new Battle();
-			sinon.stub(battle, 'getPlayer').returns({});
+			Object.defineProperty(battle, 'player', { value: {} });
 		});
 
 		it('should return null if there are no agendas', function() {			

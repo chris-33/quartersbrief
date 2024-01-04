@@ -40,16 +40,16 @@
 			tooltip: `These torpedoes are detected late`
 		}, { 
 			name: 'stealthLaunch', 
-			severity: entry => entry.ship.getConcealment() * 1000 <= entry.range && 'severe', 
+			severity: entry => entry.ship.concealment * 1000 <= entry.range && 'severe', 
 			symbol: '\ue063', // Warning
 			tooltip: `This ship can launch its torpedoes from stealth`
 		}, {
 			name: 'deepwater',
 			severity: entry => {
-				const ignoredClasses = entry.ship.get('torpedoes.mounts.*.ammoList.*.ignoreClasses', { collate: true });
+				const ignoredClasses = entry.ship.get('torpedoes.mounts.*.ammos.*.ignoreClasses');
 				if (ignoredClasses.length === 0)
 					return '';
-				if (ignoredClasses.includes(ownship.getClass()))
+				if (ignoredClasses.includes(ownship.class))
 					return 'favorable'
 				return 'severe';
 			},
@@ -61,8 +61,8 @@
 
 mixin warningsPanel(entry)
 	.warnings
-		each warning in WARNINGS
-			span(class=warning.severity(entry), data-details=`${entry.ship.getName()}-warning-${warning.name}`) #{warning.symbol}
+		each warning in WARNINGS			
+			span(class=warning.severity(entry), data-details=`${entry.ship.name}-warning-${warning.name}`) #{warning.symbol}
 	each warning in WARNINGS
-		aside.details.tooltip(data-details-for=`${entry.ship.getName()}-warning-${warning.name}`)
+		aside.details.tooltip(data-details-for=`${entry.ship.name}-warning-${warning.name}`)
 			| #{ warning.tooltip }

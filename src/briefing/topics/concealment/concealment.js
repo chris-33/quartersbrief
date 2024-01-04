@@ -13,15 +13,14 @@ export default class ConcealmentTopic extends Topic {
 		let shipBuilder = new ShipBuilder(this.gameObjectProvider);
 		
 		const locals = await super.getPugData(battle, options);
-		
 		// Initialize with base build
 		let entries = locals.ships.map(ship => ({
 			ship,
-			baseConcealment: ship.getConcealment()
+			baseConcealment: ship.hull.concealment.sea
 		}));
 		// Apply concealment build
 		locals.ships = await Promise.all(locals.ships.map(ship => shipBuilder.build(ship, CONCEALMENT_BUILD)));
-		locals.ships.forEach((ship, index) => entries[index].concealment = ship.getConcealment())	;
+		locals.ships.forEach((ship, index) => entries[index].concealment = ship.hull.concealment.sea);
 
 		if (options?.filter?.limit) {
 			entries = entries.filter(entry => entry.concealment <= options.filter.limit);

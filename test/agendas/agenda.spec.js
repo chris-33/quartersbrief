@@ -17,17 +17,21 @@ describe('Agenda', function() {
 		let ship;
 
 		beforeEach(function() {
-			ship = new Ship(JSON.parse(readFileSync('test/model/testdata/ship.json')));
+			ship = Object.create(Ship, {
+				'name': { value: 'PAAA001_Test1' },
+				'tier': { value: 8 },
+				'class': { value: 'Battleship' }
+			});
 		});
 
 		it('should return an array of all matchers the ship matches', function() {
 			const matchers = [
 				{
-					classes: [ ship.getClass() ],
-					tiers: [ ship.getTier() ]					
+					classes: [ ship.class ],
+					tiers: [ ship.tier ]					
 				},
 				{
-					ships: [ ship.getName() ]
+					ships: [ ship.name ]
 				}
 			];
 			const agenda = new Agenda(matchers);

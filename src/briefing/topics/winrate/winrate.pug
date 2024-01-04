@@ -1,11 +1,11 @@
 include details
 
 mixin playerName(participant) 
-	.name&attributes(attributes) #{participant.player.getName()}	
+	.name&attributes(attributes) #{participant.player.name}	
 
 mixin playerShip(participant)
 	.ship&attributes(attributes)
-		| #{participant.ship.getLabel()}
+		| #{participant.ship.label}
 
 
 - 
@@ -44,51 +44,51 @@ table
 		- const enemy = enemies[i];
 		tr
 			if ally.player
-				td.ally(class=ally.player.getName() === player.name ? 'player' : '', 
-					class=ally.ship.getClass().toLowerCase(),
-					data-details=ally.player.getName())
+				td.ally(class=ally.player.name === player.name ? 'player' : '', 
+					class=ally.ship.class.toLowerCase(),
+					data-details=ally.player.name)
 					//- +#{}: Dynamically determine mixin name and call it
 					+#{primary}(ally).primary
 					//- +#{}: Dynamically determine mixin name and call it
 					+#{secondary}(ally).secondary
-				td(data-details=ally.player.getName())
-					if ally.player.isBot()
+				td(data-details=ally.player.name)
+					if ally.player.bot
 						.notification Bot
-					else if ally.player.isHidden()
+					else if ally.player.hidden
 						.notification private
 					else
-						.winrate(class=winrateClass(ally.player.getWinrate())) 
-							| #{(100 * ally.player.getWinrate()).toFixed(1)} 
+						.winrate(class=winrateClass(ally.player.winrate)) 
+							| #{(100 * ally.player.winrate).toFixed(1)} 
 							span.unit %
 						.battles 
-							| #{ally.player.getBattles()} 
+							| #{ally.player.battles} 
 							span.unit battles
 						aside.details.ally(
-							class=ally.player.getName() === player.name ? 'player' : '',
-							class=ally.ship.getClass().toLowerCase(),
-							data-details-for=ally.player.getName())
+							class=ally.player.name === player.name ? 'player' : '',
+							class=ally.ship.class.toLowerCase(),
+							data-details-for=ally.player.name)
 							+details(ally)
 			else
 				- console.error(`No result for ally #${ally.name}`);
 				td(colspan=2, style='font-size: 75%; color: red; white-space: normal;')
 					| There was an error getting data for ally #{ally.name}
 			if enemy.player
-				td(data-details=enemy.player.getName())
-					if enemy.player.isBot()
+				td(data-details=enemy.player.name)
+					if enemy.player.bot
 						.notification Bot
-					else if enemy.player.isHidden()
+					else if enemy.player.hidden
 						.notification private
 					else
-						.winrate(class=winrateClass(enemy.player.getWinrate()))
-							| #{(100 * enemy.player.getWinrate()).toFixed(1)}
+						.winrate(class=winrateClass(enemy.player.winrate))
+							| #{(100 * enemy.player.winrate).toFixed(1)}
 							span.unit %
 						.battles 
-							| #{enemy.player.getBattles()} 
+							| #{enemy.player.battles} 
 							span.unit battles
-						aside.details.enemy(class=ally.ship.getClass().toLowerCase(), data-details-for=enemy.player.getName())
+						aside.details.enemy(class=ally.ship.class.toLowerCase(), data-details-for=enemy.player.name)
 							+details(enemy)
-				td.enemy(class=enemy.ship.getClass().toLowerCase(), 
-					data-details=enemy.player.getName())
+				td.enemy(class=enemy.ship.class.toLowerCase(), 
+					data-details=enemy.player.name)
 					//- +#{}: Dynamically determine mixin name and call it
 					+#{primary}(enemy).primary
 					//- +#{}: Dynamically determine mixin name and call it

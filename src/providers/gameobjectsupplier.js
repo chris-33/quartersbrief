@@ -7,6 +7,7 @@ import rootlog from 'loglevel';
 
 import GameObject from '../model/gameobject.js';
 import Ship from '../model/ship.js';
+import { getModuleLines } from '../model/ship-research.js';
 import Modernization from '../model/modernization.js';
 import Consumable from '../model/consumable.js';
 import Captain from '../model/captain.js';
@@ -14,7 +15,7 @@ import Camouflage from '../model/camouflage.js';
 import Signal from '../model/signal.js';
 import Gun from '../model/gun.js';
 import Torpedo from '../model/torpedo.js';
-
+import Shell from '../model/shell.js';
 
 const dedicatedlog = rootlog.getLogger('GameObjectSupplier');
 
@@ -79,7 +80,8 @@ GameObjectSupplier.Processors = class {
 		},
 		'Gun': Gun,
 		'Projectile': {
-			'Torpedo': Torpedo
+			'Torpedo': Torpedo,
+			'Artillery': Shell
 		}
 	}
 	
@@ -143,17 +145,9 @@ GameObjectSupplier.Processors = class {
 			].map(compileSelector),
 
 			'Ship': [
-				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand ] },
+				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
 				{ selector: 'defaultCrew', processors: [ expand, convert ] },
-				{ selector: 'ShipAbilities.AbilitySlot*.abils.*', processors: [
-						async ([ abil, flavor ]) => [ (await expand(abil)), flavor ],
-						([ abil, flavor ]) => {
-							abil.setFlavor(flavor);
-							return [ abil, flavor ]
-						}
-					]},
-/*				
 				// Change ship consumables from the format in which they are in the game files [ <consumable reference>, <flavor> ]
 				// to a Consumable object with the flavor properties copied directly onto the consumable
 				{ selector: 'ShipAbilities.AbilitySlot*.abils.*', processors: [
@@ -165,7 +159,7 @@ GameObjectSupplier.Processors = class {
 						async ([ abil, flavor ]) => Object.assign({}, abil, abil[flavor]), 
 						convert 
 					] },
-*/
+				{ selector: 'ShipUpgradeInfo', processors: [ getModuleLines ]},
 				{ selector: '', processors: [ label, convert ] }
 			].map(compileSelector)			
 		}
