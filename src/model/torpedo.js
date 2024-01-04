@@ -27,7 +27,7 @@ export default class Torpedo extends GameObject {
 expose(Torpedo, {
 	'speed': 'speed',
 	'deepwater': 'isDeepWater',
-	'floodChance': 'uw',
+	'floodChance': 'uwCritical',
 	'visibility': 'visibilityFactor',
 	'ignoredClasses': 'ignoreClasses'
 });
