@@ -17,8 +17,8 @@ export default class Torpedo extends GameObject {
 	set damage(x) {
 		let ratio = x / this.damage;
 
-		ALPHA_DAMAGE.set(this._data, ratio * x);
-		DAMAGE.set(this._data, ratio * x);
+		ALPHA_DAMAGE.perform(alphaDamage => ratio * alphaDamage, this._data);
+		DAMAGE.perform(damage => ratio * damage, this._data);
 	}
 
 	get floodChance() { return UW_CRITICAL.get(this._data) * 100; }
