@@ -1,6 +1,7 @@
 import rootlog from 'loglevel';
 import GameObjectSupplier from './gameobjectsupplier.js';
 import GameObject from '../model/gameobject.js';
+import DataObject from '../model/dataobject.js';
 import clone from 'lodash/cloneDeepWith.js';
 
 
@@ -48,14 +49,19 @@ export default class GameObjectProvider {
 			return null;
 		}
 
-
-		// Clone the object, providing a special cloning function for contained GameObjects
-		gameObject = clone(gameObject, function cloneGameObject(obj) {
-			if (obj instanceof GameObject)
-				return new obj.constructor(clone(obj._data, cloneGameObject))
+		// Clone the object, providing a special cloning function for contained DataObjects	
+		// Cloning needs to preserve internal references, but custom cloning interferes with this.
+		// We therefore need to take care of it ourselves, by keeping a map of known clones.
+		const known = new WeakMap();
+		gameObject = clone(gameObject, function cloneDataObject(obj) {
+			// if (obj === gameObject) console.log(stack)
+			if (obj instanceof DataObject) {
+				if (!known.has(obj))
+					known.set(obj, new obj.constructor(clone(obj._data, cloneDataObject)));
+				return known.get(obj);
+			}
 			// Returns undefined otherwise, which indicates falling back to default cloning mechanism
 		});
-
 		rootlog.debug(`Retrieved ${gameObject.type.toLowerCase()} ${gameObject.name} in ${Date.now() - t0}ms`);
 		return gameObject; 
 	}

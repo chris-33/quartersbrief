@@ -18,10 +18,11 @@ export default class TorpedoesTopic extends Topic {
 		let shipBuilder = new ShipBuilder(this.gameObjectProvider);
 		const locals = await super.getPugData(battle, options);
 		locals.ships = locals.ships.filter(ship => ship.torpedoes)
+		
 		const entries = await Promise.all(locals.ships.map(async ship => {
 			const entry = { 
 				ship,
-				builds: await Promise.all(ship.discoverModules('torpedoes').map(async (module, index) => {
+				builds: await Promise.all(ship.refits.torpedoes.map(async (module, index) => {
 					await shipBuilder.build(ship, { 
 						modules: `torpedoes: ${index}, others: top`,
 						...TORPEDO_BUILD,

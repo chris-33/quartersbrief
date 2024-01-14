@@ -6,7 +6,6 @@ import Camouflage from './camouflage.js';
 import Signal from './signal.js';
 import Consumable from './consumable.js';
 import { arrayIntersect, arrayDifference } from '../util/util.js';
-import createModule from './create-module.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
 
@@ -82,10 +81,6 @@ const dedicatedlog = rootlog.getLogger('Ship');
 export default class Ship extends GameObject {
 
 	/**
-	 * The cached result of getModuleLines, because building module lines is expensive(~50ms).
-	 */
-	#moduleLines;
-	/**
 	 * The already equipped upgrades
 	 */
 	#modernizations;
@@ -111,11 +106,9 @@ export default class Ship extends GameObject {
 	constructor(data, descriptor = 'stock') {
 		super(data);
 
-		let self = this;
-
-		self.#modernizations = [];
-		self.#signals = [];
-		self.equipModules(descriptor);
+		this.#modernizations = [];
+		this.#signals = [];
+		this.equipModules(descriptor);
 	}
 
 	/**
@@ -226,21 +219,19 @@ export default class Ship extends GameObject {
 	 * Throws a `TypeError` if `modernization` is not a `Modernization`.
 	 */
 	equipModernization(modernization) {
-		let self = this;		
-		
 		if (!(modernization instanceof Modernization))
 			throw new TypeError(`Tried to equip ${modernization} but it is not a Modernization`);
 		
 		// Don't equip if already equipped or not eligible
-		if (self.#modernizations.some(equipped => equipped.name === modernization.name) || !modernization.eligible(self))
+		if (this.#modernizations.some(equipped => equipped.name === modernization.name) || !modernization.eligible(this))
 			return false;
 
 		let modifiers = modernization.getModifiers();
 		for (let modifier of modifiers) {
-			modifier.applyTo(self);
+			modifier.applyTo(this);
 		}
 		// Remember that it is already equipped now
-		self.#modernizations.push(modernization);
+		this.#modernizations.push(modernization);
 		return true;
 	}
 
@@ -302,9 +293,6 @@ export default class Ship extends GameObject {
 	 * - Throws `TypeError` if the descriptor does not conform to the above rules.
 	 */
 	equipModules(descriptor) {
-		let self = this;
-		let moduleLines = this._data.ShipUpgradeInfo;
-
 		// Expand shorthand notations such as descriptor === 'stock' and
 		// descriptor === 'top'
 		// Replace human-readable notations such as 'artillery' or 'engine' by
@@ -313,7 +301,7 @@ export default class Ship extends GameObject {
 		// defined explictly.
 		// Throws a TypeError if the descriptor does not contain definitions for
 		// all types in moduleLines unless and there is no 'others' definition
-		function normalize(descriptor) {
+		const normalize = descriptor => {
 			// Expand shorthands
 			if (descriptor === 'stock')
 				descriptor = 'others: stock';
@@ -334,22 +322,22 @@ export default class Ship extends GameObject {
 				throw new TypeError('Malformed descriptor');		
 
 			// Turn all type into ucTypes
-			descriptor = descriptor.map(subdescriptor => 
-					subdescriptor.startsWith('_') ? subdescriptor : '_' + subdescriptor.charAt(0).toUpperCase() + subdescriptor.substring(1)
-			);
+			// descriptor = descriptor.map(subdescriptor => 
+			// 		subdescriptor.startsWith('_') ? subdescriptor : '_' + subdescriptor.charAt(0).toUpperCase() + subdescriptor.substring(1)
+			// );
 
 			// Find an 'others' definition if one exists
-			let others = descriptor.find(subdescriptor => subdescriptor.startsWith('_Others'));
+			let others = descriptor.find(subdescriptor => subdescriptor.startsWith('others'));
 			// Get the types that have not been explicitly defined
 			// This is all the types in module lines minus the ones in descriptor
-			let remainingTypes = arrayDifference(Object.keys(moduleLines), descriptor.map(subdescriptor => subdescriptor.split(':')[0].trim()));
+			let remainingTypes = arrayDifference(Object.keys(this.refits), descriptor.map(subdescriptor => subdescriptor.split(':')[0].trim()));
 			// If an 'others' definition exists, expand it
 			if (others){
 				// Remember what level to set everything to
 				let level = others.split(':')[1].trim();
 				// Take out the 'others' definition, we will replace it now with explicit subdescriptors
 				// for all remaining types
-				descriptor = descriptor.filter(subdescriptor => !subdescriptor.startsWith('_Others')) 
+				descriptor = descriptor.filter(subdescriptor => !subdescriptor.startsWith('others')) 
 				// Construct subdescriptors for all remaining types
 				others = remainingTypes.map(type => type + ': ' + level);
 				// Append to the descriptor definition
@@ -364,11 +352,11 @@ export default class Ship extends GameObject {
 
 		// Helper function to retrieve the module specified by the subdescriptor (type: level) 
 		// from moduleLines
-		function retrieve(subdescriptor) {
+		const retrieve = subdescriptor => {
 			let type = subdescriptor.split(':')[0].trim();
 			let level = subdescriptor.split(':')[1].trim();
 
-			let line = moduleLines[type];			
+			let line = this.refits[type];
 			if (level === 'stock') level = 0;
 			else if (level === 'top') level = line.length - 1;
 			else level = Number(level);
@@ -407,45 +395,15 @@ export default class Ship extends GameObject {
 			if (configuration[componentKey].length > 1)
 				dedicatedlog.warn(`Module descriptor descriptor ${descriptor} did not resolve unambiguously for ${componentKey} of ${this.getName()}. Choosing the first module that fits.`)
 			configuration[componentKey] = configuration[componentKey][0];
-			if (configuration[componentKey])
+			if (configuration[componentKey]) {
 				Object.defineProperty(this, componentKey, {
-					value: createModule(componentKey, this, this._data[configuration[componentKey]]),
+					value: configuration[componentKey],
 					writable: false,
 					configurable: true,
 					enumerable: true
 				});
+			}
 		}
-		this._configuration = configuration;
-
-		// Remember the equipped modernizations, re-initialize to no equipped,
-		// and re-apply them all
-		let modernizations = self.#modernizations;
-		self.#modernizations = [];
-		modernizations.forEach(modernization => self.equipModernization(modernization));
-		// Re-apply the effects of the captain
-		if (self.#captain) {
-			let captain = self.#captain;
-			self.#captain = null;
-			self.setCaptain(captain);
-		}
-		// Re-apply the effects of the camouflage
-		if (self.#camouflage) {
-			let camouflage = self.#camouflage;
-			self.#camouflage = null;
-			self.setCamouflage(camouflage);
-		}
-		// Re-apply the effects of the hoisted signals
-		let signals = this.#signals;
-		this.#signals = [];
-		signals.forEach(signal => this.hoist(signal));
-	}
-
-	discoverModules(type) { 
-		// If type is not a ucType, convert it to one.
-		// E.g. if called as discoverModules('torpedoes'), make it discoverModules('_Torpedoes')
-		if (!type.startsWith('_'))
-			type = `_${type[0].toUpperCase()}${type.slice(1)}`;
-		return this._data.ShipUpgradeInfo[type];
 	}
 
 	/**
@@ -483,8 +441,7 @@ expose(Ship, {
 	'permoflages': 'permoflages',
 	'group': 'group',
 	'peculiarity': 'peculiarity',
-	// 'health': 'hull.health',
-	// 'concealment': 'hull.visibilityFactor'
+	'refits': 'ShipUpgradeInfo'
 })
 // Make the consumables property enumerable
 Object.defineProperty(Ship.prototype, 'consumables', { enumerable: true });
