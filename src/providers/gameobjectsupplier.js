@@ -1,13 +1,11 @@
 import Supplier from './supplier.js';
 import pipe from 'pipe-functions';
 import { compile, perform } from 'object-selectors';
+import * as processors from './processors.js';
 import fs from 'fs/promises';
 import path from 'path';
-import rootlog from 'loglevel';
 
-import GameObject from '../model/gameobject.js';
 import Ship from '../model/ship.js';
-import { getModuleLines } from '../model/ship-research.js';
 import Modernization from '../model/modernization.js';
 import Consumable from '../model/consumable.js';
 import Captain from '../model/captain.js';
@@ -20,8 +18,6 @@ import Shell from '../model/shell.js';
 import Artillery from '../model/modules/artillery.js';
 import Torpedoes from '../model/modules/torpedoes.js';
 import Hull from '../model/modules/hull.js';
-
-const dedicatedlog = rootlog.getLogger('GameObjectSupplier');
 
 export default class GameObjectSupplier extends Supplier {
 
@@ -96,37 +92,8 @@ GameObjectSupplier.Processors = class {
 
 		const label = gameObject => labeler.label(gameObject);
 
-		/*
-		 * Expand the supplied reference into its associated game object.
-		 */
-		const expand = reference => reference != null ? supplier.get(reference) : undefined;
-		/*
-		 * Convert `data` using the constructor specified by the conversion table according to `data.typeinfo.type`.
-		 *
-		 * If `data` is already a GameObject or has no `typeinfo.type`, it will be returned as is.
-		 * If `conversions` has no entry for `data.typeinfo.type`, `GameObject` will be used.
-		 * If the conversion table has more than one conversion entry for the given `typeinfo.type`, the correct one will be chosen
-		 * using `typeinfo.species` (see below). 
-		 */
-		const convert = data => {
-			if (data instanceof GameObject || !(data?.typeinfo?.type)) 
-				return data;
-
-			let logstr = `Converting object ${data.name} of type ${data.typeinfo.type}`;
-
-			let Constructor = GameObjectSupplier.Processors.CONVERSIONS[data.typeinfo.type];
-			if (typeof Constructor === 'object') {
-				logstr += ` and species ${data.typeinfo.species}`;
-				Constructor = Constructor[data.typeinfo.species];
-			}
-
-			if (!Constructor) Constructor = GameObject;
-
-			logstr += ` into a ${Constructor.name}`;
-			dedicatedlog.debug(logstr);
-
-			return new Constructor(data);
-		}
+		const expand = processors.expand.bind(null, supplier);
+		const convert = processors.convert.bind(null, GameObjectSupplier.Processors.CONVERSIONS);
 
 		return {
 			'Ability': [ 
@@ -171,7 +138,7 @@ GameObjectSupplier.Processors = class {
 						async ([ abil, flavor ]) => Object.assign({}, abil, abil[flavor]), 
 						convert 
 					] },
-				{ selector: 'ShipUpgradeInfo', processors: [ getModuleLines ]},
+				{ selector: 'ShipUpgradeInfo', processors: [ processors.buildResearchTree ]},
 				{ selector: 'ShipUpgradeInfo', processors: [
 					// @todo Implement into a single selector once object-selectors passes root information into perform-functions
 					function createModule(research, prop, ctx, root) {
@@ -183,7 +150,7 @@ GameObjectSupplier.Processors = class {
 					}
 				]},
 				{ selector: '::root', processors: [ label, convert ] }
-			].map(compileSelector)			
+			].map(compileSelector)
 		}
 	}
 }

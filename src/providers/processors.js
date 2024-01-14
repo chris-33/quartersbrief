@@ -1,7 +1,38 @@
+import GameObject from '../model/gameobject.js';
+
+/*
+ * Expand the supplied reference into its associated game object.
+ */
+export function expand(supplier, reference) {
+	return reference != null ? supplier.get(reference) : undefined;
+}
+
+/*
+ * Convert `data` using the constructor specified by the conversion table according to `data.typeinfo.type`.
+ *
+ * If `data` is already a GameObject or has no `typeinfo.type`, it will be returned as is.
+ * If `conversions` has no entry for `data.typeinfo.type`, `GameObject` will be used.
+ * If the conversion table has more than one conversion entry for the given `typeinfo.type`, the correct one will be chosen
+ * using `typeinfo.species` (see below). 
+ */
+export function convert(conversions, data) {
+	if (data instanceof GameObject || !(data?.typeinfo?.type)) 
+		return data;
+
+	let Constructor = conversions[data.typeinfo.type];
+	if (typeof Constructor === 'object') {
+		Constructor = Constructor[data.typeinfo.species];
+	}
+
+	if (!Constructor) Constructor = GameObject;
+
+	return new Constructor(data);
+}
+
 /**
  * Calculates the module lines from the passed `upgradeInfo`. 
  */
-export function getModuleLines(upgradeInfo) {
+export function buildResearchTree(upgradeInfo) {
 	/*
 		This algorithm works as follows:
 		It puts all the research definitions from the upgradeInfo into
@@ -26,7 +57,6 @@ export function getModuleLines(upgradeInfo) {
 	// Helper function that returns true if the argument is a research definition
 	function isResearchDefinition(o) {
 		return typeof o === 'object'
-			&& o.hasOwnProperty('components')
 			&& o.hasOwnProperty('prev')
 			&& o.hasOwnProperty('ucType');
 	}		

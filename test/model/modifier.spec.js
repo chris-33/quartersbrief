@@ -1,19 +1,13 @@
 import Modifier from '../../src/model/modifier.js';
 import Ship from '../../src/model/ship.js';
-import { getModuleLines } from '../../src/model/ship-research.js';
-import { readFileSync } from 'fs';
 import clone from 'lodash/cloneDeep.js';
 import sinon from 'sinon';
 
 describe('Modifier', function() {
 	let knownTargets;
-	let SHIPDATA;
 
 	before(function() {
 		knownTargets = Modifier.KNOWN_TARGETS;
-		SHIPDATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));		
-		SHIPDATA.ShipUpgradeInfo = getModuleLines(SHIPDATA.ShipUpgradeInfo);
-
 		Modifier.KNOWN_TARGETS = { 
 			EngineValue: 'engine.value',
 			ArtilleryValue: [

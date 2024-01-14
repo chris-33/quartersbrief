@@ -1,11 +1,20 @@
 import Captain from '../../src/model/captain.js';
 import Ship from '../../src/model/ship.js';
-import { getModuleLines } from '../../src/model/ship-research.js';
 import Modifier from '../../src/model/modifier.js';
 import { readFileSync } from 'fs';
 import clone from 'lodash/cloneDeep.js';
 
 describe('Captain', function() {
+	const SHIP = {
+		name: 'PAAA001_Battleship',
+		index: 'PAAA001',
+		id: 1,
+		level: 8,
+		typeinfo: { 
+			species: 'Battleship',
+			type: 'Ship'
+		}
+	}
 	let ship;
 	let captain;
 	let classSkills;
@@ -13,9 +22,10 @@ describe('Captain', function() {
 	let TEST_DATA;
 
 	before(function() {
-		ship = JSON.parse(readFileSync('test/model/testdata/ship.json'));
-		ship.ShipUpgradeInfo = getModuleLines(ship.ShipUpgradeInfo);
-		ship = new Ship(ship);
+		ship = Object.create(Ship.prototype, Object.getOwnPropertyDescriptors({
+			_data: SHIP,
+		}));
+
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/captain.json'));
 
 		classSkills = Captain.CLASS_SKILLS;
