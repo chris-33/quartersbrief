@@ -1,10 +1,10 @@
 import clone from 'lodash/cloneDeep.js';
-import Armament from '../../src/model/modules/armament.js';
-import Gun from '../../src/model/gun.js';
-import Shell from '../../src/model/shell.js';
+import Armament from '../../../src/model/modules/armament.js';
+import Gun from '../../../src/model/gun.js';
+import Shell from '../../../src/model/shell.js';
 
 describe('Armament', function() {
-	const TEST_DATA = {
+	const ARMAMENT = {
 		gun1: { numBarrels: 1, shotDelay: 10 },
 		gun2: { numBarrels: 2, shotDelay: 10 }
 	}
@@ -12,16 +12,16 @@ describe('Armament', function() {
 	let guns;
 
 	beforeEach(function() {
-		const data = clone(TEST_DATA);			
+		const data = clone(ARMAMENT);			
 		data.gun1 = new Gun(data.gun1);
 		data.gun2 = new Gun(data.gun2);		
-		armament = new Armament(null, data);
+		armament = new Armament(data);
 		guns = [ data.gun1, data.gun2 ];
 	});
 
 	it('should have a property mounts with all gun mounts', function() {
 		expect(armament.mounts).to.exist;
-		expect(armament.mounts.map(gun => gun._data)).to.deep.equal([ TEST_DATA.gun1, TEST_DATA.gun2 ]);
+		expect(armament.mounts.map(gun => gun._data)).to.deep.equal([ ARMAMENT.gun1, ARMAMENT.gun2 ]);
 	});
 
 	it('should have a property dpm with the aggregate dpm output of all mounts', function() {

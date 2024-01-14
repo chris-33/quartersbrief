@@ -1,10 +1,16 @@
 import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
+
 import GameObject from '../../src/model/gameobject.js';
 import Consumable from '../../src/model/consumable.js';
 import Gun from '../../src/model/gun.js';
+import Artillery from '../../src/model/modules/artillery.js';
+import Torpedoes from '../../src/model/modules/torpedoes.js';
+import Hull from '../../src/model/modules/hull.js';
+
 import mockfs from 'mock-fs';
 import fs from 'fs';
 import path from 'path';
+import omit from 'lodash/omit.js';
 
 describe('GameObjectProvider @integration', function() {
 	const SOURCEPATH = '/data';
@@ -92,6 +98,7 @@ describe('GameObjectProvider @integration', function() {
 				}
 				it('should expand guns\' ammo defitinions', async function() {
 					const artillery = {
+						// Deliberately not setting typeinfo.species on the gun, so artillery won't be converted to Artillery object
 						AB1_Artillery: {
 							HP_AGM_1: {
 								...GUN,
@@ -117,6 +124,7 @@ describe('GameObjectProvider @integration', function() {
 
 				it('should expand inline gun definitions into Gun objects', async function() {
 					const artillery = {
+						// Deliberately not setting typeinfo.species on the gun, so artillery won't be converted to Artillery object
 						AB1_Artillery: {
 							HP_AGM_1: GUN
 						}
@@ -131,6 +139,77 @@ describe('GameObjectProvider @integration', function() {
 						.that.is.an.instanceOf(Gun);
 					expect(result.HP_AGM_1._data).to
 						.deep.equal(artillery.AB1_Artillery.HP_AGM_1);
+				});
+			});
+
+			describe('module conversion', function() {
+				const FIXTURES = {
+					Artillery: {
+						HP_AGM_1: {
+							ammoList: [],
+							typeinfo: { type: 'Gun', species: 'Main' }
+						}						
+					},
+					Torpedoes: {
+						HP_AGT_1: {
+							typeinfo: { type: 'Gun', species: 'Torpedo' }
+						}						
+					},
+					Hull: {
+						draft: 10
+					}
+				};
+
+				// eslint-disable-next-line mocha/no-setup-in-describe
+				[
+					{ kind: 'Artillery', cls: Artillery },
+					{ kind: 'Torpedoes', cls: Torpedoes },
+					{ kind: 'Hull', cls: Hull }
+				].forEach(({ kind, cls }) =>
+					it(`should convert ${kind[0].toLowerCase() + kind.slice(1)} modules into ${cls.name} objects`, async function() {
+						const ship = Object.assign({}, SHIP_DATA, {
+							[kind]: FIXTURES[kind]
+						});
+						populate(ship);
+
+						const result = (await gameObjectProvider.createGameObject(ship.name))._data;
+
+						expect(result).to.have.property(kind).that.is.an.instanceOf(cls);
+						expect(result[kind]._data).to.not.be.empty;
+					}));					
+
+
+				it('should set ship property on all created modules', async function() {
+					const module0 = {};
+					const module1 = {};
+					const ship = Object.assign({}, SHIP_DATA, {
+						ShipUpgradeInfo: {
+							MOCK_MODULE_TOP: {
+								components: { mockModule: [ 'module0' ] },
+								ucType: '_MockModule',
+								prev: 'MOCK_MODULE_STOCK'
+							},
+							MOCK_MODULE_STOCK: {
+								components: { mockModule: [ 'module1' ] },
+								ucType: '_MockModule',
+								prev: ''
+							}
+						}},
+						{ 
+							module0, 
+							module1 
+						});
+					populate(ship);
+
+					const result = (await gameObjectProvider.createGameObject(ship.name));
+
+					[ 0, 1 ].forEach(i => 
+						expect(result._data.ShipUpgradeInfo).to
+							.have.nested.property(`mockModule[${i}].components.mockModule[0]`)
+							// Strict equality here, because it's important that both the module definition in the ship and the result of the lookup
+							// replacement the processor performed are the same object. 
+							// Otherwise using ShipUpgradeInfo as a target for modifiers would not work.
+							.that.has.property('ship').that.equals(result));
 				});
 			});
 
@@ -159,38 +238,69 @@ describe('GameObjectProvider @integration', function() {
 			});
 
 			describe('ship research lines', function() {
-				it('should build the ship\'s research tree', async function() {
-					const stock = {
-						canBuy: true,
+				let stock, top;
+				beforeEach(function() {
+					stock = {
 						components: {
-							engine: [ 'AB1_Engine' ]
+							mockModule: [ 'module0' ]
 						},
-						nextShips: [],
 						prev: '',
-						ucType: '_Engine'
+						ucType: '_MockModule'
 					}
-					const top = {
-						canBuy: true,
+					top = {
 						components: {
-							engine: [ 'AB2_Engine' ]
+							mockModule: [ 'module1' ]
 						},
-						nextShips: [],
-						prev: 'ENG_STOCK',
-						ucType: '_Engine'
+						prev: 'MOCK_MODULE_STOCK',
+						ucType: '_MockModule'
 					}
+				});
+
+				it('should build the ship\'s research tree', async function() {
 					const ship = Object.assign({}, SHIP_DATA, {
 						ShipUpgradeInfo: {
-							ENG_TOP: top,
-							ENG_STOCK: stock,
-						}
-					});
+							MOCK_MODULE_TOP: top,
+							MOCK_MODULE_STOCK: stock,
+						}}, {
+							module0: {},
+							module1: {}							
+						});
+
 					populate(ship);
+					[ stock, top ].forEach(research => research.ucType = research.ucType[1].toLowerCase() + research.ucType.slice(2));
 
 					const result = (await gameObjectProvider.createGameObject(ship.name))._data.ShipUpgradeInfo;
 
-					expect(result).to
-						.be.an('object').with.property('_Engine')
-						.that.is.an('array').with.deep.ordered.members([ stock, top ]);
+					// Exclude components from comparison:				
+					expect(omit(result, 'mockModule[0].components', 'mockModule[1].components')).to
+						.be.an('object').with.property('mockModule')
+						.that.is.an('array').with.deep.ordered.members([ stock, top ].map(o => omit(o, 'components')));
+				});
+
+				it('should replace module names with their objects in research info component definitions', async function() {
+					const module0 = {};
+					const module1 = {};
+					const ship = Object.assign({}, SHIP_DATA, {
+						ShipUpgradeInfo: {
+							MOCK_MODULE_TOP: top,
+							MOCK_MODULE_STOCK: stock,
+						}},
+						{ 
+							module0, 
+							module1 
+						});
+					populate(ship);
+
+					const result = (await gameObjectProvider.createGameObject(ship.name));
+
+					[ 0, 1 ].forEach(i => 
+						expect(result._data.ShipUpgradeInfo).to
+							.have.nested.property(`mockModule[${i}].components.mockModule`)
+							// Strict equality here, because it's important that both the module definition in the ship and the result of the lookup
+							// replacement the processor performed are the same object. 
+							// Otherwise using ShipUpgradeInfo as a target for modifiers would not work.
+							.that.has.members([ result._data[`module${i}`] ]));
+						
 				});
 			});
 		});

@@ -4,7 +4,6 @@ import mockfs from 'mock-fs';
 import sinon from 'sinon';
 import fs from 'fs';
 import path from 'path';
-import pipe from 'pipe-functions';
 
 describe('GameObjectSupplier', function() {
 	const SOURCEPATH = '/data';
@@ -89,7 +88,7 @@ describe('GameObjectSupplier', function() {
 			const processors = {
 				'Type1': [
 					{ selector: 'id', processors: [ sinon.stub().resolvesArg(0), sinon.stub().resolvesArg(0) ] },
-					{ selector: '', processors: [ sinon.stub().resolvesArg(0) ] }
+					{ selector: '::root', processors: [ sinon.stub().resolvesArg(0) ] }
 				]
 			};			
 			gameObjectSupplier.processors = processors;
@@ -133,7 +132,7 @@ describe('GameObjectSupplier', function() {
 			const expected = {};
 			gameObjectSupplier.processors = {
 				'Type1': [
-					{ selector: '', processors: [ sinon.stub().resolves(expected) ]}
+					{ selector: '::root', processors: [ sinon.stub().resolves(expected) ]}
 				]
 			}
 

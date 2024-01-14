@@ -17,6 +17,10 @@ import Gun from '../model/gun.js';
 import Torpedo from '../model/torpedo.js';
 import Shell from '../model/shell.js';
 
+import Artillery from '../model/modules/artillery.js';
+import Torpedoes from '../model/modules/torpedoes.js';
+import Hull from '../model/modules/hull.js';
+
 const dedicatedlog = rootlog.getLogger('GameObjectSupplier');
 
 export default class GameObjectSupplier extends Supplier {
@@ -41,6 +45,9 @@ export default class GameObjectSupplier extends Supplier {
 				const p = perform(selector, async (value, prop, ctx) => {
 					const rootTarget = obj === ctx[prop];
 
+					// Create a new list of processors with set prop and ctx
+					// This is so we can pass these to the processors as the value is passed through the pipe
+					processors = processors.map(fn => x => fn(x, prop, ctx))
 					value = await pipe(value, ...processors);
 					// By default applicator functions may only be synchronous.
 					// So manually assign the reference target after the processing chain resolves.
@@ -50,7 +57,6 @@ export default class GameObjectSupplier extends Supplier {
 						ctx[prop] = value;
 					return value;
 				}, obj, { mode: 'lenient' }); // Run in lenient mode, because we want missing properties to just not be processed instead of causing an error
-
 				// If the selector was ambiguous, p might be an ARRAY of promises.
 				// Check for this, and await either p itself, or all its contained promises.
 				// This is necessary to avoid race conditions (awaiting a non-Promise resolves immediately)
@@ -58,7 +64,6 @@ export default class GameObjectSupplier extends Supplier {
 				await (Array.isArray(p) ? Promise.all(p) : p);
 			}
 		}
-
 		return obj;
 	}
 }
@@ -125,28 +130,35 @@ GameObjectSupplier.Processors = class {
 
 		return {
 			'Ability': [ 
-				{ selector: '', processors: [ label, convert ] } 
+				{ selector: '::root', processors: [ label, convert ] } 
 			].map(compileSelector),
 
 			'Modernization': [ 
-				{ selector: '', processors: [ label, convert ] } 
+				{ selector: '::root', processors: [ label, convert ] } 
 			].map(compileSelector),
 
 			'Crew': [ 
-				{ selector: '', processors: [ label, convert ] } 
+				{ selector: '::root', processors: [ label, convert ] } 
 			].map(compileSelector),
 
 			'Exterior': [ 
-				{ selector: '', processors: [ label, convert ] } 
+				{ selector: '::root', processors: [ label, convert ] } 
 			].map(compileSelector),
 
 			'Projectile': [ 
-				{ selector: '', processors: [ label, convert ] } 
+				{ selector: '::root', processors: [ label, convert ] } 
 			].map(compileSelector),
 
 			'Ship': [
+				// Expansion of inline gun definitions:
 				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
+				
+				// Module conversion:
+				{ selector: '*[*.typeinfo.type===Gun][*.typeinfo.species===Main]', processors: [ mdl => new Artillery(mdl) ]},
+				{ selector: '*[*.typeinfo.type===Gun][*.typeinfo.species===Torpedo]', processors: [ mdl => new Torpedoes(mdl) ]},
+				{ selector: '*[draft]', processors: [ mdl => new Hull(mdl) ]},
+
 				{ selector: 'defaultCrew', processors: [ expand, convert ] },
 				// Change ship consumables from the format in which they are in the game files [ <consumable reference>, <flavor> ]
 				// to a Consumable object with the flavor properties copied directly onto the consumable
@@ -160,7 +172,17 @@ GameObjectSupplier.Processors = class {
 						convert 
 					] },
 				{ selector: 'ShipUpgradeInfo', processors: [ getModuleLines ]},
-				{ selector: '', processors: [ label, convert ] }
+				{ selector: 'ShipUpgradeInfo', processors: [
+					// @todo Implement into a single selector once object-selectors passes root information into perform-functions
+					function createModule(research, prop, ctx, root) {
+						compile('*.*.components.*.*').perform(function lookup(name) {
+							return ctx[name];
+						}, research);
+						
+						return research;
+					}
+				]},
+				{ selector: '::root', processors: [ label, convert ] }
 			].map(compileSelector)			
 		}
 	}

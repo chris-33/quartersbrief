@@ -7,10 +7,12 @@ import Consumable from '../../src/model/consumable.js';
 import Signal from '../../src/model/signal.js';
 import Modifier from '../../src/model/modifier.js';
 import Module from '../../src/model/modules/module.js';
+import Artillery from '../../src/model/modules/artillery.js';
 import sinon from 'sinon';
 import clone from 'lodash/cloneDeep.js';
 import { readFileSync } from 'fs';
 import createModule from '../../src/model/create-module.js';
+import groupBy from 'lodash/groupBy.js';
 
 describe('Ship', function() {
 	const EXPOSED_PROPERTY_DESCRIPTOR = {
@@ -23,13 +25,15 @@ describe('Ship', function() {
 	let CONSUMABLE_DATA;
 	let knownTargets;
 	let classSkills;
-	let exposedFlavorProperties;
 
 	let ship;
 
 	before(function() {
 		knownTargets = Modifier.KNOWN_TARGETS;
-		Modifier.KNOWN_TARGETS = { EngineValue: 'engine.value', ArtilleryValue: 'artillery.value' }
+		Modifier.KNOWN_TARGETS = { 
+			EngineValue: 'refits.*.*.components.engine.*.value', 
+			ArtilleryValue: 'refits.*.*.components.artillery.*.value' 
+		}
 		
 		classSkills = Captain.CLASS_SKILLS;
 		Captain.CLASS_SKILLS = { Cruiser: [3], Battleship: [1,2]};
@@ -44,6 +48,14 @@ describe('Ship', function() {
 
 	beforeEach(function() {
 		let data = clone(TEST_DATA);
+		for (let key in data) {
+			// All module definitions conveniently start with A or B
+			if (key.startsWith('A') || key.startsWith('B')) {
+				const kind = key.slice(key.indexOf('_') + 1).toLowerCase();
+				data[key] = createModule(kind, data[key]);
+			}
+		}
+
 		for (let abilityDef of [ data.ShipAbilities.AbilitySlot0.abils[0], data.ShipAbilities.AbilitySlot0.abils[1], data.ShipAbilities.AbilitySlot1.abils[0] ]) {
 			const ability = clone(CONSUMABLE_DATA[abilityDef[0]]);
 			const flavor = abilityDef[1];
@@ -55,8 +67,20 @@ describe('Ship', function() {
 		data.ShipAbilities.AbilitySlot0.abils[1] = data.ShipAbilities.AbilitySlot0.abils[1][0];
 		data.ShipAbilities.AbilitySlot1.abils[0] = data.ShipAbilities.AbilitySlot1.abils[0][0];
 
-		data.ShipUpgradeInfo = getModuleLines(data.ShipUpgradeInfo);
-		
+		data.ShipUpgradeInfo = groupBy(Object.values(data.ShipUpgradeInfo)
+			.filter(research => research.ucType)
+			.map(research => ({ ...research, ucType: research.ucType[1].toLowerCase() + research.ucType.slice(2) }))
+			.sort((research1, research2) => {
+				// Sort according to last letter of 'prev' property, leveraging that it can only be
+				// '', 'STOCK' or 'MIDDLE' with this test data
+				const lastLetter = [ undefined, 'K', 'E' ]
+				return lastLetter.indexOf(research1.prev.at(-1)) - lastLetter.indexOf(research2.prev.at(-1));
+			})
+			.map(research => ({
+				...research, components: Object.fromEntries(Object.entries(research.components)
+						.map(([kind, components]) => [ kind, components.map(componentName => data[componentName]) ]))
+			})), 'ucType');
+
 		ship = new Ship(data);		
 	});
 
@@ -209,8 +233,7 @@ describe('Ship', function() {
 		let modernization;		
 		const MODIFIERS = {
 			EngineValue: 2,
-			ArtilleryValue: 3,
-			unknown: 0
+			ArtilleryValue: 3
 		}
 		beforeEach(function() {
 			modernization = new Modernization({	"excludes": [],
@@ -236,11 +259,14 @@ describe('Ship', function() {
 		});
 
 		it('should apply the modernization effects', function() {
-			const val = ship.artillery.value;
-
 			ship.equipModernization(modernization);
 
-			expect(ship.artillery.value).to.equal(val * MODIFIERS.ArtilleryValue);
+			[ 'Artillery', 'Engine' ].forEach(type => {
+				Object.keys(ship._data)
+					.filter(key => key.endsWith(`_${type}`))
+					.forEach(target => 
+						expect(ship._data[target].value).to.equal(TEST_DATA[target].value * MODIFIERS[`${type}Value`]));
+			});
 		});
 
 		it('should not apply the same modernization more than once', function() {
@@ -256,8 +282,7 @@ describe('Ship', function() {
 	describe('.unequipModernization', function() {
 		const MODIFIERS = {
 			EngineValue: 2,
-			ArtilleryValue: 3,
-			unknown: 0
+			ArtilleryValue: 3
 		}
 		let modernization;
 	
@@ -282,23 +307,31 @@ describe('Ship', function() {
 
 		it('should negate the modernization effects', function() {
 			ship.unequipModernization(modernization);
-			expect(ship.artillery.value).to.equal(TEST_DATA.AB1_Artillery.value);
+
+			[ 'Artillery', 'Engine' ].forEach(type => {
+				Object.keys(ship._data)
+					.filter(key => key.endsWith(`_${type}`))
+					.forEach(target => 
+						expect(ship._data[target].value).to.equal(TEST_DATA[target].value));
+			});
 		});
 	});
 
-	describe('.setCaptain', function() {
+	describe('.setCaptain', function() {		
+		const MODIFIERS = {
+			EngineValue: 2,
+			ArtilleryValue: 3
+		}
 		const SKILLS = {
 			Skill1: {
 				skillType: 1,
-				modifiers: {
-					EngineValue: 2
-				}
+				// eslint-disable-next-line mocha/no-setup-in-describe
+				modifiers: { EngineValue: MODIFIERS.EngineValue }
 			},
 			Skill2: {
 				skillType: 2,
-				modifiers: {
-					ArtilleryValue: 3
-				}
+				// eslint-disable-next-line mocha/no-setup-in-describe
+				modifiers: { ArtilleryValue: MODIFIERS.ArtilleryValue }
 			}
 		}
 		let captain;
@@ -316,12 +349,15 @@ describe('Ship', function() {
 
 		it('should apply the effects of the captain\'s learned skills', function() {
 			captain.learn(captain.skills);
-			const engineValue = ship.engine.value;
-			const artilleryValue = ship.artillery.value;
 
 			ship.setCaptain(captain);
-			expect(ship.engine.value).to.equal(engineValue * SKILLS.Skill1.modifiers.EngineValue);
-			expect(ship.artillery.value).to.equal(artilleryValue * SKILLS.Skill2.modifiers.ArtilleryValue);
+
+			[ 'Artillery', 'Engine' ].forEach(type => {
+				Object.keys(ship._data)
+					.filter(key => key.endsWith(`_${type}`))
+					.forEach(target => 
+						expect(ship._data[target].value).to.equal(TEST_DATA[target].value * MODIFIERS[`${type}Value`]));
+			});
 		});
 
 		it('should revert the effects learned skills of any captain previously in command', function() {
@@ -330,17 +366,25 @@ describe('Ship', function() {
 			captain1.learn(1);
 			captain2.learn(2);
 
-			let engineValue = ship.engine.value;
 			ship.setCaptain(captain1);
 			ship.setCaptain(captain2);
-			expect(ship.engine.value).to.equal(engineValue);
+
+			Object.keys(ship._data)
+				.filter(key => key.endsWith(`_Engine`))
+				.forEach(target => 
+					expect(ship._data[target].value).to.equal(TEST_DATA[target].value));
 		});
 
 		it('should remove a previously set captain when setting to null', function() {
-			let engineValue = ship.engine.value;
 			ship.setCaptain(captain);
 			ship.setCaptain(null);
-			expect(ship.engine.value).to.equal(engineValue);
+
+			[ 'Artillery', 'Engine' ].forEach(type => {
+				Object.keys(ship._data)
+					.filter(key => key.endsWith(`_${type}`))
+					.forEach(target => 
+						expect(ship._data[target].value).to.equal(TEST_DATA[target].value));
+			});
 		});
 
 	});
@@ -424,8 +468,13 @@ describe('Ship', function() {
 
 		it('should apply the effects of the signal', function() {
 			ship.hoist(signal);
-			expect(ship.engine.value).to.equal(TEST_DATA.AB1_Engine.value * MODIFIERS.EngineValue);
-			expect(ship.artillery.value).to.equal(TEST_DATA.AB1_Artillery.value * MODIFIERS.ArtilleryValue);
+
+			[ 'Artillery', 'Engine' ].forEach(type => {
+				Object.keys(ship._data)
+					.filter(key => key.endsWith(`_${type}`))
+					.forEach(target => 
+						expect(ship._data[target].value).to.equal(TEST_DATA[target].value * MODIFIERS[`${type}Value`]));
+			});
 		});		
 
 		it('should not hoist the signal more than once', function() {
@@ -452,7 +501,12 @@ describe('Ship', function() {
 
 		it('should revert the effects of the signal', function() {
 			ship.lower(signal);
-			expect(ship.engine.value).to.equal(TEST_DATA.AB1_Engine.value);
+			[ 'Artillery', 'Engine' ].forEach(type => {
+				Object.keys(ship._data)
+					.filter(key => key.endsWith(`_${type}`))
+					.forEach(target => 
+						expect(ship._data[target].value).to.equal(TEST_DATA[target].value));
+			});
 		});
 
 		it('should not lower a signal that was not hoisted', function() {
@@ -470,18 +524,6 @@ describe('Ship', function() {
 			ship.lower(signal);
 			expect(ship.engine.value).to.equal(engineValue);
 			expect(ship.artillery.value).to.equal(artilleryValue);
-		});
-	});
-
-	describe('.discoverModules', function() {
-		it('should work with both ucType and plain type', function() {
-			let expected = [ 
-				TEST_DATA.ShipUpgradeInfo.SUO_STOCK,
-				TEST_DATA.ShipUpgradeInfo.SUO_MIDDLE,
-				TEST_DATA.ShipUpgradeInfo.SUO_TOP
-			];
-			expect(ship.discoverModules('_Suo')).to.deep.equal(expected);
-			expect(ship.discoverModules('suo')).to.deep.equal(expected);
 		});
 	});
 
@@ -566,6 +608,10 @@ describe('Ship', function() {
 		});
 	});
 
+	it('should have property refits which has all research options', function() {
+		expect(ship).to.have.property('refits').that.deep.equals(ship._data.ShipUpgradeInfo);
+	});
+	
 	describe('.multiply', function() {
 		it('should multiply into modules', function() {
 			const coeff = 2;

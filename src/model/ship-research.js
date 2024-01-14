@@ -64,7 +64,8 @@ export function getModuleLines(upgradeInfo) {
 	while (upgradeInfo.length > 0) {
 		// Take the first one out
 		let research = upgradeInfo.shift();	
-
+		if (research.ucType.startsWith('_')) research.ucType = research.ucType[1].toLowerCase() + research.ucType.slice(2);
+		
 		if (research.prev === '') {
 			// This research is the beginning of the research line. Put it at the front.
 			// If the research line does not exist yet, create one.
