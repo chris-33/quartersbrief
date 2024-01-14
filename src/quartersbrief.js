@@ -38,7 +38,7 @@ if (!existsSync(path.join(config.wowsdir, 'replays'))) {
 let version = await update();
 let datadir = path.join(paths.DATA_DIR, String(version));
 
-let data, labels;
+let labels;
 try {
 	const t0 = Date.now();
 	labels = await loadData(datadir);

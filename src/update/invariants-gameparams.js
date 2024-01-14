@@ -1,7 +1,7 @@
 import GameObject from '../model/gameobject.js';
 import rootlog from 'loglevel';
 import clone from 'lodash/cloneDeep.js';
-import { arrayIntersect } from '../util/util.js';
+import intersection from 'lodash/intersection.js';
 import InvariantError from './infra/invarianterror.js';
 
 /**
@@ -167,7 +167,7 @@ export function moduleComponentsResolveUnambiguously(ship) {
 			if (problematicComponentKey in module.components) {
 				// Intersect problematicComponent with the entries for the problematic
 				// component in that module
-				problematicComponent = arrayIntersect(problematicComponent, module.components[problematicComponentKey]);
+				problematicComponent = intersection(problematicComponent, module.components[problematicComponentKey]);
 				// Add the module's ucType to the list of contributors, because we
 				// have "equipped" it now.
 				contributors.push(module.ucType);

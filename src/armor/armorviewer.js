@@ -3,8 +3,6 @@ import { convertDown, fuse, smooth } from 'geometry-3d';
 import { Pool, Worker, spawn } from 'threads';
 import rootlog from 'loglevel';
 
-const dedicatedlog = rootlog.getLogger('ArmorViewer');
-
 
 /**
  * This class creates views of ships' armor. Views are two-dimensional representations of a ship's exterior armor. In essence, a view corresponds to those

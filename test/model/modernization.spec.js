@@ -1,6 +1,5 @@
 import Modernization from '../../src/model/modernization.js';
 import Ship from '../../src/model/ship.js';
-import GameObject from '../../src/model/gameobject.js';
 import Modifier from '../../src/model/modifier.js';
 
 import { readFileSync } from 'fs';
@@ -8,11 +7,9 @@ import clone from 'lodash/cloneDeep.js';
 
 describe('Modernization', function() {
 	let TEST_DATA;
-	let SHIP_DATA;
 
 	before(function() {
 		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/modernization.json'));
-		SHIP_DATA = JSON.parse(readFileSync('test/model/testdata/ship.json'));
 	});
 
 	describe('.eligible', function() {
@@ -25,7 +22,7 @@ describe('Modernization', function() {
 				tier: { value: 8 },
 				class: { value: 'Battleship' },
 				nation: { value: 'USA' },
-			});//new Ship(SHIP_DATA);	
+			});
 		});
 
 		beforeEach(function() {

@@ -2,7 +2,7 @@ import * as filters from './topic-filters.js';
 import pug from 'pug';
 import * as sass from 'sass';
 import { toSass } from 'sass-cast';
-import { screamingSnakeCase } from '../util/util.js';
+import screamingSnakeCase from '../util/screaming-snake-case.js';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { BASE_DIR } from '../init/paths.js';

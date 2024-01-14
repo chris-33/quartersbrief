@@ -1,4 +1,4 @@
-import { screamingSnakeCase } from '../../src/util/util.js';
+import screamingSnakeCase from '../../src/util/screaming-snake-case.js';
 
 describe('screamingSnakeCase', function() {
 	it('should turn a single word into upper case', function() {

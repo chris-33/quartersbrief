@@ -1,5 +1,4 @@
 import Ship from '../../src/model/ship.js';
-import { getModuleLines } from '../../src/model/ship-research.js';
 import Modernization from '../../src/model/modernization.js';
 import Captain from '../../src/model/captain.js';
 import Camouflage from '../../src/model/camouflage.js';
@@ -7,7 +6,6 @@ import Consumable from '../../src/model/consumable.js';
 import Signal from '../../src/model/signal.js';
 import Modifier from '../../src/model/modifier.js';
 import Module from '../../src/model/modules/module.js';
-import Artillery from '../../src/model/modules/artillery.js';
 import sinon from 'sinon';
 import clone from 'lodash/cloneDeep.js';
 import { readFileSync } from 'fs';

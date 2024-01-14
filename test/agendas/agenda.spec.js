@@ -1,6 +1,5 @@
 import Agenda from '../../src/agendas/agenda.js';
 import Ship from '../../src/model/ship.js';
-import { readFileSync } from 'fs';
 
 describe('Agenda', function() {
 	describe('constructor', function() {

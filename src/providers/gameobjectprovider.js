@@ -54,7 +54,6 @@ export default class GameObjectProvider {
 		// We therefore need to take care of it ourselves, by keeping a map of known clones.
 		const known = new WeakMap();
 		gameObject = clone(gameObject, function cloneDataObject(obj) {
-			// if (obj === gameObject) console.log(stack)
 			if (obj instanceof DataObject) {
 				if (!known.has(obj))
 					known.set(obj, new obj.constructor(clone(obj._data, cloneDataObject)));

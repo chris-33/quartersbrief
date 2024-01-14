@@ -1,6 +1,5 @@
 import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 
-import GameObject from '../../src/model/gameobject.js';
 import Consumable from '../../src/model/consumable.js';
 import Gun from '../../src/model/gun.js';
 import Artillery from '../../src/model/modules/artillery.js';

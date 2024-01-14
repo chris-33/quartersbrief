@@ -3,7 +3,7 @@
 // So we use a templating engine (pupa) here, and interpolate at runtime.
 // The template strings we use are therefore regular strings, and there is no $ in front of the expressions to be interpolated.
 import template from 'pupa';
-import { screamingSnakeCase } from '../util/util.js';
+import screamingSnakeCase from '../util/screaming-snake-case.js';
 
 /**
  * Labels a consumable by attaching labels to all flavors of the consumable. Consumable flavors can optionally have a different label from the default,

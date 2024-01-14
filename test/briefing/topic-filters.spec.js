@@ -1,5 +1,4 @@
 import * as filters from '../../src/briefing/topic-filters.js';
-import sinon from 'sinon';
 
 describe('topic-filters', function() {
 

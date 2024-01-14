@@ -5,7 +5,8 @@ import Captain from './captain.js';
 import Camouflage from './camouflage.js';
 import Signal from './signal.js';
 import Consumable from './consumable.js';
-import { arrayIntersect, arrayDifference } from '../util/util.js';
+import difference from 'lodash/difference.js';
+import intersection from 'lodash/intersection.js';
 import rootlog from 'loglevel';
 const dedicatedlog = rootlog.getLogger('Ship');
 
@@ -295,8 +296,6 @@ export default class Ship extends GameObject {
 	equipModules(descriptor) {
 		// Expand shorthand notations such as descriptor === 'stock' and
 		// descriptor === 'top'
-		// Replace human-readable notations such as 'artillery' or 'engine' by
-		// proper ucTypes (i.e. '_Artillery' and '_Engine')
 		// Expand 'others' definition to all remaining types that have not been
 		// defined explictly.
 		// Throws a TypeError if the descriptor does not contain definitions for
@@ -321,16 +320,11 @@ export default class Ship extends GameObject {
 			if (!descriptor.every(subdescriptor => SUBDESCRIPTOR_REGEX.test(subdescriptor)))
 				throw new TypeError('Malformed descriptor');		
 
-			// Turn all type into ucTypes
-			// descriptor = descriptor.map(subdescriptor => 
-			// 		subdescriptor.startsWith('_') ? subdescriptor : '_' + subdescriptor.charAt(0).toUpperCase() + subdescriptor.substring(1)
-			// );
-
 			// Find an 'others' definition if one exists
 			let others = descriptor.find(subdescriptor => subdescriptor.startsWith('others'));
 			// Get the types that have not been explicitly defined
 			// This is all the types in module lines minus the ones in descriptor
-			let remainingTypes = arrayDifference(Object.keys(this.refits), descriptor.map(subdescriptor => subdescriptor.split(':')[0].trim()));
+			let remainingTypes = difference(Object.keys(this.refits), descriptor.map(subdescriptor => subdescriptor.split(':')[0].trim()));
 			// If an 'others' definition exists, expand it
 			if (others){
 				// Remember what level to set everything to
@@ -382,7 +376,7 @@ export default class Ship extends GameObject {
 					// Attempt to resolve by intersecting the existing definition with this
 					// module's one
 					// (If modules have conflicting definitions, the result will be length 0 after this.)
-					configuration[componentKey] = arrayIntersect(configuration[componentKey], component);
+					configuration[componentKey] = intersection(configuration[componentKey], component);
 			}
 		}
 		// Now all components in configuration should be arrays of length <= 1
