@@ -66,10 +66,15 @@ export default class Modifier {
 		// Everything up to PCM035_SteeringGear_Mod_III
 		visibilityFactor: 'hull.visibilityFactor', // Camouflages
 		healthPerLevel: { // Skill 25 DefenseHp
-			target: 'refits.*.components.hull.*.health',
+			target: 'refits.*.*.components.hull.*.health',
 			calc: (ship, baseValue) => ship.tier * Modifier.DEFAULT_DESCRIPTOR.calc(ship, baseValue),
 			mode: 'add'
 		},
+		speedCoef: { // Engine modules
+			target: 'refits.*.*.components.hull.*.maxSpeed',
+			calc: (ship, baseValue) => 1 - baseValue,
+			mode: 'multiply'
+		}
 	}
 
 	/**

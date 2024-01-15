@@ -25,5 +25,6 @@ export default class Hull extends Module {
 expose(Hull, {
 	'health': 'health',
 	'armor': 'armor',
-	'model': 'model'
+	'model': 'model',
+	'speed': 'maxSpeed'
 });

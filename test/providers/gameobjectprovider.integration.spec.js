@@ -5,6 +5,7 @@ import Gun from '../../src/model/gun.js';
 import Artillery from '../../src/model/modules/artillery.js';
 import Torpedoes from '../../src/model/modules/torpedoes.js';
 import Hull from '../../src/model/modules/hull.js';
+import Engine from '../../src/model/modules/engine.js';
 
 import mockfs from 'mock-fs';
 import fs from 'fs';
@@ -160,6 +161,9 @@ describe('GameObjectProvider @integration', function() {
 					},
 					Hull: {
 						draft: 10
+					},
+					Engine: {
+						forwardEngineForsag: 2
 					}
 				};
 
@@ -167,7 +171,8 @@ describe('GameObjectProvider @integration', function() {
 				[
 					{ kind: 'Artillery', cls: Artillery },
 					{ kind: 'Torpedoes', cls: Torpedoes },
-					{ kind: 'Hull', cls: Hull }
+					{ kind: 'Hull', cls: Hull },
+					{ kind: 'Engine', cls: Engine }
 				].forEach(({ kind, cls }) =>
 					it(`should convert ${kind[0].toLowerCase() + kind.slice(1)} modules into ${cls.name} objects`, async function() {
 						const ship = Object.assign({}, SHIP, {
