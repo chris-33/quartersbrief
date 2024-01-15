@@ -80,9 +80,6 @@ export default class ShipBuilder {
 		}
 		if (captain) ship.setCaptain(captain);
 
-		if (build.camouflage)			
-			ship.setCamouflage(await this.gameObjectProvider.createGameObject(build.camouflage));
-		
 		if (build.signals) {
 			const signals = await Promise.all(build
 				.signals

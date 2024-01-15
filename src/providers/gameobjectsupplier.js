@@ -9,7 +9,6 @@ import Ship from '../model/ship.js';
 import Modernization from '../model/modernization.js';
 import Consumable from '../model/consumable.js';
 import Captain from '../model/captain.js';
-import Camouflage from '../model/camouflage.js';
 import Signal from '../model/signal.js';
 import Gun from '../model/gun.js';
 import Torpedo from '../model/torpedo.js';
@@ -74,9 +73,6 @@ GameObjectSupplier.Processors = class {
 		'Ability': Consumable,
 		'Crew': Captain,
 		'Exterior': { 
-			'Camouflage': Camouflage,
-			'Permoflage': Camouflage,
-			'Skin': Camouflage,
 			'Flags': Signal
 		},
 		'Gun': Gun,

@@ -1,7 +1,6 @@
 import Ship from '../../src/model/ship.js';
 import Modernization from '../../src/model/modernization.js';
 import Captain from '../../src/model/captain.js';
-import Camouflage from '../../src/model/camouflage.js';
 import Consumable from '../../src/model/consumable.js';
 import Signal from '../../src/model/signal.js';
 import Modifier from '../../src/model/modifier.js';
@@ -186,21 +185,6 @@ describe('Ship', function() {
 
 			ship.equipModules('top');
 			expect(ship.engine.value).to.equal(SKILLS.Skill1.modifiers.EngineValue * MODULES.AB2_Engine.value);
-		});
-
-		it('should re-apply camouflage effects after changing module configuration', function() {
-			const MODIFIERS = {
-				EngineValue: 2
-			}
-			let camouflage = new Camouflage({ modifiers: MODIFIERS });
-			sinon.stub(camouflage, 'isPermoflage').returns(true);
-			
-			ship.equipModules('stock');
-			ship.setCamouflage(camouflage);
-			
-			expect(ship.engine.value).to.equal(MODIFIERS.EngineValue * MODULES.AB1_Engine.value);
-			ship.equipModules('top');
-			expect(ship.engine.value).to.equal(MODIFIERS.EngineValue * MODULES.AB2_Engine.value);
 		});
 
 		it('should re-hoist signals after changing module configuration', function() {
@@ -388,65 +372,6 @@ describe('Ship', function() {
 			});
 		});
 
-	});
-
-	describe('.setCamouflage', function() {
-		const MODIFIERS = {
-			EngineValue: 2,
-			ArtilleryValue: 3
-		}
-
-		let camouflage;
-	
-		beforeEach(function() {
-			camouflage = new Camouflage({ 
-				modifiers: MODIFIERS,				
-			});			
-			sinon.stub(camouflage, 'isPermoflage').returns(false);
-		});
-
-		it('should throw if trying to set something that is not a Camouflage', function() {
-			expect(ship.setCamouflage.bind(ship, {})).to.throw();
-			expect(ship.setCamouflage.bind(ship, camouflage)).to.not.throw();
-		});
-
-		it('should return true if the camouflage was set, false otherwise', function() {
-			let eligible = sinon.stub(camouflage, 'eligible').returns(true);
-			try {
-				expect(ship.setCamouflage(camouflage)).to.be.true;
-				eligible.returns(false);
-				expect(ship.setCamouflage(camouflage)).to.be.false;
-			} finally { eligible.restore(); }
-		});
-
-		it('should revert the effects of any previously set camouflage', function() {
-			let camouflage1 = new Camouflage({ modifiers: { 
-				EngineValue: MODIFIERS.EngineValue
-			}});
-			sinon.stub(camouflage1, 'isPermoflage').returns(true);			
-			let camouflage2 = new Camouflage({ modifiers: {
-				ArtilleryValue: MODIFIERS.ArtilleryValue
-			}});
-			sinon.stub(camouflage2, 'isPermoflage').returns(true);
-
-			let engineValue = ship.engine.value;
-			expect(ship.setCamouflage(camouflage1)).to.be.true;
-			expect(ship.setCamouflage(camouflage2)).to.be.true;
-			expect(ship.engine.value).to.equal(engineValue);
-		});
-
-		it('should revert the effects of a previously set camouflage when setting to null', function() {
-			let engineValue = ship.engine.value;
-			ship.setCamouflage(camouflage);
-			ship.setCamouflage(null);
-			expect(ship.engine.value).to.equal(engineValue);
-		});
-
-		it('should apply the effects of the camouflage', function() {
-			ship.setCamouflage(camouflage);
-			expect(ship.engine.value).to.equal(SHIP.AB1_Engine.value * MODIFIERS.EngineValue);
-			expect(ship.artillery.value).to.equal(SHIP.AB1_Artillery.value * MODIFIERS.ArtilleryValue);
-		});
 	});
 
 	describe('.hoist', function() {

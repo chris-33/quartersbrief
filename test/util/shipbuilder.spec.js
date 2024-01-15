@@ -61,19 +61,6 @@ describe('ShipBuilder', function() {
 			});
 		});
 
-		it('should set the camouflage of the build', async function() {
-			sinon.stub(ship, 'setCamouflage');
-			const build = {
-				camouflage: 'PAEP001'
-			};
-			const expected = {};
-			shipBuilder.gameObjectProvider.createGameObject.withArgs(build.camouflage).resolves(expected);
-
-			await shipBuilder.build(ship, build);
-			expect(shipBuilder.gameObjectProvider.createGameObject).to.have.been.calledWith(build.camouflage);
-			expect(ship.setCamouflage).to.have.been.calledWith(expected);
-		});
-
 		it('should hoist all signals of the build', async function() {
 			sinon.stub(ship, 'hoist');
 			const build = {

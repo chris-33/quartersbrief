@@ -2,7 +2,6 @@ import DataObject, { expose } from './dataobject.js';
 import GameObject from './gameobject.js';
 import Modernization from './modernization.js';
 import Captain from './captain.js';
-import Camouflage from './camouflage.js';
 import Signal from './signal.js';
 import Consumable from './consumable.js';
 import difference from 'lodash/difference.js';
@@ -66,11 +65,6 @@ const dedicatedlog = rootlog.getLogger('Ship');
  * Putting a captain in command of a ship will allow the captain's learned skill to further modify the ship's
  * characteristics. Note that, as of current, any skills a captain learns after being put in command of a ship
  * will **not** modify the ship's characteristics. 	This is planned as a future feature.
- *
- * ### Camouflage
- *
- * Camouflages modify a ship's visuals, but also have some impact on the ship's characteristics. Since 0.11.6,
- * camouflages are visual only. Setting them is now deprecated and will be removed at some point in the future.
  *
  * ### Signal flags
  *
@@ -140,36 +134,6 @@ export default class Ship extends GameObject {
 		}
 		this.#captain = captain;
 	}	
-
-	/**
-	 * Sets the camouflage for this ship and applies its effects. If another camouflage was previously
-	 * set, its effects will be removed.
-	 * @param {Camouflage} camouflage The camouflage to set. If the camouflage is not eligible,
-	 * nothing will be done. Passing a value of `null` or `undefined` or any other falsy value will
-	 * remove a previously set camouflage.
-	 * @returns `True` if the camouflage was mounted, `false` otherwise. 
-	 * @throws Throws a `TypeError` if `camouflage` is not an instance of `Camouflage`.
-	 */
-	setCamouflage(camouflage) {
-		if (camouflage && !(camouflage instanceof Camouflage)) throw new TypeError(`Expected a Camouflage but got a ${camouflage}`);
-
-		// Don't equip if not eligible
-		if (camouflage && !camouflage.eligible(this)) return false;
-
-		// Remove the effects of the previously set camouflage, if any
-		if (this.#camouflage) {
-			let modifiers = this.#camouflage.getModifiers();
-			for (let modifier of modifiers)
-				modifier.invert().applyTo(this);
-		}
-
-		if (camouflage)
-			for (let modifier of camouflage.getModifiers())
-				modifier.applyTo(this);
-
-		this.#camouflage = camouflage;
-		return true;
-	}
 
 	/**
 	 * Hoists the signal on this ship and applies its effects. If the signal was already hoisted, nothing will be done.
