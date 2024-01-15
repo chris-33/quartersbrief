@@ -72,7 +72,7 @@ export default class Modifier {
 		},
 		speedCoef: { // Engine modules
 			target: 'refits.*.*.components.hull.*.maxSpeed',
-			calc: (ship, baseValue) => 1 - baseValue,
+			calc: (ship, baseValue) => 1 + baseValue,
 			mode: 'multiply'
 		}
 	}
