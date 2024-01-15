@@ -1,7 +1,6 @@
 import Captain from '../../src/model/captain.js';
 import Ship from '../../src/model/ship.js';
 import Modifier from '../../src/model/modifier.js';
-import { readFileSync } from 'fs';
 import clone from 'lodash/cloneDeep.js';
 
 describe('Captain', function() {
@@ -15,18 +14,55 @@ describe('Captain', function() {
 			type: 'Ship'
 		}
 	}
+
+	const CAPTAIN = {
+		CrewPersonality: {
+			ships: {
+				groups: [],
+				nation: [ 'USA' ],
+				peculiarity: [],
+				ships: []
+			},
+		},
+		Skills: {
+			BattleshipSkill1: {
+				modifiers: {
+					EngineValue: 2
+				},
+				skillType: 1
+			},
+			BattleshipSkill2: {
+				modifiers: {
+					ArtilleryValue: 3
+				},
+				skillType: 2
+			},
+			CruiserSkill: {
+				modifiers: {
+					EngineValue: 3
+				},
+				skillType: 3
+			}
+		},
+		id: 3,
+		name: 'PAW001_Captain',
+		index: 'PAW001',
+		typeinfo: {
+			nation: 'USA',
+			species: null,
+			type: 'Crew'
+		}
+	}
+
 	let ship;
 	let captain;
 	let classSkills;
 	let knownTargets;
-	let TEST_DATA;
 
 	before(function() {
 		ship = Object.create(Ship.prototype, Object.getOwnPropertyDescriptors({
 			_data: SHIP,
 		}));
-
-		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/captain.json'));
 
 		classSkills = Captain.CLASS_SKILLS;
 		Captain.CLASS_SKILLS = { 
@@ -43,7 +79,7 @@ describe('Captain', function() {
 	});
 
 	beforeEach(function() {
-		captain = new Captain(clone(TEST_DATA));
+		captain = new Captain(clone(CAPTAIN));
 	});
 
 	describe('.getLearnableForShip', function() {
@@ -51,8 +87,8 @@ describe('Captain', function() {
 			expect(captain.getLearnableForShip(ship)).to
 				.be.an('array')
 				.with.deep.members([ 
-					new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1), 
-					new Captain.Skill(TEST_DATA.Skills.BattleshipSkill2)
+					new Captain.Skill(CAPTAIN.Skills.BattleshipSkill1), 
+					new Captain.Skill(CAPTAIN.Skills.BattleshipSkill2)
 				]);
 		});		
 	});
@@ -92,14 +128,14 @@ describe('Captain', function() {
 	describe('.getLearnedForShip', function() {
 		it('should not return skills that have not been learned', function() {
 			expect(captain.getLearnedForShip(ship)).to.be.empty;
-			captain.learn(TEST_DATA.Skills.BattleshipSkill1.skillType);
+			captain.learn(CAPTAIN.Skills.BattleshipSkill1.skillType);
 			expect(captain.getLearnedForShip(ship)).to.be.an('array').with.lengthOf(1);
-			captain.learn(TEST_DATA.Skills.BattleshipSkill2.skillType);
+			captain.learn(CAPTAIN.Skills.BattleshipSkill2.skillType);
 			expect(captain.getLearnedForShip(ship)).to.be.an('array').with.lengthOf(2);
 		});
 
 		it('should return a skill that has been learned before', function() {
-			let skill = new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1);
+			let skill = new Captain.Skill(CAPTAIN.Skills.BattleshipSkill1);
 			captain.learn(skill);
 			expect(captain.getLearnedForShip(ship)).to.deep.include(skill);
 		});
@@ -126,7 +162,7 @@ describe('Captain', function() {
 			// checks that this captain is eligible to command the ship regardless of 
 			// the values of the other eligiblity traits.
 
-			const data = clone(TEST_DATA);
+			const data = clone(CAPTAIN);
 			data.CrewPersonality.ships.ships = [ ship.name ];
 
 			captain = new Captain(changeTraits(clone(data), {}));
@@ -143,17 +179,17 @@ describe('Captain', function() {
 		});
 
 		it('should return true when nation, group, and peculiarity match, false otherwise', function() {
-			let ship = new Ship({
+			let ship = Object.create(Ship.prototype, Object.getOwnPropertyDescriptors({
 				peculiarity: 'somepeculiarity',
 				group: 'somegroup',
 				typeinfo: {
 					type: Ship,
 					nation: 'USA'
-				},
-				ShipUpgradeInfo: {}
-			});
+				},				
+				get nation() { return this.typeinfo.nation } 
+			}));
 
-			captain = new Captain(changeTraits(clone(TEST_DATA), {
+			captain = new Captain(changeTraits(clone(CAPTAIN), {
 				peculiarity: ['somepeculiarity'],
 				groups: ['somegroup'],
 				nation: [ ship.nation ],
@@ -161,7 +197,7 @@ describe('Captain', function() {
 			}));
 			expect(captain.eligible(ship)).to.be.true;
 
-			captain = new Captain(changeTraits(clone(TEST_DATA), {
+			captain = new Captain(changeTraits(clone(CAPTAIN), {
 				peculiarity: ['somepeculiarity'],
 				groups: ['somegroup'],
 				nation: [ 'Germany' ],
@@ -169,7 +205,7 @@ describe('Captain', function() {
 			}));			
 			expect(captain.eligible(ship)).to.be.false;
 			
-			captain = new Captain(changeTraits(clone(TEST_DATA), {
+			captain = new Captain(changeTraits(clone(CAPTAIN), {
 				peculiarity: ['somepeculiarity'],
 				groups: ['someothergroup'],
 				nation: [ ship.nation ],
@@ -177,7 +213,7 @@ describe('Captain', function() {
 			}));			
 			expect(captain.eligible(ship)).to.be.false;
 			
-			captain = new Captain(changeTraits(clone(TEST_DATA), {
+			captain = new Captain(changeTraits(clone(CAPTAIN), {
 				peculiarity: ['someotherpeculiarity'],
 				groups: ['somegroup'],
 				nation: [ ship.nation ],
@@ -187,7 +223,7 @@ describe('Captain', function() {
 		});
 
 		it('should ignore nation, group, peculiarity and ship when they are empty', function() {
-			captain = new Captain(changeTraits(clone(TEST_DATA), {
+			captain = new Captain(changeTraits(clone(CAPTAIN), {
 				peculiarity: [],
 				groups: [],
 				nation: [],
@@ -199,19 +235,27 @@ describe('Captain', function() {
 
 	describe('.isDefault', function() {
 		it('should return true if tags is empty, personName is \'\' and peculiarity is \'default\', false otherwise', function() {
+			let data = clone(CAPTAIN);
+			data.CrewPersonality = {
+				peculiarity: 'default',
+				personName: '',
+				tags: []
+			};
+
+			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.true;
 
-			let data = clone(TEST_DATA);
+			data = clone(CAPTAIN);
 			data.CrewPersonality.tags = [ 'tag' ];
 			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.false;
 
-			data = clone(TEST_DATA);
+			data = clone(CAPTAIN);
 			data.CrewPersonality.peculiarity = 'not-default';
 			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.false;
 
-			data = clone(TEST_DATA);
+			data = clone(CAPTAIN);
 			data.CrewPersonality.personName = 'somename';
 			captain = new Captain(data);
 			expect(captain.isDefault()).to.be.false;
@@ -221,16 +265,16 @@ describe('Captain', function() {
 	describe('Captain.Skill', function() {
 		describe('.eligible', function() {
 			it('should be true for skills that match the ship and false otherwise', function() {
-				let skill = new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1);
+				let skill = new Captain.Skill(CAPTAIN.Skills.BattleshipSkill1);
 				expect(skill.eligible(ship), 'matching ship').to.be.true;
-				skill = new Captain.Skill(TEST_DATA.Skills.CruiserSkill);
+				skill = new Captain.Skill(CAPTAIN.Skills.CruiserSkill);
 				expect(skill.eligible(ship), 'non-matching ship').to.be.false;
 			});
 		});
 
 		describe('.getModifiers', function() {
 			it('should return modifier objects only for those modifiers where it is known how to deal with them', function() {
-				let skill = new Captain.Skill(TEST_DATA.Skills.BattleshipSkill1);
+				let skill = new Captain.Skill(CAPTAIN.Skills.BattleshipSkill1);
 				expect(skill.getModifiers()).to
 					.be.an('array')
 					.with.lengthOf(1);

@@ -379,6 +379,7 @@ export default class Ship extends GameObject {
 					configuration[componentKey] = intersection(configuration[componentKey], component);
 			}
 		}
+
 		// Now all components in configuration should be arrays of length <= 1
 		// Project each down to its only item and create a virtual property for it
 		// that reads through to the appropriate module.
@@ -461,13 +462,12 @@ Ship.Consumables = class extends DataObject {
 	slotOf(consumable) {
 		if (consumable instanceof Consumable)
 			consumable = consumable.consumableType;
+
 		let result = this
 			.get.call(this._data, 'AbilitySlot*')
 			.find(abilitySlot => abilitySlot.abils.some(abil => abil.consumableType === consumable));
-		if (result)
-			return result.slot;
-		else
-			return -1;
+		
+		return result ? result.slot : -1;
 	}
 
 	/**

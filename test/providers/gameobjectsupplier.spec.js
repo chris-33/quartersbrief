@@ -1,5 +1,4 @@
 import GameObjectSupplier from '../../src/providers/gameobjectsupplier.js';
-import GameObject from '../../src/model/gameobject.js';	
 import mockfs from 'mock-fs';
 import sinon from 'sinon';
 import fs from 'fs';
@@ -146,6 +145,5 @@ describe('GameObjectSupplier', function() {
 		it('should be a regular object', function() {
 			expect(new GameObjectSupplier.Processors(gameObjectSupplier)).to.not.be.an.instanceOf(GameObjectSupplier.Processors);
 		});
-
 	});
 });

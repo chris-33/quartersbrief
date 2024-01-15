@@ -4,7 +4,6 @@ import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import Agenda from '../../src/agendas/agenda.js';
 import Battle from '../../src/model/battle.js';
 import sinon from 'sinon';
-import { readFileSync } from 'fs';
 import { valid as isHtml } from 'node-html-parser';
 import { validate } from 'csstree-validator';
 const isCss = (s) => typeof s === 'string' && validate(s).length === 0;
@@ -39,7 +38,7 @@ describe('BriefingBuilder', function() {
 	});
 
 	beforeEach(function() {
-		battle = new Battle(JSON.parse(readFileSync('test/model/testdata/battle.json')));
+		battle = new Battle({ vehicles: [] });
 		agenda = new Agenda({}, { testtopic: {} });
 	});
 

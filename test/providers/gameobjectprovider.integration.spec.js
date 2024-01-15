@@ -13,18 +13,7 @@ import omit from 'lodash/omit.js';
 
 describe('GameObjectProvider @integration', function() {
 	const SOURCEPATH = '/data';
-	let CONSUMABLE_DATA;
-	const SHIP_DATA = {
-		name: 'PAAA001_Test1',
-		index: 'PAAA001',
-		id: 1,
-		ShipUpgradeInfo: {},
-		ShipAbilities: { AbilitySlot0: { abils: [] }},
-		typeinfo: {
-			type: 'Ship'
-		}
-	};
-
+	
 	// Helper function to populate the source path with the game objects in the array `data`.
 	// For convenience, if there is only one object, it can be passed directly instead of as an array.
 	function populate(data) {
@@ -47,10 +36,6 @@ describe('GameObjectProvider @integration', function() {
 
 	let gameObjectProvider;
 
-	before(function() {
-		CONSUMABLE_DATA = JSON.parse(fs.readFileSync('test/model/testdata/consumable.json')).PCY001_Consumable1;
-	});
-
 	beforeEach(function() {
 		// Mock labeler that just returns the input when asked to label
 		const mockLabeler = {
@@ -60,6 +45,14 @@ describe('GameObjectProvider @integration', function() {
 	});
 	
 	describe('.createGameObject', function() {
+		const GAME_OBJECT = {
+			name: 'PAAA001_Test1',
+			index: 'PAAA001',
+			id: 1,
+			typeinfo: {
+				type: 'Ability'
+			}
+		}
 		beforeEach(function() {
 			mockfs({
 				[SOURCEPATH]: {}
@@ -73,11 +66,11 @@ describe('GameObjectProvider @integration', function() {
 		// eslint-disable-next-line mocha/no-setup-in-describe
 		[ 'name', 'index', 'id'	].forEach(designatorType =>
 			it(`should read the game object from disk when requested by ${designatorType}`, async function() {
-				populate([ CONSUMABLE_DATA ]);
+				populate([ GAME_OBJECT ]);
 				
-				const gameObject = await gameObjectProvider.createGameObject(CONSUMABLE_DATA[designatorType]);
+				const gameObject = await gameObjectProvider.createGameObject(GAME_OBJECT[designatorType]);
 
-				expect(gameObject._data).to.deep.equal(CONSUMABLE_DATA);
+				expect(gameObject._data).to.deep.equal(GAME_OBJECT);
 			})
 		);
 
@@ -88,6 +81,17 @@ describe('GameObjectProvider @integration', function() {
 		});
 
 		describe('processing', function() {
+			const SHIP = {
+				name: 'PAAA001_Test1',
+				index: 'PAAA001',
+				id: 1,
+				ShipUpgradeInfo: {},
+				ShipAbilities: { AbilitySlot0: { abils: [] }},
+				typeinfo: {
+					type: 'Ship'
+				}
+			};
+
 			describe('gun expansion', function() {
 				const GUN = {
 					typeinfo: {
@@ -112,7 +116,7 @@ describe('GameObjectProvider @integration', function() {
 							species: 'Artillery'
 						}
 					};
-					const ship = Object.assign({}, SHIP_DATA, artillery);
+					const ship = Object.assign({}, SHIP, artillery);
 					populate([ ship, ammo ]);
 
 					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery.HP_AGM_1._data.ammoList;
@@ -128,7 +132,7 @@ describe('GameObjectProvider @integration', function() {
 							HP_AGM_1: GUN
 						}
 					};
-					const ship = Object.assign({}, SHIP_DATA, artillery);
+					const ship = Object.assign({}, SHIP, artillery);
 					populate(ship);
 
 					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery;
@@ -166,7 +170,7 @@ describe('GameObjectProvider @integration', function() {
 					{ kind: 'Hull', cls: Hull }
 				].forEach(({ kind, cls }) =>
 					it(`should convert ${kind[0].toLowerCase() + kind.slice(1)} modules into ${cls.name} objects`, async function() {
-						const ship = Object.assign({}, SHIP_DATA, {
+						const ship = Object.assign({}, SHIP, {
 							[kind]: FIXTURES[kind]
 						});
 						populate(ship);
@@ -181,7 +185,7 @@ describe('GameObjectProvider @integration', function() {
 				it('should set ship property on all created modules', async function() {
 					const module0 = {};
 					const module1 = {};
-					const ship = Object.assign({}, SHIP_DATA, {
+					const ship = Object.assign({}, SHIP, {
 						ShipUpgradeInfo: {
 							MOCK_MODULE_TOP: {
 								components: { mockModule: [ 'module0' ] },
@@ -215,7 +219,7 @@ describe('GameObjectProvider @integration', function() {
 			describe('consumable flavoring', function() {
 				it('should copy the flavor properties onto the consumable', async function() {
 					const abil = [ 'PAAA002_Test2', 'flavor' ];
-					const ship = Object.assign({}, SHIP_DATA, {
+					const ship = Object.assign({}, SHIP, {
 						ShipAbilities: { 
 							AbilitySlot0: {
 								abils: [ abil ]
@@ -256,7 +260,7 @@ describe('GameObjectProvider @integration', function() {
 				});
 
 				it('should build the ship\'s research tree', async function() {
-					const ship = Object.assign({}, SHIP_DATA, {
+					const ship = Object.assign({}, SHIP, {
 						ShipUpgradeInfo: {
 							MOCK_MODULE_TOP: top,
 							MOCK_MODULE_STOCK: stock,
@@ -279,7 +283,7 @@ describe('GameObjectProvider @integration', function() {
 				it('should replace module names with their objects in research info component definitions', async function() {
 					const module0 = {};
 					const module1 = {};
-					const ship = Object.assign({}, SHIP_DATA, {
+					const ship = Object.assign({}, SHIP, {
 						ShipUpgradeInfo: {
 							MOCK_MODULE_TOP: top,
 							MOCK_MODULE_STOCK: stock,

@@ -1,13 +1,10 @@
-import { readFileSync } from 'fs';
 import Battle from '../../src/model/battle.js';
 import esmock from 'esmock';
 import sinon from 'sinon';
-import clone from 'lodash/cloneDeep.js';
 import { toSass } from 'sass-cast';
 import path from 'path';
 
 describe('Topic', function() {
-	let BATTLE_DATA;
 	let battle;
 
 	let filters;
@@ -17,12 +14,19 @@ describe('Topic', function() {
 	let pug;
 	let sass;
 
-	before(function() {
-		BATTLE_DATA = JSON.parse(readFileSync('test/model/testdata/battle.json'));
-	});
-
 	beforeEach(function() {
-		battle = new Battle(clone(BATTLE_DATA));
+		battle = new Battle({ 
+			playerID: 0,
+			vehicles: [
+				{ shipId: 1, relation: 1, id: 1, name: 'ally1' }, 
+				{ shipId: 2, relation: 2, id: 2, name: 'enemy1' }, 
+				{ shipId: 3, relation: 1, id: 3, name: 'ally2' }, 
+				{ shipId: 4, relation: 1, id: 4, name: 'ally3' }, 
+				{ shipId: 5, relation: 2, id: 5, name: 'enemy2' }, 
+				{ shipId: 6, relation: 2, id: 6, name: 'enemy3' }, 
+				{ shipId: 7, relation: 2, id: 7, name: 'enemy4' }, 
+				{ shipId: 8, relation: 0, id: 8, name: 'player' }
+			]});
 	});
 
 	beforeEach(function() {

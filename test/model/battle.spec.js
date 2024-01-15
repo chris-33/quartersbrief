@@ -1,37 +1,41 @@
 import Battle from '../../src/model/battle.js';
-import { readFileSync } from 'fs';
 
 describe('Battle', function() {
-	let TEST_DATA;
+	const VEHICLES = [
+		{ shipId: 1, relation: 1, id: 1, name: 'ally1' }, 
+		{ shipId: 2, relation: 2, id: 2, name: 'enemy1' }, 
+		{ shipId: 3, relation: 1, id: 3, name: 'ally2' }, 
+		{ shipId: 4, relation: 1, id: 4, name: 'ally3' }, 
+		{ shipId: 5, relation: 2, id: 5, name: 'enemy2' }, 
+		{ shipId: 6, relation: 2, id: 6, name: 'enemy3' }, 
+		{ shipId: 7, relation: 2, id: 7, name: 'enemy4' }, 
+		{ shipId: 8, relation: 0, id: 8, name: 'player' }
+	]
 	let battle;
 
-	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/battle.json'));
-	});
-
 	beforeEach(function() {
-		battle = new Battle(TEST_DATA);
+		battle = new Battle({ vehicles: VEHICLES });
 	});
 
-	describe('.getPlayer', function() {
-		it('should return the vehicle with the player ID', function() {
-			expect(battle.player).to.deep.equal(TEST_DATA.vehicles[7]);
+	describe('.player', function() {
+		it('should be the vehicle with relation playerID', function() {
+			battle = new Battle({ playerID: 0, vehicles: VEHICLES });
+			
+			expect(battle.player).to.deep.equal(VEHICLES[7]);
 		});
 
 	});
 
-	describe('.getAllies', function() {
-		it('should return all vehicles with relation 1', function() {
-			let expected = TEST_DATA.vehicles.filter(vehicle => vehicle.relation === 1);
-			expect(battle.allies).to.be.an('array').with.deep.members(expected);
+	describe('.allies', function() {
+		it('should be an array of all vehicles with relation 1', function() {
+			expect(battle.allies).to.be.an('array').with.deep.members(VEHICLES.filter(vehicle => vehicle.relation === 1));
 		});
 	});
 
 
-	describe('.getEnemies', function() {
+	describe('.enemies', function() {
 		it('should return all vehicles with relation 2', function() {
-			let expected = TEST_DATA.vehicles.filter(vehicle => vehicle.relation === 2);
-			expect(battle.enemies).to.be.an('array').with.deep.members(expected);
+			expect(battle.enemies).to.be.an('array').with.deep.members(VEHICLES.filter(vehicle => vehicle.relation === 2));
 		});
 	});
 });

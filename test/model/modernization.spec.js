@@ -1,16 +1,25 @@
 import Modernization from '../../src/model/modernization.js';
 import Ship from '../../src/model/ship.js';
 import Modifier from '../../src/model/modifier.js';
-
-import { readFileSync } from 'fs';
 import clone from 'lodash/cloneDeep.js';
 
 describe('Modernization', function() {
-	let TEST_DATA;
-
-	before(function() {
-		TEST_DATA = JSON.parse(readFileSync('test/model/testdata/modernization.json'));
-	});
+	const MODERNIZATION = {
+		excludes: [],
+		modifiers: {
+			EngineValue: 2,
+			ArtilleryValue: 3,
+			unknown: 0
+		},
+		shiplevel: [8,9,10],
+		nation: [],
+		shiptype: [ 'Destroyer', 'Battleship' ],
+		slot: 0,
+		ships: [],
+		name: 'PCM001_Modernization',
+		index: 'PCM001',
+		id: 2			
+	}
 
 	describe('.eligible', function() {
 		let ship;
@@ -26,7 +35,7 @@ describe('Modernization', function() {
 		});
 
 		beforeEach(function() {
-			data = clone(TEST_DATA);
+			data = clone(MODERNIZATION);
 		});
 
 		it('should always find modernizations with slot -1 ineligible', function() {
@@ -79,7 +88,7 @@ describe('Modernization', function() {
 		});
 
 		it('should return modifier objects only for those modifiers where it is known how to deal with them', function() {
-			let modernization = new Modernization(TEST_DATA);
+			let modernization = new Modernization(MODERNIZATION);
 			expect(modernization.getModifiers()).to
 				.be.an('array')
 				.with.lengthOf(2);
