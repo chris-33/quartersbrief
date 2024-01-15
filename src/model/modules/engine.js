@@ -3,6 +3,6 @@ import Modifier from '../modifier.js';
 
 export default class Engine extends Module {
 	getModifiers() {
-		return [ 'speedCoef' ].map(target => Modifier.from(target, this._data[target]));
+		return [ ...Modifier.from('speedCoef', this._data.speedCoef) ];
 	}
 }
