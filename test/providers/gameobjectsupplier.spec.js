@@ -61,7 +61,7 @@ describe('GameObjectSupplier', function() {
 			})
 		);
 
-		it('should return throw an error if the requested object could not be retrieved', function() {
+		it('should throw an error if the requested object could not be retrieved', function() {
 			// Don't populate source path with anything this time
 		
 			return expect(gameObjectSupplier.recover('PAAA001_Test1')).to.be.rejected;
