@@ -180,40 +180,6 @@ describe('GameObjectProvider @integration', function() {
 						expect(result).to.have.property(kind).that.is.an.instanceOf(cls);
 						expect(result[kind]._data).to.not.be.empty;
 					}));					
-
-
-				it('should set ship property on all created modules', async function() {
-					const module0 = {};
-					const module1 = {};
-					const ship = Object.assign({}, SHIP, {
-						ShipUpgradeInfo: {
-							MOCK_MODULE_TOP: {
-								components: { mockModule: [ 'module0' ] },
-								ucType: '_MockModule',
-								prev: 'MOCK_MODULE_STOCK'
-							},
-							MOCK_MODULE_STOCK: {
-								components: { mockModule: [ 'module1' ] },
-								ucType: '_MockModule',
-								prev: ''
-							}
-						}},
-						{ 
-							module0, 
-							module1 
-						});
-					populate(ship);
-
-					const result = (await gameObjectProvider.createGameObject(ship.name));
-
-					[ 0, 1 ].forEach(i => 
-						expect(result._data.ShipUpgradeInfo).to
-							.have.nested.property(`mockModule[${i}].components.mockModule[0]`)
-							// Strict equality here, because it's important that both the module definition in the ship and the result of the lookup
-							// replacement the processor performed are the same object. 
-							// Otherwise using ShipUpgradeInfo as a target for modifiers would not work.
-							.that.has.property('ship').that.equals(result));
-				});
 			});
 
 			describe('consumable flavoring', function() {

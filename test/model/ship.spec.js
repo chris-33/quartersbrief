@@ -5,10 +5,8 @@ import Consumable from '../../src/model/consumable.js';
 import Signal from '../../src/model/signal.js';
 import Modifier from '../../src/model/modifier.js';
 import Module from '../../src/model/modules/module.js';
-import Artillery from '../../src/model/modules/artillery.js';
 import sinon from 'sinon';
 import clone from 'lodash/cloneDeep.js';
-import groupBy from 'lodash/groupBy.js';
 
 describe('Ship', function() {
 	const EXPOSED_PROPERTY_DESCRIPTOR = {
@@ -80,26 +78,28 @@ describe('Ship', function() {
 			AB2_FireControl: { value: 2 },
 			AB3_FireControl: { value: 3 },
 		}
+		/* eslint-disable mocha/no-setup-in-describe */
 		const REFITS = {
 			engine: [		
-				{ components: { engine: [ MODULES.AB1_Engine ] }}, // eslint-disable-line mocha/no-setup-in-describe
-				{ components: { engine: [ MODULES.AB2_Engine ] }} // eslint-disable-line mocha/no-setup-in-describe
+				{ components: { engine: [ MODULES.AB1_Engine ] }},
+				{ components: { engine: [ MODULES.AB2_Engine ] }}
 			],
 			artillery: [
-				{ components: { artillery: [ MODULES.AB1_Artillery ] }} // eslint-disable-line mocha/no-setup-in-describe
+				{ components: { artillery: [ MODULES.AB1_Artillery ] }}
 			],
 			suo: [
-				{ components: { fireControl: [ MODULES.AB1_FireControl ] }}, // eslint-disable-line mocha/no-setup-in-describe
-				{ components: { fireControl: [ MODULES.AB2_FireControl ] }}, // eslint-disable-line mocha/no-setup-in-describe
-				{ components: { fireControl: [ MODULES.AB3_FireControl ] }} // eslint-disable-line mocha/no-setup-in-describe
+				{ components: { fireControl: [ MODULES.AB1_FireControl ] }},
+				{ components: { fireControl: [ MODULES.AB2_FireControl ] }},
+				{ components: { fireControl: [ MODULES.AB3_FireControl ] }}
 			]
 		}
+		/* eslint-enable mocha/no-setup-in-describe */
 
 		beforeEach(function() {
 			ship = new Ship(clone(Object.assign({}, SHIP, MODULES, { ShipUpgradeInfo: REFITS })));
 		});
 
-		it('should have equipped the beginnings of the module lines after applying the stock configuration', function() {
+		it('should equip the beginnings of the module lines when applying the stock configuration', function() {
 			let expected = {
 				artillery: MODULES.AB1_Artillery,
 				engine: MODULES.AB1_Engine,
@@ -112,7 +112,7 @@ describe('Ship', function() {
 				expect(ship[key], key).to.deep.equal(expected[key]);
 		});
 
-		it('should have equipped the ends of the module lines after applying the top configuration', function() {
+		it('should equip the ends of the module lines when applying the top configuration', function() {
 			let expected = {
 				artillery: MODULES.AB1_Artillery,
 				engine: MODULES.AB2_Engine,
@@ -125,13 +125,13 @@ describe('Ship', function() {
 				expect(ship[key], key).to.deep.equal(expected[key]);
 		});
 
-		it('should throw a TypeEror if a complex configuration doesn\'t define all modules', function() {
+		it('should throw a TypeEror when a complex configuration doesn\'t define all modules', function() {
 			expect(ship.equipModules.bind(ship, 'engine: stock')).to.throw(TypeError);
 			expect(ship.equipModules.bind(ship, '')).to.throw(TypeError);
 			expect(ship.equipModules.bind(ship, 'malformed')).to.throw(TypeError);
 		});
 
-		it('should have equipped the specified combination of modules after applying a more specific configuration', function() {
+		it('should equip the specified combination of modules when applying a more specific configuration', function() {
 			let expected = {
 				artillery: MODULES.AB1_Artillery,
 				engine: MODULES.AB1_Engine,
@@ -142,6 +142,22 @@ describe('Ship', function() {
 
 			for (let key in expected) 
 				expect(ship[key]).to.deep.equal(expected[key]);
+		});
+
+		it('should apply modules\' modifiers', function() {
+			const MODIFIERS = {
+				EngineValue: 2,
+				ArtilleryValue: 3
+			}
+			// Turn the top fire control module into a Module with modifiers	
+			Object.setPrototypeOf(ship.refits.suo[2].components.fireControl[0], Module.prototype);
+			sinon.stub(ship.refits.suo[2].components.fireControl[0], 'getModifiers').returns(Object.keys(MODIFIERS).flatMap(key => Modifier.from(key, MODIFIERS[key])))
+		
+			ship.equipModules('top');
+			[ 'AB1_Engine', 'AB2_Engine' ].forEach(target => 
+				expect(ship._data[target].value).to.equal(MODULES[target].value * MODIFIERS.EngineValue));
+			[ 'AB1_Artillery' ].forEach(target => 
+				expect(ship._data[target].value).to.equal(MODULES[target].value * MODIFIERS.ArtilleryValue));
 		});
 
 		it('should re-equip modernizations after changing module configuration', function() {
@@ -211,7 +227,7 @@ describe('Ship', function() {
 			AB1_Engine,
 			AB2_Engine: { value: 2 },
 			AB1_Artillery,
-			AB2_Artillery: { value: 2}
+			AB2_Artillery: { value: 2 },
 		}
 
 		beforeEach(function() {

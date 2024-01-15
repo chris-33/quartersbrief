@@ -4,6 +4,7 @@ import Modernization from './modernization.js';
 import Captain from './captain.js';
 import Signal from './signal.js';
 import Consumable from './consumable.js';
+import Module from './modules/module.js';
 import difference from 'lodash/difference.js';
 import intersection from 'lodash/intersection.js';
 import rootlog from 'loglevel';
@@ -328,10 +329,10 @@ export default class Ship extends GameObject {
 		
 		// Start building the configuration
 		let configuration = {};
-		for (let module of toApply) {
+		for (let mdl of toApply) {
 			// For every component definition in every module
-			for (let componentKey in module.components) {
-				let component = module.components[componentKey];				
+			for (let componentKey in mdl.components) {
+				let component = mdl.components[componentKey];				
 				if (!configuration[componentKey])
 					// If this component has not yet been set in the configuration, set it now
 					configuration[componentKey] = component;
@@ -353,10 +354,15 @@ export default class Ship extends GameObject {
 			// violating components are at least ordered in such a way that the "correct" module comes first.
 			if (configuration[componentKey].length > 1)
 				dedicatedlog.warn(`Module descriptor descriptor ${descriptor} did not resolve unambiguously for ${componentKey} of ${this.getName()}. Choosing the first module that fits.`)
-			configuration[componentKey] = configuration[componentKey][0];
-			if (configuration[componentKey]) {
+			const component = configuration[componentKey][0];
+
+			if (component) {
+				// Do not attempt to get modifiers for modules that are not implemented as classes yet
+				// (Some modules have only cosmetic value and are not represented in quartersbrief)
+				if (component instanceof Module)
+					component.getModifiers().forEach(modifier => modifier.applyTo(this));
 				Object.defineProperty(this, componentKey, {
-					value: configuration[componentKey],
+					value: component,
 					writable: false,
 					configurable: true,
 					enumerable: true
@@ -377,7 +383,7 @@ export default class Ship extends GameObject {
 		return new Ship.Consumables(this._data.ShipAbilities);
 	}
 
-	get speed() { return this.hull.get('maxSpeed') * (1 - this.engine.get('speedCoef')); }
+	get speed() { return this.hull.maxSpeed * (1 - this.engine.speedCoef); }
 
 	// @todo Implement the following properties again
 	// ArtilleryRange: function() { return this.get('artillery.maxDist') * this.get('fireControl.maxDistCoef') },
