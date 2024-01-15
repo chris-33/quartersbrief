@@ -1,5 +1,5 @@
 import Topic from '../../topic.js';
-import { ShipBuilder } from '../../../util/shipbuilder.js';
+import ShipBuilder from '../../../util/shipbuilder.js';
 import { SKILLS } from '../../../model/captain.js';
 
 

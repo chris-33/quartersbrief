@@ -90,5 +90,3 @@ export default class ShipBuilder {
 		return ship;
 	}
 }
-
-export { ShipBuilder }
