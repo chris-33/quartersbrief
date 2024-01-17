@@ -75,23 +75,10 @@ const dedicatedlog = rootlog.getLogger('Ship');
  * @see Ship.gamedata
  */
 export default class Ship extends GameObject {
-
 	/**
-	 * The already equipped upgrades
+	 * Equipped captain, signals, modernizations or modules that are modifying this ship.
 	 */
-	#modernizations;
-	/**
-	 * The captain that is commanding this ship
-	 */	
-	#captain;
-	/**
-	 * The camouflage that is set on this ship
-	 */
-	#camouflage;
-	/**
-	 * The signal flags that are hoisted on this ship.
-	 */
-	#signals;
+	_equipped = [];
 
 	/**
 	 * Creates a new `Ship` object, initially setting its module configuration to the one provided
@@ -102,8 +89,6 @@ export default class Ship extends GameObject {
 	constructor(data, descriptor = 'stock') {
 		super(data);
 
-		this.#modernizations = [];
-		this.#signals = [];
 		this.equipModules(descriptor);
 	}
 
@@ -115,25 +100,23 @@ export default class Ship extends GameObject {
 	 */
 	setCaptain(captain) {
 		if (captain && !(captain instanceof Captain)) throw new TypeError(`Expected a Captain, but got a ${captain}`);
-
+		
 		// Remove old captain's effects if ship was already under command
-		if (this.#captain) {
-			let skills = this.#captain.getLearnedForShip(this);
-			for (let skill of skills) {
-				let modifiers = skill.getModifiers();
-				for (let modifier of modifiers) modifier.invert().applyTo(this);
-			}
-		}
+		this._equipped
+			.find(item => item instanceof Captain)
+			?.getLearnedForShip(this)
+			?.flatMap(skill => skill.getModifiers())
+			?.forEach(modifier => modifier.invert().applyTo(this));
 
 		// @todo Apply skills even if learned after setting the captain. (-> Observer pattern)
 
 		// Get captain skills, if captain is set. If being set to null, default to empty array
-		let skills = captain?.getLearnedForShip(this) ?? []; 
-		for (let skill of skills) {
-			let modifiers = skill.getModifiers();
-			for (let modifier of modifiers) modifier.applyTo(this);
-		}
-		this.#captain = captain;
+		(captain?.getLearnedForShip(this) ?? [])
+			.flatMap(skill => skill.getModifiers())
+			.forEach(modifier => modifier.applyTo(this)); 
+
+		if (captain) 
+			this._equipped.push(captain);
 	}	
 
 	/**
@@ -144,15 +127,14 @@ export default class Ship extends GameObject {
 		if (signal && !(signal instanceof Signal)) throw new TypeError(`Expected a Signal but got a ${signal}`);
 
 		// Don't hoist if already hoisted
-		if (this.#signals.some(s => s.id === signal.id)) {
+		if (this._equipped.some(s => s.id === signal.id)) {
 			rootlog.debug(`Did not hoist signal ${signal.name} on ship ${this.name} because it was already hoisted`);
 			return;
 		}
 
-		for (let modifier of signal.getModifiers())
-			modifier.applyTo(this);
+		signal.getModifiers().forEach(modifier => modifier.applyTo(this));
+		this._equipped.push(signal);
 
-		this.#signals.push(signal);
 		rootlog.debug(`Hoisted signal ${signal.name} on ship ${this.name}`);
 	}
 
@@ -162,12 +144,11 @@ export default class Ship extends GameObject {
 	 * @param  {Signal} signal The signal to lower.
 	 */
 	lower(signal) {		
-		let index = this.#signals.findIndex(s => s.id === signal.id);
-		if (index > -1) {			
-			for (let modifier of signal.getModifiers())
-				modifier.invert().applyTo(this);
+		const index = this._equipped.findIndex(item => item.id === signal.id);
 
-			this.#signals.splice(index, 1);
+		if (index > -1) {
+			signal.getModifiers().forEach(modifier => modifier.invert().applyTo(this));
+			this._equipped.splice(index, 1);
 
 			rootlog.debug(`Lowered signal ${signal.name} on ship ${this.name}`);
 		}
@@ -189,15 +170,12 @@ export default class Ship extends GameObject {
 			throw new TypeError(`Tried to equip ${modernization} but it is not a Modernization`);
 		
 		// Don't equip if already equipped or not eligible
-		if (this.#modernizations.some(equipped => equipped.name === modernization.name) || !modernization.eligible(this))
+		if (this._equipped.some(equipped => equipped.id === modernization.id) || !modernization.eligible(this))
 			return false;
 
-		let modifiers = modernization.getModifiers();
-		for (let modifier of modifiers) {
-			modifier.applyTo(this);
-		}
+		modernization.getModifiers().forEach(modifier => modifier.applyTo(this));
 		// Remember that it is already equipped now
-		this.#modernizations.push(modernization);
+		this._equipped.push(modernization);
 		return true;
 	}
 
@@ -213,19 +191,14 @@ export default class Ship extends GameObject {
 		
 		
 		// Need to find the modernization by ID first because the object references might not be the same
-		let index = this.#modernizations.findIndex(equipped => equipped.id === modernization.id);
+		const index = this._equipped.findIndex(equipped => equipped.id === modernization.id);
 		
-		// Don't equip if already equipped or not eligible
-		if (index === -1)
-			return false;
-
-		// Remove the effects of the modernization
-		let modifiers = this.#modernizations[index].getModifiers();
-		for (let modifier of modifiers)
-			modifier.invert().applyTo(this);
-
-		this.#modernizations.splice(index, 1);
-		return true;
+		if (index > -1) {
+			modernization.getModifiers().forEach(modifier => modifier.invert().applyTo(this));
+			this._equipped.splice(index, 1);
+			return true;
+		}
+		return false;
 	}
 
 	/**
@@ -326,7 +299,12 @@ export default class Ship extends GameObject {
 		descriptor = normalize(descriptor); 
 		// Retrieve the modules as defined by the descriptor
 		let toApply = descriptor.map(retrieve);
-		
+	
+		// Revert any equipped modules' modifiers
+		for (let modifier of this._equipped.filter(item => item instanceof Module).flatMap(mdl => mdl.getModifiers()))
+			modifier.invert().applyTo(this);
+		this._equipped = this._equipped.filter(item => !(item instanceof Module));
+
 		// Start building the configuration
 		let configuration = {};
 		for (let mdl of toApply) {
@@ -359,8 +337,10 @@ export default class Ship extends GameObject {
 			if (component) {
 				// Do not attempt to get modifiers for modules that are not implemented as classes yet
 				// (Some modules have only cosmetic value and are not represented in quartersbrief)
-				if (component instanceof Module)
+				if (component instanceof Module) {
 					component.getModifiers().forEach(modifier => modifier.applyTo(this));
+					this._equipped.push(component);
+				}
 				Object.defineProperty(this, componentKey, {
 					value: component,
 					writable: false,

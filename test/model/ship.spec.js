@@ -160,7 +160,25 @@ describe('Ship', function() {
 				expect(ship._data[target].value).to.equal(MODULES[target].value * MODIFIERS.ArtilleryValue));
 		});
 
-		it('should re-equip modernizations after changing module configuration', function() {
+		it('should revert modules\' modifiers when changing configuration', function() {
+			const MODIFIERS = {
+				EngineValue: 2
+			}
+			const ENGINES = [ 'AB1_Engine', 'AB2_Engine' ];
+			// Turn the top fire control module into a Module with modifiers	
+			Object.setPrototypeOf(ship.refits.suo[2].components.fireControl[0], Module.prototype);
+			sinon.stub(ship.refits.suo[2].components.fireControl[0], 'getModifiers').returns(Object.keys(MODIFIERS).flatMap(key => Modifier.from(key, MODIFIERS[key])))
+
+			ship.equipModules('top');
+			const vals = ENGINES.map(target => ship._data[target].value);
+			ship.equipModules('stock');
+
+
+			ENGINES.forEach((target, index) => 
+				expect(ship._data[target].value).to.equal(vals[index] / MODIFIERS.EngineValue));
+		});
+
+		it('should retain modernization effects after changing module configuration', function() {
 			const MODIFIERS = {
 				EngineValue: 2
 			}
@@ -177,7 +195,7 @@ describe('Ship', function() {
 			expect(ship.engine.value).to.equal(MODIFIERS.EngineValue * MODULES.AB2_Engine.value);
 		});
 
-		it('should re-apply captain skills after changing module configuration', function() {
+		it('should retain captain skill effects after changing module configuration', function() {
 			ship.equipModules('stock');
 			const SKILLS = {
 				Skill1: {
@@ -203,7 +221,7 @@ describe('Ship', function() {
 			expect(ship.engine.value).to.equal(SKILLS.Skill1.modifiers.EngineValue * MODULES.AB2_Engine.value);
 		});
 
-		it('should re-hoist signals after changing module configuration', function() {
+		it('should retain signal effects after changing module configuration', function() {
 			const MODIFIERS = {
 				EngineValue: 2
 			}
