@@ -35,7 +35,9 @@ export const BASE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)
 const WOWS_APP_ID = 552990;
 export const WOWS_DIRS = [
 	// Steam game path, if installed; otherwise catch thrown error 
-	await getGamePath(WOWS_APP_ID).catch(err => err.message.match(/steam/i) ? null : Promise.reject(err)), 
+	await getGamePath(WOWS_APP_ID)
+		.then(info => info.path)
+		.catch(err => err.message.match(/steam/i) ? null : Promise.reject(err)), 
 	...{
 		// On Linux: ~, /games (even though not a standard location), /opt/, mounted drives
 		'Linux': [
