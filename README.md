@@ -106,12 +106,7 @@ There are also commands for using the built-in Node.js debugger. Append `-local`
 
 ### Releases
 
-This project uses [grunt-bump](https://www.npmjs.com/package/grunt-bump) for handling releases. See there for detailed usage instructions. 
-
-- `grunt bump:major` for a major release
-- `grunt bump:minor` for a minor release
-- `grunt bump:patch` for a patch release
-- `grunt bump:prerelease` for a pre-release. (See also `prereleaseName` in [grunt task file](blob/master/grunt/bump.grunt.js).)
+This project uses [release-it](https://github.com/release-it/release-it) for handling releases. Simply run `release-it` from inside the Vagrant VM and follow the on-screen instructions. 
 
 ### Contributing and style guide
 
