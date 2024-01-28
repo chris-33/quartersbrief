@@ -2,7 +2,7 @@ import path from 'path';
 import _yargs from 'yargs';
 import { hideBin } from 'yargs/helpers'
 const yargs = _yargs(hideBin(process.argv));
-import { CONFIG_USER_DIR } from './paths.js';
+import { CONFIG_USER_DIR, WOWS_DIRS } from './paths.js';
 import log from 'loglevel';
 import { existsSync, readFileSync } from 'fs';
 
@@ -32,7 +32,10 @@ const config = {
 		.option('wowsdir', {
 			alias: 'd',
 			type: 'string',
-			normalize: true,
+			coerce: paths => Array.isArray(paths) ? paths : (paths ?? '')
+				.split(';')
+				.map(path.normalize),
+			default: WOWS_DIRS,
 			description: 'The base directory of World of Warship. This is the directory that WorldOfWarships.exe is in.'
 		})
 		.option('host', {

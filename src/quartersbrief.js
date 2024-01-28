@@ -2,6 +2,7 @@
 
 import config from './init/config.js';
 import * as paths from './init/paths.js';
+import findGame from './init/find-game.js';
 import './init/log.js';
 import update from './init/update.js';
 import log from 'loglevel';
@@ -23,11 +24,14 @@ import path from 'path';
 import pug from 'pug';
 import * as sass from 'sass';
 
-// Make sure the game directory is specified.
+// Try to find the game
+config.wowsdir = await findGame(config.wowsdir);
 if (!config.wowsdir) {
-	log.error(`Missing required parameters wowsdir. Either pass it using --wowsdir or set it in your quartersbrief.json. Exiting.`);
+	log.error(`Could not find World of Warships installation directory. Either pass it using --wowsdir or set it in your quartersbrief.json. Exiting.`);
 	process.exit(1);
-}
+} else 
+	log.debug(`Found World of Warships in ${config.wowsdir}`);
+
 // Make sure that the replays directory we will be watching actually exists
 // If it doesn't, this is a non-recoverable error, because this program is pointless without it.
 if (!existsSync(path.join(config.wowsdir, 'replays'))) {
