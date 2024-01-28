@@ -46,7 +46,7 @@
 		}, {
 			name: 'deepwater',
 			severity: entry => {
-				const ignoredClasses = entry.ship.get('torpedoes.mounts.*.ammos.*.ignoreClasses');
+				const ignoredClasses = entry.ship.get('torpedoes.mounts.*.ammos.*.ignoredClasses', { collate: true });
 				if (ignoredClasses.length === 0)
 					return '';
 				if (ignoredClasses.includes(ownship.class))
