@@ -6,11 +6,11 @@
   "bin": "./src/quartersbrief.js",
   "scripts": {
     "start": "node src/quartersbrief.js",
-    "test": "grunt test",
+    "test": "npx mocha",
     "debug": "node --inspect-brk=0.0.0.0:9229 src/quartersbrief.js",
-    "debug-test": "grunt test --inspect-brk=0.0.0.0:9229",
+    "debug-test": "npx mocha --inspect-brk=0.0.0.0:9229",
     "debug-local": "node inspect src/quartersbrief.js",
-    "debug-local-test": "grunt test --inspect-local"
+    "debug-local-test": "npx mocha inspect"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.2.0",
