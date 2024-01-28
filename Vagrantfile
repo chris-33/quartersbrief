@@ -105,7 +105,7 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", name: "Install convenience commands", privileged: false, inline: <<-SHELL
     mkdir -p /home/vagrant/.local/bin
     echo 'npm start -- $@' > /home/vagrant/.local/bin/start  && chmod +x /home/vagrant/.local/bin/start
-    ln -s /home/vagrant/.local/bin/start /home/vagrant/.local/bin/quartersbrief
+    ln -sf /home/vagrant/.local/bin/start /home/vagrant/.local/bin/quartersbrief
     echo 'npm run debug -- $@' > /home/vagrant/.local/bin/debug  && chmod +x /home/vagrant/.local/bin/debug
     echo 'npm run debug-local -- $@' > /home/vagrant/.local/bin/debug-local  && chmod +x /home/vagrant/.local/bin/debug-local
     # This needs to be "tests" instead of "test" because test is a Linux command
