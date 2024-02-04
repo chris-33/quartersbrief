@@ -43,7 +43,7 @@ jobs:
         # Only output the commit subject line (--format=%s)
         # Only output commits containing [[!]] (--grep=[[!]])
         # ([[!]] is the marker for changelog-relevant commits)
-        # Strip the changelog relevance marker from the commit lines (sed s/[[!]]//)
+        # Strip the changelog relevance marker from the commit lines and prefix with a - for markdown using awk
       - name: Compile changelog
         id: compile-changelog
         run: |
