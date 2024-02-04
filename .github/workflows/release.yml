@@ -21,6 +21,38 @@ jobs:
         uses: LykkeBusiness/get-semver-from-tag-action@v1.0.2
         with:
           tag: ${{ github.ref }}
+  
+  # Compile a changelog from all commit messages between the pushed tag and its predecessor
+  # Commit messages including the changelog relevance marker [[!]] will be included in the changelog
+  # The relevance marker itself will be stripped from the messages
+  changelog:
+    runs-on: ubuntu-latest
+    needs: getversion
+    outputs:
+      changelog: ${{ steps.compile-changelog.outputs.changelog }}
+    steps:
+      - uses: actions/checkout@v3
+
+        # Get the PREVIOUS tag of the one that was just pushed
+        # The previous commit is the most recent one reachable from the pushed tag that isn't the pushed tag itself
+      - name: Get previous tag
+        id: previous-tag
+        run: echo "name=$(git describe --abbrev=0 --tags --exclude="v${{ needs.getversion.outputs.version }}" "${{ github.ref }}")" >> $GITHUB_OUTPUT
+
+        # Run git log to show all commits between the previous commit and the current one
+        # Only output the commit subject line (--format=%s)
+        # Only output commits containing [[!]] (--grep=[[!]])
+        # ([[!]] is the marker for changelog-relevant commits)
+        # Strip the changelog relevance marker from the commit lines (sed s/[[!]]//)
+      - name: Compile changelog
+        id: compile-changelog
+        run: |
+          {
+            echo 'changelog<<___EOF___'
+            echo "**Changelog**:"
+            git log --format=%s --grep="[[!]]" "${{ steps.previous-tag.outputs.name }}"..v"${{ needs.getversion.outputs.version }}" | awk '/\[\[!\]\]/ { sub(/\[\[!\]\]/, ""); print "- " $0 }'
+            echo ___EOF___
+          } >> $GITHUB_OUTPUT
 
   build-deb:
     runs-on: ubuntu-latest
@@ -72,7 +104,7 @@ jobs:
           version: ${{ needs.getversion.outputs.version }}
           maintainer: 'BadIdeaException'
           arch: 'amd64'
-          depends: 'nodejs (>= 17.0.0), wine, wine32, python3'
+          depends: 'nodejs (>= 17.0.0), wine, wine32'
 
       - uses: actions/upload-artifact@v3
         with: 
@@ -220,13 +252,14 @@ jobs:
 
   release:  
     runs-on: ubuntu-latest
-    needs: [build-deb, build-msi]
+    needs: [build-deb, build-msi, changelog]
     steps:
       - uses: actions/download-artifact@v3
 
       - uses: softprops/action-gh-release@v1
         with:
-          prerelease: true
+          body: ${{ needs.changelog.outputs.changelog }}
+          prerelease: ${{ contains(needs.getversion.outputs.version, 'alpha' || contains(needs.getversion.outputs.version, 'beta') || contains(needs.getversion.outputs.version, 'rc') }}
           files: |
-            deb/${{ needs.build-deb.outputs.file_name }}
             msi/${{ needs.build-msi.outputs.file_name }}
+            deb/${{ needs.build-deb.outputs.file_name }}
