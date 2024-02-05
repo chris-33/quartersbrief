@@ -37,7 +37,9 @@ export const WOWS_DIRS = [
 	// Steam game path, if installed; otherwise catch thrown error 
 	await getGamePath(WOWS_APP_ID)
 		.then(info => info.path)
-		.catch(err => err.message.match(/steam/i) ? null : Promise.reject(err)), 
+		.catch(err => (err.message.match(/steam/i) || err.message.match(/appmanifest/i))
+			? null 
+			: Promise.reject(err)), 
 	...{
 		// On Linux: ~, /games (even though not a standard location), /opt/, mounted drives
 		'Linux': [
