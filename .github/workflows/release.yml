@@ -50,7 +50,7 @@ jobs:
           {
             echo 'changelog<<___EOF___'
             echo "**Changelog**:"
-            git log --format=%s "${{ steps.previous-tag.outputs.name }}"..v"${{ needs.getversion.outputs.version }}" | --grep="\[\[!\]\]" | awk '/\[\[!\]\]/ { sub(/\[\[!\]\]/, ""); print "- " $0 }'
+            git log --format=%s "${{ steps.previous-tag.outputs.name }}"..v"${{ needs.getversion.outputs.version }}" | grep "\[\[!\]\]" | awk '/\[\[!\]\]/ { sub(/\[\[!\]\]/, ""); print "- " $0 }'
             echo ___EOF___
           } >> $GITHUB_OUTPUT
 
