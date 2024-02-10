@@ -259,7 +259,7 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           body: ${{ needs.changelog.outputs.changelog }}
-          prerelease: ${{ contains(needs.getversion.outputs.version, 'alpha' || contains(needs.getversion.outputs.version, 'beta') || contains(needs.getversion.outputs.version, 'rc') }}
+          prerelease: ${{ contains(needs.getversion.outputs.version, 'alpha') || contains(needs.getversion.outputs.version, 'beta') || contains(needs.getversion.outputs.version, 'rc') }}
           files: |
             msi/${{ needs.build-msi.outputs.file_name }}
             deb/${{ needs.build-deb.outputs.file_name }}
