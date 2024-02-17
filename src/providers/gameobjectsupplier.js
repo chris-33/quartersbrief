@@ -114,8 +114,19 @@ GameObjectSupplier.Processors = class {
 			].map(compileSelector),
 
 			'Ship': [
-				// Expansion of inline gun definitions:
+				// Some gun properties are defined on the containing artillery definition in the game files instead of the gun themselves.
+				// This is the case for Main and Secondary guns for the properties taperDist and maxDist. 
+				// This prevents dispersion from being calculated at a gun level.
+				// This processor pushes these properties down to the individual guns.
+				{ selector: '*.*[typeinfo.type===Gun][typeinfo.species===Main],*.*[typeinfo.type===Gun][typeinfo.species===Secondary]', processors: [
+						function pushDown(gun, name, artillery) {							
+							gun.taperDist ??= artillery.taperDist;
+							gun.maxDist ??= artillery.maxDist;
+							return gun;
+						}
+					]},
 				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
+				// Expansion of inline gun definitions:
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
 				
 				// Module conversion:

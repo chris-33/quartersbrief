@@ -94,15 +94,19 @@ describe('GameObjectProvider @integration', function() {
 			};
 
 			describe('gun expansion', function() {
-				const GUN = {
-					typeinfo: {
-						type: 'Gun',
-						Species: 'Main'
+				let GUN;
+				beforeEach(function() {
+					GUN = {
+						ammoList: [],
+						typeinfo: {
+							type: 'Gun',
+							species: 'Main'
+						}
 					}
-				}
-				it('should expand guns\' ammo defitinions', async function() {
+				});
+
+				it('should expand guns\' ammo definitions', async function() {
 					const artillery = {
-						// Deliberately not setting typeinfo.species on the gun, so artillery won't be converted to Artillery object
 						AB1_Artillery: {
 							HP_AGM_1: {
 								...GUN,
@@ -112,6 +116,7 @@ describe('GameObjectProvider @integration', function() {
 					};
 					const ammo = { 
 						name: 'PAAA002_Test2',
+						ammoType: '',
 						typeinfo: {
 							type: 'Projectile',
 							species: 'Artillery'
@@ -120,15 +125,33 @@ describe('GameObjectProvider @integration', function() {
 					const ship = Object.assign({}, SHIP, artillery);
 					populate([ ship, ammo ]);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery.HP_AGM_1._data.ammoList;
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data.HP_AGM_1._data.ammoList;
 
 					expect(result).to.be.an('array').with.lengthOf(1);
 					expect(result[0]._data).to.deep.equal(ammo);
 				});
+				
+				it('should push down taperDist, maxDist and sigmaCount properties', async function() {
+					const artillery = {
+						AB1_Artillery: {
+							HP_AGM_1: GUN,
+							taperDist: 1,
+							maxDist: 2,
+							sigmaCount: 1.5
+						}
+					};
+					const ship = Object.assign({}, SHIP, artillery);
+					populate(ship);
+
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data.HP_AGM_1._data;
+
+					expect(result).to.have.property('taperDist').that.equals(artillery.AB1_Artillery.taperDist);
+					expect(result).to.have.property('maxDist').that.equals(artillery.AB1_Artillery.maxDist);
+					expect(result).to.have.property('sigmaCount').that.equals(artillery.AB1_Artillery.sigmaCount);
+				});
 
 				it('should expand inline gun definitions into Gun objects', async function() {
 					const artillery = {
-						// Deliberately not setting typeinfo.species on the gun, so artillery won't be converted to Artillery object
 						AB1_Artillery: {
 							HP_AGM_1: GUN
 						}
@@ -136,13 +159,13 @@ describe('GameObjectProvider @integration', function() {
 					const ship = Object.assign({}, SHIP, artillery);
 					populate(ship);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery;
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data;
 
 					expect(result).to
 						.have.property('HP_AGM_1')
 						.that.is.an.instanceOf(Gun);
 					expect(result.HP_AGM_1._data).to
-						.deep.equal(artillery.AB1_Artillery.HP_AGM_1);
+						.deep.include(artillery.AB1_Artillery.HP_AGM_1);
 				});
 			});
 
