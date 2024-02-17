@@ -198,6 +198,43 @@ export function moduleComponentsResolveUnambiguously(ship) {
 // Known violators to be ignored
 moduleComponentsResolveUnambiguously.IGNORE = [ 'PASA110_Midway' ];
 
+// Checks that properties listed below are the same for all guns within an artillery definition
+// (i.e. that within a main battery, one turret is not more accurate than another)
+export function gunsAreSimilar(ship) {
+	if (ship.typeinfo?.type !== 'Ship') return;
+	
+	let counterexamples = [];
+	const artilleries = Object.entries(ship)		
+		.filter(([ key, obj ]) => Object.values(obj).some(prop => prop?.typeinfo?.type === 'Gun')) // eslint-disable-line no-unused-vars
+		.map(([ key ]) => key);
+
+	for (let key of artilleries) {
+		const artillery = ship[key];
+		const guns = Object.values(artillery).filter(obj => obj?.typeinfo?.type === 'Gun');
+		
+		const gun0 = guns[0];
+		const others = guns.slice(1);
+
+		[
+			'minRadius',
+			'idealRadius',
+			'idealDistance',
+			'radiusOnZero',
+			'radiusOnDelim',
+			'radiusOnMax',
+			'delim'
+		].forEach(prop => {
+			if (!others.every(gun => gun[prop] === gun0[prop])) 
+				counterexamples.push(`${ship.name} has different values for ${prop} in ${artillery}`);
+		});
+	}
+
+	if (counterexamples.length > 0) {
+		let errors = counterexamples.map(counterexample => new InvariantError('a ship\'s guns must have similar characteristics', counterexample));
+		throw errors.length > 1 ? new AggregateError(errors) : errors[0];
+	}
+}
+
 export function weaponAmmosAreOrdered(ship) {
 	if (ship.typeinfo?.type !== 'Ship') return;
 
