@@ -69,7 +69,7 @@ const dedicatedlog = rootlog.getLogger('Ship');
  *
  * ### Signal flags
  *
- * Much as camouflages, signal flags provide some bonuses to a ship that mounts them. While only one camouflage
+ * Signal flags provide some bonuses to a ship that mounts them. While only one camouflage
  * can be set on a ship, several signal flags can be mounted at the same time.
  *
  * @see Ship.gamedata
