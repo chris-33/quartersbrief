@@ -37,7 +37,7 @@
     "node-fetch": "^3.2.3",
     "node-html-parser": "^6.1.1",
     "node-watch": "^0.7.3",
-    "object-selectors": "https://api.github.com/repos/BadIdeaException/object-selectors/tarball",
+    "object-selectors": "^2.3.0",
     "pipe-functions": "^1.3.0",
     "polybooljs": "https://api.github.com/repos/velipso/polybooljs/tarball/pull/8/head",
     "pug": "^3.0.2",
