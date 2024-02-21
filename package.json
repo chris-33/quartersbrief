@@ -33,6 +33,7 @@
     "lodash": "^4.17.21",
     "loglevel": "^1.8.0",
     "loglevel-plugin-prefix": "^0.8.4",
+    "math-erf": "^1.0.0",
     "md5": "^2.3.0",
     "node-fetch": "^3.2.3",
     "node-html-parser": "^6.1.1",

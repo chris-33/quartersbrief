@@ -18,6 +18,7 @@ import Artillery from '../model/modules/artillery.js';
 import Torpedoes from '../model/modules/torpedoes.js';
 import Hull from '../model/modules/hull.js';
 import Engine from '../model/modules/engine.js';
+import FireControl from '../model/modules/fireControl.js';
 
 export default class GameObjectSupplier extends Supplier {
 
@@ -122,6 +123,7 @@ GameObjectSupplier.Processors = class {
 						function pushDown(gun, name, artillery) {							
 							gun.taperDist ??= artillery.taperDist;
 							gun.maxDist ??= artillery.maxDist;
+							gun.sigmaCount ??= artillery.sigmaCount;
 							return gun;
 						}
 					]},
@@ -134,7 +136,6 @@ GameObjectSupplier.Processors = class {
 				{ selector: '*[*.typeinfo.type===Gun][*.typeinfo.species===Torpedo]', processors: [ mdl => new Torpedoes(mdl) ]},
 				{ selector: '*[draft]', processors: [ mdl => new Hull(mdl) ]},
 				{ selector: '*[forwardEngineForsag]', processors: [ mdl => new Engine(mdl) ]},
-
 
 				{ selector: 'defaultCrew', processors: [ expand, convert ] },
 				// Change ship consumables from the format in which they are in the game files [ <consumable reference>, <flavor> ]
