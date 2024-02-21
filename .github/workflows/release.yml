@@ -1,5 +1,10 @@
-# This workflow builds a .deb package and a .msi installer when a version is pushed.
-
+# This workflow builds a .deb package and a .msi installer when a version tag is pushed, 
+# and publishes a new release. Besides (obviously) the app itself, these assets also include
+# the appropriate set of centrally administered agendas from the agendas repository (as per the
+# AGENDAS_REPO workflow env variable).
+# 
+# It automatically generates a changelog from the commits between the previous tag and the new one by
+# looking for the changelog relevance marker [[!]] in commit messages.
 name: release
 
 on:
@@ -7,10 +12,11 @@ on:
     tags: 
       - 'v*'
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+env:
+  AGENDAS_REPO: 'agendas'
 
 jobs:
+  # Extract the semver version from the new tag
   getversion:
     runs-on: ubuntu-latest
     outputs: 
@@ -22,6 +28,88 @@ jobs:
         with:
           tag: ${{ github.ref }}
   
+  # Identify the branch of the agendas repo containing the centrally administered agendas for the new version.
+  # This is the highest (according to semantic versioning) version-named branch within the agendas repo that is
+  # also present in the list of version tags from the version history (tag list reachable from) the new tag.
+  agendas:
+    runs-on: ubuntu-latest
+    outputs:
+      branch: ${{steps.agenda.outputs.branch}}
+    steps:
+      - uses: actions/checkout@v3
+        with: 
+          fetch-depth: 0
+
+      - name: Get version history for the pushed tag
+        id: versions
+        run: |
+          # List all tags reachable from the just-pushed tag, and sort them according to semver.
+          # The two calls to sed are to allow proper sorting of pre-release versions (otherwise they would be sorted
+          # after their corresponding stable versions.) See:
+          # https://stackoverflow.com/questions/40390957/how-to-sort-semantic-versions-in-bash
+          {
+            echo 'tags<<___EOF___'
+            git tag --list --merged ${{ github.ref }} | sed '/-/!{s/$/_/}' | sort -rV | sed 's/_$//'
+            echo '___EOF___'
+          } >> $GITHUB_OUTPUT
+
+      - uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: python3-semver python3-requests
+
+      - name: Get agendas repository branch names
+        id: agendas
+        shell: python
+        run: |
+          import requests
+          import os
+
+          request = requests.get(f'https://api.github.com/repos/{os.environ["GITHUB_REPOSITORY_OWNER"]}/{os.environ["AGENDAS_REPO"]}/branches')          
+          request.raise_for_status()  
+
+          branches = request.json()
+          
+          # Write to GITHUB_OUTPUT
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            print('branches<<___EOF___', file=fh)
+            print('\n'.join([ entry['name'] for entry in branches ]), file=fh)
+            print('___EOF___', file=fh)
+
+      - name: Find matching agenda
+        id: agenda
+        shell: python
+        run: |
+          import semver
+          import os
+
+          # The list of versions reachable from the new tag
+          # Normalized to not contain the initial 'v' for compatibility with semver package
+          versions = [ 
+            v[1::] if v[0]=='v' else v
+            for v in '''${{ steps.versions.outputs.tags }}'''.splitlines() 
+          ]
+          # The list of branches in the agendas repository
+          # master branch excluded
+          # Normalized to not contain the initial 'v' for compatibility with semver package
+          agendas = [ 
+            branch[1::] if branch[0]=='v' else branch 
+            for branch in '''${{ steps.agendas.outputs.branches }}'''.splitlines() 
+            if branch != 'master'
+          ]
+
+          # Intersect both lists to find common versions
+          # Then sort according to semver in reverse order, i.e. highest versions first
+          # result[0] is now the latest common version: the source for the agendas
+          # If result is empty, we cannot proceed
+          result = sorted(list(set(versions) & set(agendas)),
+            key=semver.VersionInfo.parse, 
+            reverse=True)            
+          if len(result) == 0:
+            raise ValueError(f'No matching agendas found for {"${{ github.ref }}".rsplit("/")[2]}')
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as fh:
+            print(f'branch=v{result[0]}', file=fh)
+
   # Compile a changelog from all commit messages between the pushed tag and its predecessor
   # Commit messages including the changelog relevance marker [[!]] will be included in the changelog
   # The relevance marker itself will be stripped from the messages
@@ -56,9 +144,10 @@ jobs:
             echo ___EOF___
           } >> $GITHUB_OUTPUT
 
+  # Build a debian .deb package for the new version
   build-deb:
     runs-on: ubuntu-latest
-    needs: getversion
+    needs: [ getversion, agendas ]
     env:
       PKGROOT: ${{ github.workspace }}/tmp/debpkg
     outputs: 
@@ -66,6 +155,12 @@ jobs:
     steps:
       # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
+      # Check out the agendas repository into $GITHUB_WORKSPACE/agendas
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository_owner }}/${{ env.AGENDAS_REPO }}
+          ref: ${{ needs.agendas.outputs.branch }}
+          path: agendas
 
       # Create the package contents directory structure
       - name: Assemble package contents
@@ -84,7 +179,7 @@ jobs:
           chmod +x $PKGROOT/usr/bin/quartersbrief
           
           mkdir -p $PKGROOT/usr/share/quartersbrief
-          cp -r $GITHUB_WORKSPACE/.github/workflows/res/common/agendas/* $PKGROOT/usr/share/quartersbrief
+          cp -r $GITHUB_WORKSPACE/agendas/* $PKGROOT/usr/share/quartersbrief
           
           mkdir -p -m 777 $PKGROOT/var/cache/quartersbrief
           mkdir -p -m 777 $PKGROOT/var/lib/quartersbrief
@@ -112,10 +207,10 @@ jobs:
         with: 
           name: deb
           path: ${{ steps.package.outputs.file_name }}
-          retention-days: 1
 
+  # Build a Windows .msi installer for the new version
   build-msi:
-    needs: getversion
+    needs: [ getversion, agendas ]
     runs-on: windows-latest
     env:
       workdir: ${{ github.workspace }}\tmp\
@@ -126,6 +221,12 @@ jobs:
     steps:
       # Check out the repository into $GITHUB_WORKSPACE
       - uses: actions/checkout@v3
+      # Check out the agendas repository into $GITHUB_WORKSPACE/agendas
+      - uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository_owner }}/${{ env.AGENDAS_REPO }}
+          ref: ${{ needs.agendas.outputs.branch }}
+          path: agendas
 
       # Windows Installer can't handle version tags with suffixed pre-release identifiers. To make matters 
       # worse, although it handles four-digit version numbers (a.b.c.d), it will only consider the first three
@@ -183,7 +284,7 @@ jobs:
           xcopy ${{ github.workspace }}\README.md ${{ env.releasedir }}
           xcopy ${{ github.workspace }}\.github\workflows\res\windows\Quartersbrief.cmd ${{ env.releasedir }}
           xcopy ${{ github.workspace }}\.github\workflows\res\windows\LICENSE.rtf ${{ env.workdir }}
-          xcopy /s /e ${{ github.workspace }}\.github\workflows\res\common\agendas ${{ env.assetdir }}
+          xcopy /s /e ${{ github.workspace }}\agendas ${{ env.assetdir }}
 
       # Harvest the release dir, creating QuartersbriefFiles.wxs that includes all files to install
       - name: Harvest package contents
@@ -252,6 +353,7 @@ jobs:
           name: msi
           path: ${{ env.workdir }}${{ steps.light.outputs.file_name }}
 
+  # Create and publish the release on GitHub
   release:  
     runs-on: ubuntu-latest
     needs: [getversion, build-deb, build-msi, changelog]
