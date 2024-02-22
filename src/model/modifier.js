@@ -47,9 +47,9 @@ export default class Modifier {
 		// @todo AAAuraDamage // PCM011_AirDefense_Mod_II
 		// @todo AABubbleDamage // PCM011_AirDefense_Mod_II
 		GSMaxDist: 'atba.maxDist', // PCM012_SecondaryGun_Mod_II, PCM028_FireControl_Mod_I_US
-		GMShotDelay: 'refits.*.*.components.artillery.*:unique.mounts.*.shotDelay', // PCM013_MainGun_Mod_III
+		GMShotDelay: 'refits.*.*.components.artillery.*:unique.mounts.*.reload', // PCM013_MainGun_Mod_III
 		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
-		GMPenetrationCoeffHE: 'refits.*.*.components.artillery.*:unique.mounts.*.ammoList.*.alphaPiercingHE', // Skill 33 HePenetration
+		GMPenetrationCoeffHE: 'refits.*.*.components.artillery.*:unique.mounts.*.ammos.he.pen', // Skill 33 HePenetration
 		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
 		GTShotDelay: 'refits.*.*.components.torpedoes.*:unique.mounts.*.reload', // PCM014_Torpedo_Mod_III, PCM057_Special_Mod_I_Shimakaze, PCM075_Special_Mod_I_Daring, Skill 4 Fill the Tubes
 		// @todo planeVisibilityFactor isn't the visibility BY plane, it's the visibility OF the planes
