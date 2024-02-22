@@ -26,6 +26,7 @@ export default class PlayerProvider {
 		await request.execute();
 
 		result = (await result)
+			.filter(Boolean) // Filter out players that could not be retrieved
 			.map(player => new Player(player))
 			.concat(bots.map(bot => Player.createBot(bot)))
 			.map(player => [ player.name, player ]);

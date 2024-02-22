@@ -234,11 +234,20 @@ describe('PlayerProvider', function() {
 		it('should return instances of Player over the correct data', async function() {			
 			let result = await provider.getPlayers([ 1, 2 ]);
 
-			expect(result).to.be.an('object')
+			expect(result).to.be.an('object');
 			expect(result).to.have.property('player1').that.is.an.instanceof(Player);			
 			expect(result).to.have.property('player2').that.is.an.instanceof(Player);
 			expect(result.player1).to.have.property('_data').that.deep.equals(p1);
 			expect(result.player2).to.have.property('_data').that.deep.equals(p2);
+		});
+
+		it('should ignore requested players that are not part of the result', async function() {
+			provider.supplier.get.onSecondCall().resolves(undefined);
+
+			let result = provider.getPlayers([ 1, 2 ]);
+
+			await expect(result, 'missing player data should not crash getPlayers()').to.be.fulfilled;
+			expect(Object.keys(await result)).to.deep.equal([ 'player1' ]);
 		});
 
 		it('should return instances of Player for bots', async function() {
