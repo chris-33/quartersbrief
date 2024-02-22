@@ -1,5 +1,6 @@
 import Supplier from './supplier.js';
 import pipe from 'pipe-functions';
+import clone from 'lodash/cloneDeep.js';
 import { compile, perform } from 'object-selectors';
 import * as processors from './processors.js';
 import fs from 'fs/promises';
@@ -115,7 +116,10 @@ GameObjectSupplier.Processors = class {
 
 			'Ship': [
 				// Expansion of inline gun definitions:
-				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
+				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ 
+					expand, convert, 
+					// Since ammos don't have nested DataObjects, we can just do a regular clone here
+					ammo => new ammo.constructor(clone(ammo._data)) ] },
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
 				
 				// Module conversion:

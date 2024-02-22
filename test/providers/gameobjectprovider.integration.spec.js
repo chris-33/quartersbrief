@@ -101,6 +101,14 @@ describe('GameObjectProvider @integration', function() {
 						species: 'Main'
 					}
 				}
+				const ammo = { 
+					name: 'PAAA002_Test2',
+					ammoType: 'he',
+					typeinfo: {
+						type: 'Projectile',
+						species: 'Artillery'
+					}
+				}
 
 				it('should expand guns\' ammo defitinions', async function() {
 					const artillery = {
@@ -109,14 +117,6 @@ describe('GameObjectProvider @integration', function() {
 								...GUN,
 								ammoList: [ 'PAAA002_Test2' ],
 							}
-						}
-					};
-					const ammo = { 
-						name: 'PAAA002_Test2',
-						ammoType: 'he',
-						typeinfo: {
-							type: 'Projectile',
-							species: 'Artillery'
 						}
 					};
 					const ship = Object.assign({}, SHIP, artillery);
@@ -129,6 +129,21 @@ describe('GameObjectProvider @integration', function() {
 
 					expect(result).to.be.an('array').with.lengthOf(1);
 					expect(result[0]._data).to.deep.equal(ammo);
+				});
+
+				it('should have separate ammo objects for different guns', async function() {
+					const artillery = {
+						AB1_Artillery: {
+							HP_AGM_1: { ...GUN, ammoList: [ 'PAAA002_Test2' ] },
+							HP_AGM_2: { ...GUN, ammoList: [ 'PAAA002_Test2' ] }
+						}
+					};
+					const ship = Object.assign({}, SHIP, artillery);
+					populate([ ship, ammo ]);
+
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data;
+
+					expect(result.HP_AGM_1._data.ammoList[0]).to.not.equal(result.HP_AGM_2._data.ammoList[0]);
 				});
 
 				it('should expand inline gun definitions into Gun objects', async function() {
