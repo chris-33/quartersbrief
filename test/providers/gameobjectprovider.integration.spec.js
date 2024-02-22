@@ -95,14 +95,15 @@ describe('GameObjectProvider @integration', function() {
 
 			describe('gun expansion', function() {
 				const GUN = {
+					ammoList: [],
 					typeinfo: {
 						type: 'Gun',
-						Species: 'Main'
+						species: 'Main'
 					}
 				}
+
 				it('should expand guns\' ammo defitinions', async function() {
 					const artillery = {
-						// Deliberately not setting typeinfo.species on the gun, so artillery won't be converted to Artillery object
 						AB1_Artillery: {
 							HP_AGM_1: {
 								...GUN,
@@ -112,6 +113,7 @@ describe('GameObjectProvider @integration', function() {
 					};
 					const ammo = { 
 						name: 'PAAA002_Test2',
+						ammoType: 'he',
 						typeinfo: {
 							type: 'Projectile',
 							species: 'Artillery'
@@ -120,7 +122,10 @@ describe('GameObjectProvider @integration', function() {
 					const ship = Object.assign({}, SHIP, artillery);
 					populate([ ship, ammo ]);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery.HP_AGM_1._data.ammoList;
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data
+						.AB1_Artillery._data
+						.HP_AGM_1._data
+						.ammoList;
 
 					expect(result).to.be.an('array').with.lengthOf(1);
 					expect(result[0]._data).to.deep.equal(ammo);
@@ -128,7 +133,6 @@ describe('GameObjectProvider @integration', function() {
 
 				it('should expand inline gun definitions into Gun objects', async function() {
 					const artillery = {
-						// Deliberately not setting typeinfo.species on the gun, so artillery won't be converted to Artillery object
 						AB1_Artillery: {
 							HP_AGM_1: GUN
 						}
@@ -136,7 +140,7 @@ describe('GameObjectProvider @integration', function() {
 					const ship = Object.assign({}, SHIP, artillery);
 					populate(ship);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery;
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data;
 
 					expect(result).to
 						.have.property('HP_AGM_1')
@@ -144,6 +148,7 @@ describe('GameObjectProvider @integration', function() {
 					expect(result.HP_AGM_1._data).to
 						.deep.equal(artillery.AB1_Artillery.HP_AGM_1);
 				});
+
 			});
 
 			describe('module conversion', function() {
