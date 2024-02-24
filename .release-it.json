@@ -1,0 +1,8 @@
+{
+	"hooks": {
+		"before:bump": "npx mocha"
+	},
+	"npm": {
+		"publish": false
+	}
+}
