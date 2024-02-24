@@ -2,19 +2,19 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="6.390059mm"
-   height="3.1752501mm"
-   viewBox="0 0 6.390059 3.1752501"
+   width="6.4489999mm"
+   height="3.0935099mm"
+   viewBox="0 0 6.4489999 3.0935099"
    version="1.1"
-   id="svg3045"
+   id="svg3720"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01, custom)"
-   sodipodi:docname="battleship.svg"
+   sodipodi:docname="destroyer.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
-     id="namedview3047"
+     id="namedview3722"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.75722503"
-     inkscape:cx="132.06114"
-     inkscape:cy="-98.385549"
+     inkscape:cx="-84.519129"
+     inkscape:cy="237.04975"
      inkscape:window-width="1840"
      inkscape:window-height="1016"
      inkscape:window-x="80"
@@ -34,16 +34,15 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
-     id="defs3042" />
+     id="defs3717" />
   <g
      inkscape:label="Ebene 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-70.181441,-174.86532)">
+     transform="translate(-127.4555,-85.806186)">
     <path
-       style="fill:#000000;stroke-width:0.352778"
-       d="m 70.181441,174.86557 h 2.419776 l -1.774542,3.175 h -0.645234 z m 3.235321,0 h 0.595566 l -1.774542,3.175 h -0.297783 -0.297782 z m 1.41946,-2.5e-4 1.735278,1.587 -1.735278,1.58807 H 73.06228 Z"
-       id="path2975"
-       sodipodi:nodetypes="cccccccccccccccc" />
+       style="fill:currentColor;stroke-width:0.364812"
+       d="m 127.4555,87.352936 v -1.54675 l 1.03745,0.23963 1.03745,0.23963 2.18705,0.57279 2.18705,0.5728 -3.2245,0.73433 -3.2245,0.73433 z"
+       id="path3687" />
   </g>
 </svg>

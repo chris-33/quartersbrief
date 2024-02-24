@@ -2,19 +2,19 @@
 <!-- Created with Inkscape (http://www.inkscape.org/) -->
 
 <svg
-   width="6.4486871mm"
-   height="3.1754899mm"
-   viewBox="0 0 6.4486871 3.1754899"
+   width="6.4487019mm"
+   height="3.0933499mm"
+   viewBox="0 0 6.4487019 3.0933499"
    version="1.1"
-   id="svg3261"
+   id="svg10162"
    inkscape:version="1.2.2 (b0a8486541, 2022-12-01, custom)"
-   sodipodi:docname="aircarrier.svg"
+   sodipodi:docname="submarine.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
    xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
-     id="namedview3263"
+     id="namedview10164"
      pagecolor="#ffffff"
      bordercolor="#666666"
      borderopacity="1.0"
@@ -25,8 +25,8 @@
      inkscape:document-units="mm"
      showgrid="false"
      inkscape:zoom="0.75722503"
-     inkscape:cx="209.97721"
-     inkscape:cy="-61.40843"
+     inkscape:cx="240.35127"
+     inkscape:cy="204.03446"
      inkscape:window-width="1840"
      inkscape:window-height="1016"
      inkscape:window-x="80"
@@ -34,15 +34,15 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="layer1" />
   <defs
-     id="defs3258" />
+     id="defs10159" />
   <g
      inkscape:label="Ebene 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-49.536833,-165.08167)">
+     transform="translate(-41.500355,-94.54156)">
     <path
-       style="fill:#000000;stroke-width:0.352778"
-       d="m 49.536833,167.55111 v -0.70555 h 1.763889 1.763888 v 0.70555 0.70556 h -1.763888 -1.763889 z m 3.880555,-0.88194 v -1.5875 h 0.305203 0.305203 l 0.978862,0.76997 0.978864,0.76998 -1.019483,0.81577 -1.019483,0.81577 -0.264583,0.002 -0.264584,0.002 z m -3.880555,-0.88195 v -0.70555 h 1.763889 1.763888 v 0.70555 0.70556 h -1.763888 -1.763889 z"
-       id="path3242" />
+       id="path3687-3"
+       style="fill:currentColor;stroke-width:0.364812"
+       d="m 41.500355,94.54156 v 1.54668 1.54667 l 0.7059,-0.18086 v -1.36581 -1.36581 z m 1.410767,0.36174 v 1.18494 1.18494 l 5.037935,-1.18494 z" />
   </g>
 </svg>
