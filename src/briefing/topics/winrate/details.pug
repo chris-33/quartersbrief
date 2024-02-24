@@ -2,13 +2,22 @@ mixin details(participant)
 	.details-title 
 		div #{participant.player.name}
 		div.ship
-			| #{participant.ship.label}
+			svg.class: use(href=`img/classes.svg#${participant.ship.class.toLowerCase()}`)
+			| &nbsp;
+			span #{participant.ship.label}
 
-	.details-line
-		span.caption Winrate:
-		span.value
-			| #{(100 * participant.player.winrate).toFixed(2)}
-			span.unit %
-	.details-line
-		span.caption Battles:
-		span.value #{participant.player.battles}
+	if participant.player instanceof Error
+		.details-line
+			| This player's stats could not be retrieved.
+	else if participant.player.hidden
+		.details-line
+			| This player has hidden their stats.
+	else
+		.details-line
+			span.caption Winrate:
+			span.value
+				| #{(100 * participant.player.winrate).toFixed(2)}
+				span.unit %
+		.details-line
+			span.caption Battles:
+			span.value #{participant.player.battles}

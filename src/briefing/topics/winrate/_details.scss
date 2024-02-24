@@ -1,0 +1,7 @@
+@use '../fontsizes';
+
+aside.details .ship {
+	font-size: fontsizes.$small;
+	color: black;
+	font-weight: normal;
+}

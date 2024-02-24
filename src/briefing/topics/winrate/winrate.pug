@@ -1,19 +1,7 @@
-include details
-
-mixin playerName(participant) 
-	.name&attributes(attributes) #{participant.player.name}	
-
-mixin playerShip(participant)
-	.ship&attributes(attributes)
-		| #{participant.ship.label}
-
+include details 
 
 - 
-	const rows = Math.max(allies.length, enemies.length);
-	const primary = options?.primary === "ship" ? 'playerShip' : 'playerName';
-	const secondary = options?.primary === "ship" ? 'playerName' : 'playerShip';
-- 
-	function winrateClass(wr) {
+	function winrate(wr) {
 		wr *= 100;
 		if (0 < wr && wr < 45)
 			return 'bad';
@@ -32,69 +20,56 @@ mixin playerShip(participant)
 		else if (65 <= wr)
 			return 'superunicum';
 	}
+	function rank(battles) {
+		if (0 <= battles && battles < 100)
+			return 'ensign';
+		else if (100 <= battles && battles < 500)
+			return 'lieutenant';
+		else if (500 <= battles && battles < 2000)
+			return 'lieutenant-commander';
+		else if (2000 <= battles && battles < 10000)
+			return 'commander';
+		else if (10000 <= battles && battles < 20000)
+			return 'captain';
+		else if (20000 <= battles && battles < 30000)
+			return 'rear-admiral';
+		else if (30000 <= battles)
+			return 'admiral';
+	}
 
-table
-	colgroup
-		col.ally.name
-		col.ally.winrate
-		col.enemy.winrate
-		col.enemy.name
-	- for (let i = 0; i < rows; i++) {
-		- const ally = allies[i];
-		- const enemy = enemies[i];
-		tr
-			if ally.player
-				td.ally(class=ally.player.name === player.name ? 'player' : '', 
-					class=ally.ship.class.toLowerCase(),
-					data-details=ally.player.name)
-					//- +#{}: Dynamically determine mixin name and call it
-					+#{primary}(ally).primary
-					//- +#{}: Dynamically determine mixin name and call it
-					+#{secondary}(ally).secondary
-				td(data-details=ally.player.name)
-					if ally.player.bot
-						.notification Bot
-					else if ally.player.hidden
-						.notification private
-					else
-						.winrate(class=winrateClass(ally.player.winrate)) 
-							| #{(100 * ally.player.winrate).toFixed(1)} 
-							span.unit %
-						.battles 
-							| #{ally.player.battles} 
-							span.unit battles
-						aside.details.ally(
-							class=ally.player.name === player.name ? 'player' : '',
-							class=ally.ship.class.toLowerCase(),
-							data-details-for=ally.player.name)
-							+details(ally)
-			else
-				- console.error(`No result for ally #${ally.name}`);
-				td(colspan=2, style='font-size: 75%; color: red; white-space: normal;')
-					| There was an error getting data for ally #{ally.name}
-			if enemy.player
-				td(data-details=enemy.player.name)
-					if enemy.player.bot
-						.notification Bot
-					else if enemy.player.hidden
-						.notification private
-					else
-						.winrate(class=winrateClass(enemy.player.winrate))
-							| #{(100 * enemy.player.winrate).toFixed(1)}
-							span.unit %
-						.battles 
-							| #{enemy.player.battles} 
-							span.unit battles
-						aside.details.enemy(class=ally.ship.class.toLowerCase(), data-details-for=enemy.player.name)
-							+details(enemy)
-				td.enemy(class=enemy.ship.class.toLowerCase(), 
-					data-details=enemy.player.name)
-					//- +#{}: Dynamically determine mixin name and call it
-					+#{primary}(enemy).primary
-					//- +#{}: Dynamically determine mixin name and call it
-					+#{secondary}(enemy).secondary
-			else
-				- console.error(`No result for enemy #${enemy.name}`);
-				td(colspan=2, style='font-size: 75%; color: red; white-space: normal;')
-					| There was an error getting data for enemy #{enemy.name}
-	- }		
+mixin row(participant)
+	.participant(class=participant.ship.class.toLowerCase(), data-details=participant.player.name)&attributes(attributes)
+		.ship(class=(options || {}).primary === 'ship' ? 'primary' : 'secondary')
+			svg.class: use(href=`img/classes.svg#${participant.ship.class.toLowerCase()}`)
+			span #{participant.ship.label}
+
+		.person(class=(options || {}).primary === 'ship' ? 'secondary' : 'primary')
+			svg.rank(viewBox="0 0 100 100" preserveAspectRatio="none")
+				use(href=`img/ranks.svg#${rank(participant.player.battles)}`)
+			span #{participant.player.name}
+		
+		if participant.player.bot
+			.stats.notification Bot
+		else if participant.player.hidden
+			.stats.notification private
+		else if participant.player instanceof Error
+			.stats.notification error
+		else
+			.stats.winrate(class=winrate(participant.player.winrate))
+				span #{(100 * participant.player.winrate).toFixed(1)} 
+				span.unit %
+	
+	aside.details(
+		class=attributes.class,
+		class=participant.player.name === player.name ? 'player' : '',
+		class=participant.ship.class.toLowerCase(),
+		data-details-for=participant.player.name)
+		+details(participant)
+
+
+.roster.allies
+	each ally in allies
+		+row(ally).ally(class=ally.player.name === player.name ? 'player' : '')
+.roster.enemies
+	each enemy in enemies
+		+row(enemy).enemy

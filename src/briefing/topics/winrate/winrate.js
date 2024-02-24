@@ -4,7 +4,7 @@ import { loadScreenSort } from '../../topic-filters.js';
 export default class WinrateTopic extends Topic {
 	async getPugData(battle, options) {
 		function enrich(participant) {
-			participant.player = players[participant.name];
+			participant.player = players[participant.name] ?? Object.assign(new Error(), { name: participant.name });
 			participant.ship = ships.find(ship => ship.id === participant.shipId);
 		}
 

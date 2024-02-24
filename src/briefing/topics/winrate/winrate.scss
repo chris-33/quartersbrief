@@ -1,119 +1,129 @@
 @use '../colors';
 @use '../fontsizes';
 @use 'sass:map';
+@use 'details';
 
-@mixin classMargin {
-	$border-width: 0.5ch;
-	$padding: 1.5ch;
-	@if option("hideSidebars") {
-		$border-width: 0;
-		$padding: 0;
-	}
-	&.ally { border-left: $border-width solid; padding-left: $padding; }
-	&.enemy { border-right: $border-width solid; padding-right: $padding; }
-	&.aircarrier { border-color: colors.$aircarrier; }
-	&.battleship { border-color: colors.$battleship; }
-	&.cruiser {	border-color: colors.$cruiser; }
-	&.destroyer { border-color: colors.$destroyer; }
-	&.submarine { border-color: colors.$submarine; }
-}	
-
-table {
-	width: 100%;
-	table-layout: fixed;
-	// Set font-weight and -size specifically.
-	// Otherwise Firefox's default styling screws us over.
-	// See https://stackoverflow.com/questions/3388705/why-is-a-table-not-using-the-body-font-size-even-though-i-havent-set-the-table
-	font-weight: inherit;
-	font-size: inherit;
+// Make sure the two rosters are aligned
+.topic-content {
+	display: flex;
 }
 
-col {
-	&.name {
-		width: 34%;
-	}
-	&.winrate {
-		width: 16%;
-	}
+.roster {
+	display: inline-flex;
+	flex-direction: column;
+	width: 49%;
 }
 
-td {
-	@include classMargin;
+.participant {
+	display: grid;
+	align-items: center;
+	column-gap: 0.5em;
+	height: 2rem;
+	padding: 0.5ex 0;
 
-	text-align: center;
-	padding-top: 0.33ex;
-	padding-bottom: 0.33ex;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+	// Set up the grid areas and widths as mirror images
+	&.ally {				
+		grid-template-columns: 1fr 33%;
+		grid-template-areas: 
+			'primary stats'
+			'secondary stats';
 
-	&:first-of-type {
-		text-align: left;
+		border-left: 0.33ch solid;
+		padding-left: 1.5ch;
 	}
-	&.player {
+	&.enemy {
+		grid-template-columns: 33% 1fr;
+		grid-template-areas: 
+			'stats primary'
+			'stats secondary';
+
+		border-right: 0.33ch solid;
+		padding-right: 1.5ch;
+
+		// Make flex flow in reverse for enemies, 
+		// and rotate images
+		.person,
+		.ship {
+			text-align: right;
+			flex-direction: row-reverse;
+
+			svg {
+				transform: rotate(180deg);
+			}
+		}
+	}
+	
+	&.player,
+	&.player svg.rank,
+	&.player svg.class {
 		color: colors.$player;
 		font-weight: 600;
 	}
 
-	&:last-of-type {
-		text-align: right;
+	// Prevent line breaks in all grid items
+	& > * {
+		white-space: nowrap;
 	}
+
+	// Assign items to their grid areas
+	.primary { grid-area: primary; }
+	.secondary { grid-area: secondary; }
+	.stats { grid-area: stats; }
 
 	.secondary {
 		font-size: fontsizes.$small;
 		font-style: italic;
-	}	
+	}
+	.stats {
+		text-align: center;
+	}
 }
 
-.ship {
+.ship,
+.person {
 	display: flex;
-	flex-direction: row;
-	column-gap: 1ch;
-	justify-content: flex-start;
 	align-items: center;
+	gap: 0.5em;
 
-	&::before {
-		font-family: 'quartersbrief-icons';
-		color: colors.$aside;
+	span {
+		flex: 1fr;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 
-	$classes: (
-		'aircarrier': 'A',
-		'battleship': 'B',
-		'cruiser': 'C',
-		'destroyer': 'D',
-		'submarine': 'E'
-	);
-	@each $class, $glyph in $classes {
-		.#{$class} &::before {
-			content: $glyph;
-			color: map.get(colors.$by-class, $class);
-		} 
-	}
-	
-	td.enemy & {
-		flex-direction: row-reverse;
-		&::before {
-			transform: rotate(180deg);
-		}
+	svg {
+		flex-grow: 0;
+		flex-shrink: 0;
 	}
 }
 
-aside.details .ship {
-	font-size: fontsizes.$small;
-	color: black;
-	font-weight: normal;
+.person	.rank {
+	// Resize to set icon size and height disregarding aspect ratio.
+	// (Disregarding aspect ratio because the preserveAspectRatio attribute is set to "none" is set on the svg.)
+	flex-basis: 2em;
+	height: 1.5ex;
+
+	color: darkgray;
+
+	// Rotate the rank 90 degrees around its center
+	// For some reason, this has to be done on the <use>d image -
+	// if we do it on the svg itself, it only rotates in increments of 180 degrees
+	use {
+		transform: rotate(90deg);
+		transform-origin: center;
+	}
 }
 
-.winrate {	
+.ship .class {
+	flex-basis: 1.1em;
+	aspect-ratio: 1;		
+}
+
+.winrate {
 	font-weight: 600;
 	font-size: fontsizes.$large;
 }
 
-.battles {
-	font-size: fontsizes.$verysmall;
-	text-align: center;
-}
 
 .notification {
 	color: colors.$aside;
@@ -121,34 +131,26 @@ aside.details .ship {
 	font-size: fontsizes.$small;
 }
 
-.superunicum {
-	color: #a00dc5;
+// Insert spacing between the classes
+@each $class in [ 'aircarrier', 'battleship', 'cruiser', 'destroyer', 'submarine' ] {
+	.#{$class} + :not(.#{$class}) { margin-top: 2ex; }
 }
 
-.unicum {
-	color: #d042f3;
+// Assign appropriate color to each class
+@each $class, $color in colors.$by-class {
+	.participant.#{$class} {
+		border-color: $color;
+		.class { color: $color; }
+	}
 }
 
-.great {
-	color: #02c9b3;
-}
-
-.verygood {
-	color: #318000;
-}
-
-.good {
-	color: #44b300;
-}
-
-.average {
-	color: #ffc71f;
-}
-
-.belowaverage {
-	color: #fe7903;
-}
-
-.bad {
-	color: #fe0e00;
-}
+// Assign colors according to winrate
+// Colors are the same as on wows-numbers.com
+.superunicum { color: #a00dc5; }
+.unicum { color: #d042f3; }
+.great { color: #02c9b3; }
+.verygood { color: #318000; }
+.good { color: #44b300; }
+.average { color: #ffc71f; }
+.belowaverage { color: #fe7903; }
+.bad { color: #fe0e00; }

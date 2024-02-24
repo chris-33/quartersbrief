@@ -8,3 +8,5 @@ export { default as PenYouTopic } from './pen_you/pen_you.js';
 export { default as RadarTopic } from './radar/radar.js';
 export { default as TorpedoesTopic } from './torpedoes/torpedoes.js';
 export { default as WinrateTopic } from './winrate/winrate.js';
+export { default as ArtilleryTopic } from './artillery/artillery.js';
+
