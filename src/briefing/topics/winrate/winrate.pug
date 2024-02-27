@@ -40,7 +40,8 @@ include details
 mixin row(participant)
 	.participant(class=participant.ship.class.toLowerCase(), data-details=participant.player.name)&attributes(attributes)
 		.ship(class=(options || {}).primary === 'ship' ? 'primary' : 'secondary')
-			svg.class: use(href=`img/classes.svg#${participant.ship.class.toLowerCase()}`)
+			svg.class(viewBox="0 0 100 100" preserveAspectRatio="midXMaxY meet") 
+				use(href=`img/classes.svg#${participant.ship.class.toLowerCase()}`)
 			span #{participant.ship.label}
 
 		.person(class=(options || {}).primary === 'ship' ? 'secondary' : 'primary')

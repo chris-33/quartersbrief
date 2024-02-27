@@ -2,7 +2,8 @@ mixin details(participant)
 	.details-title 
 		div #{participant.player.name}
 		div.ship
-			svg.class: use(href=`img/classes.svg#${participant.ship.class.toLowerCase()}`)
+			svg.class(viewBox="0 0 100 100" preserveAspectRatio="midXMaxY meet") 
+				use(href=`img/classes.svg#${participant.ship.class.toLowerCase()}`)
 			| &nbsp;
 			span #{participant.ship.label}
 
