@@ -22,6 +22,7 @@ describe('SpecificityChooser', function() {
 	beforeEach(function() {
 		ship = Object.create(Ship.prototype);
 		ship._data = SHIP_DATA;
+		sinon.stub(ship, 'equipModules');
 
 		let gameObjectProvider = new GameObjectProvider();
 		sinon.stub(gameObjectProvider, 'createGameObject').resolves(ship);
@@ -38,16 +39,23 @@ describe('SpecificityChooser', function() {
 			expect(chooser.scoreOf({})).to.equal(0);
 		});
 
-		it('should award the correct points for matching ships, classes, nations, and tiers', function() {			
-			const clauses = {
-				ships: [ ship.name ],
-				classes: [ ship.class ],
-				tiers: [ ship.tier ],
-				nations: [ ship.nation ]
-			}
-			for (let clause in clauses)
-				expect(chooser.scoreOf({ [clause]: clauses[clause] }), clause).to
-					.equal(SpecificityChooser.POINTS[clause]);
+		// eslint-disable-next-line mocha/no-setup-in-describe
+		[ 'ships', 'classes', 'tiers', 'nations' ].forEach(clause => 
+			it(`should award ${SpecificityChooser.POINTS[clause]} points for a ${clause} clause`, function() {
+				const clauses = {
+					ships: [ ship.name ],
+					classes: [ ship.class ],
+					tiers: [ ship.tier ],
+					nations: [ ship.nation ]
+				}
+				expect(chooser.scoreOf({ [clause]: clauses[clause] })).to.equal(SpecificityChooser.POINTS[clause]);
+			}));
+
+		it(`should award ${SpecificityChooser.POINTS.has} points for every part of a has-clause`, function() {
+			expect(chooser.scoreOf({ has: '' }), 'has-clause in string form').to.equal(SpecificityChooser.POINTS.has);
+
+			expect(chooser.scoreOf({ has: [ '' ] }), 'one-item has-clause in array form').to.equal(SpecificityChooser.POINTS.has);
+			expect(chooser.scoreOf({ has: [ '', '' ] }), 'two-item has-clause in array form').to.equal(2 * SpecificityChooser.POINTS.has);
 		});
 	});
 

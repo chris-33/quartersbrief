@@ -52,7 +52,8 @@ export default class SpecificityChooser {
 	 */
 	async choose(battle, agendas) {
 		const ownship = await this.gameObjectProvider.createGameObject(battle.player.shipId);
-
+		ownship.equipModules('top');
+		
 		return agendas
 			// Map each agenda to an object containing the agenda and all its matchers that matched this battle, if any
 			.map(agenda => ({ agenda, matches: agenda.matches(ownship) }))
