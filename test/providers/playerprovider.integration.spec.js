@@ -73,6 +73,30 @@ describe('PlayerProvider @integration', function() {
 		expect(nock.isDone(), 'There were less requests than expected').to.be.true;
 	});
 
+	it('should be able to handle players that were requested but are not part of the response', async function() {
+		nock(/worldofwarships/).get(/account\/list/).reply(200, {
+			status: 'ok',
+			meta: { count: 2 },
+			data: [ p1, p2 ]
+		});
+		nock(/worldofwarships/).get(/account\/info/).reply(200, {
+			status: 'ok',
+			meta: { count: 1 },
+			data: {
+				[p1.account_id]: p1,
+				[p2.account_id]: null
+			}
+		});
+		let result = provider.getPlayers([ p1.nickname, p2.nickname ]);
+
+		await expect(result).to.be.fulfilled;
+		result = await result;
+		expect(result).to.be.an('object')
+		expect(result).to.have.property(p1.nickname).that.is.an.instanceof(Player);
+		expect(result[p1.nickname]).to.have.property('_data').that.deep.equals(p1);
+		expect(result).to.not.have.property(p2.nickname);
+	});
+
 	it('should not hit Wargaming\'s online API for bots', async function() {
 		// Set up no nock interceptors here
 		// If the PlayerProvider does make a network request, this will show in a rejected promise from nock

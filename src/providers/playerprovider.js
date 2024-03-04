@@ -134,7 +134,8 @@ PlayerProvider.PlayerSupplier.Request = class {
 				// Translate it into a hash from player names to instances of Player
 				for (let id in data) {
 					let player = data[id];
-					result[player.nickname] = player;
+					if (player)
+						result[player.nickname] = player;
 				}
 	
 				this._result.resolve(result);
