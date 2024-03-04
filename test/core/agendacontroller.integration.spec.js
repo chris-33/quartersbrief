@@ -59,13 +59,14 @@ describe('AgendaController @integration', function() {
 	describe('.choose', function() {
 		const MOCK_GAME_OBJECT = {
 			nation: 'nation',
-			class: 'class'
+			class: 'class',
+			equipModules: () => undefined
 		};
-		const MOCK_GAME_OBJECT_FACTORY = new GameObjectProvider();
+		const MOCK_GAME_OBJECT_PROVIDER = new GameObjectProvider();
 		const MOCK_BATTLE = new Battle({});
 
 		before(function() {
-			sinon.stub(MOCK_GAME_OBJECT_FACTORY, 'createGameObject').resolves(MOCK_GAME_OBJECT);
+			sinon.stub(MOCK_GAME_OBJECT_PROVIDER, 'createGameObject').resolves(MOCK_GAME_OBJECT);
 			Object.defineProperty(MOCK_BATTLE, 'player', { value: {} });
 		});
 
@@ -81,7 +82,7 @@ describe('AgendaController @integration', function() {
 		};
 				
 		it('should return the most specific agenda from the first source that has a matching one', async function() {		
-			const chooser = new SpecificityChooser(MOCK_GAME_OBJECT_FACTORY);
+			const chooser = new SpecificityChooser(MOCK_GAME_OBJECT_PROVIDER);
 
 			const userspace = '/user';
 			const defaultspace = '/default';
