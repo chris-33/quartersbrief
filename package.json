@@ -14,7 +14,6 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.2.0",
-    "@iarna/toml": "^2.2.5",
     "@sass-fairy/list": "^1.2.1",
     "buffercursor": "^0.0.12",
     "chalk": "^5.0.0",
@@ -44,6 +43,7 @@
     "pupa": "^3.1.0",
     "sass": "^1.49.8",
     "sass-cast": "^0.4.2",
+    "smol-toml": "^1.1.4",
     "socket.io": "^4.5.3",
     "steam-path": "^1.0.2",
     "threads": "^1.7.0",

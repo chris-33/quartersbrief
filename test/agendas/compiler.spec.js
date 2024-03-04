@@ -1,6 +1,6 @@
 import * as compiler from '../../src/agendas/compiler.js';
 import Agenda from '../../src/agendas/agenda.js';
-import TOML from '@iarna/toml';
+import * as TOML from 'smol-toml';
 import YAML from 'yaml';
 import mockfs from 'mock-fs';
 import clone from 'lodash/cloneDeep.js';

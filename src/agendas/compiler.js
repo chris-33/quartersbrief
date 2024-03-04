@@ -1,6 +1,6 @@
 import Agenda from './agenda.js';
 import { readdir, readFile } from 'fs/promises';
-import TOML from '@iarna/toml';
+import * as TOML from 'smol-toml';
 import YAML from 'yaml';
 import path from 'path';
 import circular from 'is-circular';
@@ -24,6 +24,7 @@ export async function load(agendadir) {
 	
 		const parser = parsers[path.extname(filename).toLowerCase()];			
 		agenda = parser.parse(agenda);
+
 		return agenda;
 	}));
 	return agendas;

@@ -1,6 +1,6 @@
 import mockfs from 'mock-fs';
 import esmock from 'esmock';
-import TOML from '@iarna/toml';
+import * as TOML from 'smol-toml';
 import GameObjectProvider from '../../src/providers/gameobjectprovider.js';
 import SpecificityChooser from '../../src/agendas/specificitychooser.js';
 import BattleDataReader from '../../src/core/battledatareader.js';
