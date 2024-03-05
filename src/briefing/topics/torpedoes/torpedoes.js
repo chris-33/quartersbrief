@@ -22,7 +22,16 @@ export default class TorpedoesTopic extends Topic {
 		const entries = await Promise.all(locals.ships.map(async ship => {
 			const entry = { 
 				ship,
-				builds: await Promise.all(ship.refits.torpedoes.map(async (module, index) => {
+				// Build generation is asynchronous, because shipBuilder.build is asynchronous. Since builds all work on the same
+				// ship, we cannot simply do Promise.all here, since this would introduce a race condition on the state of the ship.
+				// 
+				// Instead, we use reduce here to execute build generation sequentially for each build of the ship. 
+				// See https://gist.github.com/anvk/5602ec398e4fdc521e2bf9940fd90f84?permalink_comment_id=2260005#gistcomment-2260005
+				// (Notice that the ships themselves are still all handled concurrently).
+				// 
+				// An alternative would have been to work on independent copies of the ship, but getting new ships is an expensive
+				// operation.
+				builds: await ship.refits.torpedoes.reduce((acc, module, index) => acc.then(async acc => {
 					await shipBuilder.build(ship, { 
 						modules: `torpedoes: ${index}, others: top`,
 						...TORPEDO_BUILD,
@@ -46,8 +55,8 @@ export default class TorpedoesTopic extends Topic {
 						build.tubes[side].push(mount.barrels);
 					});
 
-					return build;
-				}))
+					return acc.concat(build);
+				}), Promise.resolve([]))
 			};
 			
 			[ 'range', 'damage', 'speed', 'flooding' ].forEach(property => entry[property] = Math.max(...entry.builds.flatMap(build => build.torpedoes).map(torpedo => torpedo[property])));
