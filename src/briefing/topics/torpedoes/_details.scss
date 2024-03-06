@@ -1,38 +1,84 @@
 @use '../colors';
 @use '../fontsizes';
 
-.indent {
-	margin-left: 3ch;
+$column-gap: 2em;
+
+.details-area {
+	display: grid;
+	grid-template-columns: max-content;
+	grid-auto-columns: minmax(max-content, 10em);
+	grid-auto-flow: column;
+	column-gap: $column-gap;
 }
 
-.launcher {
-	word-spacing: -0.2ch;
-	white-space: nowrap;
-	text-align: center;
+.details-caption {
+	grid-column: 1;
 
-	&:first-of-type {
-		text-align: left;
+	&.indent {
+		margin-left: 2ch;
 	}
-	&:last-of-type {
-		text-align: right;
-	}
+}
 
-	.launcherSide {
-		// color: colors.$aside;
+.details-value {
+	text-align: right;
+}
+
+.build {
+	display: contents;
+
+	& > :first-child {
+		text-align: center;
+		text-decoration: underline;
+	}
+}
+
+
+.launchers {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+
+	& > div {
+		word-spacing: -0.2ch;
+		white-space: nowrap;
+		text-align: center;
+		font-size: fontsizes.$small;
+
+		.launcherSide {
+			font-size: fontsizes.$small;
+		}
+	}
+	.launcher-center {
+		flex-basis: 100%;
+		flex-shrink: 0;
+	}
+}
+
+.torpedo {
+	display: contents;
+
+	& > :first-child {
 		font-size: fontsizes.$small;
 	}
 }
 
-.best::after {
-	content: '\2023'; // Right triangular bullet
-    transform: scale(-1, 1); // Flip horizontally
-	color: red;
-	position: absolute; // Needed to remove from layouting space apportionment, so it will appear to float outside the text block
+.better,
+.same,
+.worse {
+	position: relative;
+	&::before {
+		position: absolute;
+		left: -0.5 * $column-gap;	
+		top: 50%;
+		transform: translate(-50%, -50%);
+		font-size: fontsizes.$small;
+		font-weight: bold;
+	}
 }
 
-aside.details {
-	padding-right: 1ch; // Give some extra space to put the best-value marker
-}
+.better::before { content: '\2197'; color: colors.$warning-severe; }
+.same::before { content: '\2192'; color: colors.$warning-neutral; }
+.worse::before { content: '\2198'; color: colors.$warning-favorable; }
 
 .details-line.contenders {
 	display: block;

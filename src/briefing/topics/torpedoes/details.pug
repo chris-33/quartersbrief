@@ -1,76 +1,86 @@
 - 
 	const buildNames = {
+		1: [ '' ],
 		2: [ 'Stock', 'Top' ],
 		3: [ 'Stock', 'Middle', 'Top' ],
 		4: [ 'Stock', 'Lower middle', 'Upper middle', 'Top' ],
 	}
 
+	function compare(a,b) {
+		if (a == null || b == null) 
+			return '';
+		switch(Math.sign(a-b)) {
+			case +1: return 'better';
+			case 0: return 'same';
+			case -1: return 'worse';
+		}
+	}	
+
 .details-title
 	| #{entry.ship.label}
 
-each build, index in entry.builds
-	if index > 0
-		hr
-	if entry.builds.length > 1
-		.details-line
-			span.caption #{ buildNames[entry.builds.length][index] } configuration
-	.details-line
-		.details-caption Launcher configuration:
-		.details-value #{ Object.entries(launcherConfiguration(Object.values(build.tubes).flat())).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
-	.details-line
-		each side in [ 'port', 'center', 'starboard' ]
-			div.launcher
-				if (build.tubes[side].length > 0)					
-					span.launcherSide #{side === 'starboard' ? 'stbd' : side}
-					br
-					| #{ Object.entries(launcherConfiguration(build.tubes[side])).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
-	.details-space
-	.details-line
-		.details-caption Reload:
-		.details-value 
-			| #{ Math.round(build.reload) }
-			span.unit s
+.details-area
+	//- Leave room for the build name:
+	.details-caption
 
-	each torpedo in build.torpedoes
-		.details-line 
-			.details-caption Torpedo:
-			.details-value #{torpedo.torpedo.label}
-		.indent
-			.details-line
-				.details-caption Range:
-				.details-value(class={
-					best: torpedo.range === entry.range
-				})
-					| #{ (torpedo.range/1000).toFixed(2) }
-					span.unit km
-			.details-line
-				.details-caption Damage:
-				.details-value(class={
-					best: torpedo.damage === entry.damage
-				})
-					| #{ Math.round(torpedo.damage) }
-					span.unit HP	
-			.details-line
-				.details-caption Speed:
-				.details-value(class={
-					best: torpedo.speed === entry.speed
-				})
-					| #{ Math.round(torpedo.speed) }
-					span.unit kts
-			.details-line
-				.details-caption Visibility:
-				.details-value(class={
-					best: torpedo.visibility === entry.visibility
-				})
-					| #{ torpedo.visibility }
-					span.unit km
-			.details-line
-				.details-caption Flooding chance:
-				.details-value(class={
-					best: torpedo.flooding === entry.flooding
-				})
-					| #{ Math.round(torpedo.flooding) }
-					span.unit %
+	.details-caption Launchers:
+	.details-caption Reload:
+	- for (let i = 0; i < Math.max(...entry.builds.map(build => build.torpedoes.length)); i++)	
+		.details-caption Torpedo:
+		.details-caption.indent Range:
+		.details-caption.indent Damage:
+		.details-caption.indent Speed:
+		.details-caption.indent Visibility:
+		.details-caption.indent Flooding:
+
+	each build,i in entry.builds
+		.build
+			.details-value
+				span.caption #{ buildNames[entry.builds.length][i] }
+
+			.details-value
+				| #{ Object.entries(launcherConfiguration(Object.values(build.tubes).flat())).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+				.launchers
+					if (build.tubes.center.length > 0)
+						.launcher-center
+							span.launcherSide center
+							br
+							| #{ Object.entries(launcherConfiguration(build.tubes.center)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+					if (build.tubes.port.length > 0 || build.tubes.starboard.length > 0)
+						div
+							span.launcherSide port
+							br
+							| #{ Object.entries(launcherConfiguration(build.tubes.port)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+						div
+							span.launcherSide stbd
+							br
+							| #{ Object.entries(launcherConfiguration(build.tubes.starboard)).map(([tubes, number]) => `${number}\u00d7${tubes}`).join(', ') }
+
+			.details-value
+				| #{ Math.round(build.reload) }
+				span.unit s
+
+			each torpedo, j in build.torpedoes
+				- const predecessor = i > 0 ? entry.builds[i-1].torpedoes[j] : {};
+				.torpedo
+					.details-value
+						| #{torpedo.torpedo.label}
+					.details-value(class=compare(torpedo.range, predecessor.range))
+						| #{ (torpedo.range/1000).toFixed(2) }
+						span.unit km
+					.details-value(class=compare(torpedo.damage, predecessor.damage))
+						| #{ Math.round(torpedo.damage) }
+						span.unit HP	
+					.details-value(class=compare(torpedo.speed, predecessor.speed))
+						| #{ Math.round(torpedo.speed) }
+						span.unit kts
+					//- Arguments to compare switched around because less is better for visibility:
+					.details-value(class=compare(predecessor.visibility, torpedo.visibility)) 
+						| #{ torpedo.visibility }
+						span.unit km
+					.details-value(class=compare(torpedo.flooding, predecessor.flooding))
+						| #{ Math.round(torpedo.flooding * 100) }
+						span.unit %
 
 if (entry.ship.consumables.torpedoReloader)
 	-const reloadBooster = entry.ship.consumables.torpedoReloader;
