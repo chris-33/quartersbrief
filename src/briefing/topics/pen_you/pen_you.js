@@ -21,7 +21,7 @@ export default class PenYouTopic extends Topic {
 			sap: ownship.get('artillery.mounts.*.ammos.sap.pen', { collate: true, mode: 'lenient' })
 		}
 		ownship = await shipBuilder.build(ownship, { skills: [ SKILLS.INERTIA_FUSE_FOR_HE_SHELLS ] });
-		locals.ownship.ifhe = ownship.get('artillery.mounts.*.he.pen', { collate: true, mode: 'lenient' });
+		locals.ownship.ifhe = ownship.get('artillery.mounts.*.ammos.he.pen', { collate: true, mode: 'lenient' });
 		
 		locals.armors = {};
 		for (let ship of locals.ships)
