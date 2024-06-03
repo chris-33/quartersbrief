@@ -62,6 +62,7 @@ mixin armorpiece(piece, id)
 
 	if piece.length > 0
 		path.piece(
+			tabindex="-1",
 			data-details=id, 
 			d=piece.map(poly => drawPiece(poly)).join(' ')
 		)&attributes(attributes)
