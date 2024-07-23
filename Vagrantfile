@@ -2,7 +2,7 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/lunar64"
+  config.vm.box = "ubuntu/jammy64"
   
   # Need this plugin to forward file system events from the host to the guest
   # Otherwise watching for file changes is not going to work
@@ -40,7 +40,7 @@ Vagrant.configure("2") do |config|
 
   # Install Node.JS
   # Force to an older version because of https://github.com/hashicorp/vagrant/issues/13263
-  config.vm.provision "shell", name: "Install Node.JS", env: { "NODE_MAJOR" => "16" }, inline: <<-SHELL
+  config.vm.provision "shell", name: "Install Node.JS", env: { "NODE_MAJOR" => "24" }, inline: <<-SHELL
     # Install necessary packages for downloading and verifying new repository information
     apt-get install -y ca-certificates curl gnupg
     # Create a directory for the new repository's keyring, if it doesn't exist
