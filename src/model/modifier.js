@@ -46,9 +46,10 @@ export default class Modifier {
 		// @todo GMRotationSpeed:  // PCM006_MainGun_Mod_II, PCM013_MainGun_Mod_III, PCM034_Guidance_Mod_0
 		// @todo AAAuraDamage // PCM011_AirDefense_Mod_II
 		// @todo AABubbleDamage // PCM011_AirDefense_Mod_II
+		maxDistCoef: 'refits.*.*.components.artillery.*:unique.mounts.*.maxRange', // SUO module
 		GSMaxDist: 'atba.maxDist', // PCM012_SecondaryGun_Mod_II, PCM028_FireControl_Mod_I_US
 		GMShotDelay: 'refits.*.*.components.artillery.*.mounts.*.shotDelay', // PCM013_MainGun_Mod_III
-		GMMaxDist: 'artillery.maxDist', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
+		GMMaxDist: 'refits.*.*.components.artillery.*:unique.mounts.*.maxRange', // PCM015_FireControl_Mod_II, PCM028_FireControl_Mod_I_US
 		GMPenetrationCoeffHE: 'refits.*.*.components.artillery.*.mounts.*.ammoList.*.alphaPiercingHE', // Skill 33 HePenetration
 		GSShotDelay: 'atba.mounts.*.shotDelay', // PCM019_SecondaryGun_Mod_III
 		GTShotDelay: 'refits.*.*.components.torpedoes.*.mounts.*.reload', // PCM014_Torpedo_Mod_III, PCM057_Special_Mod_I_Shimakaze, PCM075_Special_Mod_I_Daring, Skill 4 Fill the Tubes
