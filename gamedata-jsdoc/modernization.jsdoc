@@ -11,9 +11,9 @@
  * ---- | ---------- | ------------
  * excludes|Array|Blacklist. An array of ship reference names that cannot equip this modernization, even if they are otherwise eligible.
  * ships|Array|Whitelist. An array of ship reference names that can equip this modernization, even if they are otherwise ineligible.
- * nation|Array|The list of nations whose ships can equip this modernization. If empty, all nations are eligible.
- * shiplevel|Array|The list of tiers whose ships can equip this modernization. If empty, all tiers are eligible.
- * shiptype|Array|The list of ship types (DD,BB,...) that can equip this modernization. If empty, all types are eligible.
+ * nation|Array|The list of nations whose ships can equip this modernization. If empty, no nations are eligible.
+ * shiplevel|Array|The list of tiers whose ships can equip this modernization. If empty, no tiers are eligible.
+ * shiptype|Array|The list of ship types (DD,BB,...) that can equip this modernization. If empty, no types are eligible.
  * slot|integer|The slot this modernization is equipped in. If `-1`, this modernization has been removed from the game.
  * modifiers|object|Key-value pairs describing how the modernization changes the ship's characteristics. Presumed to always be factors.
  */

@@ -32,9 +32,9 @@ export default class Modernization extends GameObject {
 		if (this.blacklist.includes(ship.name)) return false;
 
 		// Otherwise apply the standard tier+type+nation logic
-		return (this.tiers.length === 0 || this.tiers.includes(ship.tier))
-			&& (this.classes.length === 0 || this.classes.includes(ship.class))
-			&& (this.nations.length === 0 || this.nations.includes(ship.nation));
+		return this.tiers.includes(ship.tier)
+			&& this.classes.includes(ship.class)
+			&& this.nations.includes(ship.nation);
 	}
 
 	/**
