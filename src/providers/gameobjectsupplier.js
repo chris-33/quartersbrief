@@ -136,6 +136,7 @@ GameObjectSupplier.Processors = class {
 				{ selector: '*[*.typeinfo.type===Gun][*.typeinfo.species===Torpedo]', processors: [ mdl => new Torpedoes(mdl) ]},
 				{ selector: '*[draft]', processors: [ mdl => new Hull(mdl) ]},
 				{ selector: '*[forwardEngineForsag]', processors: [ mdl => new Engine(mdl) ]},
+				{ selector: '*[maxDistCoef]', processors: [ mdl => new FireControl(mdl) ]},
 
 				{ selector: 'defaultCrew', processors: [ expand, convert ] },
 				// Change ship consumables from the format in which they are in the game files [ <consumable reference>, <flavor> ]
