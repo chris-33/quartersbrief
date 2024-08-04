@@ -1,5 +1,6 @@
 @use '../colors';
 @use '../fontsizes';
+@use '../timings';
 
 $zoom: 0.25;
 //
@@ -152,18 +153,17 @@ aside.details .details-line.contenders {
 //
 // Styles for hover highlighting:
 // 
-$highlight-transition-time: 0.25s;
 .radar {
 	text {
-		transition: fill $highlight-transition-time;
+		transition: fill timings.$highlight-transition-time;
 	}
 	.base,
 	.max {
-		transition: stroke $highlight-transition-time;
+		transition: stroke timings.$highlight-transition-time;
 	}
 }
 .label .ship {
-	transition: color $highlight-transition-time;
+	transition: color timings.$highlight-transition-time;
 }
 .highlighted {
 	color: colors.$highlighted !important;
