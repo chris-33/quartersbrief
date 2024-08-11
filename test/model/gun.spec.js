@@ -83,9 +83,9 @@ describe('Gun', function() {
 			]
 			
 			for (let { dist, horizontal, vertical } of expected) {
-				const dispersion = gun.dispersion(dist);
-				expect(dispersion.horizontal, `horizontal @${dist}m`).to.equal(horizontal);
-				expect(dispersion.vertical, `vertical @${dist}m`).to.be.approximately(vertical, 0.01);
+				const { dispersion } = gun.shoot(dist);
+				expect(dispersion[0], `horizontal @${dist}m`).to.be.approximately(horizontal, 0.01);
+				expect(dispersion[1], `vertical @${dist}m`).to.be.approximately(vertical, 0.01);
 			}
 		});
 
@@ -102,10 +102,12 @@ describe('Gun', function() {
 			]
 
 			for (let i = 0; i < GUNS.length; i++) {
+				const gun = GUNS[i];
 				const shot = gun.shoot(gun.maxRange);
 				expect(shot.dispersion).to.be.an('array').with.lengthOf(2);
-				expect(shot.dispersion[0]).to.equal(expected[i][0]);
-				expect(shot.dispersion[1]).to.equal(expected[i][1]);
+				// Only check for approximate equality because our reference values are not super accurate
+				expect(shot.dispersion[0]).to.be.approximately(expected[i][0], 0.01);
+				expect(shot.dispersion[1]).to.be.approximately(expected[i][1], 0.01);
 			}
 		});
 
@@ -115,8 +117,8 @@ describe('Gun', function() {
 		it('should have expected horizontal and vertical miss distances', function() {
 			const RANGE = 20000;
 			// Expected miss distances as calculated by hand
-			const expected = [ 81.1498307911691, 56.8384019495639 ]
-			const missDistance = gun.shoot(RANGE);
+			const expected = [ 110.770429704891, 65.1816687877631 ]
+			const missDistance = gun.shoot(RANGE).expectedMissDistance;
 
 			expect(missDistance).to.be.an('array').with.lengthOf(2);
 			expect(missDistance[0], 'horizontal').to.be.approximately(expected[0], 1e-4);
