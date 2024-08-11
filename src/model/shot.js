@@ -91,7 +91,7 @@ export function expectedHorizontalMissDistance(range, gunParams, dmax) {
 	const sigma = dmax / gunParams.sigmaCount;
 	const theta = 1 - erf(dmax / (Math.sqrt(2) * sigma));
 	
-	return Math.PI * Math.sqrt(2 / Math.PI) * (1 - Math.exp(-1 * dmax**2 / (2 * sigma**2))) + theta * dmax/2;
+	return sigma * Math.sqrt(2 / Math.PI) * (1 - Math.exp(-1 * dmax**2 / (2 * sigma**2))) + theta * dmax/2;
 }
 
 
