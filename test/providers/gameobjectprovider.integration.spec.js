@@ -94,23 +94,18 @@ describe('GameObjectProvider @integration', function() {
 			};
 
 			describe('gun expansion', function() {
-				const GUN = {
-					ammoList: [],
-					typeinfo: {
-						type: 'Gun',
-						species: 'Main'
+				let GUN;
+				beforeEach(function() {
+					GUN = {
+						ammoList: [],
+						typeinfo: {
+							type: 'Gun',
+							species: 'Main'
+						}
 					}
-				}
-				const ammo = { 
-					name: 'PAAA002_Test2',
-					ammoType: 'he',
-					typeinfo: {
-						type: 'Projectile',
-						species: 'Artillery'
-					}
-				}
+				});
 
-				it('should expand guns\' ammo defitinions', async function() {
+				it('should expand guns\' ammo definitions', async function() {
 					const artillery = {
 						AB1_Artillery: {
 							HP_AGM_1: {
@@ -119,16 +114,40 @@ describe('GameObjectProvider @integration', function() {
 							}
 						}
 					};
+					const ammo = { 
+						name: 'PAAA002_Test2',
+						ammoType: '',
+						typeinfo: {
+							type: 'Projectile',
+							species: 'Artillery'
+						}
+					};
 					const ship = Object.assign({}, SHIP, artillery);
 					populate([ ship, ammo ]);
 
-					const result = (await gameObjectProvider.createGameObject(ship.name))._data
-						.AB1_Artillery._data
-						.HP_AGM_1._data
-						.ammoList;
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data.HP_AGM_1._data.ammoList;
 
 					expect(result).to.be.an('array').with.lengthOf(1);
 					expect(result[0]._data).to.deep.equal(ammo);
+				});
+				
+				it('should push down taperDist, maxDist and sigmaCount properties', async function() {
+					const artillery = {
+						AB1_Artillery: {
+							HP_AGM_1: GUN,
+							taperDist: 1,
+							maxDist: 2,
+							sigmaCount: 1.5
+						}
+					};
+					const ship = Object.assign({}, SHIP, artillery);
+					populate(ship);
+
+					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data.HP_AGM_1._data;
+
+					expect(result).to.have.property('taperDist').that.equals(artillery.AB1_Artillery.taperDist);
+					expect(result).to.have.property('maxDist').that.equals(artillery.AB1_Artillery.maxDist);
+					expect(result).to.have.property('sigmaCount').that.equals(artillery.AB1_Artillery.sigmaCount);
 				});
 
 				it('should have separate ammo objects for different guns', async function() {
@@ -161,7 +180,7 @@ describe('GameObjectProvider @integration', function() {
 						.have.property('HP_AGM_1')
 						.that.is.an.instanceOf(Gun);
 					expect(result.HP_AGM_1._data).to
-						.deep.equal(artillery.AB1_Artillery.HP_AGM_1);
+						.deep.include(artillery.AB1_Artillery.HP_AGM_1);
 				});
 
 			});

@@ -12,7 +12,7 @@ describe('Modernization', function() {
 			unknown: 0
 		},
 		shiplevel: [8,9,10],
-		nation: [],
+		nation: ['USA'],
 		shiptype: [ 'Destroyer', 'Battleship' ],
 		slot: 0,
 		ships: [],
@@ -71,6 +71,14 @@ describe('Modernization', function() {
 
 			data.nation = [];
 			data.shiptype = ['Destroyer'];
+			expect(new Modernization(data).eligible(ship)).to.be.false;
+		});
+
+		it('should always find ships ineligible if the modernization\'s tier, nation and type are empty', function() {
+			data.shiplevel = [];
+			data.nation = [];
+			data.shiptype = [];
+
 			expect(new Modernization(data).eligible(ship)).to.be.false;
 		});
 	});

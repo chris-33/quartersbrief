@@ -1,0 +1,64 @@
+- 
+	// The maximum range present in the set of ships. Used to normalize the x-coordinate.
+	const MAX_RANGE = Math.max(...Object.values(ships).map(ship => ship.artillery.maxRange));
+	// The maximum expected miss distance present in the set of ships. Used to normalize the y-coordinate.
+	const MAX_MISS_DISTANCE = Math.max(...Object.values(artilleries).map(artillery => Object.values(artillery.plot)).flat());
+
+	// How big the graph area is in x and y direction
+	const GRAPH_AREA_X = 100;
+	const GRAPH_AREA_Y = -66;
+
+	// At what intervals to draw grid lines
+	const STEP_SIZE_X = 5000; // every 5000m
+	const STEP_SIZE_Y = 5; // every 5m
+
+	const normalizeX = x => GRAPH_AREA_X * x / MAX_RANGE;
+	const normalizeY = y => GRAPH_AREA_Y * y / MAX_MISS_DISTANCE;
+
+svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox=`-5 ${GRAPH_AREA_Y} ${GRAPH_AREA_X+10} ${Math.abs(GRAPH_AREA_Y) + 12}`)
+	//- Draw the axes and the grid
+	include grid.pug
+
+	//- Draw the vertical line indicating own gun range
+	g.ownrange
+		line(x1=normalizeX(ownrange) y1=3 x2=normalizeX(ownrange) y2=GRAPH_AREA_Y)
+		text(x=normalizeX(ownrange), y=6) own gun range: #{(ownrange / 1000).toFixed(1)}km
+
+	//- Draw the ships' artillery plots
+	each ship in ships
+		- const plot = artilleries[ship.name].plot;
+		g.ship(
+				data-for=ship.name,
+				class=ship.class.toLowerCase(),
+				class = {
+					"ally": teams.allies.includes(ship.id),
+					"enemy": teams.enemies.includes(ship.id),
+					"player": teams.player === ship.id
+				},
+				onmouseenter='highlight(this)',
+				onmouseleave='highlight(this)')
+			path.plot(d=`M 0,0 ${Object.entries(plot).map(([ x, y ]) => `L ${normalizeX(x)},${normalizeY(y)}`).join(' ')}`)
+			- const maxX = normalizeX(artilleries)
+			line.plumb(x1=normalizeX(ship.artillery.maxRange) y1=6 x2=normalizeX(ship.artillery.maxRange) y2=normalizeY(plot[ship.artillery.maxRange]))
+			text.plumb(x=normalizeX(ship.artillery.maxRange), y=9) #{ (ship.artillery.maxRange / 1000).toFixed(1) }km
+
+//- Draw the ships' labels
+each ship in ships
+	- const left = 100 * (5 + normalizeX(ship.artillery.maxRange)) / ( 10 + GRAPH_AREA_X);
+	- const top = 100 * (1 - (12 + Math.abs(normalizeY(artilleries[ship.name].plot[ship.artillery.maxRange]))) / (Math.abs(GRAPH_AREA_Y) + 12));
+	.label(
+		style=`left: ${left}%; top: ${top}%;`,
+		class=ship.class.toLowerCase(),
+		class = {
+			"ally": teams.allies.includes(ship.id),
+			"enemy": teams.enemies.includes(ship.id),
+			"player": teams.player === ship.id
+		},
+		onmouseenter='highlight(this)',
+		onmouseleave='highlight(this)',
+		data-details=ship.name,
+		data-for=ship.name)
+			| #{ship.label}
+
+script
+	include reorder-on-highlight.js

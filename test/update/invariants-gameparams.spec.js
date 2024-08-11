@@ -4,6 +4,7 @@ import {
 	haveName, 
 	haveNoLabel, 
 	moduleComponentsResolveUnambiguously,
+	gunsAreSimilar,
 	weaponAmmosAreOrdered 
 } from '../../src/update/invariants-gameparams.js';
 import InvariantError from '../../src/update/infra/invarianterror.js';
@@ -135,6 +136,55 @@ describe('invariants-gameparams', function() {
 			// This is only resolvable by equipping AB1_Artillery and AB2_Artillery simultaneously,
 			// which the algorithm should not allow
 			expect(moduleComponentsResolveUnambiguously.bind(null, data)).to.throw();
+		});
+	});
+
+	describe('.gunsAreSimilar', function() {		
+		const GUN_PROPERTIES = [
+			'minRadius',
+			'idealRadius',
+			'idealDistance',
+			'radiusOnZero',
+			'radiusOnDelim',
+			'radiusOnMax',
+			'delim'
+		]
+
+		let ship;
+
+		beforeEach(function() {
+			const NUMBER_OF_GUNS = 2;
+			const NUMBER_OF_ARTILLERIES = 2;
+			
+			ship = { typeinfo: { type: 'Ship' } };
+			for (let i = 1; i <= NUMBER_OF_ARTILLERIES; i++) {
+				const artillery = {};
+				ship[`AB${i}_Artillery`] = artillery;
+
+				for (let j = 1; j <= NUMBER_OF_GUNS; j++) {
+					artillery[`Gun${j}`] = Object.assign(
+						{}, 
+						Object.fromEntries(GUN_PROPERTIES.map((prop, index) => [ prop, index ])),
+						{ typeinfo: { type: 'Gun', species: 'Main' } });
+				}
+			}
+		});
+
+		it('should not error when all required gun properties are equal within an artillery definition', function() {
+			gunsAreSimilar(ship)
+			expect(gunsAreSimilar.bind(null, ship)).to.not.throw();
+		});
+
+		it('should not error when required gun properties are not equal across artillery definitions', function() {
+			ship.AB1_Artillery.Gun1.radiusOnZero = ship.AB1_Artillery.Gun2.radiusOnZero = -1;
+
+			expect(gunsAreSimilar.bind(null, ship)).to.not.throw();
+		});
+
+		it('should error when required gun properties are not equal within an artillery definition', function() {
+			ship.AB1_Artillery.Gun1.radiusOnZero = -1;
+
+			expect(gunsAreSimilar.bind(null, ship)).to.throw();
 		});
 	});
 

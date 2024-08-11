@@ -1,0 +1,14 @@
+g.axis.range
+	line(x1=0 y1=0 x2=GRAPH_AREA_X y2=0)
+	- for (let x=STEP_SIZE_X; x < MAX_RANGE; x += STEP_SIZE_X)
+		text(x=normalizeX(x), y=3) #{x / 1000}km
+g.axis.missdist
+	line(x1=0 y1=0 x2=0 y2=GRAPH_AREA_Y)
+	- for (let y=STEP_SIZE_Y; y < MAX_MISS_DISTANCE; y += STEP_SIZE_Y)
+		text(x=0 y=normalizeY(y)) #{y}m
+
+g.grid
+	- for (let y=STEP_SIZE_Y; y < MAX_MISS_DISTANCE; y += STEP_SIZE_Y)
+		line(x1=0 y1=normalizeY(y) x2=GRAPH_AREA_X y2=normalizeY(y))
+	- for (let x=STEP_SIZE_X; x < MAX_RANGE; x += STEP_SIZE_X)
+		line(x1=normalizeX(x) y1=GRAPH_AREA_Y x2=normalizeX(x) y2=0)

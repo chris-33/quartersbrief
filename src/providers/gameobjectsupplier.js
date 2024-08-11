@@ -19,6 +19,7 @@ import Artillery from '../model/modules/artillery.js';
 import Torpedoes from '../model/modules/torpedoes.js';
 import Hull from '../model/modules/hull.js';
 import Engine from '../model/modules/engine.js';
+import FireControl from '../model/modules/fireControl.js';
 
 export default class GameObjectSupplier extends Supplier {
 
@@ -119,7 +120,21 @@ GameObjectSupplier.Processors = class {
 				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ 
 					expand, convert, 
 					// Since ammos don't have nested DataObjects, we can just do a regular clone here
-					ammo => new ammo.constructor(clone(ammo._data)) ] },
+					ammo => new ammo.constructor(clone(ammo._data)) 
+				]},
+				// Some gun properties are defined on the containing artillery definition in the game files instead of the gun themselves.
+				// This is the case for Main and Secondary guns for the properties taperDist and maxDist. 
+				// This prevents dispersion from being calculated at a gun level.
+				// This processor pushes these properties down to the individual guns.
+				{ selector: '*.*[typeinfo.type===Gun][typeinfo.species===Main],*.*[typeinfo.type===Gun][typeinfo.species===Secondary]', processors: [
+					function pushDown(gun, name, artillery) {							
+						gun.taperDist ??= artillery.taperDist;
+						gun.maxDist ??= artillery.maxDist;
+						gun.sigmaCount ??= artillery.sigmaCount;
+						return gun;
+					}
+				]},
+				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
 				
 				// Module conversion:
@@ -127,20 +142,20 @@ GameObjectSupplier.Processors = class {
 				{ selector: '*[*.typeinfo.type===Gun][*.typeinfo.species===Torpedo]', processors: [ mdl => new Torpedoes(mdl) ]},
 				{ selector: '*[draft]', processors: [ mdl => new Hull(mdl) ]},
 				{ selector: '*[forwardEngineForsag]', processors: [ mdl => new Engine(mdl) ]},
-
+				{ selector: '*[maxDistCoef]', processors: [ mdl => new FireControl(mdl) ]},
 
 				{ selector: 'defaultCrew', processors: [ expand, convert ] },
 				// Change ship consumables from the format in which they are in the game files [ <consumable reference>, <flavor> ]
 				// to a Consumable object with the flavor properties copied directly onto the consumable
 				{ selector: 'ShipAbilities.AbilitySlot*.abils.*', processors: [
-						// Project to data of expanded reference
-						// (because convert will have automatically been run when recovering the ability)
-						async ([ abil, flavor ]) => [ (await expand(abil))._data, flavor ],						
-						// Copy appropriate flavor into data root
-						// Need to make a shallow copy to avoid changing the master consumable within the cache
-						async ([ abil, flavor ]) => Object.assign({}, abil, abil[flavor]), 
-						convert 
-					] },
+					// Project to data of expanded reference
+					// (because convert will have automatically been run when recovering the ability)
+					async ([ abil, flavor ]) => [ (await expand(abil))._data, flavor ],						
+					// Copy appropriate flavor into data root
+					// Need to make a shallow copy to avoid changing the master consumable within the cache
+					async ([ abil, flavor ]) => Object.assign({}, abil, abil[flavor]), 
+					convert 
+				]},
 				{ selector: 'ShipUpgradeInfo', processors: [ processors.buildResearchTree ]},
 				{ selector: 'ShipUpgradeInfo', processors: [
 					// @todo Implement into a single selector once object-selectors passes root information into perform-functions

@@ -1,0 +1,127 @@
+@use '../colors';
+@use '../timings';
+
+svg {
+	width: 100%;
+}
+
+$grid-stroke-width: 0.25;
+$plot-base-stroke-width: 0.5;
+
+@mixin axistext($axis: "x") {
+	font-size: 2pt;
+	@if $axis == "x" {
+		text-anchor: middle;		
+	} @else if $axis == "y" {
+		text-anchor: end;
+		dominant-baseline: middle;
+	}
+}
+
+.grid {
+	line {
+		stroke: lightgray;
+		stroke-width: $grid-stroke-width;
+		stroke-dasharray: 0.5 1;
+	}
+}
+
+.axis {
+	line {
+		stroke: black;
+		stroke-width: $grid-stroke-width;
+	}
+
+	&.range text {
+		@include axistext;
+	}
+	&.missdist text {
+		@include axistext(y);
+	}
+}
+
+.ownrange {
+	line {
+		stroke: colors.$player;
+		stroke-width: 2 * $grid-stroke-width;		
+	}
+
+	text {
+		@include axistext;
+		font-weight: bold;
+		fill: colors.$player;
+	}
+}
+
+.ship {
+	fill: none;
+	
+	.plot { 
+		transition: stroke timings.$highlight-transition-time; 
+	}
+	
+	&.battleship {
+		stroke-width: 2 * $plot-base-stroke-width;
+	}
+
+	&.cruiser {
+		stroke-width: $plot-base-stroke-width;
+	}
+
+	&.destroyer {
+		stroke-width: 0.5 * $plot-base-stroke-width;
+	}
+
+	&.ally {
+		stroke: colors.$ally;
+	}
+
+	&.enemy {
+		stroke: colors.$enemy;
+	}
+
+	&.ally.enemy:not(.player) > .base {
+		stroke: url('#radar-both');
+	}
+
+	&.player {
+		stroke: colors.$player;
+	}	
+
+	.plumb {
+		opacity: 0;
+		transition: opacity timings.$highlight-transition-time;
+	}
+	line.plumb {
+		stroke: colors.$highlighted;
+		stroke-width: $grid-stroke-width;
+		stroke-dasharray: 0.5 0.5;
+	}
+	text.plumb {
+		@include axistext;
+		stroke: none;
+		fill: colors.$highlighted;
+	}
+}
+
+
+.label {
+	position: absolute;
+	transform: translateY(-50%);
+	transition: color timings.$highlight-transition-time;
+
+	@include colors.teamcolor-text;
+}
+
+.highlighted {
+	color: colors.$highlighted !important;
+	z-index: 1;
+	
+	.plot {
+		stroke: colors.$highlighted !important;
+	}
+
+	.plumb {
+		opacity: 1 !important;
+	}
+}
