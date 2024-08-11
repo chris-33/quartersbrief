@@ -134,7 +134,6 @@ GameObjectSupplier.Processors = class {
 						return gun;
 					}
 				]},
-				{ selector: '*.*[typeinfo.type===Gun].ammoList.*', processors: [ expand, convert ] },
 				{ selector: '*.*[typeinfo.type===Gun]', processors: [ convert ] }, // Gun objects are inline, so no expansion here
 				
 				// Module conversion:
