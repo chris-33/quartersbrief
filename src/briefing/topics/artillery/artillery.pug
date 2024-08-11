@@ -10,12 +10,12 @@
 
 	// At what intervals to draw grid lines
 	const STEP_SIZE_X = 5000; // every 5000m
-	const STEP_SIZE_Y = 5; // every 5m
+	const STEP_SIZE_Y = 20; // every 20m
 
 	const normalizeX = x => GRAPH_AREA_X * x / MAX_RANGE;
 	const normalizeY = y => GRAPH_AREA_Y * y / MAX_MISS_DISTANCE;
 
-svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox=`-5 ${GRAPH_AREA_Y} ${GRAPH_AREA_X+10} ${Math.abs(GRAPH_AREA_Y) + 12}`)
+svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox=`-10 ${GRAPH_AREA_Y} ${GRAPH_AREA_X+15} ${Math.abs(GRAPH_AREA_Y) + 12}`)
 	//- Draw the axes and the grid
 	include grid.pug
 
@@ -44,7 +44,7 @@ svg(version="1.1", xmlns="http://www.w3.org/2000/svg", viewbox=`-5 ${GRAPH_AREA_
 
 //- Draw the ships' labels
 each ship in ships
-	- const left = 100 * (5 + normalizeX(ship.artillery.maxRange)) / ( 10 + GRAPH_AREA_X);
+	- const left = 100 * (10 + normalizeX(ship.artillery.maxRange)) / ( 15 + GRAPH_AREA_X);
 	- const top = 100 * (1 - (12 + Math.abs(normalizeY(artilleries[ship.name].plot[ship.artillery.maxRange]))) / (Math.abs(GRAPH_AREA_Y) + 12));
 	.label(
 		style=`left: ${left}%; top: ${top}%;`,
