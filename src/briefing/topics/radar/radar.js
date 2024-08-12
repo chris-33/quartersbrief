@@ -4,11 +4,11 @@ import { BW_TO_METERS } from '../../../util/conversions.js';
 import { SKILLS } from '../../../model/captain.js';
 
 const CONCEALMENT_BUILD = {
-	// modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
-	// skills: [ SKILLS.CONCEALMENT_EXPERT ]
+	modernizations: [ 'PCM027_ConcealmentMeasures_Mod_I' ],
+	skills: [ SKILLS.CONCEALMENT_EXPERT ]
 }
 const RADAR_BUILD = {
-	// modernizations: [ 'PCM042_RLSSearch_Mod_I', 'PCM072_AbilityWorktimeBoost_Mod_I' ],
+	modernizations: [ 'PCM042_RLSSearch_Mod_I', 'PCM072_AbilityWorktimeBoost_Mod_I' ],
 	skills: [ SKILLS.CONSUMABLES_ENHANCEMENTS ],
 }
 
