@@ -63,12 +63,12 @@
 	}
 
 	.ship {
-		& > :first-child {
-			color: colors.$enemy;
-		}
-		
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
+
+		& > :first-child {
+			color: colors.$enemy;
+		}
 	}
 }

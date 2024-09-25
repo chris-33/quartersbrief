@@ -129,6 +129,12 @@ header {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 
+	gap: 5% max(4ch, 4%);
+
+	overflow-x: hidden;
+	overflow-y: scroll;
+	scroll-padding-top: 12pt;
+
 	@media (max-width: 1200px) {
 	 	grid-template-columns: repeat(2, 1fr);
 	}
@@ -136,11 +142,6 @@ header {
 	 	grid-template-columns: 1fr;
 	}
 
-	gap: 5% max(4ch, 4%);
-
-	overflow-x: hidden;
-	overflow-y: scroll;
-	scroll-padding-top: 12pt;
 	@if scrollSnap() {
 		scroll-snap-type: y mandatory;
 

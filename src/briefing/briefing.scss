@@ -170,13 +170,13 @@ aside.details {
 		white-space: nowrap;
 		column-gap: 2em;
 		
-		&:not(:last-of-type) {
-			margin-bottom: 0.5ex;
-		}
-
 		// These two lines take care of justifying captions to the left and values to the right:
 		display: flex;
 		justify-content: space-between;
+		
+		&:not(:last-of-type) {
+			margin-bottom: 0.5ex;
+		}
 
 		span.caption {
 			margin-right: 1ch;
