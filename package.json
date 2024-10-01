@@ -69,7 +69,7 @@
     "ink-docstrap": "^0.5.4",
     "jsdoc": "^3.6.10",
     "mocha": "^9.1.4",
-    "mock-fs": "^5.1.2",
+    "mock-fs": "^5.3.0",
     "nock": "^13.2.4",
     "node-html-parser": "^5.2.0",
     "sinon": "^17.0.1",
