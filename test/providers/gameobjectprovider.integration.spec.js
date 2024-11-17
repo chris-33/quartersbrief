@@ -157,11 +157,21 @@ describe('GameObjectProvider @integration', function() {
 							HP_AGM_2: { ...GUN, ammoList: [ 'PAAA002_Test2' ] }
 						}
 					};
+					const ammo = { 
+						name: 'PAAA002_Test2',
+						ammoType: '',
+						typeinfo: {
+							type: 'Projectile',
+							species: 'Artillery'
+						}
+					};
 					const ship = Object.assign({}, SHIP, artillery);
 					populate([ ship, ammo ]);
 
 					const result = (await gameObjectProvider.createGameObject(ship.name))._data.AB1_Artillery._data;
 
+					expect(result.HP_AGM_1._data.ammoList[0]).to.exist;
+					expect(result.HP_AGM_2._data.ammoList[0]).to.exist;
 					expect(result.HP_AGM_1._data.ammoList[0]).to.not.equal(result.HP_AGM_2._data.ammoList[0]);
 				});
 
