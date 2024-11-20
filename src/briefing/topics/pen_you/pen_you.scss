@@ -1,6 +1,7 @@
 @use '../colors';
 @use '../fontsizes';
 @use 'sass:map';
+@use 'sass:string';
 @use 'details';
 
 .ships {
@@ -13,8 +14,8 @@
 
 .ship {
 	display: grid;
-	grid-template-rows: unquote('[label] 1rem [side] 1fr [top] 1fr');
-	grid-template-columns: unquote('[view] 10.6px [armor] 1fr');
+	grid-template-rows: string.unquote('[label] 1rem [side] 1fr [top] 1fr');
+	grid-template-columns: string.unquote('[view] 10.6px [armor] 1fr');
 	column-gap: 1ch;
 	row-gap: 1ex;
 	align-items: end;

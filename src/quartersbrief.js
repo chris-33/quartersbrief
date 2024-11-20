@@ -105,7 +105,6 @@ srv.get('/quartersbrief.css', function(req, res) {
 	// Force recompilation on every request in development mode
 	if (!stylesheet || process.env.NODE_ENV === 'development')
 		stylesheet = sass.compile(path.join(paths.BASE_DIR, 'src/core/quartersbrief.scss'), {
-			loadPaths: [path.join(paths.BASE_DIR,'node_modules')],
 			functions: {
 				'scrollSnap()': function() {
 					return config.scrollSnap ? sass.sassTrue : sass.sassFalse
