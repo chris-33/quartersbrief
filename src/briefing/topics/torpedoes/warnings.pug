@@ -1,8 +1,8 @@
 -
 	const THRESHOLDS = {
-		reload: [ 60, 45 ],
-		visibility: [ 1.0, 0.7 ],
-		flooding: [ 500, 600 ]
+		reload: [ 90, 60 ],
+		visibility: [ 1.3, 0.9 ],
+		flooding: [ 3.50, 4.20 ]
 	};
 	
 	const LESS_IS_BETTER = (a,b) => a <= b;
@@ -40,7 +40,7 @@
 			tooltip: `These torpedoes are detected late`
 		}, { 
 			name: 'stealthLaunch', 
-			severity: entry => entry.ship.concealment * 1000 <= entry.range && 'severe', 
+			severity: entry => entry.ship.hull.concealment.sea * 1000 <= entry.range && 'severe', 
 			symbol: '\ue063', // Warning
 			tooltip: `This ship can launch its torpedoes from stealth`
 		}, {
