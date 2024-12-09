@@ -2,28 +2,41 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "ubuntu/jammy64"
+  USERNAME = "vagrant"
   
-  # Need this plugin to forward file system events from the host to the guest
-  # Otherwise watching for file changes is not going to work
-  # See https://github.com/adrienkohlbecker/vagrant-fsnotify
-  config.vagrant.plugins = ["vagrant-fsnotify"]
+  config.vm.provider "docker" do |docker|
+    # Create ssh keys unless they are already created
+    %x(ssh-keygen -f #{USERNAME}.key -t ed25519 -N "") unless File.file?("#{USERNAME}.key")
+
+    docker.build_dir = "."
+    docker.build_args = [
+      # Make default user inside the VM have the same UID and GID as the user running the vagrant command
+      # This makes it a lot easier working with shared code locations, because the user will own the files
+      "--build-arg", "USERNAME=#{USERNAME}",
+      "--build-arg", "UID=#{Process.uid}",
+      "--build-arg", "GID=#{Process.gid}",
+      "--build-arg", "KEYFILE=#{USERNAME}.key.pub"
+    ]
+    docker.has_ssh = true
+    docker.remains_running = true
+    # Use project's directory name as name for the container.
+    # (Note that this will fail if such a container already exists.)
+    docker.name = File.dirname(__FILE__).split("/").last
+    # Use container name as hostname inside the container, as is the default behavior for other providers.
+    docker.create_args = ["--hostname", docker.name]
+  end
+
+  config.ssh.username=USERNAME
+  config.ssh.private_key_path="#{USERNAME}.key"
 
   # Expose port 9229 to allow debugging
   config.vm.network :forwarded_port, guest: 9229, host: 9229
   # Expose port 10000 as the default port for quartersbrief
   config.vm.network :forwarded_port, guest: 10000, host: 10000
 
-  config.vm.provider "virtualbox" do |vb|
-    # Give the vm more memory than the standard 1024 because we will be handling
-    # large amounts of data
-    # Processing GameParams.data will fail without this
-    vb.memory = "2048"
-    vb.name = "quartersbrief"
-  end
 
   # Reflect host github user config in vm
-  # This is necessary because otherwise using grunt to issue git commands will fail.
+  # This is necessary if we want to use git commands on the remote repo, e.g. during releases
   userconfig = `git config -l | grep user`
   config.vm.provision "shell", name: "Configure git user on VM to be the same as on the host", privileged: false, inline: <<-SHELL
     # Read ruby userconfig variable line by line
@@ -128,9 +141,4 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_x11 = true
   # cd to the /vagrant directory upon login
   config.ssh.extra_args = ["-t", "cd /vagrant; bash --login"]
-
-  #config.trigger.after :up do |t|
-  #  t.name = "vagrant fsnotify"
-  #  t.run = { inline: "vagrant fsnotify &" }
-  #end
 end
