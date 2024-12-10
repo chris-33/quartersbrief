@@ -205,7 +205,7 @@ export function gunsAreSimilar(ship) {
 	
 	let counterexamples = [];
 	const artilleries = Object.entries(ship)		
-		.filter(([ key, obj ]) => Object.values(obj).some(prop => prop?.typeinfo?.type === 'Gun')) // eslint-disable-line no-unused-vars
+		.filter(([ key, obj ]) => obj && Object.values(obj).some(prop => prop?.typeinfo?.type === 'Gun' && prop?.typeinfo?.species === 'Main')) // eslint-disable-line no-unused-vars
 		.map(([ key ]) => key);
 
 	for (let key of artilleries) {
